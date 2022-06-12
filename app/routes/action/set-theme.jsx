@@ -17,7 +17,6 @@ export const action = async function ({ request }) {
     });
   }
 
-  console.log('setting from set-themejsx', theme);
   themeSession.setTheme(theme);
   return json(
     {

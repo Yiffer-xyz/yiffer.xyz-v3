@@ -27,11 +27,11 @@ async function getThemeSession(request) {
       return isTheme(themeVal) ? themeVal : null;
     },
     setTheme: function (theme) {
-      console.log('set theme!', theme);
-      session.set('theme', theme);
+      console.log('RAWR set theme!', theme);
+      return session.set('theme', theme);
     },
     commit: function () {
-      themeStorage.commitSession(session);
+      return themeStorage.commitSession(session);
     },
   };
 }

@@ -38,8 +38,6 @@ function ThemeProvider({ specifiedTheme, children }) {
   const mountRun = useRef(false);
 
   useEffect(() => {
-    console.log('effect run', theme);
-
     if (!mountRun.current) {
       mountRun.current = true;
       return;
@@ -64,8 +62,30 @@ function useTheme() {
 }
 
 function isTheme(themeStr) {
-  return true;
-  // return Object.values(themes).includes(themeStr);
+  // return true;
+  return Object.values(themes).includes(themeStr);
 }
 
-export { ThemeProvider, useTheme, isTheme };
+const clientThemeCode = `
+  ;(() => {
+    const theme = window.matchMedia(${JSON.stringify(prefersDarkMQ)}).matches
+      ? 'dark'
+      : 'light';
+    const cl = document.documentElement.classList;
+    const themeAlreadyApplied = cl.contains('light') || cl.contains('dark');
+    if (themeAlreadyApplied) {
+      // this script shouldn't exist if the theme is already applied!
+      console.warn(
+        "Theme bug",
+      );
+    } else {
+      cl.add(theme);
+    }
+  })();
+`;
+
+function NonFlashOfWrongThemeEls({ ssrTheme }) {
+  return <>{ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}</>;
+}
+
+export { ThemeProvider, useTheme, isTheme, NonFlashOfWrongThemeEls };

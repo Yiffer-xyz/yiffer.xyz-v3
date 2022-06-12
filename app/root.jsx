@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 import styles from './styles/app.css';
 
-import { useTheme, ThemeProvider } from './utils/theme-provider';
+import { useTheme, ThemeProvider, NonFlashOfWrongThemeEls } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
 
 export const meta = () => ({
@@ -33,12 +33,14 @@ export const loader = async function ({ request }) {
 
 export function App() {
   const [theme] = useTheme();
+  const data = useLoaderData();
 
   return (
     <html lang="en" className={clsx(theme)}>
       <head>
         <Meta />
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="dark:bg-darkBackground dark:text-white">
         <Layout>
