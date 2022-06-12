@@ -1,7 +1,7 @@
 export default function Index() {
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: '1.4' }}>
-      <h1 className="text-3xl font-bold underline">Welcome to Remix</h1>
+    <div style={{ lineHeight: '1.4' }}>
+      <h1 className="text-3xl font-bold underline bg-gray-300">Welcome to Remix</h1>
       <ul>
         <li>
           <a target="_blank" href="https://remix.run/tutorials/blog" rel="noreferrer">
