@@ -10,4 +10,10 @@
   .dark a {
     @apply text-linkDark;
   }
+  .dark p,
+  .dark span,
+  .dark li,
+  .dark td {
+    color: white;
+  }
 }

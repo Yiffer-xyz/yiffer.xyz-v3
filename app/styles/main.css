@@ -1,0 +1,29 @@
+.nav-shadowing {
+  box-shadow: 0 0 5px rgb(0 0 0 / 10%);
+}
+.dark .nav-shadowing {
+  box-shadow: none;
+}
+body {
+  background-color: #fcfcfc;
+}
+h1 {
+  font-size: 3rem;
+}
+h2 {
+  font-size: 1.75rem;
+}
+h3 {
+  font-size: 1.6rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
+nav > div {
+  max-width: 80%;
+}
+@media only screen and (max-width: 800px) {
+  nav > div {
+    max-width: 100%;
+  }
+}
