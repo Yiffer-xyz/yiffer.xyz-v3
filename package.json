@@ -4,10 +4,10 @@
   "scripts": {
     "build": "yarn build:css && remix build",
     "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
-    "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
+    "tailwindcss": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "dev:remix": "remix watch",
     "dev:wrangler": "cross-env NODE_ENV=development wrangler pages dev ./public",
-    "dev": "concurrently \"npm run dev:css\" \"remix build && run-p dev:*\"",
+    "dev": "concurrently \"npm run tailwindcss\" \"remix build && run-p dev:*\"",
     "start": "cross-env NODE_ENV=production npm run dev:wrangler"
   },
   "dependencies": {
@@ -17,7 +17,8 @@
     "clsx": "^1.1.1",
     "cross-env": "^7.0.3",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "react-icons": "^4.4.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.10.0",

@@ -113,7 +113,7 @@ function Layout({ children }) {
               Log in
             </a>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-6">
             <p
               onClick={() => setTheme('light')}
               className="cursor-pointer font-bold dark:text-linkDark"

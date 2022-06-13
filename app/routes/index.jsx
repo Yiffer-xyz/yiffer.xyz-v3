@@ -1,9 +1,14 @@
-import React from 'react';
+import { MdHome } from 'react-icons/md';
+import Link from '../components/Link/Link';
 
 export default function Index() {
   return (
     <div>
       <h1 className="text-center">Contribute</h1>
+      <p className="text-center mx-auto">
+        <Link href="https://yiffer.xyz" text="To main page" Icon={MdHome} />
+      </p>
+
       <div className="max-w-4xl mx-auto mt p-4 grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-8 sm:p-8">
         <ContributionCard
           title="Upload a comic yourself"
@@ -47,7 +52,9 @@ function ContributionCard({ title, description, href, disabled }) {
         className="rounded-lg shadow-md p-4 hover:shadow-lg h-full flex flex-col 
           justify-evenly bg-white dark:bg-gray-400"
       >
-        <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center">{title}</h2>
+        <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center">
+          {title}
+        </h2>
         <p className="text-black font-light text-center">{description}</p>
       </div>
     </a>

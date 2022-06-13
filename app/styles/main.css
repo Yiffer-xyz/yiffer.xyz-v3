@@ -27,3 +27,20 @@ nav > div {
     max-width: 100%;
   }
 }
+svg {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 50% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.2s;
+}
+a:hover,
+a:focus {
+  text-decoration: none;
+  background-size: 100% 1px;
+  cursor: pointer;
+}

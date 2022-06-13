@@ -37,6 +37,15 @@ module.exports = {
     fontFamily: {
       sans: ['Mulish', 'sans-serif'],
     },
+    container: {
+      padding: {
+        DEFAULT: '1rem',
+        sm: '2rem',
+        lg: '8rem',
+        xl: '12rem',
+        '2xl': '16rem',
+      },
+    },
   },
   plugins: [],
 };
