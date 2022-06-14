@@ -8,6 +8,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import clsx from 'clsx';
+import LoginModal from './components/LoginModal/LoginModal';
 
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
@@ -59,7 +60,7 @@ export function App() {
         <Links />
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
-      <body className="dark:bg-darkBackground dark:text-white">
+      <body className="dark:bg-bgDark dark:text-white">
         <Layout>
           <Outlet />
         </Layout>
@@ -95,34 +96,43 @@ function Layout({ children }) {
             <a
               href="https://yiffer.xyz"
               className="text-gray-400 hidden lg:block"
-              style={{ fontFamily: 'Shrikhand,cursive', fontSize: '1.25rem', fontWeight: 400 }}
+              style={{
+                fontFamily: 'Shrikhand,cursive',
+                fontSize: '1.25rem',
+                fontWeight: 400,
+              }}
             >
               Yiffer.xyz
             </a>
+            {/* <LoginModal /> */}
             <a
               href="https://yiffer.xyz"
               className="text-gray-400 block lg:hidden"
-              style={{ fontFamily: 'Shrikhand,cursive', fontSize: '1.25rem', fontWeight: 400 }}
+              style={{
+                fontFamily: 'Shrikhand,cursive',
+                fontSize: '1.25rem',
+                fontWeight: 400,
+              }}
             >
               Y
             </a>
             <a href="https://yiffer.xyz/account" className="text-gray-400">
               Account
             </a>
-            <a href="https://yiffer.xyz/login" className="text-gray-400">
+            <a href="/login" className="text-gray-400">
               Log in
             </a>
           </div>
           <div className="flex gap-6">
             <p
               onClick={() => setTheme('light')}
-              className="cursor-pointer font-bold dark:text-linkDark"
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
             >
               Light
             </p>
             <p
               onClick={() => setTheme('dark')}
-              className="cursor-pointer font-bold dark:text-linkDark"
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
             >
               Dark
             </p>

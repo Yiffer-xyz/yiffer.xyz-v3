@@ -5,6 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        bgDark: '#262c30',
         theme1: {
           primary: '#9aebe7',
           dark: '#49ded7',
@@ -15,9 +16,20 @@ module.exports = {
           dark: '#5df1ba',
           darker: '#1cda94',
         },
-        linkLight: '#3a7fab',
-        linkDark: '#3fb9f3',
-        darkBackground: '#262c30',
+        blue: {
+          // I'm very open to naming suggestions here.
+          // "strong" because the saturation is high. To be used in DARK mode
+          strong: {
+            100: '#007ec7',
+            200: '#0f9ff3',
+            300: '#3fb9f3',
+          },
+          // "weak" because saturation is low, meaning less color. To be used in LIGHT mode.
+          weak: {
+            100: '#2a6386',
+            200: '#3a7fab',
+          },
+        },
         gray: {
           950: '#fafafa',
           900: '#ececec',

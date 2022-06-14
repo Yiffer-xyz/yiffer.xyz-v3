@@ -27,7 +27,6 @@ async function getThemeSession(request) {
       return isTheme(themeVal) ? themeVal : null;
     },
     setTheme: function (theme) {
-      console.log('RAWR set theme!', theme);
       return session.set('theme', theme);
     },
     commit: function () {

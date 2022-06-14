@@ -1,5 +1,5 @@
 import { MdHome } from 'react-icons/md';
-import Link from '../components/Link/Link';
+import Link from '../components/Link';
 
 export default function Index() {
   return (
