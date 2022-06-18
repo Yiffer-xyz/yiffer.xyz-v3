@@ -3,34 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  a {
-    @apply text-blue-weak-200;
-    font-weight: 600;
-  }
-  .dark a {
-    @apply text-blue-strong-300;
-  }
   .dark p,
   .dark span,
   .dark li,
   .dark td {
     color: white;
-  }
-
-  button {
-    /* TODO wtf is making the button transparent by default? Find out and remove important */
-    @apply bg-blue-weak-200;
-  }
-  button:focus,
-  button:hover {
-    @apply bg-blue-weak-100;
-  }
-
-  .dark button {
-    @apply bg-blue-strong-200;
-  }
-  .dark button:focus,
-  .dark button:hover {
-    @apply bg-blue-strong-100;
   }
 }

@@ -45,30 +45,9 @@ a:focus {
   cursor: pointer;
 }
 
-button {
-  border-radius: 0.25rem;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  width: fit-content;
-  word-break: keep-all;
-  transition: background-color 100ms, border-color 100ms, box-shadow 100ms;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  /* border: 2px solid $themeBlueDark; TODO for outlined */
-}
-button:focus {
-  cursor: pointer;
-}
-button span {
-  color: white;
-}
-
-input {
+/* input[type='text'],
+input[type='password'],
+input[type='datetime-local'] {
   background-color: transparent;
   outline: none;
-}
+} */
