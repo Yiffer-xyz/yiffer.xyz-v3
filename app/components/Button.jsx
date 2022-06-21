@@ -1,9 +1,21 @@
+/**
+ *
+ * @param {{
+ * text: string;
+ * variant: "contained" | "outlined";
+ * color: "primary" | "error";
+ * startIcon: React.ReactNode;
+ * endIcon: React.ReactNode;
+ * className: string;
+ * }} props
+ *
+ */
 export default function Button({
   text,
-  startIcon: StartIcon,
-  endIcon: EndIcon,
   variant = 'contained',
   color = 'primary',
+  startIcon: StartIcon,
+  endIcon: EndIcon,
   className,
   ...props
 }) {
@@ -24,6 +36,8 @@ export default function Button({
       hover:text-white focus:text-white dark:text-white text-blue-weak-200
       py-1 px-2.75 `;
   }
+
+  // TODO: Add error color for both variants
 
   const fullClassName =
     'rounded py-1.5 px-3 font-bold w-fit flex flex-nowrap justify-center ' +

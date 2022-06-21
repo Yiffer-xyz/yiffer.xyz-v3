@@ -1,3 +1,15 @@
+/**
+ *
+ * @param {{
+ * variant: "info" | "error" | "success";
+ * title: string;
+ * text: string;
+ * showIcon: boolean;
+ * className: string;
+ * children: React.ReactNode;
+ * }} props
+ *
+ */
 export default function InfoBox({
   variant = 'info',
   title,

@@ -1,3 +1,14 @@
+/**
+ *
+ * @param {{
+ * href: string;
+ * text: string;
+ * newTab: boolean;
+ * Icon: React.ReactNode;
+ * className: string;
+ * }} props
+ *
+ */
 export default function Link({ href, text, newTab, Icon, className }) {
   return (
     // eslint-disable-next-line react/jsx-no-target-blank

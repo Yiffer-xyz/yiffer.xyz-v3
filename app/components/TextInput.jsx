@@ -1,11 +1,24 @@
 import { useRef, useEffect } from 'react';
 
+/**
+ *
+ * @param {{
+ * label: string;
+ * name: string;
+ * value: string;
+ * autocomplete: string=on;
+ * type: "text" | "password";
+ * className: string;
+ * }} props
+ *
+ */
 export default function TextInput({
   label,
   name,
   value = '',
   autocomplete = 'on',
   type = 'text',
+  className = '',
   ...props
 }) {
   const inputRef = useRef();
@@ -15,7 +28,7 @@ export default function TextInput({
   }, [value]);
 
   return (
-    <div>
+    <div className={className}>
       {label && <p>{label}</p>}
       <input
         type={type}
