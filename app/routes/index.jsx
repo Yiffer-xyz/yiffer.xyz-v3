@@ -32,7 +32,7 @@ export default function Index() {
         <ContributionCard
           title="Suggest a comic"
           description="Suggest a comic for the mod team to upload, providing links and what information you can"
-          href="suggest"
+          href="suggest-comic"
         />
         <ContributionCard
           title="Your contributions"
