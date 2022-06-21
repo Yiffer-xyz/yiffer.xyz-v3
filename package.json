@@ -38,6 +38,6 @@
     "wrangler": "beta"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   }
 }

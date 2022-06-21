@@ -4,6 +4,12 @@
 .dark .nav-shadowing {
   box-shadow: none;
 }
+.dark p,
+.dark span,
+.dark li,
+.dark td {
+  color: white;
+}
 body {
   background-color: #fcfcfc;
 }

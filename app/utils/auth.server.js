@@ -3,10 +3,9 @@ import { createCookieSessionStorage, redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
 export async function login({ username, password }) {
-  // TODO find user, check password with bcrypt
+  // TODO find user, check password with bcryptjs
   const userFromDb = { id: 1, username: 'Melon' };
-  const x = await createUserSession(userFromDb.id, userFromDb.username);
-  return x;
+  return await createUserSession(userFromDb.id, userFromDb.username);
 }
 
 // TODO use cloudflare KV to store/get these?
@@ -29,7 +28,7 @@ const storage = createCookieSessionStorage({
 });
 
 // To only get the user data - {userId, username, token (auth)}
-// Basically, use from components/routes
+// Basically, use this from components/routes
 export async function getUserSessionData(req) {
   const session = await getUserSession(req);
   if (session && session.data) {

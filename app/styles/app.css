@@ -417,13 +417,6 @@ video {
   height: auto;
 }
 
-.dark p,
-  .dark span,
-  .dark li,
-  .dark td {
-  color: white;
-}
-
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
