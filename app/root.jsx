@@ -1,17 +1,22 @@
 import {
+  Form,
   Links,
   LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useFetcher,
+  useFormAction,
   useLoaderData,
+  useSubmit,
 } from '@remix-run/react';
 import clsx from 'clsx';
-import LoginModal from './components/LoginModal/LoginModal';
+import { createContext } from 'react';
 
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
+import { getUserSession, getUserSessionData } from './utils/auth.server';
 
 import { useTheme, ThemeProvider, NonFlashOfWrongThemeEls } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
@@ -43,11 +48,16 @@ export function links() {
 
 export const loader = async function ({ request }) {
   const themeSession = await getThemeSession(request);
+  const userSession = await getUserSessionData(request);
+
   const data = {
     theme: themeSession.getTheme(),
+    user: userSession,
   };
   return data;
 };
+
+export const UserContext = createContext('user');
 
 export function App() {
   const [theme] = useTheme();
@@ -61,8 +71,10 @@ export function App() {
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="dark:bg-bgDark dark:text-white">
-        <Layout>
-          <Outlet />
+        <Layout user={data.user}>
+          <UserContext.Provider value={data.user}>
+            <Outlet />
+          </UserContext.Provider>
         </Layout>
         <ScrollRestoration />
         <Scripts />
@@ -82,8 +94,9 @@ export default function AppWithProviders() {
   );
 }
 
-function Layout({ children }) {
+function Layout({ user, children }) {
   const [, setTheme] = useTheme();
+  const isLoggedIn = !!user;
 
   return (
     <>
@@ -95,7 +108,7 @@ function Layout({ children }) {
           <div className="flex gap-6 items-center">
             <a
               href="https://yiffer.xyz"
-              className="text-gray-400 hidden lg:block"
+              className="text-gray-400 hidden lg:block bg-none dark:text-blue-strong-300"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -104,10 +117,9 @@ function Layout({ children }) {
             >
               Yiffer.xyz
             </a>
-            {/* <LoginModal /> */}
             <a
               href="https://yiffer.xyz"
-              className="text-gray-400 block lg:hidden"
+              className="text-gray-400 block lg:hidden bg-none dark:text-blue-strong-300"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -116,12 +128,29 @@ function Layout({ children }) {
             >
               Y
             </a>
-            <a href="https://yiffer.xyz/account" className="text-gray-400">
-              Account
-            </a>
-            <a href="/login" className="text-gray-400">
-              Log in
-            </a>
+            {isLoggedIn ? (
+              <>
+                <a
+                  href="https://yiffer.xyz/account"
+                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
+                >
+                  Account
+                </a>
+                <a
+                  href="/logout"
+                  className="font-semibold bg-none dark:text-blue-strong-300"
+                >
+                  Log out
+                </a>
+              </>
+            ) : (
+              <a
+                href="/login"
+                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
+              >
+                Log in
+              </a>
+            )}
           </div>
           <div className="flex gap-6">
             <p

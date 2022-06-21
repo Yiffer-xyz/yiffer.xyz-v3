@@ -1,27 +1,44 @@
 import { json, redirect } from '@remix-run/cloudflare';
-import { useFetcher } from '@remix-run/react';
+import { Form, useActionData, useFetcher } from '@remix-run/react';
 import Link from '../../components/Link';
 import LoadingButton from '../../components/LoadingButton';
 import TextInput from '../../components/TextInput';
+import { login } from '~/utils/auth.server.js';
+import InfoBox from '../../components/InfoBox';
+
+function validateData(username, password) {
+  if (!username || typeof username !== 'string') {
+    return 'Missing username';
+  }
+  if (!password || typeof password !== 'string') {
+    return 'Missing password';
+  }
+  return null;
+}
 
 export const action = async function ({ request }) {
   const reqBody = await request.formData();
   const { username, password } = Object.fromEntries(reqBody);
-  console.log(username, password);
 
-  try {
-    return redirect('/');
-    // return json({ username: username, userType: 'admin' });
-  } catch (error) {
-    return json({ error: error.message });
+  const fields = { username, password };
+  const validationErr = validateData(username, password);
+  if (validationErr) {
+    return json({ error: validationErr, fields }, { status: 400 });
   }
+
+  const response = await login({ username, password });
+  if (!response) {
+    return json({ error: 'Incorrect username or password', fields });
+  }
+
+  return response;
 };
 
 export default function Login({ setMode }) {
-  const loginRequest = useFetcher();
+  const actionData = useActionData();
 
   return (
-    <loginRequest.Form method="POST" className="w-fit mx-auto">
+    <Form method="POST" className="w-fit mx-auto">
       <h1 className="text-3xl">Log in</h1>
 
       <a href="/" className="my-2 block">
@@ -29,21 +46,31 @@ export default function Login({ setMode }) {
       </a>
       <p className="text-red-400">At some point, put this in a modal instead?</p>
 
-      <TextInput name="username" label="Username" autocomplete="username" />
+      <TextInput
+        name="username"
+        label="Username"
+        autocomplete="username"
+        value={actionData?.fields?.username}
+      />
       <TextInput
         name="password"
         label="Password"
         autocomplete="password"
         type="password"
+        value={actionData?.fields?.password}
       />
 
+      {actionData?.error && (
+        <InfoBox variant="error" text={actionData.error} className="my-2" />
+      )}
+
       <div className="flex">
-        <LoadingButton text="Log in" variant="contained" />
+        <LoadingButton text="Log in" variant="contained" className="my-2" />
       </div>
 
       <Link href="/signup" text="Sign up instead" />
       <br />
       <Link href="/forgotten-password" text="Forgotten password?" />
-    </loginRequest.Form>
+    </Form>
   );
 }

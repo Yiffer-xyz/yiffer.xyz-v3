@@ -30,6 +30,6 @@ export const action = async function ({ request }) {
   );
 };
 
-const loader = function () {
-  return redirect('/', { status: 404 });
+export const loader = async function ({ request }) {
+  return redirect('/');
 };

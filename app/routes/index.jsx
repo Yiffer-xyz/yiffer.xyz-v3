@@ -1,7 +1,21 @@
 import { MdHome } from 'react-icons/md';
 import Link from '../components/Link';
+import { getUserSessionData } from '../utils/auth.server';
+import { useLoaderData } from '@remix-run/react';
+
+export const loader = async function ({ request }) {
+  // It seems we must do this all places where user login status
+  // is required. Using Context lead to trouble with SSR.
+  const userSession = await getUserSessionData(request);
+  const data = {
+    user: userSession,
+  };
+  return data;
+};
 
 export default function Index() {
+  const { user } = useLoaderData();
+
   return (
     <div>
       <h1 className="text-center">Contribute</h1>
@@ -24,7 +38,10 @@ export default function Index() {
           title="Your contributions"
           description="See the status and history of your previous contributions"
           href="your-contributions"
-        />
+          disabled={!user}
+        >
+          <p className="text-center">Requires login</p>
+        </ContributionCard>
         <ContributionCard
           title="Contributions scoreboard"
           description="See the monthly and all-time top contributors"
@@ -45,14 +62,25 @@ export default function Index() {
   );
 }
 
-function ContributionCard({ title, description, href, disabled }) {
-  return (
-    <a href={'/' + href}>
+function ContributionCard({ title, description, href, disabled, children }) {
+  return disabled ? (
+    <div
+      className="rounded-lg p-4 h-full flex flex-col 
+      justify-evenly bg-white dark:bg-gray-300 border-2 border-gray-900 dark:border-0"
+    >
+      <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center font-semibold">
+        {title}
+      </h2>
+      <p className="text-black font-light text-center">{description}</p>
+      {children}
+    </div>
+  ) : (
+    <a href={'/' + href} style={{ backgroundImage: 'none' }}>
       <div
         className="rounded-lg shadow-md p-4 hover:shadow-lg h-full flex flex-col 
           justify-evenly bg-white dark:bg-gray-400"
       >
-        <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center">
+        <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center font-semibold">
           {title}
         </h2>
         <p className="text-black font-light text-center">{description}</p>

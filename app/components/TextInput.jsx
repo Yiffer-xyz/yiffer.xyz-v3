@@ -6,6 +6,7 @@ export default function TextInput({
   value = '',
   autocomplete = 'on',
   type = 'text',
+  ...props
 }) {
   const inputRef = useRef();
 
@@ -16,7 +17,13 @@ export default function TextInput({
   return (
     <div>
       {label && <p>{label}</p>}
-      <input type={type} name={name} ref={inputRef} autoComplete={autocomplete} />
+      <input
+        type={type}
+        name={name}
+        ref={inputRef}
+        autoComplete={autocomplete}
+        {...props}
+      />
       <p className="text-xs">TODO make this nice&fancy</p>
     </div>
   );

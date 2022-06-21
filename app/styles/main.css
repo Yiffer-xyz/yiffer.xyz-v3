@@ -44,10 +44,3 @@ a:focus {
   background-size: 100% 1px;
   cursor: pointer;
 }
-
-/* input[type='text'],
-input[type='password'],
-input[type='datetime-local'] {
-  background-color: transparent;
-  outline: none;
-} */

@@ -5,6 +5,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        status: {
+          info1: '#57b5f3',
+          info2: '#57b5f3',
+          error1: '#f35757',
+          error2: '#e2557f',
+        },
         bgDark: '#262c30',
         theme1: {
           primary: '#9aebe7',
