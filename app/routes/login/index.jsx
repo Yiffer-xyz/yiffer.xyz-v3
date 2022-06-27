@@ -1,12 +1,12 @@
-import { json, redirect } from '@remix-run/cloudflare';
-import { Form, useActionData, useFetcher } from '@remix-run/react';
+import { json } from '@remix-run/cloudflare';
+import { Form, useActionData } from '@remix-run/react';
 import Link from '../../components/Link';
 import LoadingButton from '../../components/LoadingButton';
-import TextInput from '../../components/TextInput';
 import { login } from '~/utils/auth.server.js';
 import InfoBox from '../../components/InfoBox';
+import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
 
-function validateData(username, password) {
+function getDataError(username, password) {
   if (!username || typeof username !== 'string') {
     return 'Missing username';
   }
@@ -21,7 +21,7 @@ export const action = async function ({ request }) {
   const { username, password } = Object.fromEntries(reqBody);
 
   const fields = { username, password };
-  const validationErr = validateData(username, password);
+  const validationErr = getDataError(username, password);
   if (validationErr) {
     return json({ error: validationErr, fields }, { status: 400 });
   }
@@ -46,18 +46,18 @@ export default function Login({ setMode }) {
       </a>
       <p className="text-red-400">At some point, put this in a modal instead?</p>
 
-      <TextInput
+      <TextInputUncontrolled
         name="username"
         label="Username"
         autocomplete="username"
-        value={actionData?.fields?.username}
+        className="mb-6 mt-4"
       />
-      <TextInput
+      <TextInputUncontrolled
         name="password"
         label="Password"
         autocomplete="password"
         type="password"
-        value={actionData?.fields?.password}
+        className="mb-6"
       />
 
       {actionData?.error && (

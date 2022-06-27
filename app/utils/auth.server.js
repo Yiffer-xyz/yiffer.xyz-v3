@@ -4,6 +4,7 @@ import jwt from '@tsndr/cloudflare-worker-jwt';
 
 export async function login({ username, password }) {
   // TODO find user, check password with bcryptjs
+  console.log({ username, password });
   const userFromDb = { id: 1, username: 'Melon' };
   return await createUserSession(userFromDb.id, userFromDb.username);
 }
