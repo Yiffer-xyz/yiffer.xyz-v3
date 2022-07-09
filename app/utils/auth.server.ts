@@ -1,9 +1,9 @@
-import bcrypt from 'bcryptjs';
+// import bcrypt from 'bcryptjs';
 import { createCookieSessionStorage, redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
-export async function login({ username, password }) {
-  // TODO find user, check password with bcryptjs
+export async function login(username: string, password: string) {
+  // TODO find user, check password with bcrypt
   console.log({ username, password });
   const userFromDb = { id: 1, username: 'Melon' };
   return await createUserSession(userFromDb.id, userFromDb.username);
@@ -30,8 +30,8 @@ const storage = createCookieSessionStorage({
 
 // To only get the user data - {userId, username, token (auth)}
 // Basically, use this from components/routes
-export async function getUserSessionData(req) {
-  const session = await getUserSession(req);
+export async function getUserSessionData(request: Request) {
+  const session = await getUserSession(request);
   if (session && session.data) {
     return session.data;
   }
@@ -39,8 +39,8 @@ export async function getUserSessionData(req) {
 }
 
 // To get the full session object, needed when manipulating the session itself
-export async function getUserSession(req) {
-  const session = await storage.getSession(req.headers.get('cookie'));
+export async function getUserSession(request: Request) {
+  const session = await storage.getSession(request.headers.get('cookie'));
   const token = session.get('token');
 
   if (!token) {
@@ -56,9 +56,9 @@ export async function getUserSession(req) {
   return session;
 }
 
-export async function getUser(request) {
+export async function getUser(request: Request) {
   const userId = await getUserId(request);
-  if (typeof userId !== 'string') {
+  if (userId === null) {
     return null;
   }
 
@@ -67,7 +67,7 @@ export async function getUser(request) {
   return userFromDb;
 }
 
-export async function getUserId(request) {
+export async function getUserId(request: Request) {
   const session = await getUserSession(request);
   if (!session) {
     return null;
@@ -80,8 +80,8 @@ export async function getUserId(request) {
 }
 
 // Place in the loader of routes requiring a logged in user
-export async function requireUserId(req) {
-  const session = await getUserSession(req);
+export async function requireUserId(request: Request) {
+  const session = await getUserSession(request);
   if (!session) {
     throw redirect(`/`);
   }
@@ -92,10 +92,10 @@ export async function requireUserId(req) {
   return userId;
 }
 
-export async function logout(request) {
+export async function logout(request: Request) {
   const session = await getUserSession(request);
   if (!session) {
-    return redirect(request.padd);
+    return redirect('/');
   }
   return redirect('/', {
     headers: {
@@ -104,7 +104,7 @@ export async function logout(request) {
   });
 }
 
-export async function createUserSession(userId, username) {
+export async function createUserSession(userId: number, username: string) {
   const session = await storage.getSession();
   const token = await jwt.sign({ userId }, tokenSecret);
   session.set('token', token);

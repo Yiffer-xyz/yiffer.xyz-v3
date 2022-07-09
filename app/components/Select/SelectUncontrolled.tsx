@@ -1,18 +1,16 @@
-import Select from './Select';
+import Select, { BaseSelectProps } from './Select';
 import { useState } from 'react';
 
 export default function SelectUncontrolled({
   options,
   title = '',
-  value,
-  onChange,
   error = false,
   maxWidth = 999999,
   isFullWidth = false,
   initialWidth = 0, // TODO needed?
   className = '',
   ...props
-}) {
+}: BaseSelectProps) {
   const [state, setState] = useState(null);
 
   return (

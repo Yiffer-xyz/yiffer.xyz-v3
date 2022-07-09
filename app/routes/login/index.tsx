@@ -1,13 +1,15 @@
-import { json } from '@remix-run/cloudflare';
+import { ActionFunction, json } from '@remix-run/cloudflare';
 import { Form, useActionData } from '@remix-run/react';
 import Link from '../../components/Link';
-import LoadingButton from '../../components/LoadingButton';
+import LoadingButton from '../../components/Buttons/LoadingButton';
 import { login } from '~/utils/auth.server.js';
 import InfoBox from '../../components/InfoBox';
 import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
-import SelectUncontrolled from '../../components/Select/SelectUncontrolled';
+import Select from '~/components/Select/Select';
+import { useState } from 'react';
+import SelectUncontrolled from '~/components/Select/SelectUncontrolled';
 
-function getDataError(username, password) {
+function getDataError(username: any, password: any) {
   if (!username || typeof username !== 'string') {
     return 'Missing username';
   }
@@ -17,7 +19,7 @@ function getDataError(username, password) {
   return null;
 }
 
-export const action = async function ({ request }) {
+export const action: ActionFunction = async function ({ request }) {
   const reqBody = await request.formData();
   const { username, password } = Object.fromEntries(reqBody);
 
@@ -27,7 +29,7 @@ export const action = async function ({ request }) {
     return json({ error: validationErr, fields }, { status: 400 });
   }
 
-  const response = await login({ username, password });
+  const response = await login(username as string, password as string);
   if (!response) {
     return json({ error: 'Incorrect username or password', fields });
   }
@@ -38,8 +40,10 @@ export const action = async function ({ request }) {
 export default function Login({ setMode }) {
   const actionData = useActionData();
 
+  const [a, setA] = useState(undefined);
+
   return (
-    <Form method="POST" className="w-fit mx-auto">
+    <Form method="post" className="w-fit mx-auto">
       <h1 className="text-3xl">Log in</h1>
 
       <a href="/" className="my-2 block">
@@ -52,6 +56,7 @@ export default function Login({ setMode }) {
         label="Username"
         autocomplete="username"
         className="mb-6 mt-4"
+        type="text"
       />
 
       <TextInputUncontrolled
@@ -67,7 +72,13 @@ export default function Login({ setMode }) {
       )}
 
       <div className="flex">
-        <LoadingButton text="Log in" variant="contained" className="my-2" />
+        <LoadingButton
+          text="Log in"
+          color="primary"
+          variant="contained"
+          className="my-2"
+          isLoading={false}
+        />
       </div>
 
       <Link href="/signup" text="Sign up instead" />

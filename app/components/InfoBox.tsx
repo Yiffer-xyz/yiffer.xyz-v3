@@ -1,15 +1,12 @@
-/**
- *
- * @param {{
- * variant: "info" | "error" | "success";
- * title: string;
- * text: string;
- * showIcon: boolean;
- * className: string;
- * children: React.ReactNode;
- * }} props
- *
- */
+type InfoBoxProps = {
+  variant: 'info' | 'success' | 'error';
+  text?: string;
+  title?: string;
+  showIcon?: Boolean; // TODO implement
+  children?: React.ReactNode;
+  className?: string;
+};
+
 export default function InfoBox({
   variant = 'info',
   title,
@@ -18,7 +15,7 @@ export default function InfoBox({
   children,
   className = '',
   ...props
-}) {
+}: InfoBoxProps) {
   let variantClassname = '';
 
   if (variant === 'info') {

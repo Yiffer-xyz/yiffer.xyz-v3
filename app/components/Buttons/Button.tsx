@@ -1,15 +1,12 @@
-/**
- *
- * @param {{
- * text: string;
- * variant: "contained" | "outlined";
- * color: "primary" | "error";
- * startIcon: React.ReactNode;
- * endIcon: React.ReactNode;
- * className: string;
- * }} props
- *
- */
+export type ButtonProps = {
+  text: string;
+  variant: 'contained' | 'outlined';
+  color: 'primary' | 'error';
+  startIcon?: React.ElementType;
+  endIcon?: React.ElementType;
+  className?: string;
+};
+
 export default function Button({
   text,
   variant = 'contained',
@@ -18,8 +15,8 @@ export default function Button({
   endIcon: EndIcon,
   className,
   ...props
-}) {
-  let variantClassname;
+}: ButtonProps) {
+  let variantClassname = '';
 
   if (variant === 'contained' && color === 'primary') {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
@@ -41,13 +38,11 @@ export default function Button({
 
   const fullClassName =
     'rounded py-1.5 px-3 font-bold w-fit flex flex-nowrap justify-center ' +
-    'items-center transition-all duration-100 ' +
+    'items-center transition-all duration-100 break-all text-sm' +
     ` ${variantClassname} ${className} `;
 
-  const styles = { fontSize: '0.875rem', wordBreak: 'break-all' };
-
   return (
-    <button style={styles} className={fullClassName} {...props}>
+    <button className={fullClassName} {...props}>
       {StartIcon ? <StartIcon /> : undefined} {text} {EndIcon ? <EndIcon /> : undefined}
     </button>
   );

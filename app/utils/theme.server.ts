@@ -18,18 +18,18 @@ const themeStorage = createCookieSessionStorage({
   },
 });
 
-async function getThemeSession(request) {
+async function getThemeSession(request: Request) {
   const session = await themeStorage.getSession(request.headers.get('Cookie'));
 
   return {
-    getTheme: function () {
+    getTheme: function (): string {
       const themeVal = session.get('theme');
       return isTheme(themeVal) ? themeVal : null;
     },
-    setTheme: function (theme) {
+    setTheme: function (theme: string | null) {
       return session.set('theme', theme);
     },
-    commit: function () {
+    commit: async function (): Promise<string> {
       return themeStorage.commitSession(session);
     },
   };

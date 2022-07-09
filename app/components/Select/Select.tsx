@@ -3,6 +3,23 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 // TODO Add keyboard listeners for up/down to move selected item,
 // and space/enter to select and open the menu. Like in old yiffer.
 
+type keyValOptions = { text: string; value: any };
+
+export type BaseSelectProps = {
+  options: string[] | { text: string; value: any }[];
+  title?: string;
+  error?: boolean;
+  maxWidth?: number;
+  isFullWidth?: boolean;
+  initialWidth?: number;
+  className?: string;
+};
+
+type FullSelectProps = {
+  onChange: (value: any) => void;
+  value?: any;
+} & BaseSelectProps;
+
 export default function Select({
   options,
   title = '',
@@ -14,11 +31,11 @@ export default function Select({
   initialWidth = 0, // TODO needed?
   className = '',
   ...props
-}) {
+}: FullSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
-  const selectItemContainerRef = useRef('selectItemContainer');
+  const selectItemContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     tryComputeWidth();
@@ -42,8 +59,8 @@ export default function Select({
         }
       }
 
-      if (minWidth > maxWidth) {
-        setWidth(maxWidth);
+      if (minWidth > (maxWidth as number)) {
+        setWidth(maxWidth as number);
       } else {
         setMinWidth(maxChildWidth);
       }
@@ -76,26 +93,26 @@ export default function Select({
     return {};
   }, [isFullWidth, width]);
 
-  async function waitMillisec(millisec) {
-    return new Promise(resolve => {
+  async function waitMillisec(millisec: number) {
+    return new Promise<void>(resolve => {
       setTimeout(() => resolve(), millisec);
     });
   }
 
-  function onSelected(clickedValue) {
+  function onSelected(clickedValue: any) {
     onChange(clickedValue);
     setIsOpen(false);
   }
 
-  const convertedOptions = useMemo(() => {
+  const convertedOptions = useMemo<keyValOptions[]>(() => {
     if (!options || !options.length) {
       return [];
     }
     // Convert string array to {text, value} array
     if (typeof options[0] === 'string') {
-      return options.map(text => ({ text: text, value: text }));
+      return (options as string[]).map(text => ({ text: text, value: text }));
     }
-    return options;
+    return options as keyValOptions[];
   }, [options]);
 
   const borderStyle = error
@@ -120,7 +137,7 @@ export default function Select({
           }`}
         style={{ ...borderStyle }}
       >
-        {value ? convertedOptions.find(x => x.value === value).text : '—'}
+        {(value && convertedOptions.find(x => x.value === value)?.text) || '—'}
       </div>
       <div
         className={`${
@@ -128,10 +145,10 @@ export default function Select({
         } overflow-hidden shadow-lg w-fit min-w-full absolute bg-white dark:bg-gray-400 left-0 right-0 z-40 max-h-80 overflow-y-auto`}
         ref={selectItemContainerRef}
       >
-        {convertedOptions.map(({ text, value }) => (
+        {convertedOptions.map(({ text, value: optionValue }) => (
           <div
-            key={value}
-            onClick={e => onSelected(value)}
+            key={optionValue}
+            onClick={e => onSelected(optionValue)}
             className="z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
               hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light"
           >

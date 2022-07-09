@@ -1,36 +1,36 @@
 import { MdClear } from 'react-icons/md';
 
-/**
- *
- * @param {{
- * label: string;
- * name: string;
- * value: string;
- * onChange: function;
- * autocomplete: string=on;
- * type: "text" | "password";
- * placeholder: string;
- * clearable: boolean;
- * helperText: string;
- * error: boolean;
- * className: string;
- * }} props
- *
- */
+export type BaseTextInputProps = {
+  label: string;
+  name: string;
+  type?: 'text' | 'password';
+  autocomplete?: string;
+  placeholder?: string;
+  clearable?: boolean;
+  helperText?: string;
+  error?: boolean;
+  className?: string;
+};
+
+type FullTextInputProps = {
+  value: string;
+  onChange: (newVal: string) => void;
+} & BaseTextInputProps;
+
 export default function TextInput({
+  value,
+  onChange,
   label,
   name,
-  value = '',
-  onChange = () => {},
-  autocomplete = 'on',
   type = 'text',
+  autocomplete,
   placeholder = '',
   clearable = false,
   helperText = '',
   error = false,
   className = '',
   ...props
-}) {
+}: FullTextInputProps) {
   function clear() {
     onChange('');
   }
@@ -52,8 +52,8 @@ export default function TextInput({
           onChange={e => onChange(e.target.value)}
           type={type}
           name={name}
-          autoComplete={autocomplete}
-          placeholder={placeholder}
+          autoComplete={autocomplete || undefined}
+          placeholder={placeholder || undefined}
           className={`w-full bg-transparent p-1.5 outline-none border border-0 border-b-2 
             border-gradient-to-r from-theme1 to-theme2 ${borderClass}`}
           style={{

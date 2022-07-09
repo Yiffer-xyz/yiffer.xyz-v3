@@ -2,8 +2,9 @@ import { MdHome } from 'react-icons/md';
 import Link from '../components/Link';
 import { getUserSessionData } from '../utils/auth.server';
 import { useLoaderData } from '@remix-run/react';
+import { LoaderFunction } from '@remix-run/cloudflare';
 
-export const loader = async function ({ request }) {
+export const loader: LoaderFunction = async function ({ request }) {
   // It seems we must do this all places where user login status
   // is required. Using Context lead to trouble with SSR.
   const userSession = await getUserSessionData(request);
@@ -62,7 +63,21 @@ export default function Index() {
   );
 }
 
-function ContributionCard({ title, description, href, disabled, children }) {
+type ContributionCardProps = {
+  title: string;
+  description: string;
+  href: string;
+  disabled?: boolean;
+  children?: React.ReactNode;
+};
+
+function ContributionCard({
+  title,
+  description,
+  href,
+  disabled,
+  children,
+}: ContributionCardProps) {
   return disabled ? (
     <div
       className="rounded-lg p-4 h-full flex flex-col 

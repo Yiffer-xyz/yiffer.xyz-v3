@@ -1,17 +1,13 @@
-/**
- *
- * @param {{
- * href: string;
- * text: string;
- * newTab: boolean;
- * Icon: React.ReactNode;
- * className: string;
- * }} props
- *
- */
-export default function Link({ href, text, newTab, Icon, className }) {
+type LinkProps = {
+  href: string;
+  text: string;
+  newTab?: boolean;
+  Icon?: React.ElementType;
+  className?: string;
+};
+
+export default function Link({ href, text, newTab, Icon, className }: LinkProps) {
   return (
-    // eslint-disable-next-line react/jsx-no-target-blank
     <a
       href={href}
       target={newTab ? '_blank' : '_self'}

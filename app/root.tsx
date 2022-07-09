@@ -1,3 +1,4 @@
+import { LoaderFunction } from '@remix-run/cloudflare';
 import {
   Form,
   Links,
@@ -46,7 +47,7 @@ export function links() {
   ];
 }
 
-export const loader = async function ({ request }) {
+export const loader: LoaderFunction = async function ({ request }) {
   const themeSession = await getThemeSession(request);
   const userSession = await getUserSessionData(request);
 

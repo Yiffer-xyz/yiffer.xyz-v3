@@ -1,5 +1,13 @@
 import { useFetcher } from '@remix-run/react';
-import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 
 const themes = {
   light: 'light',
@@ -12,9 +20,22 @@ function getPreferredTheme() {
   return window.matchMedia(prefersDarkMQ).matches ? themes.dark : themes.light;
 }
 
-const ThemeContext = createContext(undefined);
+interface IThemeContext {
+  theme: string | null;
+  setTheme: Dispatch<SetStateAction<string | null>>;
+}
 
-function ThemeProvider({ specifiedTheme, children }) {
+const ThemeContext = createContext<IThemeContext>({
+  theme: null,
+  setTheme: () => {},
+});
+
+type ThemeProviderProps = {
+  specifiedTheme?: string;
+  children: React.ReactNode;
+};
+
+function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
   const [theme, setTheme] = useState(() => {
     if (specifiedTheme) {
       if (isTheme(specifiedTheme)) {
@@ -46,10 +67,15 @@ function ThemeProvider({ specifiedTheme, children }) {
       return;
     }
 
-    persistThemeRef.current.submit({ theme }, { action: 'action/set-theme', method: 'post' });
+    persistThemeRef.current.submit(
+      { theme },
+      { action: 'action/set-theme', method: 'post' }
+    );
   }, [theme]);
 
-  return <ThemeContext.Provider value={[theme, setTheme]}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+  );
 }
 
 function useTheme() {
@@ -58,12 +84,11 @@ function useTheme() {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
 
-  return context;
+  return [context.theme, context.setTheme];
 }
 
-function isTheme(themeStr) {
-  // return true;
-  return Object.values(themes).includes(themeStr);
+function isTheme(theme: string | null) {
+  return theme !== null && Object.values(themes).includes(theme);
 }
 
 const clientThemeCode = `
@@ -84,8 +109,12 @@ const clientThemeCode = `
   })();
 `;
 
-function NonFlashOfWrongThemeEls({ ssrTheme }) {
-  return <>{ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}</>;
+function NonFlashOfWrongThemeEls({ ssrTheme }: { ssrTheme: boolean }) {
+  return (
+    <>
+      {ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}
+    </>
+  );
 }
 
 export { ThemeProvider, useTheme, isTheme, NonFlashOfWrongThemeEls };
