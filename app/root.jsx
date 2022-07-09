@@ -70,7 +70,7 @@ export function App() {
         <Links />
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
-      <body className="dark:bg-bgDark dark:text-white">
+      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
         <Layout user={data.user}>
           <UserContext.Provider value={data.user}>
             <Outlet />

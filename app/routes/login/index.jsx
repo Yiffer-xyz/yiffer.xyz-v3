@@ -5,6 +5,7 @@ import LoadingButton from '../../components/LoadingButton';
 import { login } from '~/utils/auth.server.js';
 import InfoBox from '../../components/InfoBox';
 import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
+import SelectUncontrolled from '../../components/Select/SelectUncontrolled';
 
 function getDataError(username, password) {
   if (!username || typeof username !== 'string') {
@@ -52,6 +53,7 @@ export default function Login({ setMode }) {
         autocomplete="username"
         className="mb-6 mt-4"
       />
+
       <TextInputUncontrolled
         name="password"
         label="Password"

@@ -5,6 +5,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        text: {
+          light: '#111',
+          dark: '#eee',
+        },
         status: {
           info1: '#57b5f3',
           info2: '#57b5f3',
@@ -14,6 +18,7 @@ module.exports = {
         bgDark: '#262c30',
         theme1: {
           primary: '#9aebe7',
+          primaryTrans: '#9aebe740',
           dark: '#49ded7',
           darker: '#08ccc2',
         },
@@ -50,6 +55,12 @@ module.exports = {
           200: '#272d2f',
           100: '#1e2224',
         },
+      },
+      width: {
+        'w-fit': 'fit-content',
+      },
+      borderWidth: {
+        5: '5px',
       },
     },
     fontFamily: {
