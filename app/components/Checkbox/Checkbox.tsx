@@ -1,6 +1,7 @@
 import { FaCheck } from 'react-icons/fa';
 export type BaseCheckboxProps = {
   label: string;
+  disabled?: boolean;
   className?: string;
 };
 
@@ -16,6 +17,7 @@ type ChecboxProps = BaseCheckboxProps & {
 export default function Checkbox({
   label,
   checked,
+  disabled,
   onChange,
   className = '',
   ...props
@@ -26,8 +28,9 @@ export default function Checkbox({
     time: 0,
   });
 
-  const fullClassname = `block relative hover:cursor-pointer select-none pl-8 
-    outline-none w-fit ${className}`;
+  const disabledClass = disabled ? 'text-gray-700' : 'hover:cursor-pointer';
+  const fullClassname = `block relative select-none pl-8 
+    outline-none w-fit ${disabledClass} ${className} `;
 
   function onKeyPressed(keyEvent: React.KeyboardEvent<HTMLLabelElement>) {
     if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
@@ -51,23 +54,21 @@ export default function Checkbox({
   }
 
   return (
-    <label
-      className={fullClassname}
-      {...props}
-      tabIndex={0}
-      onKeyPress={e => onKeyPressed(e)}
-    >
+    <label className={fullClassname} {...props} onKeyPress={e => onKeyPressed(e)}>
       {label}
 
       <input
         type="checkbox"
         checked={checked}
         onChange={e => onStateChange(e.target.checked)}
+        disabled={disabled}
         className="absolute opacity-0 cursor-pointer h-0 w-0 peer"
       />
 
-      <span className="absolute top-0 left-0 h-6 w-6 border-2 border-theme1-primary peer-checked:bg-theme1-primary rounded-sm flex justify-center items-center ">
-        {checked && <FaCheck className="mt-0.5 text-white" size={16} />}
+      <span className="absolute top-0 left-0 h-6 w-6 border-2 border-theme1-primary peer-focus:border-theme1-verydark peer-checked:bg-theme1-primary rounded-sm flex justify-center items-center peer-disabled:bg-trans peer-disabled:border-gray-800 dark:peer-disabled:border-gray-600">
+        {checked && (
+          <FaCheck className="mt-0.5 text-white dark:text-text-light" size={16} />
+        )}
       </span>
     </label>
   );

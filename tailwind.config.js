@@ -21,6 +21,7 @@ module.exports = {
           primaryTrans: '#9aebe740',
           dark: '#49ded7',
           darker: '#08ccc2',
+          verydark: '#007a74',
         },
         theme2: {
           primary: '#adfee0',

@@ -611,12 +611,12 @@ video {
   top: 0px;
 }
 
-.left-2 {
-  left: 0.5rem;
-}
-
 .left-0 {
   left: 0px;
+}
+
+.left-2 {
+  left: 0.5rem;
 }
 
 .right-0 {
@@ -649,13 +649,16 @@ video {
   margin-bottom: 0.5rem;
 }
 
-.my-4 {
-  margin-top: 1rem;
+.mb-4 {
   margin-bottom: 1rem;
 }
 
-.mb-4 {
-  margin-bottom: 1rem;
+.mt-0\.5 {
+  margin-top: 0.125rem;
+}
+
+.mt-0 {
+  margin-top: 0px;
 }
 
 .-mt-1 {
@@ -668,18 +671,6 @@ video {
 
 .mt-4 {
   margin-top: 1rem;
-}
-
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mt-0\.5 {
-  margin-top: 0.125rem;
-}
-
-.mt-0 {
-  margin-top: 0px;
 }
 
 .box-content {
@@ -716,10 +707,6 @@ video {
   height: 100%;
 }
 
-.h-9 {
-  height: 2.25rem;
-}
-
 .h-0 {
   height: 0px;
 }
@@ -728,8 +715,8 @@ video {
   height: 1.5rem;
 }
 
-.h-7 {
-  height: 1.75rem;
+.h-9 {
+  height: 2.25rem;
 }
 
 .max-h-80 {
@@ -752,10 +739,6 @@ video {
 
 .w-6 {
   width: 1.5rem;
-}
-
-.w-7 {
-  width: 1.75rem;
 }
 
 .min-w-full {
@@ -840,10 +823,6 @@ video {
   border-radius: 0.5rem;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
-}
-
 .rounded-sm {
   border-radius: 0.125rem;
 }
@@ -874,14 +853,14 @@ video {
   border-color: rgb(58 127 171 / var(--tw-border-opacity));
 }
 
-.border-status-error1 {
-  --tw-border-opacity: 1;
-  border-color: rgb(243 87 87 / var(--tw-border-opacity));
-}
-
 .border-theme1-primary {
   --tw-border-opacity: 1;
   border-color: rgb(154 235 231 / var(--tw-border-opacity));
+}
+
+.border-status-error1 {
+  --tw-border-opacity: 1;
+  border-color: rgb(243 87 87 / var(--tw-border-opacity));
 }
 
 .bg-white {
@@ -896,11 +875,6 @@ video {
 
 .bg-transparent {
   background-color: transparent;
-}
-
-.bg-theme1-primary {
-  --tw-bg-opacity: 1;
-  background-color: rgb(154 235 231 / var(--tw-bg-opacity));
 }
 
 .bg-gradient-to-r {
@@ -998,12 +972,12 @@ video {
   padding-bottom: 0px;
 }
 
-.pt-3 {
-  padding-top: 0.75rem;
-}
-
 .pl-8 {
   padding-left: 2rem;
+}
+
+.pt-3 {
+  padding-top: 0.75rem;
 }
 
 .text-center {
@@ -1071,6 +1045,11 @@ video {
   color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 
+.text-gray-700 {
+  --tw-text-opacity: 1;
+  color: rgb(154 154 154 / var(--tw-text-opacity));
+}
+
 .text-gray-750 {
   --tw-text-opacity: 1;
   color: rgb(166 166 166 / var(--tw-text-opacity));
@@ -1084,10 +1063,6 @@ video {
 .text-red-400 {
   --tw-text-opacity: 1;
   color: rgb(248 113 113 / var(--tw-text-opacity));
-}
-
-.text-transparent {
-  color: transparent;
 }
 
 .opacity-0 {
@@ -1218,11 +1193,6 @@ video {
   content: var(--tw-content);
 }
 
-.checked\:bg-white:checked {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-
 .hover\:cursor-pointer:hover {
   cursor: pointer;
 }
@@ -1297,14 +1267,29 @@ video {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
-.peer:checked ~ .peer-checked\:bg-white {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-
 .peer:checked ~ .peer-checked\:bg-theme1-primary {
   --tw-bg-opacity: 1;
   background-color: rgb(154 235 231 / var(--tw-bg-opacity));
+}
+
+.peer:hover ~ .peer-hover\:border-theme1-verydark {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 122 116 / var(--tw-border-opacity));
+}
+
+.peer:focus ~ .peer-focus\:border-theme1-darker {
+  --tw-border-opacity: 1;
+  border-color: rgb(8 204 194 / var(--tw-border-opacity));
+}
+
+.peer:focus ~ .peer-focus\:border-theme1-verydark {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 122 116 / var(--tw-border-opacity));
+}
+
+.peer:disabled ~ .peer-disabled\:border-gray-800 {
+  --tw-border-opacity: 1;
+  border-color: rgb(203 203 203 / var(--tw-border-opacity));
 }
 
 .dark .dark\:border-0 {
@@ -1365,6 +1350,11 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+.dark .dark\:text-text-light {
+  --tw-text-opacity: 1;
+  color: rgb(17 17 17 / var(--tw-text-opacity));
+}
+
 .dark .dark\:after\:border-t-text-dark::after {
   content: var(--tw-content);
   --tw-border-opacity: 1;
@@ -1394,6 +1384,11 @@ video {
 .dark .dark\:focus\:bg-blue-strong-200:focus {
   --tw-bg-opacity: 1;
   background-color: rgb(15 159 243 / var(--tw-bg-opacity));
+}
+
+.dark .peer:disabled ~ .dark\:peer-disabled\:border-gray-600 {
+  --tw-border-opacity: 1;
+  border-color: rgb(113 117 121 / var(--tw-border-opacity));
 }
 
 @media (min-width: 640px) {
