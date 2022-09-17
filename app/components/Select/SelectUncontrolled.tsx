@@ -1,4 +1,5 @@
-import Select, { BaseSelectProps } from './Select';
+import type { BaseSelectProps } from './Select';
+import Select from './Select';
 import { useState } from 'react';
 
 export default function SelectUncontrolled({

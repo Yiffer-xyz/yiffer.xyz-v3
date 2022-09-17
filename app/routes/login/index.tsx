@@ -1,13 +1,12 @@
-import { ActionFunction, json } from '@remix-run/cloudflare';
+import type { ActionFunction } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import { Form, useActionData } from '@remix-run/react';
 import Link from '../../components/Link';
 import LoadingButton from '../../components/Buttons/LoadingButton';
 import { login } from '~/utils/auth.server.js';
 import InfoBox from '../../components/InfoBox';
 import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
-import Select from '~/components/Select/Select';
 import { useState } from 'react';
-import SelectUncontrolled from '~/components/Select/SelectUncontrolled';
 
 function getDataError(username: any, password: any) {
   if (!username || typeof username !== 'string') {
