@@ -1,4 +1,6 @@
-import Textarea, { BaseTextareaProps } from './Textarea';
+import type { BaseTextareaProps } from './Textarea';
+import Textarea from './Textarea';
+import { useMemo, useState } from 'react';
 
 type UncontrolledTextareaProps = {
   validatorFunc?: (val: string) => boolean;
@@ -19,11 +21,11 @@ export default function TextareaUncontrolled({
   className = '',
   ...props
 }: UncontrolledTextareaProps) {
-  const [state, setState] = React.useState('');
-  const [hasBeenBlurred, setHasBeenBlurred] = React.useState(false);
-  const [lastErrorUpdate, setLastErrorUpdate] = React.useState(false);
+  const [state, setState] = useState('');
+  const [hasBeenBlurred, setHasBeenBlurred] = useState(false);
+  const [lastErrorUpdate, setLastErrorUpdate] = useState(false);
 
-  const isInternalError = React.useMemo(() => {
+  const isInternalError = useMemo(() => {
     if (validatorFunc) {
       const isError = !validatorFunc(state);
       if (onErrorChange && isError !== lastErrorUpdate) {

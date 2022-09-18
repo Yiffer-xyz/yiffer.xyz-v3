@@ -2,7 +2,7 @@ export type ButtonProps = {
   text: string;
   variant: 'contained' | 'outlined';
   color: 'primary' | 'error';
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   startIcon?: React.ElementType;
   endIcon?: React.ElementType;

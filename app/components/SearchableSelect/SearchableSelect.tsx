@@ -40,7 +40,7 @@ export default function SearchableSelect({
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
-  const [lastChangeTime, setLastChangeTime] = React.useState(0);
+  const [lastChangeTime, setLastChangeTime] = useState(0);
 
   useEffect(() => {
     tryComputeWidth();
@@ -55,10 +55,10 @@ export default function SearchableSelect({
   }
 
   function computeWidth() {
-    let container = selectItemContainerRef.current;
+    const container = selectItemContainerRef.current;
     if (container && container.children.length > 0) {
       let maxChildWidth = 0;
-      for (let child of container.children) {
+      for (const child of container.children) {
         if (child.clientWidth > maxChildWidth) {
           maxChildWidth = child.clientWidth;
         }
