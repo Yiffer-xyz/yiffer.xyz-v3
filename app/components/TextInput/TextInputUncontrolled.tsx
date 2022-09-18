@@ -1,4 +1,5 @@
-import TextInput, { BaseTextInputProps } from './TextInput';
+import type { BaseTextInputProps } from './TextInput';
+import TextInput from './TextInput';
 import { useState } from 'react';
 
 export default function TextInputUncontrolled({
@@ -11,6 +12,7 @@ export default function TextInputUncontrolled({
   helperText = '',
   error = false,
   className = '',
+  onChange,
   ...props
 }: BaseTextInputProps) {
   const [state, setState] = useState('');
@@ -18,7 +20,10 @@ export default function TextInputUncontrolled({
   return (
     <TextInput
       value={state}
-      onChange={newVal => setState(newVal)}
+      onChange={newVal => {
+        setState(newVal);
+        onChange?.(newVal);
+      }}
       label={label}
       name={name}
       type={type}
