@@ -1,19 +1,16 @@
-import TextInput, { BaseTextInputProps } from './TextInput';
-import { useState } from 'react';
+import Textarea, { BaseTextareaProps } from './Textarea';
 
-type UncontrolledTextInputProps = {
+type UncontrolledTextareaProps = {
   validatorFunc?: (val: string) => boolean;
   onErrorChange?: (newVal: boolean) => void;
-} & BaseTextInputProps;
+} & BaseTextareaProps;
 
-export default function TextInputUncontrolled({
+export default function TextareaUncontrolled({
   label,
   name,
-  type = 'text',
-  autocomplete,
+  rows = 4,
   placeholder = '',
   disabled = false,
-  clearable = false,
   helperText = '',
   errorText = '',
   error = false,
@@ -21,8 +18,8 @@ export default function TextInputUncontrolled({
   onErrorChange,
   className = '',
   ...props
-}: UncontrolledTextInputProps) {
-  const [state, setState] = useState('');
+}: UncontrolledTextareaProps) {
+  const [state, setState] = React.useState('');
   const [hasBeenBlurred, setHasBeenBlurred] = React.useState(false);
   const [lastErrorUpdate, setLastErrorUpdate] = React.useState(false);
 
@@ -41,15 +38,14 @@ export default function TextInputUncontrolled({
   const shouldShowError = error || (hasBeenBlurred && isInternalError);
 
   return (
-    <TextInput
+    <Textarea
       value={state}
       onChange={newVal => setState(newVal)}
       label={label}
       name={name}
-      type={type}
+      rows={rows}
       placeholder={placeholder}
       disabled={disabled}
-      clearable={clearable}
       helperText={helperText}
       errorText={shouldShowError ? errorText : ''}
       error={shouldShowError}
