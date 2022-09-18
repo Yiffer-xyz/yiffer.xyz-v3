@@ -8,6 +8,7 @@ export type BaseTextInputProps = {
   placeholder?: string;
   clearable?: boolean;
   helperText?: string;
+  errorText?: string;
   error?: boolean;
   className?: string;
 };
@@ -15,6 +16,7 @@ export type BaseTextInputProps = {
 type FullTextInputProps = {
   value: string;
   onChange: (newVal: string) => void;
+  onBlur?: () => void;
 } & BaseTextInputProps;
 
 export default function TextInput({
@@ -27,8 +29,10 @@ export default function TextInput({
   placeholder = '',
   clearable = false,
   helperText = '',
+  errorText = '',
   error = false,
   className = '',
+  onBlur,
   ...props
 }: FullTextInputProps) {
   function clear() {
@@ -60,6 +64,7 @@ export default function TextInput({
             appearance: 'textfield',
             ...borderStyle,
           }}
+          onBlur={onBlur}
         />
         {clearable && value && (
           <span
@@ -71,7 +76,12 @@ export default function TextInput({
           </span>
         )}
       </div>
-      {helperText && <label className="text-sm py-0.5 px-2">{helperText}</label>}
+      {errorText && error && (
+        <p className="text-sm py-0.5 px-2 text-status-error1">{errorText}</p>
+      )}
+      {!(errorText && error) && helperText && (
+        <label className="text-sm py-0.5 px-2">{helperText}</label>
+      )}
     </div>
   );
 }
