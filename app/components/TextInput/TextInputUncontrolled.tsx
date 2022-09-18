@@ -1,4 +1,5 @@
-import TextInput, { BaseTextInputProps } from './TextInput';
+import type { BaseTextInputProps } from './TextInput';
+import TextInput from './TextInput';
 import { useState } from 'react';
 
 type UncontrolledTextInputProps = {
@@ -20,6 +21,7 @@ export default function TextInputUncontrolled({
   validatorFunc,
   onErrorChange,
   className = '',
+  onChange,
   ...props
 }: UncontrolledTextInputProps) {
   const [state, setState] = useState('');
@@ -43,7 +45,10 @@ export default function TextInputUncontrolled({
   return (
     <TextInput
       value={state}
-      onChange={newVal => setState(newVal)}
+      onChange={newVal => {
+        setState(newVal);
+        onChange?.(newVal);
+      }}
       label={label}
       name={name}
       type={type}
