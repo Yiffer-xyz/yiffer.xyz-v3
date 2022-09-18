@@ -1,11 +1,8 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
-
-// TODO Add keyboard listeners for up/down to move selected item,
-// and space/enter to select and open the menu. Like in old yiffer.
-
+import { RiCloseLine } from 'react-icons/ri';
 type keyValOptions = { text: string; value: any };
 
-export type BaseSelectProps = {
+export type BaseSearchableSelectProps = {
   options: string[] | { text: string; value: any }[];
   title?: string;
   error?: boolean;
@@ -18,13 +15,15 @@ export type BaseSelectProps = {
 
 type FullSelectProps = {
   onChange: (value: any) => void;
+  onValueCleared: () => void;
   value?: any;
-} & BaseSelectProps;
+} & BaseSearchableSelectProps;
 
-export default function Select({
+export default function SearchableSelect({
   options,
   title = '',
   value,
+  onValueCleared,
   onChange,
   error = false,
   maxWidth = 999999,
@@ -35,9 +34,11 @@ export default function Select({
   ...props
 }: FullSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
+  const [lastChangeTime, setLastChangeTime] = React.useState(0);
 
   useEffect(() => {
     tryComputeWidth();
@@ -68,9 +69,9 @@ export default function Select({
       }
 
       return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
   const minWidthStyle = useMemo(() => {
@@ -78,9 +79,9 @@ export default function Select({
       return {};
     }
     if (minWidth) {
-      return { minWidth: `${minWidth + 16}px` };
+      return { minWidth: `${minWidth + 0}px` };
     } else if (initialWidth) {
-      return { minWidth: `${initialWidth + 16}px` };
+      return { minWidth: `${initialWidth + 0}px` };
     }
     return {};
   }, [initialWidth, isFullWidth, minWidth, width]);
@@ -102,12 +103,13 @@ export default function Select({
   }
 
   function onSelected(clickedValue: any) {
+    setSearchText('');
     onChange(clickedValue);
     setIsOpen(false);
   }
 
   const convertedOptions = useMemo<keyValOptions[]>(() => {
-    if (!options || !options.length) {
+    if (!options?.length) {
       return [];
     }
     // Convert string array to {text, value} array
@@ -117,9 +119,34 @@ export default function Select({
     return options as keyValOptions[];
   }, [options]);
 
+  const filteredOptions = useMemo<keyValOptions[]>(() => {
+    if (!searchText) {
+      return convertedOptions;
+    }
+    return convertedOptions.filter(option => {
+      return option.text.toLowerCase().includes(searchText.toLowerCase());
+    });
+  }, [convertedOptions, searchText]);
+
+  function onFilledInputActivated() {
+    onValueCleared();
+    setIsOpen(true);
+    setLastChangeTime(Date.now());
+  }
+
+  const convertedValue = value
+    ? typeof value === 'string'
+      ? { text: value, value: value }
+      : value
+    : '';
+
   const borderStyle = error
     ? ''
     : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+
+  const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
+    after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
+    after:border-t-text-light dark:after:border-t-text-dark after:right-3`;
 
   return (
     <div
@@ -127,27 +154,51 @@ export default function Select({
         relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
-      tabIndex={0}
     >
       {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
-      <div // TODO: "selected" from old
-        onClick={() => setIsOpen(!isOpen)}
-        className={`border border-0 border-b-2 px-2 after:absolute
-          after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
-          after:border-t-text-light dark:after:border-t-text-dark after:right-3 ${
-            value ? '' : 'text-gray-750'
-          }`}
-        style={{ ...borderStyle }}
-      >
-        {(value && convertedOptions.find(x => x.value === value)?.text) || '—'}
-      </div>
+
+      {value ? (
+        <input
+          type="text"
+          autoComplete="off"
+          value={convertedValue.text}
+          style={{ ...borderStyle }}
+          onFocus={onFilledInputActivated}
+          className={inputClassname}
+        />
+      ) : (
+        <input
+          type="text"
+          autoComplete="off"
+          value={searchText}
+          name={name}
+          onChange={e => setSearchText(e.target.value)}
+          onClick={() => {
+            if (lastChangeTime + 100 < Date.now()) {
+              setIsOpen(!isOpen || searchText.length > 0);
+            }
+          }}
+          style={{ ...borderStyle }}
+          className={inputClassname}
+        />
+      )}
+
+      {value && (
+        <span
+          className="absolute right-4 top-3 hover:cursor-pointer"
+          onClick={onFilledInputActivated}
+        >
+          <RiCloseLine />
+        </span>
+      )}
+
       <div
         className={`${
           isOpen ? '' : 'invisible'
         } overflow-hidden shadow-lg w-fit min-w-full absolute bg-white dark:bg-gray-400 left-0 right-0 z-40 max-h-80 overflow-y-auto`}
         ref={selectItemContainerRef}
       >
-        {convertedOptions.map(({ text, value: optionValue }) => (
+        {filteredOptions.map(({ text, value: optionValue }) => (
           <div
             key={optionValue}
             onClick={e => onSelected(optionValue)}
@@ -157,6 +208,14 @@ export default function Select({
             {text}
           </div>
         ))}
+        {filteredOptions.length === 0 && (
+          <div
+            className="z-40 px-3 whitespace-nowrap text-gray-700 hover:cursor-default"
+            onClick={() => onSelected(null)}
+          >
+            No results
+          </div>
+        )}
       </div>
 
       <input type="text" name={name} value={value} hidden />

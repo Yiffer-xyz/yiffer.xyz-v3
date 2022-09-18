@@ -1,8 +1,7 @@
-import type { BaseSelectProps } from './Select';
-import Select from './Select';
 import { useState } from 'react';
+import SearchableSelect, { BaseSearchableSelectProps } from './SearchableSelect';
 
-export default function SelectUncontrolled({
+export default function SearchableSelectUncontrolled({
   options,
   title = '',
   error = false,
@@ -12,13 +11,14 @@ export default function SelectUncontrolled({
   name,
   className = '',
   ...props
-}: BaseSelectProps) {
+}: BaseSearchableSelectProps) {
   const [state, setState] = useState(null);
 
   return (
-    <Select
+    <SearchableSelect
       value={state}
       onChange={newVal => setState(newVal)}
+      onValueCleared={() => setState(null)}
       options={options}
       title={title}
       error={error}
