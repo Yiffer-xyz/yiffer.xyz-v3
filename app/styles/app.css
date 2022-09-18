@@ -597,6 +597,7 @@ video {
 
 <<<<<<< master
 <<<<<<< master
+<<<<<<< master
 =======
 >>>>>>> Add join-us route + frame out join-us/apply route
 .pointer-events-none {
@@ -612,6 +613,8 @@ video {
 >>>>>>> Apese ESLint
 =======
 >>>>>>> Add join-us route + frame out join-us/apply route
+=======
+>>>>>>> Apese ESLint
 .invisible {
   visibility: hidden;
 }
@@ -660,6 +663,17 @@ video {
   top: 0.25rem;
 }
 
+<<<<<<< master
+=======
+.right-4 {
+  right: 1rem;
+}
+
+.top-3 {
+  top: 0.75rem;
+}
+
+>>>>>>> Apese ESLint
 .z-40 {
   z-index: 40;
 }
@@ -704,6 +718,7 @@ video {
   margin-top: 1rem;
 }
 
+<<<<<<< master
 >>>>>>> Add join-us route + frame out join-us/apply route
 .mt-3 {
   margin-top: 0.75rem;
@@ -713,6 +728,8 @@ video {
   margin-top: 1rem;
 }
 
+=======
+>>>>>>> Apese ESLint
 .box-content {
   box-sizing: content-box;
 }
@@ -795,10 +812,6 @@ video {
 
 .cursor-pointer {
   cursor: pointer;
-}
-
-.cursor-not-allowed {
-  cursor: not-allowed;
 }
 
 .select-none {
@@ -928,6 +941,7 @@ video {
 
 <<<<<<< master
 <<<<<<< master
+<<<<<<< master
 .bg-gray-300 {
   --tw-bg-opacity: 1;
   background-color: rgb(56 63 69 / var(--tw-bg-opacity));
@@ -942,6 +956,8 @@ video {
 }
 
 >>>>>>> Add join-us route + frame out join-us/apply route
+=======
+>>>>>>> Apese ESLint
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
@@ -1043,10 +1059,6 @@ video {
 
 .pt-3 {
   padding-top: 0.75rem;
-}
-
-.pl-4 {
-  padding-left: 1rem;
 }
 
 .pl-4 {
@@ -1155,10 +1167,6 @@ video {
 
 .opacity-0 {
   opacity: 0;
-}
-
-.opacity-50 {
-  opacity: 0.5;
 }
 
 .shadow-md {
@@ -1290,6 +1298,9 @@ video {
 }
 
 <<<<<<< master
+<<<<<<< master
+=======
+>>>>>>> Apese ESLint
 .hover\:cursor-default:hover {
   cursor: default;
 }
