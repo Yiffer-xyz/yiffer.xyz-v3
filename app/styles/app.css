@@ -595,6 +595,7 @@ video {
   }
 }
 
+<<<<<<< master
 .pointer-events-none {
   pointer-events: none;
 }
@@ -603,6 +604,8 @@ video {
   visibility: visible;
 }
 
+=======
+>>>>>>> Apese ESLint
 .invisible {
   visibility: hidden;
 }
@@ -777,10 +780,6 @@ video {
   cursor: pointer;
 }
 
-.cursor-not-allowed {
-  cursor: not-allowed;
-}
-
 .select-none {
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -906,11 +905,14 @@ video {
   background-color: transparent;
 }
 
+<<<<<<< master
 .bg-gray-300 {
   --tw-bg-opacity: 1;
   background-color: rgb(56 63 69 / var(--tw-bg-opacity));
 }
 
+=======
+>>>>>>> Apese ESLint
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
@@ -1122,10 +1124,6 @@ video {
   opacity: 0;
 }
 
-.opacity-50 {
-  opacity: 0.5;
-}
-
 .shadow-md {
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
@@ -1147,10 +1145,6 @@ video {
 .outline-none {
   outline: 2px solid transparent;
   outline-offset: 2px;
-}
-
-.filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .transition-all {
@@ -1258,10 +1252,13 @@ video {
   cursor: pointer;
 }
 
+<<<<<<< master
 .hover\:cursor-default:hover {
   cursor: default;
 }
 
+=======
+>>>>>>> Apese ESLint
 .hover\:bg-blue-weak-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(42 99 134 / var(--tw-bg-opacity));

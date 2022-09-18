@@ -2,7 +2,7 @@ import { MdHome } from 'react-icons/md';
 import Link from '../components/Link';
 import { getUserSessionData } from '../utils/auth.server';
 import { useLoaderData } from '@remix-run/react';
-import { LoaderFunction } from '@remix-run/cloudflare';
+import type { LoaderFunction } from '@remix-run/cloudflare';
 
 export const loader: LoaderFunction = async function ({ request }) {
   // It seems we must do this all places where user login status
