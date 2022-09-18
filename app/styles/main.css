@@ -50,3 +50,10 @@ a:focus {
   background-size: 100% 1px;
   cursor: pointer;
 }
+ul li:before {
+  content: "- ";
+  text-indent: -5px;
+}
+ul.spaced > li {
+  margin-bottom: 0.5rem;
+}

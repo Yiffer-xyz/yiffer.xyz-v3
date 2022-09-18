@@ -1,4 +1,5 @@
 import { MdClear } from 'react-icons/md';
+import { useMemo } from 'react';
 
 export type BaseTextInputProps = {
   label: string;
@@ -40,7 +41,7 @@ export default function TextInput({
   function clear() {
     onChange('');
   }
-  const borderClass = React.useMemo(() => {
+  const borderClass = useMemo(() => {
     if (error) {
       return 'border-status-error1';
     }

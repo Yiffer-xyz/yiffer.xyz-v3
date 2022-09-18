@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { BaseCheckboxProps } from './Checkbox';
 import Checkbox from './Checkbox';
 
@@ -12,7 +13,7 @@ export default function CheckboxUncontrolled({
   onChange,
   ...props
 }: CheckboxUncontrolledProps) {
-  const [state, setState] = React.useState(false);
+  const [state, setState] = useState(false);
 
   return (
     <Checkbox

@@ -1,4 +1,7 @@
 import { FaCheck } from 'react-icons/fa';
+import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
+
 export type BaseCheckboxProps = {
   label: string;
   disabled?: boolean;
@@ -23,7 +26,7 @@ export default function Checkbox({
   ...props
 }: ChecboxProps) {
   // Maybe kinda hacky, but this is to prevent double state changes. It works.
-  const [lastChange, setLastChange] = React.useState({
+  const [lastChange, setLastChange] = useState({
     type: '',
     time: 0,
   });
@@ -32,7 +35,7 @@ export default function Checkbox({
   const fullClassname = `block relative select-none pl-8 
     outline-none w-fit ${disabledClass} ${className} `;
 
-  function onKeyPressed(keyEvent: React.KeyboardEvent<HTMLLabelElement>) {
+  function onKeyPressed(keyEvent: KeyboardEvent<HTMLLabelElement>) {
     if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
       onChange(!checked);
       setLastChange({
