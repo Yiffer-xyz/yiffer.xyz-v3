@@ -643,6 +643,14 @@ video {
   top: 0.75rem;
 }
 
+.right-4 {
+  right: 1rem;
+}
+
+.top-4 {
+  top: 1rem;
+}
+
 .z-40 {
   z-index: 40;
 }
@@ -679,6 +687,10 @@ video {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
 }
 
 .box-content {
@@ -991,6 +1003,10 @@ video {
 
 .pt-3 {
   padding-top: 0.75rem;
+}
+
+.pl-4 {
+  padding-left: 1rem;
 }
 
 .text-center {
