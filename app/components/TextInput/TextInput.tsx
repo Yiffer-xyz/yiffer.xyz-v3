@@ -12,6 +12,7 @@ export type BaseTextInputProps = {
   errorText?: string;
   error?: boolean;
   className?: string;
+  onChange?: (newVal: string) => void;
 };
 
 type FullTextInputProps = {
