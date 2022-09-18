@@ -595,10 +595,6 @@ video {
   }
 }
 
-.pointer-events-none {
-  pointer-events: none;
-}
-
 .invisible {
   visibility: hidden;
 }
@@ -637,14 +633,6 @@ video {
 
 .top-1 {
   top: 0.25rem;
-}
-
-.right-1 {
-  right: 0.25rem;
-}
-
-.top-3 {
-  top: 0.75rem;
 }
 
 .z-40 {
@@ -773,10 +761,6 @@ video {
   cursor: pointer;
 }
 
-.cursor-not-allowed {
-  cursor: not-allowed;
-}
-
 .select-none {
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -900,11 +884,6 @@ video {
 
 .bg-transparent {
   background-color: transparent;
-}
-
-.bg-bgDark {
-  --tw-bg-opacity: 1;
-  background-color: rgb(38 44 48 / var(--tw-bg-opacity));
 }
 
 .bg-gradient-to-r {
@@ -1099,11 +1078,6 @@ video {
   color: rgb(248 113 113 / var(--tw-text-opacity));
 }
 
-.text-gray-800 {
-  --tw-text-opacity: 1;
-  color: rgb(203 203 203 / var(--tw-text-opacity));
-}
-
 .placeholder-gray-800::-moz-placeholder {
   --tw-placeholder-opacity: 1;
   color: rgb(203 203 203 / var(--tw-placeholder-opacity));
@@ -1116,10 +1090,6 @@ video {
 
 .opacity-0 {
   opacity: 0;
-}
-
-.opacity-50 {
-  opacity: 0.5;
 }
 
 .shadow-md {
@@ -1143,10 +1113,6 @@ video {
 .outline-none {
   outline: 2px solid transparent;
   outline-offset: 2px;
-}
-
-.filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .transition-all {
@@ -1254,14 +1220,6 @@ video {
   cursor: pointer;
 }
 
-.hover\:cursor-none:hover {
-  cursor: none;
-}
-
-.hover\:cursor-default:hover {
-  cursor: default;
-}
-
 .hover\:bg-blue-weak-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(42 99 134 / var(--tw-bg-opacity));
@@ -1330,16 +1288,6 @@ video {
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.disabled\:from-gray-800:disabled {
-  --tw-gradient-from: #cbcbcb;
-  --tw-gradient-to: rgb(203 203 203 / 0);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-
-.disabled\:to-gray-800:disabled {
-  --tw-gradient-to: #cbcbcb;
 }
 
 .peer:checked ~ .peer-checked\:bg-theme1-primary {

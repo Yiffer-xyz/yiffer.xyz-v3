@@ -1,15 +1,16 @@
-import type { ActionFunction} from '@remix-run/cloudflare';
+import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Form, useActionData } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowBack } from "react-icons/md";
+import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
-import Link from "~/components/Link";
+import Link from '~/components/Link';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/components/TopGradientBox';
 
-const validateTelegramUsername = (username: string) => username.length > 5 && username.length <= 32
+const validateTelegramUsername = (username: string) =>
+  username.length > 5 && username.length <= 32;
 
 export const action: ActionFunction = async function ({ request }) {
   const reqBody = await request.formData();
@@ -44,9 +45,9 @@ export default function Apply() {
       </p>
 
       <p className="mb-4">
-        In order to be accepted as a mod, you must have and use a Telegram account.
-        We use telegram for communication and announcements for mods. If you do not
-        have an account, you will not be accepted.
+        In order to be accepted as a mod, you must have and use a Telegram account. We use
+        telegram for communication and announcements for mods. If you do not have an
+        account, you will not be accepted.
       </p>
 
       <TopGradientBox className="dark:bg-bgDark">
@@ -58,7 +59,7 @@ export default function Apply() {
             label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
             type="text"
             className="mb-6 mt-4"
-            onChange={(e) => setNotesHasContent(e.length > 0)}
+            onChange={e => setNotesHasContent(e.length > 0)}
           />
 
           <TextInputUncontrolled
@@ -66,7 +67,7 @@ export default function Apply() {
             label="Telegram username:"
             type="text"
             className="mb-6"
-            onChange={(e) => setTelegramHasContent(validateTelegramUsername(e))}
+            onChange={e => setTelegramHasContent(validateTelegramUsername(e))}
           />
 
           {actionData?.error && (
@@ -82,7 +83,6 @@ export default function Apply() {
               isLoading={false}
             />
           </div>
-
         </Form>
       </TopGradientBox>
     </div>
