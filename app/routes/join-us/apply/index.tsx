@@ -34,8 +34,8 @@ export const action: ActionFunction = async function ({ request }) {
 
 export default function Apply() {
   const actionData = useActionData();
-  const [notesHasContent, setNotesHasContent] = useState(false);
-  const [telegramHasContent, setTelegramHasContent] = useState(false);
+  const [notesIsValid, setNotesIsValid] = useState(false);
+  const [telegramIsValid, setTelegramIsValid] = useState(false);
 
   return (
     <div className="container mx-auto">
@@ -59,7 +59,8 @@ export default function Apply() {
             label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
             type="text"
             className="mb-6 mt-4"
-            onChange={e => setNotesHasContent(e.length > 0)}
+            validatorFunc={(v) => v.length > 0}
+            onErrorChange={(hasError) => setNotesIsValid(!hasError)}
           />
 
           <TextInputUncontrolled
@@ -67,7 +68,8 @@ export default function Apply() {
             label="Telegram username:"
             type="text"
             className="mb-6"
-            onChange={e => setTelegramHasContent(validateTelegramUsername(e))}
+            validatorFunc={validateTelegramUsername}
+            onErrorChange={(hasError) => setTelegramIsValid(!hasError)}
           />
 
           {actionData?.error && (
@@ -79,7 +81,8 @@ export default function Apply() {
               text="Submit application"
               color="primary"
               variant="contained"
-              className="my-2" // TODO: use disabled prop whenever it gets implemented
+              className="my-2"
+              // disabled={!notesIsValid || !telegramIsValid}
               isLoading={false}
             />
           </div>

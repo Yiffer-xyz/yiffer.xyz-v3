@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { MdClear } from 'react-icons/md';
 
 export type BaseTextInputProps = {
@@ -12,7 +13,6 @@ export type BaseTextInputProps = {
   errorText?: string;
   error?: boolean;
   className?: string;
-  onChange?: (newVal: string) => void;
 };
 
 type FullTextInputProps = {
@@ -41,7 +41,7 @@ export default function TextInput({
   function clear() {
     onChange('');
   }
-  const borderClass = React.useMemo(() => {
+  const borderClass = useMemo(() => {
     if (error) {
       return 'border-status-error1';
     }
