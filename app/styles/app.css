@@ -664,6 +664,7 @@ video {
 }
 
 <<<<<<< master
+<<<<<<< master
 =======
 .right-4 {
   right: 1rem;
@@ -674,6 +675,8 @@ video {
 }
 
 >>>>>>> Apese ESLint
+=======
+>>>>>>> Use the new validator function prop and revert the changes to onChange
 .z-40 {
   z-index: 40;
 }
@@ -704,6 +707,7 @@ video {
   margin-top: -0.25rem;
 }
 
+<<<<<<< master
 .mb-6 {
   margin-bottom: 1.5rem;
 }
@@ -720,8 +724,14 @@ video {
 
 <<<<<<< master
 >>>>>>> Add join-us route + frame out join-us/apply route
+=======
+>>>>>>> Use the new validator function prop and revert the changes to onChange
 .mt-3 {
   margin-top: 0.75rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
 }
 
 .mt-4 {
@@ -1192,6 +1202,10 @@ video {
   outline-offset: 2px;
 }
 
+.filter {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1299,14 +1313,20 @@ video {
 
 <<<<<<< master
 <<<<<<< master
+<<<<<<< master
 =======
 >>>>>>> Apese ESLint
+=======
+>>>>>>> Use the new validator function prop and revert the changes to onChange
 .hover\:cursor-default:hover {
   cursor: default;
 }
 
+<<<<<<< master
 =======
 >>>>>>> Apese ESLint
+=======
+>>>>>>> Use the new validator function prop and revert the changes to onChange
 .hover\:bg-blue-weak-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(42 99 134 / var(--tw-bg-opacity));

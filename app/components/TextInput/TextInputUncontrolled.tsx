@@ -1,6 +1,6 @@
 import type { BaseTextInputProps } from './TextInput';
 import TextInput from './TextInput';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 type UncontrolledTextInputProps = {
   validatorFunc?: (val: string) => boolean;
@@ -21,14 +21,13 @@ export default function TextInputUncontrolled({
   validatorFunc,
   onErrorChange,
   className = '',
-  onChange,
   ...props
 }: UncontrolledTextInputProps) {
   const [state, setState] = useState('');
-  const [hasBeenBlurred, setHasBeenBlurred] = React.useState(false);
-  const [lastErrorUpdate, setLastErrorUpdate] = React.useState(false);
+  const [hasBeenBlurred, setHasBeenBlurred] = useState(false);
+  const [lastErrorUpdate, setLastErrorUpdate] = useState(false);
 
-  const isInternalError = React.useMemo(() => {
+  const isInternalError = useMemo(() => {
     if (validatorFunc) {
       const isError = !validatorFunc(state);
       if (onErrorChange && isError !== lastErrorUpdate) {
@@ -45,10 +44,7 @@ export default function TextInputUncontrolled({
   return (
     <TextInput
       value={state}
-      onChange={newVal => {
-        setState(newVal);
-        onChange?.(newVal);
-      }}
+      onChange={setState}
       label={label}
       name={name}
       type={type}
