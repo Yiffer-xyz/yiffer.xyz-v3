@@ -2,6 +2,8 @@ export type ButtonProps = {
   text: string;
   variant: 'contained' | 'outlined';
   color: 'primary' | 'error';
+  onClick: () => void;
+  disabled?: boolean;
   startIcon?: React.ElementType;
   endIcon?: React.ElementType;
   className?: string;
@@ -11,6 +13,8 @@ export default function Button({
   text,
   variant = 'contained',
   color = 'primary',
+  onClick,
+  disabled = false,
   startIcon: StartIcon,
   endIcon: EndIcon,
   className,
@@ -36,13 +40,17 @@ export default function Button({
 
   // TODO: Add error color for both variants
 
+  if (disabled) {
+    variantClassname += ` bg-gray-300 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-initial `;
+  }
+
   const fullClassName =
     'rounded py-1.5 px-3 font-bold w-fit flex flex-nowrap justify-center ' +
     'items-center transition-all duration-100 break-all text-sm' +
     ` ${variantClassname} ${className} `;
 
   return (
-    <button className={fullClassName} {...props}>
+    <button className={fullClassName} disabled={disabled} onClick={onClick} {...props}>
       {StartIcon ? <StartIcon /> : undefined} {text} {EndIcon ? <EndIcon /> : undefined}
     </button>
   );
