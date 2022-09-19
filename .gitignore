@@ -6,4 +6,4 @@ node_modules
 /public/build
 .env
 /.idea
-/app/styles/app.css
+app/styles/app.css
