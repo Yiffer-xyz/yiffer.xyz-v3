@@ -1,13 +1,7 @@
 import { useLoaderData } from '@remix-run/react';
 import { MdArrowBack, MdArrowForward, MdLogin } from 'react-icons/md';
 import Link from '~/components/Link';
-import { useLoaderData } from '@remix-run/react';
-import { MdArrowBack, MdArrowForward, MdLogin } from 'react-icons/md';
-import Link from '~/components/Link';
 
-export { loader } from '~/routes';
-
-export default function JoinUs() {
 export { loader } from '~/routes';
 
 export default function JoinUs() {

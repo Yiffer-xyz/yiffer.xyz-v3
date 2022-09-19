@@ -663,6 +663,7 @@ video {
   top: 0.25rem;
 }
 
+<<<<<<< HEAD
 <<<<<<< master
 <<<<<<< master
 =======
@@ -677,6 +678,8 @@ video {
 >>>>>>> Apese ESLint
 =======
 >>>>>>> Use the new validator function prop and revert the changes to onChange
+=======
+>>>>>>> bd6f1baf00f84ddd61335ba4e9ceac6643ce2270
 .z-40 {
   z-index: 40;
 }
@@ -707,7 +710,14 @@ video {
   margin-top: -0.25rem;
 }
 
+<<<<<<< HEAD
 <<<<<<< master
+=======
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+>>>>>>> bd6f1baf00f84ddd61335ba4e9ceac6643ce2270
 .mb-6 {
   margin-bottom: 1.5rem;
 }
@@ -722,6 +732,7 @@ video {
   margin-top: 1rem;
 }
 
+<<<<<<< HEAD
 <<<<<<< master
 >>>>>>> Add join-us route + frame out join-us/apply route
 =======
@@ -740,6 +751,8 @@ video {
 
 =======
 >>>>>>> Apese ESLint
+=======
+>>>>>>> bd6f1baf00f84ddd61335ba4e9ceac6643ce2270
 .box-content {
   box-sizing: content-box;
 }
@@ -1311,6 +1324,7 @@ video {
   cursor: pointer;
 }
 
+<<<<<<< HEAD
 <<<<<<< master
 <<<<<<< master
 <<<<<<< master
@@ -1318,6 +1332,8 @@ video {
 >>>>>>> Apese ESLint
 =======
 >>>>>>> Use the new validator function prop and revert the changes to onChange
+=======
+>>>>>>> bd6f1baf00f84ddd61335ba4e9ceac6643ce2270
 .hover\:cursor-default:hover {
   cursor: default;
 }
