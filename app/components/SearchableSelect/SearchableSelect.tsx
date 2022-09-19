@@ -134,11 +134,9 @@ export default function SearchableSelect({
     setLastChangeTime(Date.now());
   }
 
-  const convertedValue = value
-    ? typeof value === 'string'
-      ? { text: value, value: value }
-      : value
-    : '';
+  const convertedValue = useMemo(() => {
+    return convertedOptions.find(option => option.value === value);
+  }, [convertedOptions, value]);
 
   const borderStyle = error
     ? ''
@@ -161,7 +159,7 @@ export default function SearchableSelect({
         <input
           type="text"
           autoComplete="off"
-          value={convertedValue.text}
+          value={convertedValue?.text || ''}
           style={{ ...borderStyle }}
           onFocus={onFilledInputActivated}
           className={inputClassname}
@@ -170,7 +168,7 @@ export default function SearchableSelect({
         <input
           type="text"
           autoComplete="off"
-          value={searchText}
+          value={searchText || ''}
           name={name}
           onChange={e => setSearchText(e.target.value)}
           onClick={() => {
@@ -218,7 +216,7 @@ export default function SearchableSelect({
         )}
       </div>
 
-      <input type="text" name={name} value={value} hidden />
+      <input type="text" name={name} value={value || ''} readOnly hidden />
     </div>
   );
 }
