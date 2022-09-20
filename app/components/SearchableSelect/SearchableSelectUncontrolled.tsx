@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import SearchableSelect, { BaseSearchableSelectProps } from './SearchableSelect';
 
+type SearchableSelectUncontrolledProps = {
+  onChange?: (value: any) => void;
+} & BaseSearchableSelectProps;
+
 export default function SearchableSelectUncontrolled({
+  onChange,
   options,
   title = '',
   error = false,
@@ -9,15 +14,21 @@ export default function SearchableSelectUncontrolled({
   isFullWidth = false,
   initialWidth = 0, // TODO needed?
   name,
+  disabled = false,
   className = '',
   ...props
-}: BaseSearchableSelectProps) {
+}: SearchableSelectUncontrolledProps) {
   const [state, setState] = useState(null);
 
   return (
     <SearchableSelect
       value={state}
-      onChange={newVal => setState(newVal)}
+      onChange={newVal => {
+        setState(newVal);
+        if (onChange) {
+          onChange(newVal);
+        }
+      }}
       onValueCleared={() => setState(null)}
       options={options}
       title={title}
