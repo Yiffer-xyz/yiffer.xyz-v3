@@ -10,6 +10,7 @@ export type BaseSearchableSelectProps = {
   isFullWidth?: boolean;
   initialWidth?: number;
   name: string;
+  disabled?: boolean;
   className?: string;
 };
 
@@ -30,6 +31,7 @@ export default function SearchableSelect({
   isFullWidth = false,
   initialWidth = 0, // TODO needed?
   name,
+  disabled = false,
   className = '',
   ...props
 }: FullSelectProps) {
@@ -138,11 +140,13 @@ export default function SearchableSelect({
     return convertedOptions.find(option => option.value === value);
   }, [convertedOptions, value]);
 
-  const borderStyle = error
-    ? ''
-    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+  const borderStyle =
+    error || disabled
+      ? ''
+      : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
 
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
+    disabled:border-gray-800 dark:disabled:border-gray-600
     after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
     after:border-t-text-light dark:after:border-t-text-dark after:right-3`;
 
@@ -160,6 +164,7 @@ export default function SearchableSelect({
           type="text"
           autoComplete="off"
           value={convertedValue?.text || ''}
+          disabled={disabled}
           style={{ ...borderStyle }}
           onFocus={onFilledInputActivated}
           className={inputClassname}
@@ -169,6 +174,7 @@ export default function SearchableSelect({
           type="text"
           autoComplete="off"
           value={searchText || ''}
+          disabled={disabled}
           name={name}
           onChange={e => setSearchText(e.target.value)}
           onClick={() => {
@@ -216,7 +222,14 @@ export default function SearchableSelect({
         )}
       </div>
 
-      <input type="text" name={name} value={value || ''} readOnly hidden />
+      <input
+        type="text"
+        name={name}
+        value={value || ''}
+        disabled={disabled}
+        readOnly
+        hidden
+      />
     </div>
   );
 }

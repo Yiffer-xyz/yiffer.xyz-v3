@@ -1,11 +1,17 @@
 import type { BaseCheckboxProps } from './Checkbox';
 import Checkbox from './Checkbox';
 
+type CheckboxUncontrolledProps = BaseCheckboxProps & {
+  onChange?: (newVal: boolean) => void;
+  name: string;
+};
+
 export default function CheckboxUncontrolled({
   label,
   className = '',
+  onChange,
   ...props
-}: BaseCheckboxProps) {
+}: CheckboxUncontrolledProps) {
   const [state, setState] = React.useState(false);
 
   return (
@@ -13,7 +19,12 @@ export default function CheckboxUncontrolled({
       label={label}
       className={className}
       checked={state}
-      onChange={newVal => setState(newVal)}
+      onChange={newVal => {
+        setState(newVal);
+        if (onChange) {
+          onChange(newVal);
+        }
+      }}
       {...props}
     />
   );

@@ -1,8 +1,9 @@
 type InfoBoxProps = {
-  variant: 'info' | 'success' | 'error';
+  variant: 'info' | 'success' | 'error' | 'warning';
   text?: string;
   title?: string;
   showIcon?: Boolean; // TODO implement
+  boldText?: Boolean;
   children?: React.ReactNode;
   className?: string;
 };
@@ -12,6 +13,7 @@ export default function InfoBox({
   title,
   text,
   showIcon = false,
+  boldText = true,
   children,
   className = '',
   ...props
@@ -22,13 +24,19 @@ export default function InfoBox({
     variantClassname = 'from-status-info1 to-status-info2 ';
   }
   if (variant === 'error') {
-    variantClassname = 'from-status-error1 to-status-error2 font-semibold ';
+    variantClassname = 'from-status-error1 to-status-error2 ';
   }
   if (variant === 'success') {
-    variantClassname = 'from-theme1-dark to-theme2-dark font-semibold ';
+    variantClassname = 'from-theme1-darker to-theme2-darker ';
+  }
+  if (variant === 'warning') {
+    variantClassname = 'from-status-warn1 to-status-warn2 ';
   }
 
-  const fullClassname = `p-4 flex flex-col rounded shadow-md bg-gradient-to-r text-white ${variantClassname} ${className}`;
+  let fullClassname = `p-4 flex flex-col rounded shadow-md bg-gradient-to-r text-white ${variantClassname} ${className}`;
+  if (boldText) {
+    fullClassname += ' font-semibold';
+  }
 
   return (
     <div className={fullClassname} {...props}>
