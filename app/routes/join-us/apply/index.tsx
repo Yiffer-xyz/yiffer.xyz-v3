@@ -1,11 +1,12 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
+import TextareaUncontrolled from '~/components/Textarea/TextareaUncontrolled';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/components/TopGradientBox';
 
@@ -34,6 +35,7 @@ export const action: ActionFunction = async function ({ request }) {
 
 export default function Apply() {
   const actionData = useActionData();
+  const trasition = useTransition();
   const [notesIsValid, setNotesIsValid] = useState(false);
   const [telegramIsValid, setTelegramIsValid] = useState(false);
 
@@ -50,14 +52,13 @@ export default function Apply() {
         account, you will not be accepted.
       </p>
 
-      <TopGradientBox className="dark:bg-bgDark">
+      <TopGradientBox>
         <Form method="post" className="w-fit mx-auto">
           <h3 className="text-3xl font-bold">Mod application form</h3>
 
-          <TextInputUncontrolled
+          <TextareaUncontrolled
             name="notes"
             label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
-            type="text"
             className="mb-6 mt-4"
             validatorFunc={(v) => v.length > 0}
             onErrorChange={(hasError) => setNotesIsValid(!hasError)}
@@ -82,8 +83,9 @@ export default function Apply() {
               color="primary"
               variant="contained"
               className="my-2"
-              // disabled={!notesIsValid || !telegramIsValid}
-              isLoading={false}
+              disabled={!notesIsValid || !telegramIsValid}
+              isLoading={trasition.state !== 'idle'}
+              onClick={() => {}}
             />
           </div>
         </Form>
