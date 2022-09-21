@@ -1,4 +1,4 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
+import { ActionFunction, LoaderFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Form, useActionData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
@@ -9,9 +9,12 @@ import Link from '~/components/Link';
 import TextareaUncontrolled from '~/components/Textarea/TextareaUncontrolled';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/components/TopGradientBox';
+import { redirectNoAuth } from '~/utils/loaders';
+
+export const loader: LoaderFunction = redirectNoAuth('/join-us');
 
 const validateTelegramUsername = (username: string) =>
-  username.length > 5 && username.length <= 32;
+  /^([a-zA-Z0-9_]){5,32}$/.test(username);
 
 export const action: ActionFunction = async function ({ request }) {
   const reqBody = await request.formData();
@@ -46,13 +49,13 @@ export default function Apply() {
         <Link href="/join-us" text="Back" Icon={MdArrowBack} />
       </p>
 
-      <p className="mb-4">
+      <p className="mb-6">
         In order to be accepted as a mod, you must have and use a Telegram account. We use
         telegram for communication and announcements for mods. If you do not have an
         account, you will not be accepted.
       </p>
 
-      <TopGradientBox>
+      <TopGradientBox containerClassName="w-fit mx-auto" innerClassName="p-8 py-4">
         <Form method="post" className="w-fit mx-auto">
           <h3 className="text-3xl font-bold">Mod application form</h3>
 
@@ -66,7 +69,7 @@ export default function Apply() {
 
           <TextInputUncontrolled
             name="telegram"
-            label="Telegram username:"
+            label="Telegram username (don't include the @ symbol):"
             type="text"
             className="mb-6"
             validatorFunc={validateTelegramUsername}
