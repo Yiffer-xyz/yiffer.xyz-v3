@@ -1,4 +1,4 @@
-import { ActionFunction, LoaderFunction } from '@remix-run/cloudflare';
+import { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { useFetcher } from '@remix-run/react';
 import { useState } from 'react';
@@ -11,7 +11,7 @@ import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled'
 import TopGradientBox from '~/components/TopGradientBox';
 import { redirectNoAuth } from '~/utils/loaders';
 
-export const loader: LoaderFunction = redirectNoAuth('/join-us');
+export const loader = redirectNoAuth('/join-us');
 
 const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){5,32}$/.test(username);
@@ -88,7 +88,8 @@ export default function Apply() {
                 <InfoBox
                   variant="error"
                   text={fetcher.data.error}
-                  showIcon={true}
+                  showIcon
+                  closable
                   className="my-4"
                 />
               )}
