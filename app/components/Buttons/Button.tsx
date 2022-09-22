@@ -41,7 +41,8 @@ export default function Button({
   // TODO: Add error color for both variants
 
   if (disabled) {
-    variantClassname += ` bg-gray-300 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-initial `;
+    variantClassname += ` bg-gray-800 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-600
+    text-gray-900 dark:text-gray-700 cursor-not-allowed `;
   }
 
   const fullClassName =

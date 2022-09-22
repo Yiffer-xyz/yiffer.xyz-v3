@@ -1,6 +1,6 @@
 import { ActionFunction, LoaderFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import { Form, useActionData, useTransition } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -26,19 +26,19 @@ export const action: ActionFunction = async function ({ request }) {
     method: 'POST',
     headers: {
       'Content-Type': 'multipart/form-data',
+      'cookie': request.headers.get('cookie') || '',
     },
     body: reqBody,
   });
   if (!response.ok) {
     return json({ error: await response.text(), fields }, { status: response.status });
+  } else {
+    return json({ success: true });
   }
-
-  return response;
 };
 
 export default function Apply() {
-  const actionData = useActionData();
-  const trasition = useTransition();
+  const fetcher = useFetcher();
   const [notesIsValid, setNotesIsValid] = useState(false);
   const [telegramIsValid, setTelegramIsValid] = useState(false);
 
@@ -49,49 +49,64 @@ export default function Apply() {
         <Link href="/join-us" text="Back" Icon={MdArrowBack} />
       </p>
 
-      <p className="mb-6">
+      <p>
         In order to be accepted as a mod, you must have and use a Telegram account. We use
         telegram for communication and announcements for mods. If you do not have an
         account, you will not be accepted.
       </p>
 
-      <TopGradientBox containerClassName="w-fit mx-auto" innerClassName="p-8 py-4">
-        <Form method="post" className="w-fit mx-auto">
-          <h3 className="text-3xl font-bold">Mod application form</h3>
+      <TopGradientBox containerClassName="w-fit mx-auto my-4" innerClassName="p-8 pb-4">
+        <fetcher.Form method="post" className="w-fit mx-auto flex flex-col">
+          <h3 className="font-bold">Mod application form</h3>
 
-          <TextareaUncontrolled
-            name="notes"
-            label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
-            className="mb-6 mt-4"
-            validatorFunc={(v) => v.length > 0}
-            onErrorChange={(hasError) => setNotesIsValid(!hasError)}
-          />
-
-          <TextInputUncontrolled
-            name="telegram"
-            label="Telegram username (don't include the @ symbol):"
-            type="text"
-            className="mb-6"
-            validatorFunc={validateTelegramUsername}
-            onErrorChange={(hasError) => setTelegramIsValid(!hasError)}
-          />
-
-          {actionData?.error && (
-            <InfoBox variant="error" text={actionData.error} className="my-2" />
-          )}
-
-          <div className="flex">
-            <LoadingButton
-              text="Submit application"
-              color="primary"
-              variant="contained"
-              className="my-2"
-              disabled={!notesIsValid || !telegramIsValid}
-              isLoading={trasition.state !== 'idle'}
-              onClick={() => {}}
+          {fetcher.data?.success ? (
+            <InfoBox
+              variant="success"
+              text="Success! We will contact you if we decide to take you in. You can see the status of your application on your Account page. Thank you!"
+              className="my-4"
             />
-          </div>
-        </Form>
+          ) : (
+            <>
+              <TextareaUncontrolled
+                name="notes"
+                label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
+                className="mb-12 mt-4"
+                validatorFunc={(v) => v.length > 0}
+                onErrorChange={(hasError) => setNotesIsValid(!hasError)}
+              />
+
+              <TextInputUncontrolled
+                name="telegram"
+                label="Telegram username (don't include the @ symbol):"
+                type="text"
+                className="mb-4"
+                validatorFunc={validateTelegramUsername}
+                onErrorChange={(hasError) => setTelegramIsValid(!hasError)}
+              />
+
+              {fetcher.data?.error && fetcher.state === 'idle' && (
+                <InfoBox
+                  variant="error"
+                  text={fetcher.data.error}
+                  showIcon={true}
+                  className="my-4"
+                />
+              )}
+
+              <div className="flex">
+                <LoadingButton
+                  text="Submit application"
+                  color="primary"
+                  variant="contained"
+                  className="my-4 mx-auto"
+                  disabled={!notesIsValid || !telegramIsValid}
+                  isLoading={fetcher.state !== 'idle'}
+                  onClick={() => {}}
+                />
+              </div>
+            </>
+          )}
+        </fetcher.Form>
       </TopGradientBox>
     </div>
   );
