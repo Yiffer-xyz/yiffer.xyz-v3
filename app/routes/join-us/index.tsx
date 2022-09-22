@@ -2,7 +2,7 @@ import { useLoaderData } from '@remix-run/react';
 import { MdArrowBack, MdArrowForward, MdLogin } from 'react-icons/md';
 import Link from '~/components/Link';
 
-export { loader } from '~/routes';
+export { authLoader as loader } from '~/utils/loaders';
 
 export default function JoinUs() {
   return (

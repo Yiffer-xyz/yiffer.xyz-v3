@@ -4,4 +4,5 @@ module.exports = {
   tabWidth: 2,
   printWidth: 90,
   arrowParens: 'avoid',
+  semi: true,
 };
