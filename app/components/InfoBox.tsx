@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { MdCancel, MdCheckCircle, MdError, MdInfo, MdWarning } from "react-icons/md";
+import { useState } from 'react';
+import { MdCancel, MdCheckCircle, MdError, MdInfo, MdWarning } from 'react-icons/md';
 
 type InfoBoxProps = {
   variant: 'info' | 'success' | 'error' | 'warning';
@@ -46,9 +46,9 @@ export default function InfoBox({
       break;
   }
 
-  let fullClassname = `p-7 py-6 flex flex-row justify-between items-center
+  let fullClassname = `px-6 py-4 flex flex-row justify-between items-center gap-2
     rounded shadow-md bg-gradient-to-r text-white ${variantClassname} ${className}`;
-  
+
   if (boldText) {
     fullClassname += ' font-semibold';
   }
@@ -59,15 +59,16 @@ export default function InfoBox({
 
   return (
     <div className={fullClassname} {...props}>
-      {showIcon && <Icon />}
-      <div className="flex flex-col ml-4 mr-auto">
+      {showIcon && <Icon size={36} className="-ml-2 flex-shrink-0 w-8 md:w-auto" />}
+      <div className="flex flex-col">
         {title ? <p className="text-xl">{title}</p> : undefined}
         {text ? <p>{text}</p> : undefined}
+        {children}
       </div>
-      {children}
       {closable && (
         <MdCancel
-          className="cursor-pointer"
+          size={24}
+          className="cursor-pointer flex-shrink-0 w-5 md:w-auto"
           onClick={() => setHidden(true)}
         />
       )}

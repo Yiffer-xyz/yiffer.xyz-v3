@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
+import useWindowSize from '~/utils/useWindowSize';
 type keyValOptions = { text: string; value: any };
 
 export type BaseSearchableSelectProps = {
@@ -9,8 +10,10 @@ export type BaseSearchableSelectProps = {
   maxWidth?: number;
   isFullWidth?: boolean;
   initialWidth?: number;
+  placeholder?: string;
   name: string;
   disabled?: boolean;
+  mobileCompact?: boolean;
   className?: string;
 };
 
@@ -30,8 +33,10 @@ export default function SearchableSelect({
   maxWidth = 999999,
   isFullWidth = false,
   initialWidth = 0, // TODO needed?
+  placeholder = '',
   name,
   disabled = false,
+  mobileCompact = false,
   className = '',
   ...props
 }: FullSelectProps) {
@@ -41,6 +46,8 @@ export default function SearchableSelect({
   const [width, setWidth] = useState(0);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
   const [lastChangeTime, setLastChangeTime] = useState(0);
+  const windowSize = useWindowSize();
+  const windowWidth: number = windowSize.width || 0;
 
   useEffect(() => {
     tryComputeWidth();
@@ -148,7 +155,8 @@ export default function SearchableSelect({
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
     disabled:border-gray-800 dark:disabled:border-gray-600
     after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
-    after:border-t-text-light dark:after:border-t-text-dark after:right-3`;
+    after:border-t-text-light dark:after:border-t-text-dark after:right-3
+    placeholder-gray-800 dark:placeholder-gray-700 w-full`;
 
   return (
     <div
@@ -184,6 +192,7 @@ export default function SearchableSelect({
           }}
           style={{ ...borderStyle }}
           className={inputClassname}
+          placeholder={placeholder}
         />
       )}
 
@@ -204,12 +213,14 @@ export default function SearchableSelect({
       >
         {filteredOptions.map(({ text, value: optionValue }) => (
           <div
-            key={optionValue}
-            onClick={e => onSelected(optionValue)}
-            className="z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
-              hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light"
+            key={text}
+            onClick={() => onSelected(optionValue)}
+            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
+              hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light`}
           >
-            {text}
+            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>
+              {text}
+            </p>
           </div>
         ))}
         {filteredOptions.length === 0 && (

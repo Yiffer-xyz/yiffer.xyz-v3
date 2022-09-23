@@ -14,8 +14,8 @@ module.exports = {
           info2: '#57b5f3',
           error1: '#f35757',
           error2: '#e2557f',
-          warn1: '#f3b557',
-          warn2: '#d38a32',
+          warn1: '#ec9e3f',
+          warn2: '#fbc164',
         },
         bgDark: '#262c30',
         theme1: {

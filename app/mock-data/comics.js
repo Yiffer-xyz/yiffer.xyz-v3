@@ -5,9 +5,9 @@ export default [
     cat: 'Pokemon',
     tag: 'MF',
     artist: 'InsomniacOvrlrd',
-    updated: '2021-07-13T11:00:00.000Z',
+    updated: '2021-07-14T11:00:00.000Z',
     state: 'finished',
-    created: '2021-07-13T11:00:00.000Z',
+    created: '2021-07-14T11:00:00.000Z',
     numberOfPages: 4,
   },
   {
