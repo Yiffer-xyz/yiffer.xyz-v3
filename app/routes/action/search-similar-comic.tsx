@@ -1,43 +1,23 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
-import stringDistance from '~/utils/string-distance';
+import { ActionFunction, json } from '@remix-run/cloudflare';
 
-type ComicNameStruct = {
-  name: string;
-};
+export interface SimilarComicResponse {
+  similarComics: string[];
+  exactMatchComic?: string;
+  similarRejectedComics: string[];
+  exactMatchRejectedComic?: string;
+}
 
 export const action: ActionFunction = async function ({ request, context }) {
   const urlBase = context.URL_BASE as string;
   const body = await request.formData();
-  const newComicName = body.get('comicName') as string;
-  if (!newComicName) {
-    return json([]);
-  }
+  const comicName = body.get('comicName') as string;
 
-  // TODO: implement an old api route to do this search with string distance as param.
-  // to not use so much data, lol. This is just temp.
-  // In the nice long future with D1 as the data source, we'll fetch all comics here
-  // and do the filtering here.
-
-  const comicNames = await getAllComicNames(urlBase);
-
-  const similarComicNames = [];
-  for (const comicName of comicNames) {
-    const distance = stringDistance(newComicName, comicName);
-    if (
-      (newComicName.length < 5 && distance < 2) ||
-      (newComicName.length >= 5 && distance < 3) ||
-      (newComicName.length >= 14 && distance < 4)
-    ) {
-      similarComicNames.push(comicName);
-    }
-  }
-
-  return json(similarComicNames);
+  const data = await getSimilarComics(comicName, urlBase);
+  return json(data);
 };
 
-async function getAllComicNames(urlBase: string): Promise<string[]> {
-  const comicsRes = await fetch(`${urlBase}/api/all-comics`);
-  const comics: ComicNameStruct[] = await comicsRes.json();
-  return comics.map(comic => comic.name);
+async function getSimilarComics(comicName: string, urlBase: string): Promise<SimilarComicResponse> {
+  const comicsRes = await fetch(`${urlBase}/api/similar-comics?comicName=${comicName}`);
+  const comics: SimilarComicResponse = await comicsRes.json();
+  return comics;
 }

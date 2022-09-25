@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
+import { SimilarComicResponse } from '../action/search-similar-comic';
 
 type Step2ComicnameProps = {
   comicName: string;
@@ -12,44 +13,44 @@ type Step2ComicnameProps = {
 
 export default function Step2Comicname({
   comicName,
-  setIsLegalComicnameState, // todo set true when checked and ok and stuff
+  setIsLegalComicnameState, // For parent component, validation
   onUpdate,
 }: Step2ComicnameProps) {
-  const fetcher = useFetcher();
+  const similarComicsFetcher = useFetcher();
+  const [similarComics, setSimilarComics] = useState<SimilarComicResponse>();
   const [hasConfirmedNewComic, setHasConfirmedNewComic] = useState(false);
-  const [similarComicNames, setSimilarComicNames] = useState<string[]>([]);
-  const [existingComicWithSameName, setExistingComicWithSameName] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(onComicNameChange, [comicName]);
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.length) {
-      const comicExists = fetcher.data.some(
-        (existingComicName: string) => existingComicName === comicName
-      );
-      setExistingComicWithSameName(comicExists);
-      setSimilarComicNames(fetcher.data);
+    if (similarComicsFetcher.data) {
+      setSimilarComics(similarComicsFetcher.data);
     }
-  }, [fetcher.data]);
+  }, [similarComicsFetcher.data]);
 
+  // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
   useEffect(() => {
-    if (existingComicWithSameName) {
+    if (!similarComics) {
       setIsLegalComicnameState(false);
+      return;
     }
-    if (similarComicNames.length === 0 && comicName.length > 2) {
-      setIsLegalComicnameState(true);
+    const isExactMath = similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
+    const isAnySimilar =
+      similarComics.similarComics.length > 0 || similarComics.similarRejectedComics.length > 0;
+
+    let isLegal = false;
+    if (!isExactMath && comicName.length > 2) {
+      isLegal = !isAnySimilar || hasConfirmedNewComic;
     }
-    if (similarComicNames.length && hasConfirmedNewComic) {
-      setIsLegalComicnameState(true);
-    }
-    setIsLegalComicnameState(false);
-  }, [existingComicWithSameName, hasConfirmedNewComic]);
+
+    setIsLegalComicnameState(isLegal);
+  }, [similarComics, hasConfirmedNewComic]);
 
   function onComicNameChange() {
     setIsLegalComicnameState(false);
     setHasConfirmedNewComic(false);
-    setSimilarComicNames([]);
+    setSimilarComics(undefined);
 
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
@@ -60,53 +61,82 @@ export default function Step2Comicname({
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      fetcher.submit(
+      similarComicsFetcher.submit(
         { comicName },
         { method: 'post', action: '/action/search-similar-comic' }
       );
-    }, 1500);
+    }, 1000);
   }
+
+  const isExactMath = similarComics?.exactMatchComic || similarComics?.exactMatchRejectedComic;
+  const isAnySimilar =
+    similarComics &&
+    !isExactMath &&
+    (similarComics.similarComics.length > 0 || similarComics.similarRejectedComics.length > 0);
 
   return (
     <>
       <div className="flex flex-row gap-4 flex-wrap">
-        <TextInput
-          label="Comic name"
-          name="comicName"
-          value={comicName}
-          onChange={onUpdate}
-        />
+        <TextInput label="Comic name" name="comicName" value={comicName} onChange={onUpdate} />
       </div>
 
-      {similarComicNames.length > 0 &&
-        (existingComicWithSameName ? (
-          <InfoBox
-            variant="error"
-            text="A comic with this name already exists. Please choose a different name, and make sure that you are not uploading an already existing comic."
-            boldText={false}
-            className="mt-2 w-fit"
-          />
-        ) : (
-          <>
-            {!hasConfirmedNewComic && (
-              <InfoBox variant="warning" boldText={false} className="mt-2 w-fit">
-                <p>The following existing comics have similar names:</p>
-                <ul>
-                  {similarComicNames.map((comicName: string) => (
-                    <li key={comicName}>{comicName}</li>
-                  ))}
-                </ul>
-              </InfoBox>
-            )}
+      {similarComics && (
+        <>
+          {isAnySimilar && (
+            <>
+              {!hasConfirmedNewComic && (
+                <InfoBox variant="warning" boldText={false} className="mt-2 w-fit">
+                  {similarComics.similarComics.length > 0 && (
+                    <>
+                      <p>The following comics with similar names already exist in the system:</p>
+                      <ul>
+                        {similarComics.similarComics.map((comicName: string) => (
+                          <li key={comicName}>{comicName}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {similarComics.similarRejectedComics.length > 0 && (
+                    <>
+                      <p>
+                        The following comics with similar names have been rejected. If one of these
+                        is your comic, do not upload it:
+                      </p>
+                      <ul>
+                        {similarComics.similarRejectedComics.map((comicName: string) => (
+                          <li key={comicName}>{comicName}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </InfoBox>
+              )}
 
-            <Checkbox
-              label="I confirm that this comic does not already exist"
-              checked={hasConfirmedNewComic}
-              onChange={setHasConfirmedNewComic}
-              className="mt-2"
+              <Checkbox
+                label="This is not one of the above comics"
+                checked={hasConfirmedNewComic}
+                onChange={setHasConfirmedNewComic}
+                className="mt-2"
+              />
+            </>
+          )}
+
+          {similarComics.exactMatchComic && (
+            <InfoBox
+              text="A comic with this name already exists in the system. You cannot submit this comic name."
+              variant="error"
+              className="mt-2 w-fit"
             />
-          </>
-        ))}
+          )}
+          {similarComics.exactMatchRejectedComic && (
+            <InfoBox
+              text="A comic with this name has been rejected. You cannot submit this comic name."
+              variant="error"
+              className="mt-2 w-fit"
+            />
+          )}
+        </>
+      )}
     </>
   );
 }

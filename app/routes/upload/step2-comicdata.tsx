@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/components/Checkbox/CheckboxUncontrolled';
 import SearchableSelect from '~/components/SearchableSelect/SearchableSelect';
 import Select from '~/components/Select/Select';
-import { Artist, Comic } from '~/types/types';
-import { NewComicData } from '.';
+import { AnyKindOfArtist, AnyKindOfComic, NewComicData } from '.';
 import Step2Comicname from './step2-comicname';
 import Step2NewArtist from './step2-new-artist';
 
@@ -23,42 +22,37 @@ const stateOptions = ['Finished', 'WIP', 'Cancelled'].map(c => ({
 type Step2Props = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
-  artists: Artist[];
-  comics: Comic[];
-  pendingComics: Comic[];
+  artists: AnyKindOfArtist[];
+  comics: AnyKindOfComic[];
 };
 
-export default function Step2ComicData({
-  artists,
-  comics,
-  pendingComics,
-  comicData,
-  onUpdate,
-}: Step2Props) {
+export default function Step2ComicData({ artists, comics, comicData, onUpdate }: Step2Props) {
   const [artistNotInList, setArtistNotInList] = useState(false);
-  const [isLegalComicnameState, setIsLegalComicnameState] = useState(false); // for validation
 
-  const artistOptions = useMemo(
-    () => artists.map(a => ({ value: a.id, text: a.name })),
-    [artists]
-  );
+  const artistOptions = useMemo(() => artists.map(a => ({ value: a.id, text: a.name })), [artists]);
 
   const allComicOptions = useMemo(() => {
-    return comics
-      .map(c => ({ value: { id: c.id, isPending: false }, text: c.name }))
-      .concat(
-        pendingComics.map(c => ({
-          value: { id: c.id, isPending: true },
-          text: c.name + ' (Pending)',
-        }))
-      );
+    return comics.map(c => {
+      if (c.isPending) {
+        return { value: c, text: c.comicName + ' (PENDING)' };
+      }
+      if (c.isUpload) {
+        return { value: c, text: c.comicName + ' (UPLOADED)' };
+      }
+      return { value: c, text: c.comicName };
+    });
   }, []);
 
   return (
     <>
       <Step2Comicname
         comicName={comicData.comicName}
-        setIsLegalComicnameState={setIsLegalComicnameState} // for validation
+        setIsLegalComicnameState={isLegal =>
+          onUpdate({
+            ...comicData,
+            validation: { ...comicData.validation, isLegalComicName: isLegal },
+          })
+        }
         onUpdate={newVal => onUpdate({ ...comicData, comicName: newVal })}
       />
 
@@ -124,12 +118,12 @@ export default function Step2ComicData({
 
       <h4 className="mt-8">Connected comics</h4>
       <p>
-        If this is a standalone comic, leave these fields empty. If it's part of a series,
-        fill in the previous and/or next comics.
+        If this is a standalone comic, leave these fields empty. If it's part of a series, fill in
+        the previous and/or next comics.
       </p>
       <p>
-        If you are uploading multiple chapters of a series, you can leave the "next comic"
-        empty and only fill in the previous comic for each.
+        If you are uploading multiple chapters of a series, you can leave the "next comic" empty and
+        only fill in the previous comic for each.
       </p>
 
       <div className="flex flex-row flex-wrap gap-4 mt-2">
