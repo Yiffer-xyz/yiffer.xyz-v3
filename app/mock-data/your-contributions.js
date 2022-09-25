@@ -13,7 +13,7 @@
 // state (wip, finished, cancelled)
 // numberOfPages
 // timestamp
-// status (pending, approved, rejected)
+// status (pending, approved, rejected, rejected-list)  // the last one should be fetched and checked for when adding a new comic
 // points (nullable)
 // pointDescription (nullable)
 // modComment (nullable)

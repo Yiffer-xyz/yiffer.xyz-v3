@@ -8,3 +8,4 @@ node_modules
 /.idea
 app/styles/app.css
 /functions
+.dev.vars

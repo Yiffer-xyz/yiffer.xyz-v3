@@ -13,20 +13,20 @@ import { redirectNoAuth } from '~/utils/loaders';
 
 export const loader = redirectNoAuth('/join-us');
 
-const validateTelegramUsername = (username: string) =>
-  /^([a-zA-Z0-9_]){5,32}$/.test(username);
+const validateTelegramUsername = (username: string) => /^([a-zA-Z0-9_]){5,32}$/.test(username);
 
-export const action: ActionFunction = async function ({ request }) {
+export const action: ActionFunction = async function ({ request, context }) {
+  const urlBase = context.URL_BASE;
   const reqBody = await request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
 
   const fields = { notes, telegram };
 
-  const response = await fetch('https://yiffer.xyz/api/mod-applications', {
+  const response = await fetch(`${urlBase}/api/mod-applications`, {
     method: 'POST',
     headers: {
       'Content-Type': 'multipart/form-data',
-      'cookie': request.headers.get('cookie') || '',
+      cookie: request.headers.get('cookie') || '',
     },
     body: reqBody,
   });
@@ -50,9 +50,8 @@ export default function Apply() {
       </p>
 
       <p>
-        In order to be accepted as a mod, you must have and use a Telegram account. We use
-        telegram for communication and announcements for mods. If you do not have an
-        account, you will not be accepted.
+        In order to be accepted as a mod, you must have and use a Telegram account. We use telegram for communication
+        and announcements for mods. If you do not have an account, you will not be accepted.
       </p>
 
       <TopGradientBox containerClassName="w-fit mx-auto my-4" innerClassName="p-8 pb-4">
@@ -71,8 +70,8 @@ export default function Apply() {
                 name="notes"
                 label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
                 className="mb-12 mt-4"
-                validatorFunc={(v) => v.length > 0}
-                onErrorChange={(hasError) => setNotesIsValid(!hasError)}
+                validatorFunc={v => v.length > 0}
+                onErrorChange={hasError => setNotesIsValid(!hasError)}
               />
 
               <TextInputUncontrolled
@@ -81,17 +80,11 @@ export default function Apply() {
                 type="text"
                 className="mb-4"
                 validatorFunc={validateTelegramUsername}
-                onErrorChange={(hasError) => setTelegramIsValid(!hasError)}
+                onErrorChange={hasError => setTelegramIsValid(!hasError)}
               />
 
               {fetcher.data?.error && fetcher.state === 'idle' && (
-                <InfoBox
-                  variant="error"
-                  text={fetcher.data.error}
-                  showIcon
-                  closable
-                  className="my-4"
-                />
+                <InfoBox variant="error" text={fetcher.data.error} showIcon closable className="my-4" />
               )}
 
               <div className="flex">

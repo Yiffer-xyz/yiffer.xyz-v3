@@ -5,7 +5,8 @@ type ComicNameStruct = {
   name: string;
 };
 
-export const action: ActionFunction = async function ({ request }) {
+export const action: ActionFunction = async function ({ request, context }) {
+  const urlBase = context.URL_BASE;
   const body = await request.formData();
   const newComicName = body.get('comicName') as string;
   if (!newComicName) {
@@ -17,7 +18,7 @@ export const action: ActionFunction = async function ({ request }) {
   // In the nice long future with D1 as the data source, we'll fetch all comics here
   // and do the filtering here.
 
-  const comicNames = await getAllComicNames();
+  const comicNames = await getAllComicNames(urlBase);
 
   const similarComicNames = [];
   for (const comicName of comicNames) {
@@ -34,8 +35,8 @@ export const action: ActionFunction = async function ({ request }) {
   return json(similarComicNames);
 };
 
-async function getAllComicNames(): Promise<string[]> {
-  const comicsRes = await fetch('https://yiffer.xyz/api/all-comics');
+async function getAllComicNames(urlBase: string): Promise<string[]> {
+  const comicsRes = await fetch(`${urlBase}/api/all-comics`);
   const comics: ComicNameStruct[] = await comicsRes.json();
   return comics.map(comic => comic.name);
 }
