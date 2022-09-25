@@ -1,23 +1,11 @@
-import { LoaderFunction } from '@remix-run/cloudflare';
-import {
-  Form,
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useFetcher,
-  useFormAction,
-  useLoaderData,
-  useSubmit,
-} from '@remix-run/react';
+import { LoaderFunction, SessionData } from '@remix-run/cloudflare';
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from '@remix-run/react';
 import clsx from 'clsx';
 import { createContext } from 'react';
 
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
-import { getUserSession, getUserSessionData } from './utils/auth.server';
+import { getUserSessionData } from './utils/auth.server';
 
 import { useTheme, ThemeProvider, NonFlashOfWrongThemeEls } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
@@ -58,7 +46,7 @@ export const loader: LoaderFunction = async function ({ request }) {
   return data;
 };
 
-export const UserContext = createContext('user');
+// export const UserContext = createContext('user');
 
 export function App() {
   const [theme] = useTheme();
@@ -73,13 +61,18 @@ export function App() {
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
         <Layout user={data.user}>
-          <UserContext.Provider value={data.user}>
-            <Outlet />
-          </UserContext.Provider>
+          {/* <UserContext.Provider value={data.user}> */}
+          <Outlet />
+          {/* </UserContext.Provider> */}
         </Layout>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
       </body>
     </html>
   );
@@ -137,33 +130,21 @@ function Layout({ user, children }) {
                 >
                   Account
                 </a>
-                <a
-                  href="/logout"
-                  className="font-semibold bg-none dark:text-blue-strong-300"
-                >
+                <a href="/logout" className="font-semibold bg-none dark:text-blue-strong-300">
                   Log out
                 </a>
               </>
             ) : (
-              <a
-                href="/login"
-                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
-              >
+              <a href="/login" className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300">
                 Log in
               </a>
             )}
           </div>
           <div className="flex gap-6">
-            <p
-              onClick={() => setTheme('light')}
-              className="cursor-pointer font-bold dark:text-blue-strong-300"
-            >
+            <p onClick={() => setTheme('light')} className="cursor-pointer font-bold dark:text-blue-strong-300">
               Light
             </p>
-            <p
-              onClick={() => setTheme('dark')}
-              className="cursor-pointer font-bold dark:text-blue-strong-300"
-            >
+            <p onClick={() => setTheme('dark')} className="cursor-pointer font-bold dark:text-blue-strong-300">
               Dark
             </p>
           </div>

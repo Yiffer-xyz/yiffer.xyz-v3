@@ -60,17 +60,13 @@ export default function InfoBox({
   return (
     <div className={fullClassname} {...props}>
       {showIcon && <Icon size={36} className="-ml-2 flex-shrink-0 w-8 md:w-auto" />}
-      <div className="flex flex-col">
+      <div className="flex flex-col flex-grow">
         {title ? <p className="text-xl">{title}</p> : undefined}
         {text ? <p>{text}</p> : undefined}
         {children}
       </div>
       {closable && (
-        <MdCancel
-          size={24}
-          className="cursor-pointer flex-shrink-0 w-5 md:w-auto"
-          onClick={() => setHidden(true)}
-        />
+        <MdCancel size={24} className="cursor-pointer flex-shrink-0 w-5 md:w-auto" onClick={() => setHidden(true)} />
       )}
     </div>
   );

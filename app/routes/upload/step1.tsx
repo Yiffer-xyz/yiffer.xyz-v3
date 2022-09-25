@@ -14,13 +14,10 @@ export default function Step1({ onNext }: Step1Props) {
   return (
     <>
       <h2>Introduction</h2>
+      <p>Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of of text.</p>
       <p>
-        Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of of
-        text.
-      </p>
-      <p>
-        Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of
-        text. Lots of text. Lots of text. Lots of text.
+        Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of text. Lots of text.
+        Lots of text.
       </p>
 
       <h2 className="mt-4">Before you begin: requirements</h2>
@@ -35,8 +32,8 @@ export default function Step1({ onNext }: Step1Props) {
 
       <h2 className="mt-4">Checklist</h2>
       <p>
-        All pages uploaded must be publicly visible. A comic with some of its pages
-        exclusive to Patreon or similar services will be rejected.
+        All pages uploaded must be publicly visible. A comic with some of its pages exclusive to Patreon or similar
+        services will be rejected.
       </p>
       <Checkbox
         label="I confirm that the pages are publicly available"
@@ -46,10 +43,9 @@ export default function Step1({ onNext }: Step1Props) {
       />
 
       <p className="mt-4">
-        The pages uploaded must be of the highest possible resolution that is publicly
-        available. Resized and compressed pages, often found on third-party websites, we
-        not be accepted. Please check the artist's public galleries (like FurAffinity) to
-        ensure that the page resolution is correct.
+        The pages uploaded must be of the highest possible resolution that is publicly available. Resized and compressed
+        pages, often found on third-party websites, we not be accepted. Please check the artist's public galleries (like
+        FurAffinity) to ensure that the page resolution is correct.
       </p>
       <Checkbox
         label="I confirm that the pages are in the highest resolution publicly available"

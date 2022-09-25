@@ -11,14 +11,15 @@ import Step5Tags from './step5-tags';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import pendingComics from '~/mock-data/pendingcomics';
 
-async function getArtists() {
-  const response = await fetch('https://yiffer.xyz/api/artists');
+async function getArtists(urlBase: string) {
+  const response = await fetch(`${urlBase}/api/artists`);
   const artists = await response.json();
   return artists;
 }
 
-async function getComics() {
-  const response = await fetch('https://yiffer.xyz/api/all-comics'); // TODO: replace with new route
+async function getComics(urlBase: string) {
+  console.log(`${urlBase}/api/comics`);
+  const response = await fetch(`${urlBase}/api/all-comics`); // TODO: replace with new route
   const comics = await response.json();
   return comics;
 }
@@ -28,18 +29,14 @@ async function getPendingComics() {
   return pendingComics;
 }
 
-export const loader: LoaderFunction = async function ({ request }) {
-  const artistsPromise = getArtists();
-  const comicsPromise = getComics();
+export const loader: LoaderFunction = async function ({ context }) {
+  const artistsPromise = getArtists(context.URL_BASE);
+  const comicsPromise = getComics(context.URL_BASE);
   const pendingComicsPromise = getPendingComics();
 
-  const [artists, comics, pendingComics] = await Promise.all([
-    artistsPromise,
-    comicsPromise,
-    pendingComicsPromise,
-  ]);
+  const [artists, comics, pendingComics] = await Promise.all([artistsPromise, comicsPromise, pendingComicsPromise]);
 
-  return { artists, comics, pendingComics };
+  return { artists, comics, pendingComics, urlBase: context.URL_BASE };
 };
 
 export type NewArtist = {
@@ -67,7 +64,7 @@ export type NewComicData = {
 };
 
 export default function Upload() {
-  const { artists, comics, pendingComics } = useLoaderData();
+  const { artists, comics, pendingComics, urlBase } = useLoaderData();
   const [step, setStep] = useState(1);
   const [comicData, setComicData] = useState<NewComicData>({
     comicName: '',
@@ -107,13 +104,7 @@ export default function Upload() {
           <Step5Tags />
 
           <h4 className="mt-8">Finish</h4>
-          <LoadingButton
-            text="Submit"
-            color="primary"
-            variant="contained"
-            isLoading={false}
-            onClick={() => {}}
-          />
+          <LoadingButton text="Submit" color="primary" variant="contained" isLoading={false} onClick={() => {}} />
         </>
       )}
     </div>
