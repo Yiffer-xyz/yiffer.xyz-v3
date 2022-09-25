@@ -9,62 +9,76 @@ import Step3Pagemanager from './step3-pagemanager';
 import Step4Thumbnail from './step4-thumbnail';
 import Step5Tags from './step5-tags';
 import LoadingButton from '~/components/Buttons/LoadingButton';
-import pendingComics from '~/mock-data/pendingcomics';
 
-async function getArtists(urlBase: string) {
-  const response = await fetch(`${urlBase}/api/artists`);
-  const artists = await response.json();
-  return artists;
+async function getArtists(urlBase: string): Promise<AnyKindOfArtist[]> {
+  const pendingPromise = fetch(`${urlBase}/api/uploaded-pending-artists`);
+  const allPromise = fetch(`${urlBase}/api/artists`);
+  const [pendingResponse, allResponse] = await Promise.all([pendingPromise, allPromise]);
+  const pendingArtists: AnyKindOfArtist[] = await pendingResponse.json();
+  const allArtists: AnyKindOfArtist[] = await allResponse.json();
+
+  return [
+    ...allArtists.map(a => ({ name: a.name, id: a.id, isUploaded: false })),
+    ...pendingArtists.map(a => ({ name: a.name, id: a.id, isUploaded: true })),
+  ];
 }
 
-async function getComics(urlBase: string) {
-  console.log(`${urlBase}/api/comics`);
-  const response = await fetch(`${urlBase}/api/all-comics`); // TODO: replace with new route
+async function getComics(urlBase: string): Promise<AnyKindOfComic[]> {
+  const response = await fetch(`${urlBase}/api/all-comics-simple`);
   const comics = await response.json();
-  return comics;
-}
-
-async function getPendingComics() {
-  // TODO: replace with new route
-  return pendingComics;
+  return comics as AnyKindOfComic[];
 }
 
 export const loader: LoaderFunction = async function ({ context }) {
   const artistsPromise = getArtists(context.URL_BASE);
   const comicsPromise = getComics(context.URL_BASE);
-  const pendingComicsPromise = getPendingComics();
 
-  const [artists, comics, pendingComics] = await Promise.all([artistsPromise, comicsPromise, pendingComicsPromise]);
-
-  return { artists, comics, pendingComics, urlBase: context.URL_BASE };
+  const [artists, comics] = await Promise.all([artistsPromise, comicsPromise]);
+  return { artists, comics };
 };
 
-export type NewArtist = {
+// Can be a live artist, or one that's been uploaded by a user but is still pending
+export interface AnyKindOfArtist {
+  id: number;
+  name: string;
+  isUploaded: boolean;
+}
+
+export interface NewArtist {
   artistName: string;
   e621Name: string;
   patreonName: string;
   links: string[];
-};
+}
 
-export type LiveOrPendingComic = {
-  id: number;
+// Can be either a live comic, a pending comic, or one uploaded but awaiting processing
+export interface AnyKindOfComic {
+  comicId: number;
+  comicName: string;
   isPending: boolean;
-};
+  isUpload: boolean;
+}
 
-export type NewComicData = {
+export interface NewComicData {
   comicName: string;
   artistId?: number;
+  uploadArtistId?: number;
   newArtist: NewArtist;
   category: string;
   classification: string;
   state: string;
-  previousComic?: LiveOrPendingComic;
-  nextComic?: LiveOrPendingComic;
+  previousComic?: AnyKindOfComic;
+  nextComic?: AnyKindOfComic;
   tagIds: number[];
-};
+  validation: {
+    isLegalComicName: boolean;
+    isLegalNewArtist?: boolean;
+  };
+}
 
 export default function Upload() {
-  const { artists, comics, pendingComics, urlBase } = useLoaderData();
+  const { artists, comics }: { artists: AnyKindOfArtist[]; comics: AnyKindOfComic[] } =
+    useLoaderData();
   const [step, setStep] = useState(1);
   const [comicData, setComicData] = useState<NewComicData>({
     comicName: '',
@@ -77,6 +91,11 @@ export default function Upload() {
       e621Name: '',
       patreonName: '',
       links: [''],
+    },
+    // Validation that must be computed from within components, rather than on submit
+    validation: {
+      isLegalComicName: false,
+      isLegalNewArtist: undefined,
     },
   });
 
@@ -96,7 +115,6 @@ export default function Upload() {
             onUpdate={setComicData}
             artists={artists}
             comics={comics}
-            pendingComics={pendingComics}
           />
 
           <Step3Pagemanager />
@@ -104,7 +122,14 @@ export default function Upload() {
           <Step5Tags />
 
           <h4 className="mt-8">Finish</h4>
-          <LoadingButton text="Submit" color="primary" variant="contained" isLoading={false} onClick={() => {}} />
+
+          <LoadingButton
+            text="Submit"
+            color="primary"
+            variant="contained"
+            isLoading={false}
+            onClick={() => {}}
+          />
         </>
       )}
     </div>

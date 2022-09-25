@@ -148,9 +148,7 @@ export default function SearchableSelect({
   }, [convertedOptions, value]);
 
   const borderStyle =
-    error || disabled
-      ? ''
-      : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+    error || disabled ? '' : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
 
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
     disabled:border-gray-800 dark:disabled:border-gray-600
@@ -218,9 +216,7 @@ export default function SearchableSelect({
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
               hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light`}
           >
-            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>
-              {text}
-            </p>
+            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>{text}</p>
           </div>
         ))}
         {filteredOptions.length === 0 && (
@@ -233,14 +229,7 @@ export default function SearchableSelect({
         )}
       </div>
 
-      <input
-        type="text"
-        name={name}
-        value={value || ''}
-        disabled={disabled}
-        readOnly
-        hidden
-      />
+      <input type="text" name={name} value={value || ''} disabled={disabled} readOnly hidden />
     </div>
   );
 }
