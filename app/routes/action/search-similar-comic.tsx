@@ -1,4 +1,5 @@
-import { ActionFunction, json } from '@remix-run/cloudflare';
+import type { ActionFunction } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import stringDistance from '~/utils/string-distance';
 
 type ComicNameStruct = {
@@ -6,7 +7,7 @@ type ComicNameStruct = {
 };
 
 export const action: ActionFunction = async function ({ request, context }) {
-  const urlBase = context.URL_BASE;
+  const urlBase = context.URL_BASE as string;
   const body = await request.formData();
   const newComicName = body.get('comicName') as string;
   if (!newComicName) {
