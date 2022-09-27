@@ -1,5 +1,13 @@
 import { LoaderFunction, SessionData } from '@remix-run/cloudflare';
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from '@remix-run/react';
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+} from '@remix-run/react';
 import clsx from 'clsx';
 import { createContext } from 'react';
 
@@ -35,9 +43,9 @@ export function links() {
   ];
 }
 
-export const loader: LoaderFunction = async function ({ request }) {
+export const loader: LoaderFunction = async function ({ request, context }) {
   const themeSession = await getThemeSession(request);
-  const userSession = await getUserSessionData(request);
+  const userSession = await getUserSessionData(request, context.JWT_CONFIG_STR);
 
   const data = {
     theme: themeSession.getTheme(),
@@ -135,16 +143,25 @@ function Layout({ user, children }) {
                 </a>
               </>
             ) : (
-              <a href="/login" className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300">
+              <a
+                href="/login"
+                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
+              >
                 Log in
               </a>
             )}
           </div>
           <div className="flex gap-6">
-            <p onClick={() => setTheme('light')} className="cursor-pointer font-bold dark:text-blue-strong-300">
+            <p
+              onClick={() => setTheme('light')}
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
+            >
               Light
             </p>
-            <p onClick={() => setTheme('dark')} className="cursor-pointer font-bold dark:text-blue-strong-300">
+            <p
+              onClick={() => setTheme('dark')}
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
+            >
               Dark
             </p>
           </div>

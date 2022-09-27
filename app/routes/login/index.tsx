@@ -18,7 +18,7 @@ function getDataError(username: any, password: any) {
   return null;
 }
 
-export const action: ActionFunction = async function ({ request }) {
+export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
   const { username, password } = Object.fromEntries(reqBody);
 
@@ -28,7 +28,7 @@ export const action: ActionFunction = async function ({ request }) {
     return json({ error: validationErr, fields }, { status: 400 });
   }
 
-  const response = await login(username as string, password as string);
+  const response = await login(username as string, password as string, context.JWT_CONFIG_STR);
   if (!response) {
     return json({ error: 'Incorrect username or password', fields });
   }
@@ -66,9 +66,7 @@ export default function Login({ setMode }) {
         className="mb-6"
       />
 
-      {actionData?.error && (
-        <InfoBox variant="error" text={actionData.error} className="my-2" />
-      )}
+      {actionData?.error && <InfoBox variant="error" text={actionData.error} className="my-2" />}
 
       <div className="flex">
         <LoadingButton

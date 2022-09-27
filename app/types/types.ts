@@ -15,3 +15,14 @@ export type Comic = {
   nextComic?: Comic;
   isPending?: boolean;
 };
+
+export interface JwtConfig {
+  tokenSecret: string;
+  cookie: {
+    name: string;
+    domain: string;
+    secure: boolean;
+    maxAge: number;
+    httpOnly: boolean;
+  };
+}

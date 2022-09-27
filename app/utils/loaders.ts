@@ -1,5 +1,5 @@
-import { DataFunctionArgs, LoaderFunction, redirect } from "@remix-run/cloudflare";
-import { getUserSessionData } from "./auth.server";
+import { DataFunctionArgs, LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { getUserSessionData } from './auth.server';
 
 /**
  * Merge loader functions into a single loader function that can be used in a route.
@@ -15,14 +15,12 @@ import { getUserSessionData } from "./auth.server";
  */
 export const mergeLoaders = (...loaders: LoaderFunction[]): LoaderFunction => {
   return async (loaderArgs: DataFunctionArgs) => {
-    return loaders.reduce(async (acc, loader) => {
-      return {
-        ...acc,
-        ...(await loader(loaderArgs) || {}),
-      };
-    }, {});
-  }
-}
+    const loaderPromises = loaders.map(loader => loader(loaderArgs));
+    const loaderResults = await Promise.all(loaderPromises);
+    const mergedData = loaderResults.reduce((acc, data) => ({ ...acc, ...(data || {}) }), {});
+    return mergedData;
+  };
+};
 
 /**
  * Load the user session data.
@@ -30,9 +28,9 @@ export const mergeLoaders = (...loaders: LoaderFunction[]): LoaderFunction => {
  * ```ts
  * export { authLoader as loader } from "~/utils/loaders";
  * ```
-*/
-export const authLoader: LoaderFunction = async ({ request }) => {
-  const userSession = await getUserSessionData(request);
+ */
+export const authLoader: LoaderFunction = async ({ request, context }) => {
+  const userSession = await getUserSessionData(request, context.JWT_CONFIG_STR);
   const data = {
     user: userSession,
   };
@@ -53,5 +51,5 @@ export const redirectNoAuth = (to: string): LoaderFunction => {
     const { user } = await authLoader(loaderArgs);
     if (!user) return redirect(to);
     else return null;
-  }
-}
+  };
+};
