@@ -67,18 +67,13 @@ function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
       return;
     }
 
-    persistThemeRef.current.submit(
-      { theme },
-      { action: 'action/set-theme', method: 'post' }
-    );
+    persistThemeRef.current.submit({ theme }, { action: 'action/set-theme', method: 'post' });
   }, [theme]);
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
-function useTheme() {
+function useTheme(): [string | null, Dispatch<SetStateAction<string | null>>] {
   const context = useContext(ThemeContext);
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
@@ -110,11 +105,7 @@ const clientThemeCode = `
 `;
 
 function NonFlashOfWrongThemeEls({ ssrTheme }: { ssrTheme: boolean }) {
-  return (
-    <>
-      {ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}
-    </>
-  );
+  return <>{ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}</>;
 }
 
 export { ThemeProvider, useTheme, isTheme, NonFlashOfWrongThemeEls };

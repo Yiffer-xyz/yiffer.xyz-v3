@@ -1,10 +1,10 @@
 import { ActionFunction, LoaderFunction } from '@remix-run/cloudflare';
 import { logout } from '../utils/auth.server';
 
-export const action: ActionFunction = async function ({ request }) {
-  return logout(request);
+export const action: ActionFunction = async function ({ request, context }) {
+  return logout(context.JWT_CONFIG_STR);
 };
 
-export const loader: LoaderFunction = async function ({ request }) {
-  return logout(request);
+export const loader: LoaderFunction = async function ({ request, context }) {
+  return logout(context.JWT_CONFIG_STR);
 };

@@ -10,33 +10,6 @@ import Step4Thumbnail from './step4-thumbnail';
 import Step5Tags from './step5-tags';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 
-async function getArtists(urlBase: string): Promise<AnyKindOfArtist[]> {
-  const pendingPromise = fetch(`${urlBase}/api/uploaded-pending-artists`);
-  const allPromise = fetch(`${urlBase}/api/artists`);
-  const [pendingResponse, allResponse] = await Promise.all([pendingPromise, allPromise]);
-  const pendingArtists: AnyKindOfArtist[] = await pendingResponse.json();
-  const allArtists: AnyKindOfArtist[] = await allResponse.json();
-
-  return [
-    ...allArtists.map(a => ({ name: a.name, id: a.id, isUploaded: false })),
-    ...pendingArtists.map(a => ({ name: a.name, id: a.id, isUploaded: true })),
-  ];
-}
-
-async function getComics(urlBase: string): Promise<AnyKindOfComic[]> {
-  const response = await fetch(`${urlBase}/api/all-comics-simple`);
-  const comics = await response.json();
-  return comics as AnyKindOfComic[];
-}
-
-export const loader: LoaderFunction = async function ({ context }) {
-  const artistsPromise = getArtists(context.URL_BASE);
-  const comicsPromise = getComics(context.URL_BASE);
-
-  const [artists, comics] = await Promise.all([artistsPromise, comicsPromise]);
-  return { artists, comics };
-};
-
 // Can be a live artist, or one that's been uploaded by a user but is still pending
 export interface AnyKindOfArtist {
   id: number;
@@ -75,6 +48,33 @@ export interface NewComicData {
     isLegalNewArtist?: boolean;
   };
 }
+
+async function getArtists(urlBase: string): Promise<AnyKindOfArtist[]> {
+  const pendingPromise = fetch(`${urlBase}/api/uploaded-pending-artists`);
+  const allPromise = fetch(`${urlBase}/api/artists`);
+  const [pendingResponse, allResponse] = await Promise.all([pendingPromise, allPromise]);
+  const pendingArtists: AnyKindOfArtist[] = await pendingResponse.json();
+  const allArtists: AnyKindOfArtist[] = await allResponse.json();
+
+  return [
+    ...allArtists.map(a => ({ name: a.name, id: a.id, isUploaded: false })),
+    ...pendingArtists.map(a => ({ name: a.name, id: a.id, isUploaded: true })),
+  ];
+}
+
+async function getComics(urlBase: string): Promise<AnyKindOfComic[]> {
+  const response = await fetch(`${urlBase}/api/all-comics-simple`);
+  const comics = await response.json();
+  return comics as AnyKindOfComic[];
+}
+
+export const loader: LoaderFunction = async function ({ context }) {
+  const artistsPromise = getArtists(context.URL_BASE);
+  const comicsPromise = getComics(context.URL_BASE);
+
+  const [artists, comics] = await Promise.all([artistsPromise, comicsPromise]);
+  return { artists, comics };
+};
 
 export default function Upload() {
   const { artists, comics }: { artists: AnyKindOfArtist[]; comics: AnyKindOfComic[] } =
