@@ -1,120 +1,157 @@
 // import bcrypt from 'bcryptjs';
-import { createCookieSessionStorage, redirect } from '@remix-run/cloudflare';
+import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
+import { JwtConfig, User, UserSession } from '~/types/types';
 
-export async function login(username: string, password: string) {
-  // TODO find user, check password with bcrypt
-  const userFromDb = { id: 1, username: 'Melon' };
-  return await createUserSession(userFromDb.id, userFromDb.username);
+export async function login(
+  username: string,
+  password: string,
+  urlBase: string,
+  jwtConfigStr: string
+): Promise<boolean | Response> {
+  const response = await fetch(`${urlBase}/api/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      username,
+      password,
+    }),
+  });
+
+  if (response.status !== 200) {
+    return false;
+  }
+
+  const userFromApi = await response.json();
+  const userFromApiParsed = userFromApi as User;
+  return createUserSession(userFromApiParsed, jwtConfigStr);
 }
 
-// TODO use cloudflare KV to store/get these?
-const sessionSecret = 'testsecret';
-const cookieName = 'yiffer-auth-test';
-const secure = false;
-const cookieMaxAge = 86400 * 30;
-const tokenSecret = 'asdasdasdtokensecret';
-
-const storage = createCookieSessionStorage({
-  cookie: {
-    name: cookieName,
-    secure,
-    secrets: [sessionSecret],
-    sameSite: 'lax',
-    path: '/',
-    maxAge: cookieMaxAge,
-    httpOnly: true,
-  },
-});
-
-// To only get the user data - {userId, username, token (auth)}
+// To get the user data - {userId, username}
 // Basically, use this from components/routes
-export async function getUserSessionData(request: Request) {
-  const session = await getUserSession(request);
-  if (session && session.data) {
-    return session.data;
-  }
-  return null;
-}
+export async function getUserSession(
+  request: Request,
+  jwtConfigstr: string
+): Promise<UserSession | null> {
+  const jwtConfig: JwtConfig = JSON.parse(jwtConfigstr);
 
-// To get the full session object, needed when manipulating the session itself
-export async function getUserSession(request: Request) {
-  const session = await storage.getSession(request.headers.get('cookie'));
-  const token = session.get('token');
-
-  if (!token) {
+  const allCookies = request.headers.get('cookie');
+  const sessionCookieContent = cookiesStringToYifferSessionCookie(
+    allCookies,
+    jwtConfig.cookie.name
+  );
+  if (!sessionCookieContent) {
     return null;
   }
 
-  const isTokenValid = await jwt.verify(token, tokenSecret);
+  const isTokenValid = await jwt.verify(sessionCookieContent, jwtConfig.tokenSecret);
   if (!isTokenValid) {
-    storage.destroySession(session);
     return null;
   }
 
-  return session;
+  const tokenContent = jwt.decode(sessionCookieContent);
+  if (!tokenContent.payload || !tokenContent.payload.userId || !tokenContent.payload.username) {
+    return null;
+  }
+
+  return { userId: tokenContent.payload.userId, username: tokenContent.payload.username };
 }
 
-export async function getUser(request: Request) {
-  const userId = await getUserId(request);
-  if (userId === null) {
+export async function getUser(request: Request, jwtConfigStr: string) {
+  const userSession = await getUserSession(request, jwtConfigStr);
+  if (userSession === null) {
     return null;
   }
 
-  // TODO lookup full user in db
-  const userFromDb = { id: 1, username: 'Melon' };
+  // TODO: lookup full user in db/old api here
+  const userFromDb = { id: 1, username: 'Melon' }; // remove this, obv
   return userFromDb;
 }
 
-export async function getUserId(request: Request) {
-  const session = await getUserSession(request);
-  if (!session) {
-    return null;
-  }
-  const userId = session.get('userId');
-  if (!userId || typeof userId !== 'string') {
-    return null;
-  }
-  return userId;
-}
-
 // Place in the loader of routes requiring a logged in user
-export async function requireUserId(request: Request) {
-  const session = await getUserSession(request);
-  if (!session) {
+export async function requireUser(request: Request, jwtConfigStr: string) {
+  const userSession = await getUserSession(request, jwtConfigStr);
+  if (!userSession) {
     throw redirect(`/`);
   }
-  const userId = session.get('userId');
-  if (!userId || typeof userId !== 'string') {
-    throw redirect(`/`);
-  }
-  return userId;
+  return userSession.userId;
 }
 
-export async function logout(request: Request) {
-  const session = await getUserSession(request);
-  if (!session) {
-    return redirect('/');
-  }
+export async function logout(jwtConfigStr: string) {
+  const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
+
+  const destroyUserDataHeader = destroyUserDataCookieHeader(jwtConfig);
+  const destroySessionCookieHeader = destroyJwtAuthCookieHeader(jwtConfig);
+
+  const headers = new Headers();
+  headers.append('Set-Cookie', destroySessionCookieHeader);
+  headers.append('Set-Cookie', destroyUserDataHeader);
+
+  return redirect('/', { headers });
+}
+
+export async function createUserSession(user: User, jwtConfigStr: string) {
+  const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
+
+  // This one is for auth - will be verified on the server(s)
+  const sessionCookieHeader = await createJwtAuthCookieHeader(user.id, user.username, jwtConfig);
+
+  // This one is to ensure cross-subdomain auth, will not need when everything is Remix.
+  // This one is not serialized/anything like that, and not httpOnly, so it can be read by the
+  // Vue code in the browser - which ensures a smooth experience since that's not SSR.
+  const userDataCookieHeader = createUserDataCookieHeader(user, jwtConfig);
+
+  const headers = new Headers();
+  headers.append('Set-Cookie', sessionCookieHeader);
+  headers.append('Set-Cookie', userDataCookieHeader);
+
   return redirect('/', {
-    headers: {
-      'Set-Cookie': await storage.destroySession(session),
-    },
+    headers,
   });
 }
 
-export async function createUserSession(userId: number, username: string) {
-  const session = await storage.getSession();
-  const token = await jwt.sign({ userId }, tokenSecret);
-  session.set('token', token);
-  session.set('userId', userId);
-  session.set('username', username);
+async function createJwtAuthCookieHeader(userId: number, username: string, jwtConfig: JwtConfig) {
+  const token = await jwt.sign({ userId, username }, jwtConfig.tokenSecret);
+  // Creating it manually, because the Remix methods transform it for some reason??
+  return `${jwtConfig.cookie.name}=${token}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
+    jwtConfig.cookie.domain
+  };${jwtConfig.cookie.secure ? ' Secure;' : ''}${jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''}`;
+}
 
-  const cookie = await storage.commitSession(session);
+function destroyJwtAuthCookieHeader(jwtConfig: JwtConfig): string {
+  // Creating it manually, because the Remix methods transform it for some reason??
+  return `${jwtConfig.cookie.name}=; Max-Age=0; Domain=${jwtConfig.cookie.domain};${
+    jwtConfig.cookie.secure ? ' Secure;' : ''
+  }${jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''} Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+}
 
-  return redirect('/', {
-    headers: {
-      'Set-Cookie': cookie,
-    },
-  });
+function createUserDataCookieHeader(userData: any, jwtConfig: JwtConfig) {
+  // Creating it manually, because the Remix methods transform it for some reason??
+  return `yiffer_userdata=${JSON.stringify(userData)}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
+    jwtConfig.cookie.domain
+  }; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
+}
+
+function destroyUserDataCookieHeader(jwtConfig: JwtConfig) {
+  // Creating it manually, because the Remix methods transform it for some reason??
+  return `yiffer_userdata=; Max-Age=0; Domain=${jwtConfig.cookie.domain}; ${
+    jwtConfig.cookie.secure ? 'Secure' : ''
+  }; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+}
+
+function cookiesStringToYifferSessionCookie(
+  allCookies: string | null,
+  cookieName: string
+): string | undefined {
+  if (!allCookies) {
+    return;
+  }
+  const cookiesSplit = allCookies.split(';').map(cookieStr => cookieStr.trim());
+  const yifferSessionCookie = cookiesSplit.find(cookie => cookie.startsWith(`${cookieName}=`));
+  if (!yifferSessionCookie) {
+    return;
+  }
+  return yifferSessionCookie.slice(cookieName.length + 1);
 }

@@ -11,7 +11,7 @@ import TextInput from '~/components/TextInput/TextInput';
 import Textarea from '~/components/Textarea/Textarea';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import { authLoader, mergeLoaders } from '~/utils/loaders';
-import type { Artist, Comic } from '~/types/types';
+import type { Artist, Comic, UserSession } from '~/types/types';
 import { clearTimeout } from 'timers';
 
 export const loader = mergeLoaders(authLoader);
@@ -47,7 +47,7 @@ export default function Upload() {
   const [notSuggested, setNotSuggested] = useState(false);
   const [artistBanned, setArtistBanned] = useState<Array<Artist | string>>([]);
   const [differentArtist, setDifferentArtist] = useState(false);
-  const { user } = useLoaderData();
+  const { user }: { user: UserSession | null } = useLoaderData();
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
 

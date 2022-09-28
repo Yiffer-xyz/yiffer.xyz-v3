@@ -1,12 +1,11 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useTransition } from '@remix-run/react';
 import Link from '../../components/Link';
 import LoadingButton from '../../components/Buttons/LoadingButton';
 import { login } from '~/utils/auth.server.js';
 import InfoBox from '../../components/InfoBox';
 import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
-import { useState } from 'react';
 
 function getDataError(username: any, password: any) {
   if (!username || typeof username !== 'string') {
@@ -18,7 +17,7 @@ function getDataError(username: any, password: any) {
   return null;
 }
 
-export const action: ActionFunction = async function ({ request }) {
+export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
   const { username, password } = Object.fromEntries(reqBody);
 
@@ -28,18 +27,22 @@ export const action: ActionFunction = async function ({ request }) {
     return json({ error: validationErr, fields }, { status: 400 });
   }
 
-  const response = await login(username as string, password as string);
-  if (!response) {
-    return json({ error: 'Incorrect username or password', fields });
+  const response = await login(
+    username as string,
+    password as string,
+    context.URL_BASE,
+    context.JWT_CONFIG_STR
+  );
+  if (response === false) {
+    return json({ error: 'Incorrect username or password', fields }, { status: 401 });
   }
 
   return response;
 };
 
-export default function Login({ setMode }) {
+export default function Login() {
   const actionData = useActionData();
-
-  const [a, setA] = useState(undefined);
+  const transition = useTransition();
 
   return (
     <Form method="post" className="w-fit mx-auto">
@@ -66,9 +69,7 @@ export default function Login({ setMode }) {
         className="mb-6"
       />
 
-      {actionData?.error && (
-        <InfoBox variant="error" text={actionData.error} className="my-2" />
-      )}
+      {actionData?.error && <InfoBox variant="error" text={actionData.error} className="my-2" />}
 
       <div className="flex">
         <LoadingButton
@@ -76,7 +77,7 @@ export default function Login({ setMode }) {
           color="primary"
           variant="contained"
           className="my-2"
-          isLoading={false}
+          isLoading={transition.state === 'submitting'}
         />
       </div>
 

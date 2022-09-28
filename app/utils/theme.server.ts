@@ -1,17 +1,10 @@
 import { createCookieSessionStorage } from '@remix-run/cloudflare';
 import { isTheme } from './theme-provider';
 
-const sessionSecret = 'asdasdasd12311'; // TODO: something
-
-if (!sessionSecret) {
-  throw new Error('SESSION_SECRET must be set');
-}
-
 const themeStorage = createCookieSessionStorage({
   cookie: {
     name: 'dev-yiffer-theme',
     secure: true,
-    secrets: [sessionSecret],
     sameSite: 'lax',
     path: '/',
     httpOnly: false, // TODO:

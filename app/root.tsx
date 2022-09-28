@@ -1,11 +1,19 @@
-import { LoaderFunction, SessionData } from '@remix-run/cloudflare';
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from '@remix-run/react';
+import { LoaderFunction } from '@remix-run/cloudflare';
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+} from '@remix-run/react';
 import clsx from 'clsx';
-import { createContext } from 'react';
 
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
-import { getUserSessionData } from './utils/auth.server';
+import { UserSession } from './types/types';
+import { getUserSession } from './utils/auth.server';
 
 import { useTheme, ThemeProvider, NonFlashOfWrongThemeEls } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
@@ -35,9 +43,9 @@ export function links() {
   ];
 }
 
-export const loader: LoaderFunction = async function ({ request }) {
+export const loader: LoaderFunction = async function ({ request, context }) {
   const themeSession = await getThemeSession(request);
-  const userSession = await getUserSessionData(request);
+  const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
 
   const data = {
     theme: themeSession.getTheme(),
@@ -88,7 +96,7 @@ export default function AppWithProviders() {
   );
 }
 
-function Layout({ user, children }) {
+function Layout({ user, children }: { user: UserSession | null; children: React.ReactNode }) {
   const [, setTheme] = useTheme();
   const isLoggedIn = !!user;
 
@@ -135,16 +143,25 @@ function Layout({ user, children }) {
                 </a>
               </>
             ) : (
-              <a href="/login" className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300">
+              <a
+                href="/login"
+                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
+              >
                 Log in
               </a>
             )}
           </div>
           <div className="flex gap-6">
-            <p onClick={() => setTheme('light')} className="cursor-pointer font-bold dark:text-blue-strong-300">
+            <p
+              onClick={() => setTheme('light')}
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
+            >
               Light
             </p>
-            <p onClick={() => setTheme('dark')} className="cursor-pointer font-bold dark:text-blue-strong-300">
+            <p
+              onClick={() => setTheme('dark')}
+              className="cursor-pointer font-bold dark:text-blue-strong-300"
+            >
               Dark
             </p>
           </div>
