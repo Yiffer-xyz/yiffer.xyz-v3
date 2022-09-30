@@ -9,3 +9,5 @@ node_modules
 app/styles/app.css
 /functions
 .dev.vars
+
+.fleet/
