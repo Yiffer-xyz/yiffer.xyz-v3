@@ -11,7 +11,7 @@ export default function TableHeadRow({
   children,
   className = '',
 }: TableHeadProps) {
-  const theadRowClass = `bg-gray-900 dark:bg-transparent text-left border-b
+  const theadRowClass = `bg-gray-900 dark:bg-gray-300 text-left border-b
     border-gray-borderLight font-bold`;
   return (
     <thead>
