@@ -58,6 +58,7 @@ module.exports = {
           300: '#383f45',
           200: '#272d2f',
           100: '#1e2224',
+          borderLight: '#aaaaaa44',
         },
       },
       width: {
