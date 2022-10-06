@@ -4,13 +4,14 @@ import Button from '~/components/Buttons/Button';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
-import { AnyKindOfArtist, NewArtist, NewComicData } from '.';
+import { Artist } from '~/types/types';
+import { NewArtist, NewComicData } from '.';
 import { SimilarArtistResponse } from '../action/search-similar-artist';
 
 type Step2NewArtistProps = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
-  artists: AnyKindOfArtist[];
+  artists: Artist[];
 };
 
 export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistProps) {
@@ -113,7 +114,7 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
       {isAnySimilar && (
         <>
           {!hasConfirmedNewArtist && (
-            <InfoBox variant="warning" className="mt-2">
+            <InfoBox variant="warning" className="mt-2" boldText={false}>
               {similarArtists.similarArtists.length > 0 && (
                 <>
                   <p>

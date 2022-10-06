@@ -3,6 +3,7 @@ export type Artist = {
   name: string;
   patreonName: string;
   e621Name: string;
+  isPending: boolean;
 };
 
 export type Comic = {

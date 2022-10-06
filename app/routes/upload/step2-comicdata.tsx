@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/components/Checkbox/CheckboxUncontrolled';
 import SearchableSelect from '~/components/SearchableSelect/SearchableSelect';
 import Select from '~/components/Select/Select';
-import { AnyKindOfArtist, AnyKindOfComic, NewComicData } from '.';
+import { Artist } from '~/types/types';
+import { AnyKindOfComic, NewComicData } from '.';
 import Step2Comicname from './step2-comicname';
 import Step2NewArtist from './step2-new-artist';
 
@@ -22,7 +23,7 @@ const stateOptions = ['Finished', 'WIP', 'Cancelled'].map(c => ({
 type Step2Props = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
-  artists: AnyKindOfArtist[];
+  artists: Artist[];
   comics: AnyKindOfComic[];
 };
 
