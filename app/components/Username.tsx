@@ -11,15 +11,14 @@ const Username = (props: UsernameProps) => {
   const { user, className } = props;
   const { username, userType } = user;
 
-  const Icon =
-    userType === UserType.Admin
-      ? RiShieldStarFill
-      : userType === UserType.Mod
-      ? RiShieldFill
-      : null;
+  const isMod = userType === UserType.Mod;
+  const isAdmin = userType === UserType.Admin;
+
+  const title = isMod ? 'Moderator' : isAdmin ? 'Admin' : '';
+  const Icon = isAdmin ? RiShieldStarFill : isMod ? RiShieldFill : null;
 
   return (
-    <p className={className}>
+    <p title={title} className={className}>
       {username}
       {Icon && <Icon className="ml-1 text-theme1-primary" />}
     </p>
