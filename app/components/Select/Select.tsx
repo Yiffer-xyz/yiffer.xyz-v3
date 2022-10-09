@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // TODO Add keyboard listeners for up/down to move selected item,
 // and space/enter to select and open the menu. Like in old yiffer.
@@ -117,9 +117,7 @@ export default function Select({
     return options as keyValOptions[];
   }, [options]);
 
-  const borderStyle = error
-    ? ''
-    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+  const borderStyle = error ? '' : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
 
   return (
     <div
@@ -159,7 +157,7 @@ export default function Select({
         ))}
       </div>
 
-      <input type="text" name={name} value={value} hidden />
+      <input type="text" name={name} value={value} onChange={() => {}} hidden />
     </div>
   );
 }

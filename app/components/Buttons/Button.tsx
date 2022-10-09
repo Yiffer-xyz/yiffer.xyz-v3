@@ -1,18 +1,20 @@
-export type ButtonProps = {
+export interface ButtonProps {
   text: string;
   variant: 'contained' | 'outlined';
   color: 'primary' | 'error';
+  fullWidth?: boolean;
   onClick?: () => void;
   disabled?: boolean;
   startIcon?: React.ElementType;
   endIcon?: React.ElementType;
   className?: string;
-};
+}
 
 export default function Button({
   text,
   variant = 'contained',
   color = 'primary',
+  fullWidth = false,
   onClick,
   disabled = false,
   startIcon: StartIcon,
@@ -46,8 +48,9 @@ export default function Button({
   }
 
   const fullClassName =
-    'rounded py-1.5 px-3 font-bold w-fit flex flex-nowrap justify-center ' +
-    'items-center transition-all duration-100 break-all text-sm' +
+    `rounded py-1.5 px-3 font-bold flex flex-nowrap justify-center ` +
+    `items-center transition-all duration-100 break-all text-sm` +
+    ` w-${fullWidth ? 'full' : 'fit'}` +
     ` ${variantClassname} ${className} `;
 
   return (

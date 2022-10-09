@@ -4,9 +4,9 @@ import Button from '~/components/Buttons/Button';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
+import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
 import { Artist } from '~/types/types';
 import { NewArtist, NewComicData } from '.';
-import { SimilarArtistResponse } from '../action/search-similar-artist';
 
 type Step2NewArtistProps = {
   comicData: NewComicData;

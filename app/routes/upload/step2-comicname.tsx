@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
-import { SimilarComicResponse } from '../action/search-similar-comic';
+import { SimilarComicResponse } from '../api/search-similar-comic';
 
 type Step2ComicnameProps = {
   comicName: string;
