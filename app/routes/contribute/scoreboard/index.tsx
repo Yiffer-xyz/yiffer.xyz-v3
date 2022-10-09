@@ -192,61 +192,40 @@ const pInfoColors = {
   },
 };
 
-const pInfo: {
-  [key: number]: {
-    color: string;
-    description: string;
-  };
-} = {
-  200: {
-    color: pInfoColors.pValues.green,
-    description: `Uploaded comic, no issues found`,
-  },
-  150: {
-    color: pInfoColors.pValues.green,
-    description: `Uploaded comic, minor issues found (incorrect category/classification, wrong name)`,
-  },
-  120: {
-    color: pInfoColors.pValues.green,
-    description: `Uploaded comic, major issues found (lacking artist links, poor tagging, bad thumbnail)`,
-  },
-  50: {
-    color: pInfoColors.pValues.green,
-    description: `Uploaded comic, page issues (resolution, ordering, premium pages uploaded)`,
-  },
-  30: {
-    color: pInfoColors.pValues.blue,
-    description: `Comic suggestion approved with good links/information`,
-  },
-  15: {
-    color: pInfoColors.pValues.blue,
-    description: `Comic suggestion approved with lacking links/information`,
-  },
-  10: {
-    color: pInfoColors.pValues.purple,
-    description: `Comic problem reported`,
-  },
-  5: {
-    color: pInfoColors.pValues.yellow,
-    description: `Add/remove tag suggestion approved`,
-  },
-};
-
 const PointInfo = () => (
   <div className="flex gap-2 mt-4">
     <div className="font-bold">
-      {Object.keys(pInfo).map(key => (
-        <p key={key} className={pInfo[+key].color}>
-          {key}
-        </p>
-      ))}
+      <p className={pInfoColors.pValues.green}>200</p>
+      <p className={pInfoColors.pValues.green}>150</p>
+      <p className={pInfoColors.pValues.green}>120</p>
+      <p className={pInfoColors.pValues.green}>50</p>
+      <p className={pInfoColors.pValues.blue}>30</p>
+      <p className={pInfoColors.pValues.blue}>15</p>
+      <p className={pInfoColors.pValues.purple}>10</p>
+      <p className={pInfoColors.pValues.yellow}>5</p>
     </div>
     <div>
-      {Object.values(pInfo).map(({ color, description }, i) => (
-        <p key={i} className={color}>
-          {description}
-        </p>
-      ))}
+      <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
+      <p className={pInfoColors.pDescriptions.green}>
+        Uploaded comic, minor issues found(incorrect category/classification, wrong name)
+      </p>
+      <p className={pInfoColors.pDescriptions.green}>
+        Uploaded comic, major issues found (lacking artist links, poor tagging, bad
+        thumbnail)
+      </p>
+      <p className={pInfoColors.pDescriptions.green}>
+        Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
+      </p>
+      <p className={pInfoColors.pDescriptions.blue}>
+        Comic suggestion approved with good links/information
+      </p>
+      <p className={pInfoColors.pDescriptions.blue}>
+        Comic suggestion approved with lacking links/information
+      </p>
+      <p className={pInfoColors.pDescriptions.purple}>Comic problem reported</p>
+      <p className={pInfoColors.pDescriptions.yellow}>
+        Add/remove tag suggestion approved
+      </p>
     </div>
   </div>
 );
