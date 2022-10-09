@@ -110,46 +110,7 @@ export default function Scoreboard() {
           {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
         </a>
       </p>
-      {showPointInfo && (
-        <div className="flex gap-2 mt-4">
-          <div className="font-bold">
-            <p className="dark:text-green-600 text-green-700">200</p>
-            <p className="dark:text-green-600 text-green-700">150</p>
-            <p className="dark:text-green-600 text-green-700">120</p>
-            <p className="dark:text-green-600 text-green-700">50</p>
-            <p className="dark:text-blue-600 text-blue-700">30</p>
-            <p className="dark:text-blue-600 text-blue-700">15</p>
-            <p className="dark:text-purple-600 text-purple-700">10</p>
-            <p className="dark:text-yellow-500 text-yellow-600">5</p>
-          </div>
-          <div>
-            <p className="dark:text-green-400 text-green-600">
-              Uploaded comic, no issues found
-            </p>
-            <p className="dark:text-green-400 text-green-600">
-              Uploaded comic, minor issues found(incorrect category/classification, wrong
-              name)
-            </p>
-            <p className="dark:text-green-400 text-green-600">
-              Uploaded comic, major issues found (lacking artist links, poor tagging, bad
-              thumbnail)
-            </p>
-            <p className="dark:text-green-400 text-green-600">
-              Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
-            </p>
-            <p className="dark:text-blue-400 text-blue-600">
-              Comic suggestion approved with good links/information
-            </p>
-            <p className="dark:text-blue-400 text-blue-600">
-              Comic suggestion approved with lacking links/information
-            </p>
-            <p className="dark:text-purple-400 text-purple-600">Comic problem reported</p>
-            <p className="dark:text-yellow-200 text-yellow-500">
-              Add/remove tag suggestion approved
-            </p>
-          </div>
-        </div>
-      )}
+      {showPointInfo && <PointInfo />}
       <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
         <div className="flex mb-6">
           <Button
@@ -215,3 +176,77 @@ export default function Scoreboard() {
     </div>
   );
 }
+
+const pInfoColors = {
+  pValues: {
+    green: 'dark:text-green-600 text-green-700',
+    blue: 'dark:text-blue-600 text-blue-700',
+    purple: 'dark:text-purple-600 text-purple-700',
+    yellow: 'dark:text-yellow-500 text-yellow-600',
+  },
+  pDescriptions: {
+    green: 'dark:text-green-400 text-green-600',
+    blue: 'dark:text-blue-400 text-blue-600',
+    purple: 'dark:text-purple-400 text-purple-600',
+    yellow: 'dark:text-yellow-200 text-yellow-500',
+  },
+};
+
+const pInfo: {
+  [key: number]: {
+    color: string;
+    description: string;
+  };
+} = {
+  200: {
+    color: pInfoColors.pValues.green,
+    description: `Uploaded comic, no issues found`,
+  },
+  150: {
+    color: pInfoColors.pValues.green,
+    description: `Uploaded comic, minor issues found (incorrect category/classification, wrong name)`,
+  },
+  120: {
+    color: pInfoColors.pValues.green,
+    description: `Uploaded comic, major issues found (lacking artist links, poor tagging, bad thumbnail)`,
+  },
+  50: {
+    color: pInfoColors.pValues.green,
+    description: `Uploaded comic, page issues (resolution, ordering, premium pages uploaded)`,
+  },
+  30: {
+    color: pInfoColors.pValues.blue,
+    description: `Comic suggestion approved with good links/information`,
+  },
+  15: {
+    color: pInfoColors.pValues.blue,
+    description: `Comic suggestion approved with lacking links/information`,
+  },
+  10: {
+    color: pInfoColors.pValues.purple,
+    description: `Comic problem reported`,
+  },
+  5: {
+    color: pInfoColors.pValues.yellow,
+    description: `Add/remove tag suggestion approved`,
+  },
+};
+
+const PointInfo = () => (
+  <div className="flex gap-2 mt-4">
+    <div className="font-bold">
+      {Object.keys(pInfo).map(key => (
+        <p key={key} className={pInfo[+key].color}>
+          {key}
+        </p>
+      ))}
+    </div>
+    <div>
+      {Object.values(pInfo).map(({ color, description }, i) => (
+        <p key={i} className={color}>
+          {description}
+        </p>
+      ))}
+    </div>
+  </div>
+);
