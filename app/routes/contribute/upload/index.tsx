@@ -1,12 +1,11 @@
 import { ActionFunction, json, LoaderFunction } from '@remix-run/cloudflare';
 import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
 import { Artist, UserSession } from '~/types/types';
 import { authLoader, mergeLoaders } from '~/utils/loaders';
-import Link from '../../components/Link';
+import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
 import Step2ComicData from './step2-comicdata';
 import Step3Pagemanager from './step3-pagemanager';
@@ -160,7 +159,7 @@ export default function Upload() {
     <div className="container mx-auto pb-16">
       <h1>Upload a comic</h1>
       <p className="mb-4">
-        <Link href="/" text="Back" Icon={MdArrowBack} />
+        <BackToContribute />
       </p>
 
       {step === 'success' && <SuccessMessage isLoggedIn={!!user} />}

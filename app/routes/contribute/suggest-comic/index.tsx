@@ -1,18 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { MdArrowBack } from 'react-icons/md';
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Form, useActionData, useFetcher, useLoaderData } from '@remix-run/react';
-import TopGradientBox from '../../components/TopGradientBox';
-import Link from '../../components/Link';
-import LoadingButton from '../../components/Buttons/LoadingButton';
-import InfoBox from '../../components/InfoBox';
-import TextInput from '~/components/TextInput/TextInput';
-import Textarea from '~/components/Textarea/Textarea';
-import Checkbox from '~/components/Checkbox/Checkbox';
-import { authLoader, mergeLoaders } from '~/utils/loaders';
-import type { Artist, Comic, UserSession } from '~/types/types';
+import { useEffect, useRef, useState } from 'react';
 import { clearTimeout } from 'timers';
+import LoadingButton from '~/components/Buttons/LoadingButton';
+import Checkbox from '~/components/Checkbox/Checkbox';
+import InfoBox from '~/components/InfoBox';
+import Textarea from '~/components/Textarea/Textarea';
+import TextInput from '~/components/TextInput/TextInput';
+import TopGradientBox from '~/components/TopGradientBox';
+import type { Artist, Comic, UserSession } from '~/types/types';
+import { authLoader, mergeLoaders } from '~/utils/loaders';
+import BackToContribute from '../BackToContribute';
 
 export const loader = mergeLoaders(authLoader);
 
@@ -59,7 +58,7 @@ export default function Upload() {
     if (comicName.length < 3) return;
 
     debounceTimeoutComicRef.current = setTimeout(() => {
-      fetcher.submit({ comicName }, { method: 'post', action: '/action/search-suggested-comics' });
+      fetcher.submit({ comicName }, { method: 'post', action: '/api/sear÷h-suggested-comics' });
     }, 1500);
   };
 
@@ -73,7 +72,7 @@ export default function Upload() {
     if (artistName.length < 3) return;
 
     debounceTimeoutArtistRef.current = setTimeout(() => {
-      fetcher.submit({ artistName }, { method: 'post', action: '/action/search-banned-artists' });
+      fetcher.submit({ artistName }, { method: 'post', action: '/api/search-banned-artists' });
     }, 1500);
   };
 
@@ -129,12 +128,9 @@ export default function Upload() {
 
   return (
     <section className="container mx-auto justify-items-center">
-      <h1 className="text-center mb-2">Suggest a comic</h1>
-      <p className="text-center">
-        <Link href="/" text="Back" Icon={MdArrowBack} />
-      </p>
-      <p className="mb-4 text-center">
-        <Link href="https://yiffer.xyz/" text="To front page" />
+      <h1 className="mb-2">Suggest a comic</h1>
+      <p className="mb-4">
+        <BackToContribute />
       </p>
 
       {fetcher?.data?.success ? (

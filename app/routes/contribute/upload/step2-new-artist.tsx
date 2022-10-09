@@ -48,7 +48,7 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
     debounceTimeoutRef.current = setTimeout(() => {
       similarArtistsFetcher.submit(
         { artistName: comicData.newArtist.artistName },
-        { method: 'post', action: '/action/search-similar-artist' }
+        { method: 'post', action: '/api/search-similar-artist' }
       );
     }, 1000);
   }, [comicData.newArtist.artistName]);

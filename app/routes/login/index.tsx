@@ -1,11 +1,11 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Form, useActionData, useTransition } from '@remix-run/react';
-import Link from '../../components/Link';
-import LoadingButton from '../../components/Buttons/LoadingButton';
+import LoadingButton from '~/components/Buttons/LoadingButton';
+import InfoBox from '~/components/InfoBox';
+import Link from '~/components/Link';
+import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import { login } from '~/utils/auth.server.js';
-import InfoBox from '../../components/InfoBox';
-import TextInputUncontrolled from '../../components/TextInput/TextInputUncontrolled';
 
 function getDataError(username: any, password: any) {
   if (!username || typeof username !== 'string') {

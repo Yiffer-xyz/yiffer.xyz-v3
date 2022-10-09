@@ -2,12 +2,11 @@ import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Form, useActionData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowBack } from 'react-icons/md';
+import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
-import Link from '../../components/Link';
 import Textarea from '~/components/Textarea/Textarea';
 import TopGradientBox from '~/components/TopGradientBox';
-import LoadingButton from '~/components/Buttons/LoadingButton';
+import BackToContribute from '../BackToContribute';
 
 export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
@@ -38,12 +37,9 @@ export default function Feedback() {
 
   return (
     <section className="container mx-auto justify-items-center">
-      <h1 className="text-center mb-2">Feedback</h1>
-      <p className="text-center">
-        <Link href="/" text="Back" Icon={MdArrowBack} />
-      </p>
-      <p className="mb-4 text-center">
-        <Link href="https://yiffer.xyz/" text="To front page" />
+      <h1 className="mb-2">Feedback</h1>
+      <p className="mb-4">
+        <BackToContribute />
       </p>
 
       <p>

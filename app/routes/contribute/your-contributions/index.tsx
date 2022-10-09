@@ -1,14 +1,13 @@
-import {
-  comicProblemsQueryRes,
-  keywordSuggestionQueryRes,
-  comicSuggestionsQueryRes,
-  uploadedComicsQueryRes,
-} from '~/mock-data/your-contributions';
-import Link from '../../components/Link';
-import { MdArrowBack } from 'react-icons/md';
 import type { LoaderFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import {Table, TableBody, TableCell, TableHeadRow, TableRow} from '~/components/Table'
+import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
+import {
+  comicProblemsQueryRes,
+  comicSuggestionsQueryRes,
+  keywordSuggestionQueryRes,
+  uploadedComicsQueryRes,
+} from '~/mock-data/your-contributions';
+import BackToContribute from '../BackToContribute';
 
 export enum ComicStatus {
   PENDING = 'Pending',
@@ -83,12 +82,13 @@ export const loader: LoaderFunction = async function ({ context }) {
   const comicProblemsPromise = getComicProblems(urlBase);
   const comicSuggestionsPromise = getComicSuggestions(urlBase);
 
-  const [uploadedComicsRes, tagSuggestionsRes, comicProblemsRes, comicSuggestionsRes] = await Promise.all([
-    uploadedComicsPromise,
-    tagSuggestionsPromise,
-    comicProblemsPromise,
-    comicSuggestionsPromise
-  ]);
+  const [uploadedComicsRes, tagSuggestionsRes, comicProblemsRes, comicSuggestionsRes] =
+    await Promise.all([
+      uploadedComicsPromise,
+      tagSuggestionsPromise,
+      comicProblemsPromise,
+      comicSuggestionsPromise,
+    ]);
 
   const uploadedComics = uploadedComicsRes;
   const tagSuggestions = tagSuggestionsRes;
@@ -109,7 +109,7 @@ export const loader: LoaderFunction = async function ({ context }) {
   };
 };
 
-function getContributionDetails (contribution: Contribution) {
+function getContributionDetails(contribution: Contribution) {
   switch (contribution.type) {
     case 'ContributedComic':
       return (
@@ -146,7 +146,7 @@ function getContributionDetails (contribution: Contribution) {
   }
 }
 
-function getContributionName (contribution: Contribution) {
+function getContributionName(contribution: Contribution) {
   switch (contribution.type) {
     case 'ContributedComic':
       return 'Comic upload';
@@ -162,7 +162,7 @@ function getContributionName (contribution: Contribution) {
   }
 }
 
-function getContributionStatusColor (status: ComicStatus): string {
+function getContributionStatusColor(status: ComicStatus): string {
   switch (status) {
     case ComicStatus.APPROVED:
       return 'text-green-500 dark:text-green-300';
@@ -173,7 +173,7 @@ function getContributionStatusColor (status: ComicStatus): string {
   }
 }
 
-function getDate (timestamp: string): string {
+function getDate(timestamp: string): string {
   const d = new Date(timestamp);
   const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
   const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
@@ -187,12 +187,10 @@ export default function YourContributions() {
   return (
     <section className="flex-col">
       <h1 className="text-center mb-2">Your contributions</h1>
-      <p className="text-center">
-        <Link href="/" text="Back" Icon={MdArrowBack} />
+      <p className="text-center mb-4">
+        <BackToContribute />
       </p>
-      <p className="mb-4 text-center">
-        <Link href="https://yiffer.xyz/" text="To front page" />
-      </p>
+
       <Table horizontalScroll={true} className="mx-auto">
         <TableHeadRow isTableMaxHeight={false}>
           <TableCell>Contribution</TableCell>
@@ -203,29 +201,34 @@ export default function YourContributions() {
           <TableCell>Contribution Details</TableCell>
         </TableHeadRow>
         <TableBody>
-        {contributions.map((contribution, index) => (
-          <TableRow key={contribution.comicName + index} className="border-b border-gray-800 dark:border-gray-500">
-            <TableCell>
-              <p className="font-extralight">{getContributionName(contribution)}</p>
-            </TableCell>
-            <TableCell>
-              <p className={`${getContributionStatusColor(contribution.status)} font-extralight`}>{contribution.status}</p>
-            </TableCell>
-            <TableCell>
-              <p className="font-extralight">{getDate(contribution.timestamp)}</p>
-            </TableCell>
-            <TableCell>
-              <p className="font-semibold">{contribution.points || '-'}</p>
-              <p className="font-extralight">{contribution.pointDescription}</p>
-            </TableCell>
-            <TableCell>
-              <p className="font-extralight">{contribution.modComment || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="font-extralight">{getContributionDetails(contribution)}</p>
-            </TableCell>
-          </TableRow>
-        ))}
+          {contributions.map((contribution, index) => (
+            <TableRow
+              key={contribution.comicName + index}
+              className="border-b border-gray-800 dark:border-gray-500"
+            >
+              <TableCell>
+                <p className="font-extralight">{getContributionName(contribution)}</p>
+              </TableCell>
+              <TableCell>
+                <p className={`${getContributionStatusColor(contribution.status)} font-extralight`}>
+                  {contribution.status}
+                </p>
+              </TableCell>
+              <TableCell>
+                <p className="font-extralight">{getDate(contribution.timestamp)}</p>
+              </TableCell>
+              <TableCell>
+                <p className="font-semibold">{contribution.points || '-'}</p>
+                <p className="font-extralight">{contribution.pointDescription}</p>
+              </TableCell>
+              <TableCell>
+                <p className="font-extralight">{contribution.modComment || '-'}</p>
+              </TableCell>
+              <TableCell>
+                <p className="font-extralight">{getContributionDetails(contribution)}</p>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </section>

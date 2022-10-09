@@ -1,5 +1,4 @@
-import { ActionFunction } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
+import { ActionFunction, json } from '@remix-run/cloudflare';
 import { useFetcher } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
@@ -46,12 +45,13 @@ export default function Apply() {
     <div className="container mx-auto">
       <h1>Become a mod</h1>
       <p className="mb-4">
-        <Link href="/join-us" text="Back" Icon={MdArrowBack} />
+        <Link href="/contribute/join-us" text="Back" Icon={MdArrowBack} />
       </p>
 
       <p>
-        In order to be accepted as a mod, you must have and use a Telegram account. We use telegram for communication
-        and announcements for mods. If you do not have an account, you will not be accepted.
+        In order to be accepted as a mod, you must have and use a Telegram account. We use telegram
+        for communication and announcements for mods. If you do not have an account, you will not be
+        accepted.
       </p>
 
       <TopGradientBox containerClassName="w-fit mx-auto my-4" innerClassName="p-8 pb-4">
@@ -84,7 +84,13 @@ export default function Apply() {
               />
 
               {fetcher.data?.error && fetcher.state === 'idle' && (
-                <InfoBox variant="error" text={fetcher.data.error} showIcon closable className="my-4" />
+                <InfoBox
+                  variant="error"
+                  text={fetcher.data.error}
+                  showIcon
+                  closable
+                  className="my-4"
+                />
               )}
 
               <div className="flex">
