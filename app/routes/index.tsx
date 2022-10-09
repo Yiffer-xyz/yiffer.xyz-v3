@@ -1,8 +1,8 @@
-import { MdHome } from 'react-icons/md';
-import Link from '../components/Link';
 import { useLoaderData } from '@remix-run/react';
-import { authLoader, mergeLoaders } from '~/utils/loaders';
+import { MdHome } from 'react-icons/md';
 import { UserSession } from '~/types/types';
+import { authLoader, mergeLoaders } from '~/utils/loaders';
+import Link from '../components/Link';
 
 export const loader = mergeLoaders(authLoader);
 

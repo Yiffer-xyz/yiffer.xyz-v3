@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 import useWindowSize from '~/utils/useWindowSize';
 type keyValOptions = { text: string; value: any };
@@ -229,7 +229,15 @@ export default function SearchableSelect({
         )}
       </div>
 
-      <input type="text" name={name} value={value || ''} disabled={disabled} readOnly hidden />
+      <input
+        type="text"
+        name={name}
+        value={value || ''}
+        disabled={disabled}
+        onChange={() => {}}
+        readOnly
+        hidden
+      />
     </div>
   );
 }
