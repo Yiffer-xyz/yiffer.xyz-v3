@@ -25,6 +25,13 @@ export const action: ActionFunction = async function ({ request }) {
   return json(response);
 };
 
+const enabledClass = `
+    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-primary to-theme2-primary
+  `;
+const disabledClass = `
+    dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
+    text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
+  `;
 const arrowButtonClasses =
   'dark:bg-transparent dark:hover:bg-transparent bg-transparent hover:bg-transparent';
 
@@ -34,22 +41,6 @@ export default function Scoreboard() {
   const [showAllTime, setShowAllTime] = useState(false);
   const [date, setDate] = useState(new Date());
 
-  const incrementMonth = () => {
-    if (date.getMonth() === 11) {
-      setDate(new Date(date.getFullYear() + 1, 0));
-    } else {
-      setDate(new Date(date.getFullYear(), date.getMonth() + 1));
-    }
-  };
-
-  const decrementMonth = () => {
-    if (date.getMonth() === 0) {
-      setDate(new Date(date.getFullYear() - 1, 11));
-    } else {
-      setDate(new Date(date.getFullYear(), date.getMonth() - 1));
-    }
-  };
-
   const canIncrementMonth = () => {
     const now = new Date();
     return !(
@@ -57,17 +48,27 @@ export default function Scoreboard() {
     );
   };
 
+  const incrementMonth = () => {
+    if (!canIncrementMonth()) return;
+    if (date.getMonth() === 11) {
+      setDate(new Date(date.getFullYear() + 1, 0));
+    } else {
+      setDate(new Date(date.getFullYear(), date.getMonth() + 1));
+    }
+  };
+
   const canDecrementMonth = () => {
     return !(date.getMonth() === 0 && date.getFullYear() === 2016);
   };
 
-  const enabledClass = `
-    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-primary to-theme2-primary
-  `;
-  const disabledClass = `
-    dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
-    text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
-  `;
+  const decrementMonth = () => {
+    if (!canDecrementMonth()) return;
+    if (date.getMonth() === 0) {
+      setDate(new Date(date.getFullYear() - 1, 11));
+    } else {
+      setDate(new Date(date.getFullYear(), date.getMonth() - 1));
+    }
+  };
 
   useEffect(() => {
     fetcher.submit(
