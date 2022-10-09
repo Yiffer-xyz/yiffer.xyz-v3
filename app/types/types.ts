@@ -1,3 +1,16 @@
+export enum UserType {
+  Admin = 'admin',
+  Mod = 'mod',
+  User = 'user',
+}
+
+export type User = {
+  username: string;
+  userType: UserType;
+  email: string;
+  id: number;
+};
+
 export type Artist = {
   id: number;
   name: string;

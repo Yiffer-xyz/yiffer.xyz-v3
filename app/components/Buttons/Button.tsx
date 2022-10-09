@@ -11,7 +11,7 @@ export interface ButtonProps {
 }
 
 export default function Button({
-  text,
+  text = '',
   variant = 'contained',
   color = 'primary',
   fullWidth = false,
