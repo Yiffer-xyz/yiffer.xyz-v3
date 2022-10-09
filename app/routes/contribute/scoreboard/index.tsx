@@ -11,6 +11,7 @@ import {
 } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
 import Link from '~/components/Link';
+import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
 import Username from '~/components/Username';
 import { alltimequery, defaultquery } from '~/mock-data/top-contributions';
 import BackToContribute from '~/routes/contribute/BackToContribute';
@@ -75,7 +76,7 @@ export default function Scoreboard() {
         month: date.getMonth() + '',
         year: date.getFullYear() + '',
       },
-      { method: 'post', action: '/scoreboard?index' }
+      { method: 'post' }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAllTime, date]);
@@ -192,32 +193,25 @@ export default function Scoreboard() {
           </div>
         )}
         {fetcher.data && (
-          <table>
-            <thead className="font-semibold dark:bg-black dark:bg-opacity-75">
-              <tr className="border-b border-gray-400">
-                <th className="text-left">Username</th>
-                <th className="text-left">Score</th>
-              </tr>
-            </thead>
-            <tbody className="dark:bg-black dark:bg-opacity-25 font-light">
+          <Table>
+            <TableHeadRow isTableMaxHeight>
+              <TableCell>Username</TableCell>
+              <TableCell>Score</TableCell>
+            </TableHeadRow>
+            <TableBody>
               {fetcher.data instanceof Array &&
                 fetcher.data.map((entry, i) => (
-                  <tr key={i} className="border-b border-gray-400">
-                    <td className="dark:text-text-dark">
+                  <TableRow key={i}>
+                    <TableCell>
                       <Username user={entry.user} />
-                    </td>
-                    <td className="dark:text-text-dark">{entry.points}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell>{entry.points}</TableCell>
+                  </TableRow>
                 ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
-
-      <p>
-        See the imported code for the mocked responses to the database queries for month
-        and year to use.
-      </p>
     </div>
   );
 }
