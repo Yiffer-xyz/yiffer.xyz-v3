@@ -207,7 +207,7 @@ const PointInfo = () => (
     <div>
       <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
       <p className={pInfoColors.pDescriptions.green}>
-        Uploaded comic, minor issues found(incorrect category/classification, wrong name)
+        Uploaded comic, minor issues found (incorrect category/classification, wrong name)
       </p>
       <p className={pInfoColors.pDescriptions.green}>
         Uploaded comic, major issues found (lacking artist links, poor tagging, bad
