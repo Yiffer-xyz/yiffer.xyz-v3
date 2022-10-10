@@ -137,6 +137,7 @@ export default function Scoreboard() {
           <div className="flex justify-between w-full mb-2 text-lg">
             <Button
               startIcon={MdArrowBack}
+              // @ts-expect-error - haven't gotten around to making an IconButton component
               color="none"
               onClick={decrementMonth}
               disabled={!canDecrementMonth()}
@@ -147,6 +148,7 @@ export default function Scoreboard() {
             })} ${date.getFullYear()}`}
             <Button
               endIcon={MdArrowForward}
+              // @ts-expect-error - haven't gotten around to making an IconButton component
               color="none"
               onClick={incrementMonth}
               disabled={!canIncrementMonth()}
@@ -155,7 +157,7 @@ export default function Scoreboard() {
           </div>
         )}
         {fetcher.data && (
-          <Table>
+          <Table className="mb-6">
             <TableHeadRow isTableMaxHeight>
               <TableCell>Username</TableCell>
               <TableCell>Score</TableCell>

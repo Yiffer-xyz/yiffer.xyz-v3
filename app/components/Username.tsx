@@ -7,8 +7,7 @@ type UsernameProps = {
   className?: string;
 };
 
-const Username = (props: UsernameProps) => {
-  const { user, className } = props;
+const Username = ({ user, className }: UsernameProps) => {
   const { username, userType } = user;
 
   const isMod = userType === UserType.Mod;
