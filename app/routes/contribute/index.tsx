@@ -72,7 +72,7 @@ function ContributionCard({ title, description, href, disabled, children }: Cont
       <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center font-semibold">
         {title}
       </h2>
-      <p className="text-black font-light text-center">{description}</p>
+      <p className="text-black dark:text-text-dark text-center">{description}</p>
       {children}
     </div>
   ) : (
@@ -84,7 +84,7 @@ function ContributionCard({ title, description, href, disabled, children }: Cont
         <h2 className="text-theme2-darker dark:text-theme2-dark text-xl text-center font-semibold">
           {title}
         </h2>
-        <p className="text-black font-light text-center">{description}</p>
+        <p className="text-black dark:text-text-dark text-center">{description}</p>
       </div>
     </Link>
   );
