@@ -1,6 +1,7 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { useFetcher } from '@remix-run/react';
+import { add, format, isEqual, set, sub } from 'date-fns';
 import { useEffect, useState } from 'react';
 import {
   MdArrowBack,
@@ -35,39 +36,38 @@ const disabledClass = `
 const arrowButtonClasses =
   'dark:bg-transparent dark:hover:bg-transparent bg-transparent hover:bg-transparent';
 
+const now = () =>
+  set(new Date(), {
+    date: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    milliseconds: 0,
+  });
+
 export default function Scoreboard() {
   const fetcher = useFetcher();
   const [showPointInfo, setShowPointInfo] = useState(false);
   const [showAllTime, setShowAllTime] = useState(false);
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(now());
 
   const canIncrementMonth = () => {
-    const now = new Date();
-    return !(
-      date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
-    );
+    return !isEqual(date, now());
   };
 
   const incrementMonth = () => {
     if (!canIncrementMonth()) return;
-    if (date.getMonth() === 11) {
-      setDate(new Date(date.getFullYear() + 1, 0));
-    } else {
-      setDate(new Date(date.getFullYear(), date.getMonth() + 1));
-    }
+    setDate(prev => add(prev, { months: 1 }));
   };
 
   const canDecrementMonth = () => {
+    // TODO: Change this to the first month of the first contribution
     return !(date.getMonth() === 0 && date.getFullYear() === 2016);
   };
 
   const decrementMonth = () => {
     if (!canDecrementMonth()) return;
-    if (date.getMonth() === 0) {
-      setDate(new Date(date.getFullYear() - 1, 11));
-    } else {
-      setDate(new Date(date.getFullYear(), date.getMonth() - 1));
-    }
+    setDate(prev => sub(prev, { months: 1 }));
   };
 
   useEffect(() => {
@@ -143,9 +143,7 @@ export default function Scoreboard() {
               disabled={!canDecrementMonth()}
               className={arrowButtonClasses}
             />
-            {`${date.toLocaleString('default', {
-              month: 'short',
-            })} ${date.getFullYear()}`}
+            {format(date, 'MMM y')}
             <Button
               endIcon={MdArrowForward}
               // @ts-expect-error - haven't gotten around to making an IconButton component
