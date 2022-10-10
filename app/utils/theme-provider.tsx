@@ -1,12 +1,12 @@
 import { useFetcher } from '@remix-run/react';
 import {
   createContext,
-  useContext,
-  useState,
-  useRef,
-  useEffect,
   Dispatch,
   SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
 
 const themes = {
@@ -67,7 +67,7 @@ function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
       return;
     }
 
-    persistThemeRef.current.submit({ theme }, { action: 'action/set-theme', method: 'post' });
+    persistThemeRef.current.submit({ theme }, { action: 'api/set-theme', method: 'post' });
   }, [theme]);
 
   return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;

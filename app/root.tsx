@@ -15,7 +15,7 @@ import rootStyles from './styles/main.css';
 import { UserSession } from './types/types';
 import { getUserSession } from './utils/auth.server';
 
-import { useTheme, ThemeProvider, NonFlashOfWrongThemeEls } from './utils/theme-provider';
+import { NonFlashOfWrongThemeEls, ThemeProvider, useTheme } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
 
 export const meta = () => ({
@@ -50,6 +50,7 @@ export const loader: LoaderFunction = async function ({ request, context }) {
   const data = {
     theme: themeSession.getTheme(),
     user: userSession,
+    frontPageUrl: context.FRONT_PAGE_URL,
   };
   return data;
 };
@@ -68,7 +69,7 @@ export function App() {
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        <Layout user={data.user}>
+        <Layout user={data.user} frontPageUrl={data.frontPageUrl}>
           {/* <UserContext.Provider value={data.user}> */}
           <Outlet />
           {/* </UserContext.Provider> */}
@@ -96,20 +97,29 @@ export default function AppWithProviders() {
   );
 }
 
-function Layout({ user, children }: { user: UserSession | null; children: React.ReactNode }) {
+function Layout({
+  frontPageUrl,
+  user,
+  children,
+}: {
+  frontPageUrl: string;
+  user: UserSession | null;
+  children: React.ReactNode;
+}) {
   const [, setTheme] = useTheme();
   const isLoggedIn = !!user;
+  const isMod = true; // TODO:
 
   return (
     <>
       <nav
-        className="flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:bg-none 
-          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-400 w-full"
+        className="flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:bg-none
+          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-400 w-full z-20"
       >
-        <div className="flex items-center justify-between mx-auto flex-grow">
+        <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-6 items-center">
             <a
-              href="https://yiffer.xyz"
+              href={frontPageUrl}
               className="text-gray-400 hidden lg:block bg-none dark:text-blue-strong-300"
               style={{
                 fontFamily: 'Shrikhand,cursive',
@@ -120,7 +130,7 @@ function Layout({ user, children }: { user: UserSession | null; children: React.
               Yiffer.xyz
             </a>
             <a
-              href="https://yiffer.xyz"
+              href={frontPageUrl}
               className="text-gray-400 block lg:hidden bg-none dark:text-blue-strong-300"
               style={{
                 fontFamily: 'Shrikhand,cursive',
@@ -138,6 +148,11 @@ function Layout({ user, children }: { user: UserSession | null; children: React.
                 >
                   Account
                 </a>
+                {isMod && (
+                  <a href="/admin" className="font-semibold bg-none dark:text-blue-strong-300">
+                    Admin
+                  </a>
+                )}
                 <a href="/logout" className="font-semibold bg-none dark:text-blue-strong-300">
                   Log out
                 </a>

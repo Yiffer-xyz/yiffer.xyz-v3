@@ -4,12 +4,6 @@
 .dark .nav-shadowing {
   box-shadow: none;
 }
-.dark p,
-.dark span,
-.dark li,
-.dark td {
-  color: white;
-}
 body {
   background-color: #fcfcfc;
 }
@@ -25,30 +19,41 @@ h3 {
 h4 {
   font-size: 1.25rem;
 }
-nav > div {
+@media screen and (max-width: 768px) {
+  h1 {
+    font-size: 2.25rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+  }
+  h4 {
+    font-size: 1.1rem;
+  }
+}
+
+/* nav > div {
   max-width: 80%;
 }
 @media only screen and (max-width: 800px) {
   nav > div {
     max-width: 100%;
   }
-}
+} */
 svg {
   display: inline-block;
   margin-bottom: 2px;
 }
 a {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-position: 50% 100%;
-  background-repeat: no-repeat;
   background-size: 0% 1px;
   transition: background-size 0.2s;
+  background-position: 50% 100%;
 }
 a:hover,
 a:focus {
-  text-decoration: none;
   background-size: 100% 1px;
-  cursor: pointer;
 }
 ul li:before {
   content: '- ';

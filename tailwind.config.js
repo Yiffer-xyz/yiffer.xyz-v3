@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+
+// RESPONSIVE BREAKPOINTS:
+// sm 640
+// md 768
+// lg 1024
+// xl 1280
+// 2xl 1536
+
 module.exports = {
   darkMode: 'class',
   content: ['./app/**/*.{js,ts,jsx,tsx}'],
@@ -44,6 +52,7 @@ module.exports = {
             100: '#2a6386',
             200: '#3a7fab',
           },
+          trans: '#3fb9f340',
         },
         gray: {
           950: '#fafafa',
@@ -57,6 +66,7 @@ module.exports = {
           400: '#4d4f52',
           300: '#383f45',
           200: '#272d2f',
+          150: '#202528',
           100: '#1e2224',
           borderLight: '#aaaaaa44',
         },
@@ -66,6 +76,9 @@ module.exports = {
       },
       borderWidth: {
         5: '5px',
+      },
+      maxWidth: {
+        '80p': '80%',
       },
     },
     fontFamily: {

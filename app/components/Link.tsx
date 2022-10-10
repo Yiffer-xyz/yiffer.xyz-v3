@@ -19,6 +19,17 @@ export default function Link({
   className,
   ...props
 }: LinkProps) {
+  const linkClass = `
+    w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
+    bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
+    dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
+    focus:no-underline cursor-pointer
+    ${className}
+  `;
+
+  // NOTE that there are a few lines regarding links in `main.css`.
+  // These special things are not supported in tailwind yet.
+
   if (href.includes('http')) {
     // external link
     // eslint-disable-next-line react/jsx-no-target-blank
@@ -27,7 +38,7 @@ export default function Link({
         href={href}
         target={newTab ? '_blank' : '_self'}
         rel={newTab ? 'noreferrer' : undefined}
-        className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold ${className}`}
+        className={linkClass}
         style={{ paddingBottom: '1px' }}
       >
         {text}
@@ -40,7 +51,7 @@ export default function Link({
         to={href}
         target={newTab ? '_blank' : '_self'}
         rel={newTab ? 'noreferrer' : undefined}
-        className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold ${className}`}
+        className={linkClass}
         style={{ paddingBottom: '1px' }}
         prefetch="intent"
         {...props}
