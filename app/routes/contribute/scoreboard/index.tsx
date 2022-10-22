@@ -102,14 +102,17 @@ export default function Scoreboard() {
       </p>
 
       <p className="text-center">
-        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-        <a
+        <button
           onClick={() => setShowPointInfo(!showPointInfo)}
-          className="w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold"
+          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
+          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
+          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
+          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
+          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
         >
           {showPointInfo ? 'Hide' : 'Show'} point info{' '}
           {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
-        </a>
+        </button>
       </p>
       {showPointInfo && <PointInfo />}
       <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
