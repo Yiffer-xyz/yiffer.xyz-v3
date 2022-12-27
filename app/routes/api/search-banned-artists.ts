@@ -29,9 +29,7 @@ async function getSimilarBannedArtists(
   urlBase: string,
   artistName: string
 ): Promise<SimilarBannedArtistList> {
-  const response = await fetch(
-    `${urlBase}/api/similar-banned-artists?artistName=${artistName}`
-  );
+  const response = await fetch(`${urlBase}/api/similar-banned-artists?artistName=${artistName}`);
   const similarArtists: SimilarBannedArtistList = await response.json();
 
   return similarArtists;

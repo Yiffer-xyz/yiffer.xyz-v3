@@ -1,6 +1,6 @@
 import { ActionFunction, json, LoaderFunction, redirect } from '@remix-run/cloudflare';
-import { getThemeSession } from '../../utils/theme.server';
 import { isTheme } from '../../utils/theme-provider';
+import { getThemeSession } from '../../utils/theme.server';
 
 // By not returning any default component, Remix will use it as a resource route.
 
