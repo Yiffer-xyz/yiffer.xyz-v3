@@ -1,4 +1,4 @@
-import { LoaderFunction } from '@remix-run/cloudflare';
+import { LoaderFunction, MetaFunction } from '@remix-run/cloudflare';
 import {
   Links,
   LiveReload,
@@ -18,7 +18,7 @@ import { getUserSession } from './utils/auth.server';
 import { NonFlashOfWrongThemeEls, ThemeProvider, useTheme } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
 
-export const meta = () => ({
+export const meta: MetaFunction = () => ({
   charset: 'utf-8',
   title: 'New Remix App',
   viewport: 'width=device-width,initial-scale=1',
@@ -166,11 +166,17 @@ function Layout({
                   Account
                 </a>
                 {isMod && (
-                  <a href="/admin" className="font-semibold bg-none dark:text-blue-strong-300">
+                  <a
+                    href="/admin"
+                    className="font-semibold bg-none dark:text-blue-strong-300"
+                  >
                     Admin
                   </a>
                 )}
-                <a href="/logout" className="font-semibold bg-none dark:text-blue-strong-300">
+                <a
+                  href="/logout"
+                  className="font-semibold bg-none dark:text-blue-strong-300"
+                >
                   Log out
                 </a>
               </>
