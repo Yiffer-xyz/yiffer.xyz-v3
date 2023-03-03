@@ -87,22 +87,23 @@ export function App() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  return (
-    <>
-      <div role="alert">
-        <p>Something went wrong:(</p>
-        <p>Nice error message here, hide stack of course.</p>
-      </div>
-      <pre>
-        <code>{error.message}</code>
-      </pre>
-      <pre>
-        <code>{error.stack}</code>
-      </pre>
-    </>
-  );
-}
+// TODO: Make it work later. Currently causes infinite error loops.
+// export function ErrorBoundary({ error }: { error: Error }) {
+//   return (
+//     <>
+//       <div role="alert">
+//         <p>Something went wrong:(</p>
+//         <p>Nice error message here, hide stack of course.</p>
+//       </div>
+//       <pre>
+//         <code>{error.message}</code>
+//       </pre>
+//       <pre>
+//         <code>{error?.stack}</code>
+//       </pre>
+//     </>
+//   );
+// }
 
 export default function AppWithProviders() {
   const data = useLoaderData();

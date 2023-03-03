@@ -3,7 +3,10 @@ import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-r
 import { useEffect, useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
-import { Artist, UserSession } from '~/types/types';
+import { getAllArtists } from '~/routes/api/funcs/get-artists';
+import { getAllComicNamesAndIDs } from '~/routes/api/funcs/get-comics';
+import { getAllTags } from '~/routes/api/funcs/get-tags';
+import { Artist, Tag, UserSession } from '~/types/types';
 import { authLoader, mergeLoaders } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
@@ -16,13 +19,21 @@ const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
 const componentLoader: LoaderFunction = async ({ context }) => {
-  const artistsPromise = getArtists(context.URL_BASE_V2);
-  const comicsPromise = getComics(context.URL_BASE);
+  const urlBase = context.URL_BASE_V2 as string;
 
-  const [artists, comics] = await Promise.all([artistsPromise, comicsPromise]);
+  const allArtistsPromise = getAllArtists(urlBase, { includePending: true });
+  const comicsPromise = getAllComicNamesAndIDs(urlBase as string);
+  const tagsPromise = getAllTags(urlBase);
+  const [artists, comics, tags] = await Promise.all([
+    allArtistsPromise,
+    comicsPromise,
+    tagsPromise,
+  ]);
+
   return {
     artists,
     comics,
+    tags,
     uploadUrlBase: context.URL_BASE_V2,
   };
 };
@@ -56,6 +67,7 @@ interface ComponentLoaderData {
   artists: Artist[];
   comics: AnyKindOfComic[];
   uploadUrlBase: string;
+  tags: Tag[];
   user: UserSession | null;
 }
 
@@ -69,7 +81,8 @@ export default function Upload() {
   const actionData = useActionData();
   const transition = useTransition();
 
-  const { artists, comics, uploadUrlBase, user }: ComponentLoaderData = useLoaderData();
+  const { artists, comics, uploadUrlBase, user, tags }: ComponentLoaderData =
+    useLoaderData();
   const [step, setStep] = useState<number | string>(2);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,7 +132,9 @@ export default function Upload() {
       newArtist: newArtist,
       artistId: comicData.artistId,
       numberOfPages: comicData.files.length - 1,
-      previousComic: comicData.previousComic?.comicId ? comicData.previousComic : undefined,
+      previousComic: comicData.previousComic?.comicId
+        ? comicData.previousComic
+        : undefined,
       nextComic: comicData.nextComic?.comicId ? comicData.nextComic : undefined,
     };
 
@@ -177,18 +192,20 @@ export default function Upload() {
 
           <Step3Pagemanager comicData={comicData} onUpdate={setComicData} />
           <Step4Thumbnail />
-          <Step5Tags />
+          <Step5Tags allTags={tags} comicData={comicData} onUpdate={setComicData} />
 
           <h4 className="mt-8">Finish</h4>
 
-          {error && <InfoBox variant="error" text={error} className="mt-2 mb-4 w-fit" closable />}
+          {error && (
+            <InfoBox variant="error" text={error} className="mt-2 mb-4 w-fit" closable />
+          )}
 
           {isSubmitting && (
             <InfoBox variant="info" boldText={false} className="mt-2 mb-4">
               <p>Uploading comic - this could take up to a minute.</p>
               <p className="mt-4">
-                Have a cup of coffee while you wait. We'd buy you one as thanks for the help if we
-                could!
+                Have a cup of coffee while you wait. We'd buy you one as thanks for the
+                help if we could!
               </p>
             </InfoBox>
           )}
@@ -204,18 +221,6 @@ export default function Upload() {
       )}
     </div>
   );
-}
-
-async function getArtists(urlBase: string): Promise<Artist[]> {
-  const artistsResponse = await fetch(`${urlBase}/new-api/artists?includePending=true`);
-  const allArtists: Artist[] = await artistsResponse.json();
-  return allArtists.map(a => ({ ...a, name: a.name.replace('"', '') }));
-}
-
-async function getComics(urlBase: string): Promise<AnyKindOfComic[]> {
-  const response = await fetch(`${urlBase}/api/all-comics-simple`);
-  const comics: AnyKindOfComic[] = await response.json();
-  return comics;
 }
 
 function pageNumberToPageName(pageNum: number, filename: string): string {
