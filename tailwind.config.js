@@ -28,6 +28,7 @@ module.exports = {
         bgDark: '#262c30',
         theme1: {
           primary: '#9aebe7',
+          primaryLessTrans: '#9aebe770',
           primaryTrans: '#9aebe740',
           primaryMoreTrans: '#9aebe71a',
           dark: '#49ded7',

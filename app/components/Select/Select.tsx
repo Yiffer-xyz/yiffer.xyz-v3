@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 // TODO Add keyboard listeners for up/down to move selected item,
 // and space/enter to select and open the menu. Like in old yiffer.
 
-type keyValOptions = { text: string; value: any };
+type keyValOptions<T> = { text: string; value: T };
 
-export type BaseSelectProps = {
-  options: string[] | { text: string; value: any }[];
+export type BaseSelectProps<T> = {
+  options: { text: string; value: T }[];
   title?: string;
   error?: boolean;
   maxWidth?: number;
@@ -16,12 +16,12 @@ export type BaseSelectProps = {
   className?: string;
 };
 
-type FullSelectProps = {
-  onChange: (value: any) => void;
-  value?: any;
-} & BaseSelectProps;
+type FullSelectProps<T> = {
+  onChange: (value: T) => void;
+  value?: T;
+} & BaseSelectProps<T>;
 
-export default function Select({
+export default function Select<T>({
   options,
   title = '',
   value,
@@ -33,15 +33,20 @@ export default function Select({
   name,
   className = '',
   ...props
-}: FullSelectProps) {
+}: FullSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
+  const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     tryComputeWidth();
   }, []);
+
+  useEffect(() => {
+    setCurrentlyHighlightedIndex(-1);
+  }, [isOpen]);
 
   async function tryComputeWidth() {
     let isFinished = false;
@@ -106,26 +111,70 @@ export default function Select({
     setIsOpen(false);
   }
 
-  const convertedOptions = useMemo<keyValOptions[]>(() => {
-    if (!options || !options.length) {
-      return [];
-    }
-    // Convert string array to {text, value} array
-    if (typeof options[0] === 'string') {
-      return (options as string[]).map(text => ({ text: text, value: text }));
-    }
-    return options as keyValOptions[];
-  }, [options]);
+  const convertedValue = useMemo(() => {
+    return options.find(option => option.value === value);
+  }, [options, value]);
 
-  const borderStyle = error ? '' : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+  function setHighlightedIndex(indexNum: number) {
+    if (indexNum !== -1 && selectItemContainerRef.current) {
+      let option = selectItemContainerRef.current.children[indexNum];
+      if (option) {
+        (option as HTMLElement).scrollIntoView({ block: 'nearest', inline: 'start' });
+      }
+    }
+
+    setCurrentlyHighlightedIndex(indexNum);
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Tab') {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (!isOpen) {
+        setIsOpen(true);
+      } else if (currentlyHighlightedIndex !== -1 && options.length > 0) {
+        onSelected(options[currentlyHighlightedIndex].value);
+      } else {
+        setIsOpen(false);
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (!isOpen) {
+        setIsOpen(true);
+        setHighlightedIndex(0);
+      } else if (currentlyHighlightedIndex === options.length - 1) {
+        setHighlightedIndex(0);
+      } else {
+        setHighlightedIndex(currentlyHighlightedIndex + 1);
+      }
+    } else if (event.key === 'ArrowUp') {
+      if (!isOpen) {
+        setIsOpen(true);
+        setHighlightedIndex(options.length - 1);
+      } else if (currentlyHighlightedIndex === 0 || currentlyHighlightedIndex === -1) {
+        setHighlightedIndex(options.length - 1);
+      } else {
+        setHighlightedIndex(currentlyHighlightedIndex - 1);
+      }
+    } else if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  }
+
+  const borderStyle = error
+    ? ''
+    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
 
   return (
     <div
+      onKeyDown={onKeyDown}
       className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
         relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
       tabIndex={0}
+      onBlur={() => setIsOpen(false)}
     >
       {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
       <div // TODO: "selected" from old
@@ -137,7 +186,7 @@ export default function Select({
           }`}
         style={{ ...borderStyle }}
       >
-        {(value && convertedOptions.find(x => x.value === value)?.text) || '—'}
+        {(value && options.find(x => x.value === value)?.text) || '—'}
       </div>
       <div
         className={`${
@@ -145,19 +194,30 @@ export default function Select({
         } overflow-hidden shadow-lg w-fit min-w-full absolute bg-white dark:bg-gray-400 left-0 right-0 z-40 max-h-80 overflow-y-auto`}
         ref={selectItemContainerRef}
       >
-        {convertedOptions.map(({ text, value: optionValue }) => (
+        {options.map(({ text, value: optionValue }, index) => (
           <div
-            key={optionValue}
+            key={text}
+            onMouseEnter={() => setHighlightedIndex(index)}
+            onMouseLeave={() => setHighlightedIndex(-1)}
             onClick={e => onSelected(optionValue)}
-            className="z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
-              hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light"
+            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
+              currentlyHighlightedIndex === index
+                ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                : ''
+            }}`}
           >
             {text}
           </div>
         ))}
       </div>
 
-      <input type="text" name={name} value={value} onChange={() => {}} hidden />
+      <input
+        type="text"
+        name={name}
+        value={convertedValue?.text || ''}
+        onChange={() => {}}
+        hidden
+      />
     </div>
   );
 }
