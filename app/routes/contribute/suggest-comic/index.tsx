@@ -1,6 +1,12 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import { Form, useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import {
+  Form,
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useTransition,
+} from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { clearTimeout } from 'timers';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -9,24 +15,25 @@ import InfoBox from '~/components/InfoBox';
 import Textarea from '~/components/Textarea/Textarea';
 import TextInput from '~/components/TextInput/TextInput';
 import TopGradientBox from '~/components/TopGradientBox';
+import { SimilarComicResponse } from '~/routes/api/search-similar-comic';
 import type { Artist, Comic, UserSession } from '~/types/types';
 import { authLoader, mergeLoaders } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 
 export const loader = mergeLoaders(authLoader);
 
-export const action: ActionFunction = async function ({ request }) {
+export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
   const { comicName, artist, linksComments } = Object.fromEntries(reqBody);
   const fields = { comicName, artist, comment: linksComments };
 
-  const response = await fetch('https://yiffer.xyz/api/comicsuggestions', {
+  const response = await fetch(`${context.URL_BASE}/api/comicsuggestions`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
       cookie: request.headers.get('cookie') || '',
     },
-    body: reqBody,
+    body: JSON.stringify(fields),
   });
 
   if (!response.ok) {
@@ -38,57 +45,71 @@ export const action: ActionFunction = async function ({ request }) {
 
 export default function Upload() {
   const actionData = useActionData();
-  const fetcher = useFetcher();
+  const similarComicsFetcher = useFetcher();
+  const similarArtistsFetcher = useFetcher();
   const [comicName, setComicName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [comments, setComments] = useState('');
-  const [similarResults, setSimilarResults] = useState<Array<Comic | string>>([]);
-  const [notSuggested, setNotSuggested] = useState(false);
-  const [artistBanned, setArtistBanned] = useState<Array<Artist | string>>([]);
+  const [similarComicNames, setSimilarComicNames] = useState<string[]>([]);
+  const [differentComic, setDifferentComic] = useState(false);
+  const [bannedArtistNames, setBannedArtistNames] = useState<string[]>([]);
   const [differentArtist, setDifferentArtist] = useState(false);
   const { user }: { user: UserSession | null } = useLoaderData();
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
-
-  const onComicNameChange = function () {
-    setSimilarResults([]);
-
-    if (debounceTimeoutComicRef.current) clearTimeout(debounceTimeoutComicRef.current);
-
-    if (comicName.length < 3) return;
-
-    debounceTimeoutComicRef.current = setTimeout(() => {
-      fetcher.submit({ comicName }, { method: 'post', action: '/api/sear÷h-suggested-comics' });
-    }, 1500);
-  };
+  const transition = useTransition();
 
   useEffect(onComicNameChange, [comicName]);
 
-  const onArtistNameChange = function () {
-    setArtistBanned([]);
+  function onComicNameChange() {
+    setSimilarComicNames([]);
+    if (debounceTimeoutComicRef.current) clearTimeout(debounceTimeoutComicRef.current);
+    if (comicName.length < 3) return;
 
-    if (debounceTimeoutArtistRef.current) clearTimeout(debounceTimeoutArtistRef.current);
-
-    if (artistName.length < 3) return;
-
-    debounceTimeoutArtistRef.current = setTimeout(() => {
-      fetcher.submit({ artistName }, { method: 'post', action: '/api/search-banned-artists' });
+    debounceTimeoutComicRef.current = setTimeout(() => {
+      similarComicsFetcher.submit(
+        { comicName },
+        { method: 'post', action: '/api/search-similar-comic' }
+      );
     }, 1500);
-  };
+  }
+
+  useEffect(() => {
+    const similarComics = similarComicsFetcher.data as SimilarComicResponse;
+    if (similarComics) {
+      const names: string[] = [];
+      if (similarComics.exactMatchComic) {
+        names.push(similarComics.exactMatchComic);
+      }
+      if (similarComics.exactMatchRejectedComic) {
+        names.push(similarComics.exactMatchRejectedComic);
+      }
+      names.push(...similarComics.similarComics, ...similarComics.similarRejectedComics);
+
+      setSimilarComicNames(names);
+    }
+  }, [similarComicsFetcher.data]);
 
   useEffect(onArtistNameChange, [artistName]);
 
-  useEffect(() => {
-    if (fetcher.data) {
-      const { bannedArtists, suggestedComics } = fetcher.data;
+  function onArtistNameChange() {
+    setBannedArtistNames([]);
+    if (debounceTimeoutArtistRef.current) clearTimeout(debounceTimeoutArtistRef.current);
+    if (artistName.length < 3) return;
 
-      if (bannedArtists) {
-        setArtistBanned(bannedArtists);
-      } else if (similarResults) {
-        setSimilarResults(suggestedComics);
-      }
+    debounceTimeoutArtistRef.current = setTimeout(() => {
+      similarArtistsFetcher.submit(
+        { artistName },
+        { method: 'post', action: '/api/search-banned-artists' }
+      );
+    }, 1500);
+  }
+
+  useEffect(() => {
+    if (similarArtistsFetcher.data) {
+      setBannedArtistNames(similarArtistsFetcher.data);
     }
-  }, [fetcher.data]);
+  }, [similarArtistsFetcher.data]);
 
   const getSuccessText = function () {
     if (user) {
@@ -104,15 +125,9 @@ export default function Upload() {
   const getArtistText = function () {
     let name = '';
 
-    artistBanned.forEach((artist: Artist | string, idx) => {
-      if (artist instanceof String) {
-        name += artist;
-      } else {
-        // @ts-ignore
-        name += artist.name;
-      }
-
-      if (idx !== artistBanned.length) name += ', ';
+    bannedArtistNames.forEach((artist: string, idx) => {
+      name += artist;
+      if (idx !== bannedArtistNames.length) name += ', ';
     });
 
     return name;
@@ -122,8 +137,8 @@ export default function Upload() {
     return (!comicName ||
       !artistName ||
       !comments ||
-      (similarResults.length > 0 && !notSuggested) ||
-      (artistBanned.length > 0 && !differentArtist)) as boolean;
+      (similarComicNames.length > 0 && !differentComic) ||
+      (bannedArtistNames.length > 0 && !differentArtist)) as boolean;
   };
 
   return (
@@ -133,38 +148,39 @@ export default function Upload() {
         <BackToContribute />
       </p>
 
-      {fetcher?.data?.success ? (
+      {actionData?.success ? (
         <InfoBox
           title="Thanks for helping out!"
-          boldText={false}
           text={getSuccessText()}
           variant="success"
-          className="my-2 mx-32 mt-8"
+          className="mt-4"
         />
       ) : (
         <>
           <h4>Introduction</h4>
           <p>
             If you would like to follow your suggestion&apos;s status,{' '}
-            <span>create an account!</span> You can then follow updates in the &quot;view your
-            contributions&quot; section above. Having a user will also earn you points in the
-            scoreboard on the previous page - though significantly less than if you upload the comic
-            yourself.
+            <span>create an account!</span> You can then follow updates in the &quot;view
+            your contributions&quot; section above. Having a user will also earn you
+            points in the scoreboard on the previous page - though significantly less than
+            if you upload the comic yourself.
           </p>
           <br />
           <h4>Guidelines</h4>
           <ul className="list-none ml-4 spaced">
             <li>
-              The comic should be at least 4 pages long. If the pages have lots of panels or if the
-              comic is of very high quality, 3-page comics might be accepted.
+              The comic should be at least 4 pages long. If the pages have lots of panels
+              or if the comic is of very high quality, 3-page comics might be accepted.
             </li>
-            <li>The comic will not be accepted if it is of low quality (poorly drawn).</li>
+            <li>
+              The comic will not be accepted if it is of low quality (poorly drawn).
+            </li>
             <li>The comic will not be accepted if it is not in English.</li>
             <li>The comic might not be accepted if it is uncolored.</li>
             <li>The comic will not be accepted if it has censoring bars, dots, etc.</li>
             <li>
-              We do not accept cub comics, nor ones by artists Jay Naylor and Voregence who have
-              asked not to be represented here.
+              We do not accept cub comics, nor ones by artists Jay Naylor and Voregence
+              who have asked not to be represented here.
             </li>
           </ul>
           <TopGradientBox containerClassName="my-10 mx-20 shadow-lg">
@@ -178,23 +194,24 @@ export default function Upload() {
                 value={comicName}
               />
 
-              {similarResults.length > 0 && (
+              {similarComicNames.length > 0 && (
                 <>
                   <p>
-                    The following comics with similar names already exists in our system. If the
-                    comic you are suggesting is the same as one of these, please do not suggest it.
-                    If the comics are not available on Yiffer.xyz, they are most likely in a pending
-                    state from someone else&apos;s submission.
+                    The following comics with similar names already exists in our system.
+                    If the comic you are suggesting is the same as one of these, please do
+                    not suggest it. If the comics are not available to you currently on
+                    Yiffer.xyz, they are most likely in a pending state from someone
+                    else&apos;s submission or have been removed.
                   </p>
                   <ul className="list-none ml-4 spaced mb-4 mt-2">
-                    {similarResults.map((result, index) => (
-                      <li key={`result${index}`}>{result}</li>
+                    {similarComicNames.map((result, index) => (
+                      <li key={`result${index}`}>{result.toString()}</li>
                     ))}
                   </ul>
                   <Checkbox
                     label="The suggested comic is not one of the above"
-                    checked={notSuggested}
-                    onChange={setNotSuggested}
+                    checked={differentComic}
+                    onChange={setDifferentComic}
                   />
                 </>
               )}
@@ -207,11 +224,11 @@ export default function Upload() {
                 value={artistName}
               />
 
-              {artistBanned.length > 0 && (
+              {bannedArtistNames.length > 0 && (
                 <>
                   <p className="mb-4">
-                    An artist with the name {getArtistText()} has requested we do not host their
-                    comics.{' '}
+                    An artist with the name {getArtistText()} has requested we do not host
+                    their comics.{' '}
                   </p>
                   <Checkbox
                     label="This is a different artist."
@@ -234,13 +251,13 @@ export default function Upload() {
               )}
 
               <p>
-                Please provide some link (e.g. e621, FurAffinity, u18chan, reddit, anything not
-                behind a paywall), and any other helpful comments you may have. If you have multiple
-                sources, feel free to provide all of them!
+                Please provide some link (e.g. e621, FurAffinity, u18chan, reddit,
+                anything not behind a paywall), and any other helpful comments you may
+                have. If you have multiple sources, feel free to provide all of them!
               </p>
               <div className="flex justify-center mt-6">
                 <LoadingButton
-                  isLoading={false}
+                  isLoading={transition.state === 'submitting'}
                   text="Submit suggestion"
                   variant="contained"
                   color="primary"
