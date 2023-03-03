@@ -50,6 +50,11 @@ export type Tag = {
   name: string;
 };
 
+export type Tag = {
+  id: number;
+  name: string;
+};
+
 export interface JwtConfig {
   tokenSecret: string;
   cookie: {
