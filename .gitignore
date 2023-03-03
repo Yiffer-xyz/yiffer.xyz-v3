@@ -10,5 +10,5 @@ app/styles/app.css
 /functions
 .dev.vars
 /.fleet
-
+.DS_Store
 .fleet/

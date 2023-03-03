@@ -1,6 +1,3 @@
-// NOTE: TODO: This was an idea, and then D1 became open.
-// Not needed, but keeping it around juuuust in case for now..
-
 export interface DBResponse<T> {
   errorMessage?: string;
   errorCode?: string;
@@ -8,12 +5,30 @@ export interface DBResponse<T> {
   insertId?: number;
 }
 
-export default async function queryDb<T>(
+// This one throws if there's an error instead of returning DBResponse
+export async function queryDbDirect<T>(
+  urlBase: string,
+  query: string,
+  params: any[] = []
+): Promise<T> {
+  const result = await queryDb<T>(urlBase, query, params);
+  if (result.errorCode || result.errorMessage) {
+    throw new Error(
+      `Error querying database: ${result.errorCode} - ${result.errorMessage}`
+    );
+  }
+  if (result.result === undefined) {
+    throw new Error('Error querying database: Undefined result');
+  }
+
+  return result.result;
+}
+
+export async function queryDb<T>(
   urlBase: string,
   query: string,
   params: any[] = []
 ): Promise<DBResponse<T>> {
-  console.log('url base', urlBase);
   const response = await fetch(`${urlBase}/new-api/query-db`, {
     method: 'POST',
     headers: {

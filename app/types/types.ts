@@ -4,13 +4,6 @@ export enum UserType {
   User = 'user',
 }
 
-export type User = {
-  username: string;
-  userType: UserType;
-  email: string;
-  id: number;
-};
-
 export type Artist = {
   id: number;
   name: string;
@@ -29,6 +22,11 @@ export type Comic = {
   previousComic?: Comic;
   nextComic?: Comic;
   isPending?: boolean;
+};
+
+export type Tag = {
+  id: number;
+  name: string;
 };
 
 export interface JwtConfig {

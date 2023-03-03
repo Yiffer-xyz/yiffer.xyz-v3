@@ -27,10 +27,18 @@ type Step2Props = {
   comics: AnyKindOfComic[];
 };
 
-export default function Step2ComicData({ artists, comics, comicData, onUpdate }: Step2Props) {
+export default function Step2ComicData({
+  artists,
+  comics,
+  comicData,
+  onUpdate,
+}: Step2Props) {
   const [artistNotInList, setArtistNotInList] = useState(false);
 
-  const artistOptions = useMemo(() => artists.map(a => ({ value: a.id, text: a.name })), [artists]);
+  const artistOptions = useMemo(
+    () => artists.map(a => ({ value: a.id, text: a.name })),
+    [artists]
+  );
 
   const allComicOptions = useMemo(() => {
     return comics.map(c => {
@@ -119,12 +127,12 @@ export default function Step2ComicData({ artists, comics, comicData, onUpdate }:
 
       <h4 className="mt-8">Connected comics</h4>
       <p>
-        If this is a standalone comic, leave these fields empty. If it's part of a series, fill in
-        the previous and/or next comics.
+        If this is a standalone comic, leave these fields empty. If it's part of a series,
+        fill in the previous and/or next comics.
       </p>
       <p>
-        If you are uploading multiple chapters of a series, you can leave the "next comic" empty and
-        only fill in the previous comic for each.
+        If you are uploading multiple chapters of a series, you can leave the "next comic"
+        empty and only fill in the previous comic for each.
       </p>
 
       <div className="flex flex-row flex-wrap gap-4 mt-2">

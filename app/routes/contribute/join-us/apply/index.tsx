@@ -12,7 +12,8 @@ import { redirectNoAuth } from '~/utils/loaders';
 
 export const loader = redirectNoAuth('/join-us');
 
-const validateTelegramUsername = (username: string) => /^([a-zA-Z0-9_]){5,32}$/.test(username);
+const validateTelegramUsername = (username: string) =>
+  /^([a-zA-Z0-9_]){5,32}$/.test(username);
 
 export const action: ActionFunction = async function ({ request, context }) {
   const urlBase = context.URL_BASE;
@@ -49,15 +50,13 @@ export default function Apply() {
       </p>
 
       <p>
-        In order to be accepted as a mod, you must have and use a Telegram account. We use telegram
-        for communication and announcements for mods. If you do not have an account, you will not be
-        accepted.
+        In order to be accepted as a mod, you must have and use a Telegram account. We use
+        telegram for communication and announcements for mods. If you do not have an
+        account, you will not be accepted.
       </p>
 
       <TopGradientBox containerClassName="w-fit mx-auto my-4" innerClassName="p-8 pb-4">
         <fetcher.Form method="post" className="w-fit mx-auto flex flex-col">
-          <h3 className="font-bold">Mod application form</h3>
-
           {fetcher.data?.success ? (
             <InfoBox
               variant="success"
@@ -69,7 +68,7 @@ export default function Apply() {
               <TextareaUncontrolled
                 name="notes"
                 label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
-                className="mb-12 mt-4"
+                className="mb-12"
                 validatorFunc={v => v.length > 0}
                 onErrorChange={hasError => setNotesIsValid(!hasError)}
               />

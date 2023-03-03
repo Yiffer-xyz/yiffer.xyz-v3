@@ -43,9 +43,9 @@ export default function Feedback() {
       </p>
 
       <p>
-        Thank you for taking the time to help improve our site! Note that we can not reply to your
-        message - if you need assistance or have any questions, you should send an email to
-        contact@yiffer.xyz instead.
+        Thank you for taking the time to help improve our site! Note that we can not reply
+        to your message - if you need assistance or have any questions, you should send an
+        email to contact@yiffer.xyz instead.
       </p>
 
       <TopGradientBox containerClassName="my-10 mx-auto shadow-lg max-w-2xl">

@@ -63,7 +63,13 @@ type ContributionCardProps = {
   children?: React.ReactNode;
 };
 
-function ContributionCard({ title, description, href, disabled, children }: ContributionCardProps) {
+function ContributionCard({
+  title,
+  description,
+  href,
+  disabled,
+  children,
+}: ContributionCardProps) {
   return disabled ? (
     <div
       className="rounded-lg p-4 h-full flex flex-col 
@@ -76,7 +82,11 @@ function ContributionCard({ title, description, href, disabled, children }: Cont
       {children}
     </div>
   ) : (
-    <Link to={'/contribute/' + href} prefetch="intent" style={{ backgroundImage: 'none' }}>
+    <Link
+      to={'/contribute/' + href}
+      prefetch="intent"
+      style={{ backgroundImage: 'none' }}
+    >
       <div
         className="rounded-lg shadow-md p-4 hover:shadow-lg h-full flex flex-col 
           justify-evenly bg-white dark:bg-gray-400"
