@@ -19,7 +19,7 @@ const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
 const componentLoader: LoaderFunction = async ({ context }) => {
-  const urlBase = context.URL_BASE_V2 as string;
+  const urlBase = context.DB_API_URL_BASE as string;
 
   const allArtistsPromise = getAllArtists(urlBase, { includePending: true });
   const comicsPromise = getAllComicNamesAndIDs(urlBase as string);
@@ -34,7 +34,7 @@ const componentLoader: LoaderFunction = async ({ context }) => {
     artists,
     comics,
     tags,
-    uploadUrlBase: context.URL_BASE_V2,
+    uploadUrlBase: context.DB_API_URL_BASE,
   };
 };
 
@@ -48,7 +48,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     return json({ error }, { status: 400 });
   }
 
-  const response = await fetch(`${context.URL_BASE_V2}/new-api/upload`, {
+  const response = await fetch(`${context.DB_API_URL_BASE}/new-api/upload`, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {

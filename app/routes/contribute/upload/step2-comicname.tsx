@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
-import { SimilarComicResponse } from '../../api/search-similar-comic';
+import { SimilarComicResponse } from '../../api/search-similarly-named-comic';
 
 type Step2ComicnameProps = {
   comicName: string;
@@ -65,7 +65,7 @@ export default function Step2Comicname({
     debounceTimeoutRef.current = setTimeout(() => {
       similarComicsFetcher.submit(
         { comicName },
-        { method: 'post', action: '/api/search-similar-comic' }
+        { method: 'post', action: '/api/search-similarly-named-comic' }
       );
     }, 1000);
   }

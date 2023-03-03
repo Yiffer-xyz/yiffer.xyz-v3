@@ -52,23 +52,27 @@ export async function getUserSession(
   }
 
   const tokenContent = jwt.decode(sessionCookieContent);
-  if (!tokenContent.payload || !tokenContent.payload.id || !tokenContent.payload.username) {
+  if (
+    !tokenContent.payload ||
+    !tokenContent.payload.id ||
+    !tokenContent.payload.username
+  ) {
     return null;
   }
 
   return { userId: tokenContent.payload.userId, username: tokenContent.payload.username };
 }
 
-export async function getUser(request: Request, jwtConfigStr: string) {
-  const userSession = await getUserSession(request, jwtConfigStr);
-  if (userSession === null) {
-    return null;
-  }
+// export async function getUser(request: Request, jwtConfigStr: string) {
+//   const userSession = await getUserSession(request, jwtConfigStr);
+//   if (userSession === null) {
+//     return null;
+//   }
 
-  // TODO: lookup full user in db/old api here
-  const userFromDb = { id: 1, username: 'Melon' }; // remove this, obv
-  return userFromDb;
-}
+//   // TODO: lookup full user in db/old api here
+//   const userFromDb = { id: 1, username: 'Melon' }; // remove this, obv
+//   return userFromDb;
+// }
 
 // Place in the loader of routes requiring a logged in user
 export async function requireUser(request: Request, jwtConfigStr: string) {
@@ -96,7 +100,11 @@ export async function createUserSession(user: User, jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
   // This one is for auth - will be verified on the server(s)
-  const sessionCookieHeader = await createJwtAuthCookieHeader(user.id, user.username, jwtConfig);
+  const sessionCookieHeader = await createJwtAuthCookieHeader(
+    user.id,
+    user.username,
+    jwtConfig
+  );
 
   // This one is to ensure cross-subdomain auth, will not need when everything is Remix.
   // This one is not serialized/anything like that, and not httpOnly, so it can be read by the
@@ -112,26 +120,34 @@ export async function createUserSession(user: User, jwtConfigStr: string) {
   });
 }
 
-async function createJwtAuthCookieHeader(userId: number, username: string, jwtConfig: JwtConfig) {
+async function createJwtAuthCookieHeader(
+  userId: number,
+  username: string,
+  jwtConfig: JwtConfig
+) {
   const token = await jwt.sign({ id: userId, username }, jwtConfig.tokenSecret);
   // Creating it manually, because the Remix methods transform it for some reason??
   return `${jwtConfig.cookie.name}=${token}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
     jwtConfig.cookie.domain
-  };${jwtConfig.cookie.secure ? ' Secure;' : ''}${jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''}`;
+  };${jwtConfig.cookie.secure ? ' Secure;' : ''}${
+    jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''
+  }`;
 }
 
 function destroyJwtAuthCookieHeader(jwtConfig: JwtConfig): string {
   // Creating it manually, because the Remix methods transform it for some reason??
   return `${jwtConfig.cookie.name}=; Max-Age=0; Domain=${jwtConfig.cookie.domain};${
     jwtConfig.cookie.secure ? ' Secure;' : ''
-  }${jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''} Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+  }${
+    jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''
+  } Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
 }
 
 function createUserDataCookieHeader(userData: any, jwtConfig: JwtConfig) {
   // Creating it manually, because the Remix methods transform it for some reason??
-  return `yiffer_userdata=${JSON.stringify(userData)}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
-    jwtConfig.cookie.domain
-  }; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
+  return `yiffer_userdata=${JSON.stringify(userData)}; Max-Age=${
+    jwtConfig.cookie.maxAge
+  }; Domain=${jwtConfig.cookie.domain}; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
 }
 
 function destroyUserDataCookieHeader(jwtConfig: JwtConfig) {
@@ -149,7 +165,9 @@ function cookiesStringToYifferSessionCookie(
     return;
   }
   const cookiesSplit = allCookies.split(';').map(cookieStr => cookieStr.trim());
-  const yifferSessionCookie = cookiesSplit.find(cookie => cookie.startsWith(`${cookieName}=`));
+  const yifferSessionCookie = cookiesSplit.find(cookie =>
+    cookie.startsWith(`${cookieName}=`)
+  );
   if (!yifferSessionCookie) {
     return;
   }

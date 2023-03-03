@@ -17,7 +17,10 @@ export const mergeLoaders = (...loaders: LoaderFunction[]): LoaderFunction => {
   return async (loaderArgs: DataFunctionArgs) => {
     const loaderPromises = loaders.map(loader => loader(loaderArgs));
     const loaderResults = await Promise.all(loaderPromises);
-    const mergedData = loaderResults.reduce((acc, data) => ({ ...acc, ...(data || {}) }), {});
+    const mergedData = loaderResults.reduce(
+      (acc, data) => ({ ...acc, ...(data || {}) }),
+      {}
+    );
     return mergedData;
   };
 };
@@ -30,7 +33,7 @@ export const mergeLoaders = (...loaders: LoaderFunction[]): LoaderFunction => {
  * ```
  */
 export const authLoader: LoaderFunction = async ({ request, context }) => {
-  const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
+  const userSession = await getUserSession(request, context.JWT_CONFIG_STR as string);
   const data = {
     user: userSession,
   };

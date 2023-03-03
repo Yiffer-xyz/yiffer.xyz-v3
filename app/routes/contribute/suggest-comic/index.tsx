@@ -15,8 +15,8 @@ import InfoBox from '~/components/InfoBox';
 import Textarea from '~/components/Textarea/Textarea';
 import TextInput from '~/components/TextInput/TextInput';
 import TopGradientBox from '~/components/TopGradientBox';
-import { SimilarComicResponse } from '~/routes/api/search-similar-comic';
-import type { Artist, Comic, UserSession } from '~/types/types';
+import { SimilarComicResponse } from '~/routes/api/search-similarly-named-comic';
+import type { UserSession } from '~/types/types';
 import { authLoader, mergeLoaders } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 
@@ -69,7 +69,7 @@ export default function Upload() {
     debounceTimeoutComicRef.current = setTimeout(() => {
       similarComicsFetcher.submit(
         { comicName },
-        { method: 'post', action: '/api/search-similar-comic' }
+        { method: 'post', action: '/api/search-similarly-named-comic' }
       );
     }, 1500);
   }
