@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 import useWindowSize from '~/utils/useWindowSize';
-type keyValOptions = { text: string; value: any };
 
-export type BaseSearchableSelectProps = {
-  options: string[] | { text: string; value: any }[];
+type keyValOptions<T> = { text: string; value: T };
+
+export type BaseSearchableSelectProps<T> = {
+  options: { text: string; value: T }[];
   title?: string;
   error?: boolean;
   maxWidth?: number;
@@ -17,13 +18,13 @@ export type BaseSearchableSelectProps = {
   className?: string;
 };
 
-type FullSelectProps = {
-  onChange: (value: any) => void;
+type FullSelectProps<T> = {
+  onChange: (value: T) => void;
   onValueCleared: () => void;
-  value?: any;
-} & BaseSearchableSelectProps;
+  value?: T;
+} & BaseSearchableSelectProps<T>;
 
-export default function SearchableSelect({
+export default function SearchableSelect<T>({
   options,
   title = '',
   value,
@@ -39,19 +40,28 @@ export default function SearchableSelect({
   mobileCompact = false,
   className = '',
   ...props
-}: FullSelectProps) {
+}: FullSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
-  const selectItemContainerRef = useRef<HTMLDivElement>(null);
-  const [lastChangeTime, setLastChangeTime] = useState(0);
+  const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
   const windowSize = useWindowSize();
+  const selectItemContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const windowWidth: number = windowSize.width || 0;
 
   useEffect(() => {
     tryComputeWidth();
   }, []);
+
+  useEffect(() => {
+    if (searchText && !isOpen) {
+      setIsOpen(true);
+    }
+    setCurrentlyHighlightedIndex(-1);
+  }, [searchText]);
 
   async function tryComputeWidth() {
     let isFinished = false;
@@ -111,44 +121,88 @@ export default function SearchableSelect({
     });
   }
 
-  function onSelected(clickedValue: any) {
-    setSearchText('');
+  function onSelected(clickedValue: T) {
     onChange(clickedValue);
-    setIsOpen(false);
+    clearAndCloseSearch();
   }
 
-  const convertedOptions = useMemo<keyValOptions[]>(() => {
-    if (!options?.length) {
-      return [];
+  function clearAndCloseSearch({ avoidIfHighlighted = false } = {}) {
+    if (avoidIfHighlighted && currentlyHighlightedIndex !== -1) {
+      return;
     }
-    // Convert string array to {text, value} array
-    if (typeof options[0] === 'string') {
-      return (options as string[]).map(text => ({ text: text, value: text }));
-    }
-    return options as keyValOptions[];
-  }, [options]);
+    setSearchText('');
+    setIsOpen(false);
+    setHighlightedIndex(-1);
+    inputRef.current?.blur();
+  }
 
-  const filteredOptions = useMemo<keyValOptions[]>(() => {
-    if (!searchText) {
-      return convertedOptions;
+  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
+      if (currentlyHighlightedIndex !== -1 && filteredOptions.length > 0) {
+        onSelected(filteredOptions[currentlyHighlightedIndex].value);
+      } else if (
+        currentlyHighlightedIndex === -1 &&
+        filteredOptions.length > 0 &&
+        isOpen
+      ) {
+        onSelected(filteredOptions[0].value);
+      }
+    } else if (event.key === 'ArrowDown') {
+      if (!isOpen) {
+        setIsOpen(true);
+        setHighlightedIndex(0);
+      } else if (currentlyHighlightedIndex === filteredOptions.length - 1) {
+        setHighlightedIndex(0);
+      } else {
+        setHighlightedIndex(currentlyHighlightedIndex + 1);
+      }
+    } else if (event.key === 'ArrowUp') {
+      if (!isOpen) {
+        setIsOpen(true);
+        setHighlightedIndex(filteredOptions.length - 1);
+      } else if (currentlyHighlightedIndex === 0 || currentlyHighlightedIndex === -1) {
+        setHighlightedIndex(filteredOptions.length - 1);
+      } else {
+        setHighlightedIndex(currentlyHighlightedIndex - 1);
+      }
+    } else if (event.key === 'Escape') {
+      clearAndCloseSearch();
     }
-    return convertedOptions.filter(option => {
+  }
+
+  function setHighlightedIndex(indexNum: number) {
+    if (indexNum !== -1 && selectItemContainerRef.current) {
+      let option = selectItemContainerRef.current.children[indexNum];
+      if (option) {
+        (option as HTMLElement).scrollIntoView({ block: 'nearest', inline: 'start' });
+      }
+    }
+
+    setCurrentlyHighlightedIndex(indexNum);
+  }
+
+  const filteredOptions = useMemo<keyValOptions<T>[]>(() => {
+    if (!searchText) {
+      return options;
+    }
+    return options.filter(option => {
       return option.text.toLowerCase().includes(searchText.toLowerCase());
     });
-  }, [convertedOptions, searchText]);
+  }, [options, searchText]);
 
   function onFilledInputActivated() {
     onValueCleared();
     setIsOpen(true);
-    setLastChangeTime(Date.now());
   }
 
   const convertedValue = useMemo(() => {
-    return convertedOptions.find(option => option.value === value);
-  }, [convertedOptions, value]);
+    return options.find(option => option.value === value);
+  }, [options, value]);
 
   const borderStyle =
-    error || disabled ? '' : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+    error || disabled
+      ? ''
+      : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
 
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
     disabled:border-gray-800 dark:disabled:border-gray-600
@@ -158,6 +212,7 @@ export default function SearchableSelect({
 
   return (
     <div
+      onKeyDown={onKeyDown}
       className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
         relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
       style={{ ...minWidthStyle, ...widthStyle }}
@@ -183,21 +238,20 @@ export default function SearchableSelect({
           disabled={disabled}
           name={name}
           onChange={e => setSearchText(e.target.value)}
-          onClick={() => {
-            if (lastChangeTime + 100 < Date.now()) {
-              setIsOpen(!isOpen || searchText.length > 0);
-            }
-          }}
+          onFocus={() => setIsOpen(true)}
+          onClick={() => setIsOpen(true)}
           style={{ ...borderStyle }}
           className={inputClassname}
           placeholder={placeholder}
+          onBlur={() => clearAndCloseSearch({ avoidIfHighlighted: true })}
+          ref={inputRef}
         />
       )}
 
       {value && (
         <span
-          className="absolute right-4 top-3 hover:cursor-pointer"
-          onClick={onFilledInputActivated}
+          className="absolute right-2 top-3 hover:cursor-pointer"
+          onClick={onValueCleared}
         >
           <RiCloseLine />
         </span>
@@ -209,14 +263,21 @@ export default function SearchableSelect({
         } overflow-hidden shadow-lg w-fit min-w-full absolute bg-white dark:bg-gray-400 left-0 right-0 z-40 max-h-80 overflow-y-auto`}
         ref={selectItemContainerRef}
       >
-        {filteredOptions.map(({ text, value: optionValue }) => (
+        {filteredOptions.map(({ text, value: optionValue }, index) => (
           <div
             key={text}
             onClick={() => onSelected(optionValue)}
-            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap hover:bg-gradient-to-r
-              hover:from-theme1-primary hover:to-theme2-primary dark:hover:text-text-light`}
+            onMouseEnter={() => setHighlightedIndex(index)}
+            onMouseLeave={() => setHighlightedIndex(-1)}
+            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
+              currentlyHighlightedIndex === index
+                ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                : ''
+            }}`}
           >
-            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>{text}</p>
+            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>
+              {text}
+            </p>
           </div>
         ))}
         {filteredOptions.length === 0 && (
@@ -232,7 +293,7 @@ export default function SearchableSelect({
       <input
         type="text"
         name={name}
-        value={value || ''}
+        value={convertedValue?.text || ''}
         disabled={disabled}
         onChange={() => {}}
         readOnly
