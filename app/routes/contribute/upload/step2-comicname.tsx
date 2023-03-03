@@ -35,9 +35,11 @@ export default function Step2Comicname({
       setIsLegalComicnameState(false);
       return;
     }
-    const isExactMath = similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
+    const isExactMath =
+      similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
     const isAnySimilar =
-      similarComics.similarComics.length > 0 || similarComics.similarRejectedComics.length > 0;
+      similarComics.similarComics.length > 0 ||
+      similarComics.similarRejectedComics.length > 0;
 
     let isLegal = false;
     if (!isExactMath && comicName.length > 2) {
@@ -68,16 +70,23 @@ export default function Step2Comicname({
     }, 1000);
   }
 
-  const isExactMath = similarComics?.exactMatchComic || similarComics?.exactMatchRejectedComic;
+  const isExactMath =
+    similarComics?.exactMatchComic || similarComics?.exactMatchRejectedComic;
   const isAnySimilar =
     similarComics &&
     !isExactMath &&
-    (similarComics.similarComics.length > 0 || similarComics.similarRejectedComics.length > 0);
+    (similarComics.similarComics.length > 0 ||
+      similarComics.similarRejectedComics.length > 0);
 
   return (
     <>
       <div className="flex flex-row gap-4 flex-wrap">
-        <TextInput label="Comic name" name="comicName" value={comicName} onChange={onUpdate} />
+        <TextInput
+          label="Comic name"
+          name="comicName"
+          value={comicName}
+          onChange={onUpdate}
+        />
       </div>
 
       {similarComics && (
@@ -88,7 +97,10 @@ export default function Step2Comicname({
                 <InfoBox variant="warning" boldText={false} className="mt-2 w-fit">
                   {similarComics.similarComics.length > 0 && (
                     <>
-                      <p>The following comics with similar names already exist in the system:</p>
+                      <p>
+                        The following comics with similar names already exist in the
+                        system:
+                      </p>
                       <ul>
                         {similarComics.similarComics.map((comicName: string) => (
                           <li key={comicName}>{comicName}</li>
@@ -99,8 +111,8 @@ export default function Step2Comicname({
                   {similarComics.similarRejectedComics.length > 0 && (
                     <>
                       <p>
-                        The following comics with similar names have been rejected. If one of these
-                        is your comic, do not upload it:
+                        The following comics with similar names have been rejected. If one
+                        of these is your comic, do not upload it:
                       </p>
                       <ul>
                         {similarComics.similarRejectedComics.map((comicName: string) => (

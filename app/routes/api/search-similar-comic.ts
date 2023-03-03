@@ -1,4 +1,5 @@
 import { ActionFunction, json } from '@remix-run/cloudflare';
+import { getSimilarComics } from './funcs/get-similar-comics';
 
 export interface SimilarComicResponse {
   similarComics: string[];
@@ -8,16 +9,10 @@ export interface SimilarComicResponse {
 }
 
 export const action: ActionFunction = async function ({ request, context }) {
-  const urlBase = context.URL_BASE as string;
+  const urlBase = context.URL_BASE_V2 as string;
   const body = await request.formData();
   const comicName = body.get('comicName') as string;
 
-  const data = await getSimilarComics(comicName, urlBase);
+  const data = await getSimilarComics(urlBase, comicName);
   return json(data);
 };
-
-async function getSimilarComics(comicName: string, urlBase: string): Promise<SimilarComicResponse> {
-  const comicsRes = await fetch(`${urlBase}/api/similar-comics?comicName=${comicName}`);
-  const comics: SimilarComicResponse = await comicsRes.json();
-  return comics;
-}

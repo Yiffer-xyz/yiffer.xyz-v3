@@ -24,6 +24,27 @@ export type Comic = {
   isPending?: boolean;
 };
 
+export type UploadedComic = {
+  id: number;
+  name: string;
+  artistId?: number;
+  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
+  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+  state: 'WIP' | 'Cancelled' | 'Finished';
+  numberOfPages: number;
+  timestamp: string;
+  status: 'pending' | 'approved' | 'rejected' | 'rejected-list';
+  points?: number;
+  pointsDescription?: string;
+  modComment?: string;
+  userId?: number;
+  userIP?: string;
+  uploadId: string; // TODO: what is this
+  newArtistName?: string;
+  newArtistPatreonName?: string;
+  newArtistE621Name?: string;
+};
+
 export type Tag = {
   id: number;
   name: string;
