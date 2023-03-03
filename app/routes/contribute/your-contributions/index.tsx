@@ -45,7 +45,11 @@ export interface ComicProblem extends ContributionBase {
   problemCategory: string;
 }
 
-export type Contribution = ComicSuggestion | ContributedComic | TagSuggestion | ComicProblem;
+export type Contribution =
+  | ComicSuggestion
+  | ContributedComic
+  | TagSuggestion
+  | ComicProblem;
 
 async function getContributedComics(urlBase: string): Promise<Array<ContributedComic>> {
   return uploadedComicsQueryRes.map(comic => ({
@@ -210,7 +214,11 @@ export default function YourContributions() {
                 <p className="font-extralight">{getContributionName(contribution)}</p>
               </TableCell>
               <TableCell>
-                <p className={`${getContributionStatusColor(contribution.status)} font-extralight`}>
+                <p
+                  className={`${getContributionStatusColor(
+                    contribution.status
+                  )} font-extralight`}
+                >
                   {contribution.status}
                 </p>
               </TableCell>
