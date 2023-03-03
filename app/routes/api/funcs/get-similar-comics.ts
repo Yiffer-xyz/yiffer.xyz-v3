@@ -2,9 +2,9 @@ import { AnyKindOfComic } from '~/routes/contribute/upload';
 import { UploadedComic } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import stringDistance from '~/utils/string-distance';
-import { SimilarComicResponse } from '../search-similar-comic';
+import { SimilarComicResponse } from '../search-similarly-named-comic';
 
-export async function getSimilarComics(
+export async function getSimilarlyNamedComics(
   urlBase: string,
   comicName: string
 ): Promise<SimilarComicResponse> {

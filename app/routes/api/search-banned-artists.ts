@@ -9,7 +9,7 @@ type SimilarBannedArtistList = {
 };
 
 export const action: ActionFunction = async function ({ request, context }) {
-  const urlBase = context.URL_BASE_V2 as string;
+  const urlBase = context.DB_API_URL_BASE as string;
   const body = await request.formData();
   const artistName = body.get('artistName') as string;
 

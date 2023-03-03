@@ -80,7 +80,7 @@ async function getComicSuggestions(urlBase: string): Promise<Array<ComicSuggesti
 }
 
 export const loader: LoaderFunction = async function ({ context }) {
-  const urlBase: string = context.URL_BASE as string;
+  const urlBase: string = context.DB_API_URL_BASE as string;
   const uploadedComicsPromise = getContributedComics(urlBase);
   const tagSuggestionsPromise = getTagSuggestions(urlBase);
   const comicProblemsPromise = getComicProblems(urlBase);

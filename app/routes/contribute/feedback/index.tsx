@@ -6,28 +6,21 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
 import Textarea from '~/components/Textarea/Textarea';
 import TopGradientBox from '~/components/TopGradientBox';
+import { getUserSession } from '~/utils/auth.server';
+import { queryDbDirect } from '~/utils/database-facade';
 import BackToContribute from '../BackToContribute';
 
 export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
-  const urlBase = context.URL_BASE as string;
+  const urlBase = context.DB_API_URL_BASE as string;
   const { feedbackText } = Object.fromEntries(reqBody);
-  const fields = { feedbackText };
+  const user = await getUserSession(request, context.JWT_CONFIG_STR as string);
 
-  const response = await fetch(`${urlBase}/api/feedback`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      cookie: request.headers.get('cookie') || '',
-    },
-    body: JSON.stringify(fields),
-  });
+  let insertQuery = 'INSERT INTO feedback (Text, UserId) VALUES (?, ?)';
+  const insertParams = [feedbackText, user?.userId ?? null];
 
-  if (!response.ok) {
-    return json({ error: await response.text(), fields }, { status: response.status });
-  } else {
-    return json({ success: true });
-  }
+  await queryDbDirect(urlBase, insertQuery, insertParams);
+  return json({ success: true });
 };
 
 export default function Feedback() {

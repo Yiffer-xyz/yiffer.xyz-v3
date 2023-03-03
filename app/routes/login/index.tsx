@@ -30,8 +30,8 @@ export const action: ActionFunction = async function ({ request, context }) {
   const response = await login(
     username as string,
     password as string,
-    context.URL_BASE,
-    context.JWT_CONFIG_STR
+    context.URL_BASE_OLD_DO_NOT_USE as string,
+    context.JWT_CONFIG_STR as string
   );
   if (response === false) {
     return json({ error: 'Incorrect username or password', fields }, { status: 401 });
@@ -69,7 +69,9 @@ export default function Login() {
         className="mb-6"
       />
 
-      {actionData?.error && <InfoBox variant="error" text={actionData.error} className="my-2" />}
+      {actionData?.error && (
+        <InfoBox variant="error" text={actionData.error} className="my-2" />
+      )}
 
       <div className="flex">
         <LoadingButton
