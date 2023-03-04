@@ -20,7 +20,7 @@ module.exports = {
         status: {
           info1: '#57b5f3',
           info2: '#57b5f3',
-          error1: '#f35757',
+          // error1: // use red.strong.300
           error2: '#e2557f',
           warn1: '#ec9e3f',
           warn2: '#fbc164',
@@ -41,7 +41,6 @@ module.exports = {
           darker: '#1cda94',
         },
         blue: {
-          // I'm very open to naming suggestions here.
           // "strong" because the saturation is high. To be used in DARK mode
           strong: {
             100: '#007ec7',
@@ -54,6 +53,19 @@ module.exports = {
             200: '#3a7fab',
           },
           trans: '#3fb9f340',
+        },
+        red: {
+          // "strong" because the saturation is high. To be used in DARK mode
+          strong: {
+            100: '#b12525',
+            200: '#d42a2a',
+            300: '#ff5757',
+          },
+          // "weak" because saturation is low, meaning less color. To be used in LIGHT mode.
+          weak: {
+            100: '#9d3f3f',
+            200: '#c24747',
+          },
         },
         gray: {
           950: '#fafafa',

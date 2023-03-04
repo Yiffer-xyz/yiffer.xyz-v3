@@ -35,7 +35,7 @@ export default function InfoBox({
       Icon = MdInfo;
       break;
     case 'error':
-      variantClassname = 'from-status-error1 to-status-error2 ';
+      variantClassname = 'from-red-strong-300 to-status-error2 ';
       Icon = MdError;
       break;
     case 'success':

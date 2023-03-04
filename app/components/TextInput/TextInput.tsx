@@ -43,7 +43,7 @@ export default function TextInput({
   }
   const borderClass = useMemo(() => {
     if (error) {
-      return 'border-status-error1';
+      return 'border-red-strong-300';
     }
     if (disabled) {
       return 'border-gray-800 dark:border-gray-600';
@@ -58,7 +58,7 @@ export default function TextInput({
   return (
     <div className={`flex flex-col ${className}`} {...props}>
       {label && (
-        <label className={`${error ? 'text-status-error1' : ''} text-sm`}>{label}</label>
+        <label className={`${error ? 'text-red-strong-300' : ''} text-sm`}>{label}</label>
       )}
       <div className={`-mt-1 relative`}>
         <input
@@ -88,7 +88,7 @@ export default function TextInput({
         )}
       </div>
       {errorText && error && (
-        <p className="text-sm py-0.5 px-2 text-status-error1">{errorText}</p>
+        <p className="text-sm py-0.5 px-2 text-red-strong-300">{errorText}</p>
       )}
       {!(errorText && error) && helperText && (
         <label className="text-sm py-0.5 px-2">{helperText}</label>
