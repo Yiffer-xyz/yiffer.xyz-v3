@@ -2,7 +2,7 @@ import type { BaseSelectProps } from './Select';
 import Select from './Select';
 import { useState } from 'react';
 
-export default function SelectUncontrolled({
+export default function SelectUncontrolled<T>({
   options,
   title = '',
   error = false,
@@ -12,8 +12,8 @@ export default function SelectUncontrolled({
   name,
   className = '',
   ...props
-}: BaseSelectProps) {
-  const [state, setState] = useState(null);
+}: BaseSelectProps<T>) {
+  const [state, setState] = useState<T | null>(null);
 
   return (
     <Select
