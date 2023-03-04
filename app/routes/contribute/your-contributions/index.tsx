@@ -1,18 +1,23 @@
-import type { LoaderFunction } from '@remix-run/cloudflare';
+import { LoaderArgs, LoaderFunction, redirect } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
+import { useState } from 'react';
+import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
 import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
-import {
-  comicProblemsQueryRes,
-  comicSuggestionsQueryRes,
-  keywordSuggestionQueryRes,
-  uploadedComicsQueryRes,
-} from '~/mock-data/your-contributions';
+import { capitalizeString } from '~/utils/general';
+import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
+import { PointInfo } from '../scoreboard';
+import {
+  getYourComicProblems,
+  getYourComicSuggestions,
+  getYourContributedComics,
+  getYourTagSuggestions,
+} from './data-fetchers';
 
 export enum ComicStatus {
-  PENDING = 'Pending',
-  APPROVED = 'Approved',
-  REJECTED = 'Rejected',
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
 }
 
 export interface ContributionBase {
@@ -20,7 +25,7 @@ export interface ContributionBase {
   status: ComicStatus;
   timestamp: string;
   points: number | null;
-  pointDescription: string | null;
+  pointsDescription: string | null;
   modComment: string | null;
 }
 
@@ -51,40 +56,15 @@ export type Contribution =
   | TagSuggestion
   | ComicProblem;
 
-async function getContributedComics(urlBase: string): Promise<Array<ContributedComic>> {
-  return uploadedComicsQueryRes.map(comic => ({
-    ...comic,
-    type: 'ContributedComic',
-  })) as Array<ContributedComic>;
-}
+export async function loader(args: LoaderArgs) {
+  const urlBase: string = args.context.DB_API_URL_BASE as string;
+  const auth = await authLoader(args);
+  if (!auth.user) throw redirect('/');
 
-async function getTagSuggestions(urlBase: string): Promise<Array<TagSuggestion>> {
-  return keywordSuggestionQueryRes.map(tagSuggestion => ({
-    ...tagSuggestion,
-    type: 'TagSuggestion',
-  })) as Array<TagSuggestion>;
-}
-
-async function getComicProblems(urlBase: string): Promise<Array<ComicProblem>> {
-  return comicProblemsQueryRes.map(comicProblem => ({
-    ...comicProblem,
-    type: 'ComicProblem',
-  })) as Array<ComicProblem>;
-}
-
-async function getComicSuggestions(urlBase: string): Promise<Array<ComicSuggestion>> {
-  return comicSuggestionsQueryRes.map(comicSuggestion => ({
-    ...comicSuggestion,
-    type: 'ComicSuggestion',
-  })) as Array<ComicSuggestion>;
-}
-
-export const loader: LoaderFunction = async function ({ context }) {
-  const urlBase: string = context.DB_API_URL_BASE as string;
-  const uploadedComicsPromise = getContributedComics(urlBase);
-  const tagSuggestionsPromise = getTagSuggestions(urlBase);
-  const comicProblemsPromise = getComicProblems(urlBase);
-  const comicSuggestionsPromise = getComicSuggestions(urlBase);
+  const uploadedComicsPromise = getYourContributedComics(urlBase, auth.user.userId);
+  const tagSuggestionsPromise = getYourTagSuggestions(urlBase, auth.user.userId);
+  const comicProblemsPromise = getYourComicProblems(urlBase, auth.user.userId);
+  const comicSuggestionsPromise = getYourComicSuggestions(urlBase, auth.user.userId);
 
   const [uploadedComicsRes, tagSuggestionsRes, comicProblemsRes, comicSuggestionsRes] =
     await Promise.all([
@@ -111,7 +91,7 @@ export const loader: LoaderFunction = async function ({ context }) {
   return {
     contributions,
   };
-};
+}
 
 function getContributionDetails(contribution: Contribution) {
   switch (contribution.type) {
@@ -187,6 +167,7 @@ function getDate(timestamp: string): string {
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
+  const [showPointInfo, setShowPointInfo] = useState(false);
 
   return (
     <section className="flex-col">
@@ -195,7 +176,23 @@ export default function YourContributions() {
         <BackToContribute />
       </p>
 
-      <Table horizontalScroll={true} className="mx-auto">
+      <p className="text-center">
+        <button
+          onClick={() => setShowPointInfo(!showPointInfo)}
+          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
+          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
+          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
+          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
+          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
+        >
+          {showPointInfo ? 'Hide' : 'Show'} point info{' '}
+          {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
+        </button>
+      </p>
+
+      {showPointInfo && <PointInfo />}
+
+      <Table horizontalScroll={true} className="mx-auto mt-8">
         <TableHeadRow isTableMaxHeight={false}>
           <TableCell>Contribution</TableCell>
           <TableCell>Status</TableCell>
@@ -219,7 +216,7 @@ export default function YourContributions() {
                     contribution.status
                   )} font-extralight`}
                 >
-                  {contribution.status}
+                  {capitalizeString(contribution.status)}
                 </p>
               </TableCell>
               <TableCell>
@@ -227,7 +224,7 @@ export default function YourContributions() {
               </TableCell>
               <TableCell>
                 <p className="font-semibold">{contribution.points || '-'}</p>
-                <p className="font-extralight">{contribution.pointDescription}</p>
+                <p className="font-extralight">{contribution.pointsDescription}</p>
               </TableCell>
               <TableCell>
                 <p className="font-extralight">{contribution.modComment || '-'}</p>
