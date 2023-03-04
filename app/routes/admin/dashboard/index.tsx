@@ -1,6 +1,5 @@
-import { LoaderFunction } from '@remix-run/cloudflare';
+import { LoaderArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import { mergeLoaders } from '~/utils/loaders';
 
 interface UserOrIP {
   username?: string;
@@ -8,7 +7,7 @@ interface UserOrIP {
   ip?: string;
 }
 
-interface Action {
+interface DashboardAction {
   type: 'tagSuggestion' | 'comicProblem' | 'comicSuggestion' | 'comicUpload';
   id: number;
   primaryField: string;
@@ -23,24 +22,18 @@ interface Action {
 
 // import mockDashboardList from './mockdata.json';
 // TODO-D1: Implement fetching logic here instead of in old api.
-async function getDashboardContent(): Promise<Action[]> {
+async function getDashboardContent(): Promise<DashboardAction[]> {
   return [];
 }
 
-const componentLoader: LoaderFunction = async ({ context }) => {
+export async function loader(args: LoaderArgs) {
   return await getDashboardContent();
-};
-
-// TODO: Add the coming loader for requiring mod login session to this
-export const loader = mergeLoaders(componentLoader);
-export { ErrorBoundary } from '../../error';
-
-interface ComponentLoaderData {
-  dashboardContent: Action[];
 }
 
+export { ErrorBoundary } from '../../error';
+
 export default function Dashboard({}) {
-  const { dashboardContent }: ComponentLoaderData = useLoaderData();
+  const dashboardContent = useLoaderData<typeof loader>();
 
   return (
     <>

@@ -1,16 +1,20 @@
-import { LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { Link, Outlet, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
+import { redirectIfNotMod } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const url = new URL(request.url);
+export async function loader(args: LoaderArgs) {
+  await redirectIfNotMod(args);
+
+  const url = new URL(args.request.url);
   if (url.pathname === '/admin' || url.pathname === '/admin/') {
     return redirect('/admin/dashboard');
   }
+
   return null;
-};
+}
 
 const navWidth = 200;
 const mobileClosedBarW = 24;
@@ -72,13 +76,19 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
         {!alwaysShow && <MobileExpander isOpen={isOpen} setIsOpen={setIsOpen} />}
 
         <div className="flex flex-col w-full">
-          <p className="pt-6 pr-4 pb-4 pl-4 italic">Yiffer.xyz admin hub, sidebar style wip</p>
+          <p className="pt-6 pr-4 pb-4 pl-4 italic">
+            Yiffer.xyz admin hub, sidebar style wip
+          </p>
           <SidebarLink
             href="/admin/dashboard"
             text="Action dashboard"
             isSelected={isRoute('dashboard')}
           />
-          <SidebarLink href="/admin/comics" text="Comic manager" isSelected={isRoute('comics')} />
+          <SidebarLink
+            href="/admin/comics"
+            text="Comic manager"
+            isSelected={isRoute('comics')}
+          />
 
           <p className="py-2 px-4 cursor-default">Artists</p>
           <SidebarLink
@@ -127,7 +137,12 @@ interface SidebarLinkProps {
 }
 
 const selectedClassname = 'bg-theme1-dark dark:bg-blue-strong-200 text-white';
-function SidebarLink({ href, text, isSelected = false, isIndented = false }: SidebarLinkProps) {
+function SidebarLink({
+  href,
+  text,
+  isSelected = false,
+  isIndented = false,
+}: SidebarLinkProps) {
   const className = isSelected ? selectedClassname : '';
   return (
     <div className={className}>
@@ -154,7 +169,9 @@ function MobileExpander({
 }) {
   return (
     <div
-      className={`bg-theme1-primary dark:bg-gray-150 h-full w-${mobileClosedBarTailwindUnits + 2} 
+      className={`bg-theme1-primary dark:bg-gray-150 h-full w-${
+        mobileClosedBarTailwindUnits + 2
+      } 
             -right-[1px] top-0 hover:cursor-pointer hover:bg-theme1-dark transition-opacity
             flex items-center justify-center absolute ${
               !isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'

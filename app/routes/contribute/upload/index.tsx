@@ -1,4 +1,4 @@
-import { ActionFunction, json, LoaderFunction } from '@remix-run/cloudflare';
+import { ActionFunction, json, LoaderArgs, LoaderFunction } from '@remix-run/cloudflare';
 import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -7,7 +7,7 @@ import { getAllArtists } from '~/routes/api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from '~/routes/api/funcs/get-comics';
 import { getAllTags } from '~/routes/api/funcs/get-tags';
 import { Artist, Tag, UserSession } from '~/types/types';
-import { authLoader, mergeLoaders } from '~/utils/loaders';
+import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
 import Step2ComicData from './step2-comicdata';
@@ -18,27 +18,28 @@ import SuccessMessage from './success';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
-const componentLoader: LoaderFunction = async ({ context }) => {
-  const urlBase = context.DB_API_URL_BASE as string;
+export async function loader(args: LoaderArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
 
   const allArtistsPromise = getAllArtists(urlBase, { includePending: true });
   const comicsPromise = getAllComicNamesAndIDs(urlBase as string);
   const tagsPromise = getAllTags(urlBase);
-  const [artists, comics, tags] = await Promise.all([
+  const userPromise = authLoader(args);
+  const [artists, comics, tags, user] = await Promise.all([
     allArtistsPromise,
     comicsPromise,
     tagsPromise,
+    userPromise,
   ]);
 
   return {
     artists,
     comics,
     tags,
-    uploadUrlBase: context.DB_API_URL_BASE,
+    user,
+    uploadUrlBase: args.context.DB_API_URL_BASE as string,
   };
-};
-
-export const loader = mergeLoaders(componentLoader, authLoader);
+}
 
 export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
@@ -81,8 +82,7 @@ export default function Upload() {
   const actionData = useActionData();
   const transition = useTransition();
 
-  const { artists, comics, uploadUrlBase, user, tags }: ComponentLoaderData =
-    useLoaderData();
+  const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
   const [step, setStep] = useState<number | string>(2);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [isSubmitting, setIsSubmitting] = useState(false);

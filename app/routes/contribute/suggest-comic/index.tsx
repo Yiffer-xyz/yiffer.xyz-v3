@@ -1,4 +1,4 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
+import type { ActionFunction, LoaderArgs } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import {
   Form,
@@ -16,11 +16,12 @@ import Textarea from '~/components/Textarea/Textarea';
 import TextInput from '~/components/TextInput/TextInput';
 import TopGradientBox from '~/components/TopGradientBox';
 import { SimilarComicResponse } from '~/routes/api/search-similarly-named-comic';
-import type { UserSession } from '~/types/types';
-import { authLoader, mergeLoaders } from '~/utils/loaders';
+import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 
-export const loader = mergeLoaders(authLoader);
+export async function loader(args: LoaderArgs) {
+  return await authLoader(args);
+}
 
 export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
@@ -54,7 +55,7 @@ export default function Upload() {
   const [differentComic, setDifferentComic] = useState(false);
   const [bannedArtistNames, setBannedArtistNames] = useState<string[]>([]);
   const [differentArtist, setDifferentArtist] = useState(false);
-  const { user }: { user: UserSession | null } = useLoaderData();
+  const { user } = useLoaderData<typeof loader>();
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
   const transition = useTransition();

@@ -1,13 +1,15 @@
+import { LoaderArgs } from '@remix-run/cloudflare';
 import { Link, useLoaderData } from '@remix-run/react';
 import { MdHome } from 'react-icons/md';
 import YifferLink from '~/components/Link';
-import { UserSession } from '~/types/types';
-import { authLoader, mergeLoaders } from '~/utils/loaders';
+import { authLoader } from '~/utils/loaders';
 
-export const loader = mergeLoaders(authLoader);
+export async function loader(args: LoaderArgs) {
+  return { user: await authLoader(args) };
+}
 
 export default function Index() {
-  const { user }: { user: UserSession | null } = useLoaderData();
+  const { user } = useLoaderData<typeof loader>();
 
   return (
     <div>
