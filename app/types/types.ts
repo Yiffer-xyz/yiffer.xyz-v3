@@ -69,6 +69,7 @@ export interface JwtConfig {
 export interface UserSession {
   userId: number;
   username: string;
+  userType: 'admin' | 'moderator' | 'user';
 }
 
 // Will definitely be expanded when we get more stuff in here
