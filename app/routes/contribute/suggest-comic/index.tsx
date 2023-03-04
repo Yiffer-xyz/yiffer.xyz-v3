@@ -1,5 +1,4 @@
-import type { ActionFunction, LoaderArgs } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
+import type { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
 import {
   Form,
   useActionData,
@@ -16,6 +15,13 @@ import Textarea from '~/components/Textarea/Textarea';
 import TextInput from '~/components/TextInput/TextInput';
 import TopGradientBox from '~/components/TopGradientBox';
 import { SimilarComicResponse } from '~/routes/api/search-similarly-named-comic';
+import { queryDb } from '~/utils/database-facade';
+import {
+  create400Json,
+  createGeneric500Json,
+  createSuccessJson,
+  ErrorCodes,
+} from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 
@@ -23,29 +29,51 @@ export async function loader(args: LoaderArgs) {
   return await authLoader(args);
 }
 
-export const action: ActionFunction = async function ({ request, context }) {
-  const reqBody = await request.formData();
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
   const { comicName, artist, linksComments } = Object.fromEntries(reqBody);
-  const fields = { comicName, artist, comment: linksComments };
 
-  const response = await fetch(`${context.URL_BASE}/api/comicsuggestions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      cookie: request.headers.get('cookie') || '',
-    },
-    body: JSON.stringify(fields),
-  });
-
-  if (!response.ok) {
-    return json({ error: await response.text(), fields }, { status: response.status });
-  } else {
-    return json({ success: true });
+  if (!comicName || !artist || !linksComments) {
+    return create400Json('Some field is missing');
   }
-};
+
+  const errorToReturn = await checkForExistingComicOrSuggestion(
+    args.context.DB_API_URL_BASE as string,
+    comicName as string
+  );
+  if (errorToReturn) {
+    return errorToReturn; // TODO: TEST it
+  }
+
+  const user = await authLoader(args);
+  let userIp = null;
+  let userId = null;
+  if (user.user) {
+    userId = user.user.userId;
+  } else {
+    userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
+  }
+
+  let insertQuery = `INSERT INTO comicsuggestion 
+    (Name, ArtistName, Description, UserId, UserIp)
+    VALUES (?, ?, ?, ?, ?)`;
+  let insertParams = [comicName, artist, linksComments, userId, userIp];
+
+  const response = await queryDb(
+    args.context.DB_API_URL_BASE as string,
+    insertQuery,
+    insertParams
+  );
+
+  if (response.errorMessage) {
+    return createGeneric500Json(ErrorCodes.COMIC_PROBLEM_SUBMIT);
+  }
+
+  return createSuccessJson();
+}
 
 export default function Upload() {
-  const actionData = useActionData();
+  const actionData = useActionData<typeof action>();
   const similarComicsFetcher = useFetcher();
   const similarArtistsFetcher = useFetcher();
   const [comicName, setComicName] = useState('');
@@ -112,7 +140,7 @@ export default function Upload() {
     }
   }, [similarArtistsFetcher.data]);
 
-  const getSuccessText = function () {
+  function getSuccessText() {
     if (user) {
       return 'You can track its progress and result in the "Your contributions" section of the previous page.';
     }
@@ -121,9 +149,9 @@ export default function Upload() {
       'Since you are not logged in, you cannot track the status and result of your submission. We' +
       ' recommend that you create a user next time - it will take you under a minute!'
     );
-  };
+  }
 
-  const getArtistText = function () {
+  function getArtistText() {
     let name = '';
 
     bannedArtistNames.forEach((artist: string, idx) => {
@@ -132,15 +160,14 @@ export default function Upload() {
     });
 
     return name;
-  };
+  }
 
-  const isSubmitDisabled = function (): boolean {
-    return (!comicName ||
-      !artistName ||
-      !comments ||
-      (similarComicNames.length > 0 && !differentComic) ||
-      (bannedArtistNames.length > 0 && !differentArtist)) as boolean;
-  };
+  const isSubmitDisabled =
+    !comicName ||
+    !artistName ||
+    !comments ||
+    (similarComicNames.length > 0 && !differentComic) ||
+    (bannedArtistNames.length > 0 && !differentArtist);
 
   return (
     <section className="container mx-auto justify-items-center">
@@ -218,7 +245,7 @@ export default function Upload() {
               )}
 
               <TextInput
-                label="Artist (if known)"
+                label="Artist"
                 name="artist"
                 className="mt-12 mb-4"
                 onChange={setArtistName}
@@ -262,7 +289,7 @@ export default function Upload() {
                   text="Submit suggestion"
                   variant="contained"
                   color="primary"
-                  disabled={isSubmitDisabled()}
+                  disabled={isSubmitDisabled}
                 />
               </div>
             </Form>
@@ -271,4 +298,39 @@ export default function Upload() {
       )}
     </section>
   );
+}
+
+async function checkForExistingComicOrSuggestion(dbUrlBase: string, comicName: string) {
+  let existingSuggestionQueryPromise = queryDb<{ count: number }[]>(
+    dbUrlBase,
+    `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
+    [comicName]
+  );
+  let existingComicQueryPromise = queryDb<{ count: number }[]>(
+    dbUrlBase,
+    `SELECT COUNT(*) AS count FROM comic WHERE Name = ?`,
+    [comicName]
+  );
+
+  const [existingSuggestionQuery, existingComicQuery] = await Promise.all([
+    existingSuggestionQueryPromise,
+    existingComicQueryPromise,
+  ]);
+
+  console.log(existingSuggestionQuery, existingComicQuery);
+  if (existingSuggestionQuery.errorMessage) {
+    return createGeneric500Json(ErrorCodes.EXISTING_SUGG_CHECK);
+  }
+  if (existingSuggestionQuery.result && existingSuggestionQuery.result[0].count > 0) {
+    return create400Json('A suggestion for this comic already exists.');
+  }
+
+  if (existingComicQuery.errorMessage) {
+    return createGeneric500Json(ErrorCodes.EXISTING_COMIC_CHECK);
+  }
+  if (existingComicQuery.result && existingComicQuery.result[0].count > 0) {
+    return create400Json('This comic already exists.');
+  }
+
+  return null;
 }

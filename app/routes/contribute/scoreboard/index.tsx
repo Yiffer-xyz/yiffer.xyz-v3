@@ -114,7 +114,9 @@ export default function Scoreboard() {
           {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
         </button>
       </p>
+
       {showPointInfo && <PointInfo />}
+
       <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
         <div className="flex mb-6">
           <Button
@@ -196,40 +198,64 @@ const pInfoColors = {
   },
 };
 
-const PointInfo = () => (
-  <div className="flex gap-2 mt-4">
-    <div className="font-bold">
-      <p className={pInfoColors.pValues.green}>200</p>
-      <p className={pInfoColors.pValues.green}>150</p>
-      <p className={pInfoColors.pValues.green}>120</p>
-      <p className={pInfoColors.pValues.green}>50</p>
-      <p className={pInfoColors.pValues.blue}>30</p>
-      <p className={pInfoColors.pValues.blue}>15</p>
-      <p className={pInfoColors.pValues.purple}>10</p>
-      <p className={pInfoColors.pValues.yellow}>5</p>
-    </div>
-    <div>
+export function PointInfo() {
+  return (
+    <div
+      className="grid gap-y-1 gap-x-2 mt-4 mx-auto w-fit"
+      style={{ gridTemplateColumns: 'auto auto' }}
+    >
+      <p className={pInfoColors.pValues.green}>
+        <b>200</b>
+      </p>
       <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
+
+      <p className={pInfoColors.pValues.green}>
+        <b>150</b>
+      </p>
       <p className={pInfoColors.pDescriptions.green}>
         Uploaded comic, minor issues found (incorrect category/classification, wrong name)
+      </p>
+
+      <p className={pInfoColors.pValues.green}>
+        <b>120</b>
       </p>
       <p className={pInfoColors.pDescriptions.green}>
         Uploaded comic, major issues found (lacking artist links, poor tagging, bad
         thumbnail)
       </p>
+
+      <p className={pInfoColors.pValues.green}>
+        <b>50</b>
+      </p>
       <p className={pInfoColors.pDescriptions.green}>
         Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
+      </p>
+
+      <p className={pInfoColors.pValues.blue}>
+        <b>30</b>
       </p>
       <p className={pInfoColors.pDescriptions.blue}>
         Comic suggestion approved with good links/information
       </p>
+
+      <p className={pInfoColors.pValues.blue}>
+        <b>15</b>
+      </p>
       <p className={pInfoColors.pDescriptions.blue}>
         Comic suggestion approved with lacking links/information
       </p>
+
+      <p className={pInfoColors.pValues.purple}>
+        <b>10</b>
+      </p>
       <p className={pInfoColors.pDescriptions.purple}>Comic problem reported</p>
+
+      <p className={pInfoColors.pValues.yellow}>
+        <b>5</b>
+      </p>
       <p className={pInfoColors.pDescriptions.yellow}>
         Add/remove tag suggestion approved
       </p>
     </div>
-  </div>
-);
+  );
+}
