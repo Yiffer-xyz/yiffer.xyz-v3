@@ -55,12 +55,17 @@ export async function getUserSession(
   if (
     !tokenContent.payload ||
     !tokenContent.payload.id ||
-    !tokenContent.payload.username
+    !tokenContent.payload.username ||
+    !tokenContent.payload.userType
   ) {
     return null;
   }
 
-  return { userId: tokenContent.payload.userId, username: tokenContent.payload.username };
+  return {
+    userId: tokenContent.payload.id,
+    username: tokenContent.payload.username,
+    userType: tokenContent.payload.userType,
+  };
 }
 
 // export async function getUser(request: Request, jwtConfigStr: string) {
@@ -103,6 +108,7 @@ export async function createUserSession(user: User, jwtConfigStr: string) {
   const sessionCookieHeader = await createJwtAuthCookieHeader(
     user.id,
     user.username,
+    user.userType,
     jwtConfig
   );
 
@@ -123,9 +129,10 @@ export async function createUserSession(user: User, jwtConfigStr: string) {
 async function createJwtAuthCookieHeader(
   userId: number,
   username: string,
+  userType: string,
   jwtConfig: JwtConfig
 ) {
-  const token = await jwt.sign({ id: userId, username }, jwtConfig.tokenSecret);
+  const token = await jwt.sign({ id: userId, username, userType }, jwtConfig.tokenSecret);
   // Creating it manually, because the Remix methods transform it for some reason??
   return `${jwtConfig.cookie.name}=${token}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
     jwtConfig.cookie.domain
