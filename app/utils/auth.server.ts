@@ -36,8 +36,8 @@ export async function getUserSession(
   jwtConfigstr: string
 ): Promise<UserSession | null> {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigstr);
-
   const allCookies = request.headers.get('cookie');
+
   const sessionCookieContent = cookiesStringToYifferSessionCookie(
     allCookies,
     jwtConfig.cookie.name

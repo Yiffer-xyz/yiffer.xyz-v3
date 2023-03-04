@@ -1,58 +1,37 @@
-import { DataFunctionArgs, LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { getUserSession } from './auth.server';
 
-/**
- * Merge loader functions into a single loader function that can be used in a route.
- * @param loaders - The loader functions to merge.
- * @returns A loader function that calls all the loader functions.
- * @example
- * ```ts
- * export const loader = mergeLoaders(
- *  someLoader,
- *  anotherLoader,
- * );
- * ```
- */
-export const mergeLoaders = (...loaders: LoaderFunction[]): LoaderFunction => {
-  return async (loaderArgs: DataFunctionArgs) => {
-    const loaderPromises = loaders.map(loader => loader(loaderArgs));
-    const loaderResults = await Promise.all(loaderPromises);
-    const mergedData = loaderResults.reduce(
-      (acc, data) => ({ ...acc, ...(data || {}) }),
-      {}
-    );
-    return mergedData;
-  };
-};
-
-/**
- * Load the user session data.
- * @example
- * ```ts
- * export { authLoader as loader } from "~/utils/loaders";
- * ```
- */
-export const authLoader: LoaderFunction = async ({ request, context }) => {
-  const userSession = await getUserSession(request, context.JWT_CONFIG_STR as string);
+export async function authLoader(args: LoaderArgs) {
+  const userSession = await getUserSession(
+    args.request,
+    args.context.JWT_CONFIG_STR as string
+  );
   const data = {
     user: userSession,
   };
   return data;
-};
+}
 
-/**
- * Redirect to another route if the user is not logged in.
- * @param to - The route to redirect to.
- * @returns A loader function that redirects to the given route if the user is not logged in.
- * @example
- * ```ts
- * export const loader = redirectNoAuth('/login');
- * ```
- */
-export const redirectNoAuth = (to: string): LoaderFunction => {
-  return async (loaderArgs: DataFunctionArgs) => {
-    const { user } = await authLoader(loaderArgs);
-    if (!user) return redirect(to);
-    else return null;
-  };
-};
+export async function redirectIfNotLoggedIn(args: LoaderArgs) {
+  const userObj = await authLoader(args);
+  if (!userObj || !userObj.user) throw redirect('/');
+  else return null;
+}
+
+export async function redirectIfNotMod(args: LoaderArgs) {
+  const userObj = await authLoader(args);
+  if (
+    !userObj ||
+    !userObj.user ||
+    (userObj.user.userType !== 'moderator' && userObj.user.userType !== 'admin')
+  ) {
+    throw redirect('/');
+  } else return null;
+}
+
+export async function redirectIfNotAdmin(args: LoaderArgs) {
+  const userObj = await authLoader(args);
+  if (!userObj || !userObj.user || userObj.user.userType !== 'admin') {
+    throw redirect('/');
+  } else return null;
+}

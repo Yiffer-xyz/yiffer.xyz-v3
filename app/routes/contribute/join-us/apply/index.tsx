@@ -1,4 +1,4 @@
-import { ActionFunction, json } from '@remix-run/cloudflare';
+import { ActionFunction, json, LoaderArgs } from '@remix-run/cloudflare';
 import { useFetcher } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
@@ -8,9 +8,12 @@ import Link from '~/components/Link';
 import TextareaUncontrolled from '~/components/Textarea/TextareaUncontrolled';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/components/TopGradientBox';
-import { redirectNoAuth } from '~/utils/loaders';
+import { redirectIfNotLoggedIn } from '~/utils/loaders';
 
-export const loader = redirectNoAuth('/join-us');
+export async function loader(args: LoaderArgs) {
+  await redirectIfNotLoggedIn(args);
+  return null;
+}
 
 const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){5,32}$/.test(username);
