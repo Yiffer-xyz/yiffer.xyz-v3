@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-// TODO Add keyboard listeners for up/down to move selected item,
-// and space/enter to select and open the menu. Like in old yiffer.
-
-type keyValOptions<T> = { text: string; value: T };
+import { waitMillisec } from '~/utils/general';
 
 export type BaseSelectProps<T> = {
   options: { text: string; value: T }[];
@@ -99,12 +95,6 @@ export default function Select<T>({
     }
     return {};
   }, [isFullWidth, width]);
-
-  async function waitMillisec(millisec: number) {
-    return new Promise<void>(resolve => {
-      setTimeout(() => resolve(), millisec);
-    });
-  }
 
   function onSelected(clickedValue: any) {
     onChange(clickedValue);

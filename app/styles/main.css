@@ -46,6 +46,9 @@ svg {
   display: inline-block;
   margin-bottom: 2px;
 }
+button svg {
+  margin-bottom: 0;
+}
 a {
   background-size: 0% 1px;
   transition: background-size 0.2s;
