@@ -317,7 +317,6 @@ async function checkForExistingComicOrSuggestion(dbUrlBase: string, comicName: s
     existingComicQueryPromise,
   ]);
 
-  console.log(existingSuggestionQuery, existingComicQuery);
   if (existingSuggestionQuery.errorMessage) {
     return createGeneric500Json(ErrorCodes.EXISTING_SUGG_CHECK);
   }
