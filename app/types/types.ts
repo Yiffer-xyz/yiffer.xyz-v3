@@ -50,11 +50,6 @@ export type Tag = {
   name: string;
 };
 
-export type Tag = {
-  id: number;
-  name: string;
-};
-
 export interface JwtConfig {
   tokenSecret: string;
   cookie: {
@@ -78,4 +73,14 @@ export interface User {
   username: string;
   email: string;
   userType: 'admin' | 'moderator' | 'user';
+}
+
+export interface ModApplication {
+  id: number;
+  userId: number;
+  timestamp: string;
+  telegramUsername: string;
+  username: string;
+  notes: string;
+  status: 'pending' | 'approved' | 'rejected' | 'on hold';
 }
