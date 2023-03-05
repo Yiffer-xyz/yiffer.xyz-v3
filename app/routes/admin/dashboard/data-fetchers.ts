@@ -1,12 +1,14 @@
-import { ComicProblemVerdict, ComicUploadVerdict } from '~/types/contributions';
+import { ComicSuggestionVerdict, ComicUploadVerdict } from '~/types/contributions';
 import { queryDbDirect } from '~/utils/database-facade';
 import { DashboardAction } from '.';
 
 type DbTagSuggestion = {
   id: number;
+  keywordId: number;
   keywordName: string;
   comicName: string;
-  isAdding: boolean;
+  comicId: number;
+  isAdding: number;
   status: string;
   timestamp: string;
   userId?: number;
@@ -21,8 +23,10 @@ export async function getTagSuggestions(urlBase: string): Promise<DashboardActio
       FROM (
         SELECT
             keywordsuggestion.id AS id,
+            keywordsuggestion.keywordId AS keywordId,
             keyword.KeywordName AS keywordName,
             comic.Name AS comicName,
+            keywordsuggestion.comicId AS comicId,
             isAdding,
             status,
             keywordsuggestion.timestamp,
@@ -45,7 +49,9 @@ export async function getTagSuggestions(urlBase: string): Promise<DashboardActio
       type: 'tagSuggestion',
       id: dbTagSugg.id,
       primaryField: dbTagSugg.comicName,
-      secondaryField: `${dbTagSugg.isAdding ? 'ADD' : 'REMOVE'} ${dbTagSugg.keywordName}`,
+      secondaryField: `${dbTagSugg.isAdding === 1 ? 'ADD' : 'REMOVE'} ${
+        dbTagSugg.keywordName
+      }`,
       isProcessed: dbTagSugg.status !== 'pending',
       timestamp: dbTagSugg.timestamp,
       user: dbTagSugg.userId
@@ -61,6 +67,9 @@ export async function getTagSuggestions(urlBase: string): Promise<DashboardActio
         dbTagSugg.modId && dbTagSugg.modName
           ? { userId: dbTagSugg.modId, username: dbTagSugg.modName }
           : undefined,
+      isAdding: dbTagSugg.isAdding === 1,
+      tagId: dbTagSugg.keywordId,
+      comicId: dbTagSugg.comicId,
     };
   });
 
@@ -146,7 +155,7 @@ type DbComicSuggestion = {
   modId?: number;
   modName?: string;
   modComment?: string;
-  verdict?: ComicProblemVerdict;
+  verdict?: ComicSuggestionVerdict;
 };
 
 export async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> {
