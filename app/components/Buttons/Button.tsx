@@ -10,6 +10,7 @@ export interface ButtonProps {
   noPadding?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  buttonRef?: React.Ref<HTMLButtonElement>;
 }
 
 export default function Button({
@@ -24,6 +25,7 @@ export default function Button({
   noPadding = false, // TODO: Maybe a temporary hack. It's for IconButton.
   className,
   style = {},
+  buttonRef,
   ...props
 }: ButtonProps) {
   let variantClassname = '';
@@ -70,7 +72,7 @@ export default function Button({
   const fullClassName =
     `rounded ${
       noPadding ? '' : 'py-1.5 px-3'
-    } font-bold flex flex-nowrap justify-center ` +
+    } font-bold flex flex-nowrap justify-around ` +
     `items-center transition-all duration-100 break-all text-sm` +
     ` ${widthClass}` +
     ` ${variantClassname} ${className} `;
@@ -82,8 +84,10 @@ export default function Button({
       onClick={onClick}
       {...props}
       style={style}
+      ref={buttonRef}
     >
-      {StartIcon ? <StartIcon /> : undefined} {text} {EndIcon ? <EndIcon /> : undefined}
+      {StartIcon ? <StartIcon style={{ marginRight: '4px' }} /> : undefined} {text}{' '}
+      {EndIcon ? <EndIcon style={{ marginLeft: '4px' }} /> : undefined}
     </button>
   );
 }
