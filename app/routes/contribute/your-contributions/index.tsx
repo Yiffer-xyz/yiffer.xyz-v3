@@ -14,19 +14,15 @@ import {
   getYourTagSuggestions,
 } from './data-fetchers';
 
-export enum ComicStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
+export type ContributionStatus = 'pending' | 'approved' | 'rejected';
 
 export interface ContributionBase {
   comicName: string;
-  status: ComicStatus;
+  status: ContributionStatus;
   timestamp: string;
-  points: number | null;
-  pointsDescription: string | null;
-  modComment: string | null;
+  points?: number;
+  pointsDescription?: string;
+  modComment?: string;
 }
 
 export interface ComicSuggestion extends ContributionBase {
@@ -146,13 +142,13 @@ function getContributionName(contribution: Contribution) {
   }
 }
 
-function getContributionStatusColor(status: ComicStatus): string {
+function getContributionStatusColor(status: ContributionStatus): string {
   switch (status) {
-    case ComicStatus.APPROVED:
+    case 'approved':
       return 'text-green-500 dark:text-green-300';
-    case ComicStatus.PENDING:
+    case 'pending':
       return 'text-blue-800 dark:text-blue-300';
-    case ComicStatus.REJECTED:
+    case 'rejected':
       return 'text-red-500 dark:text-red-300';
   }
 }

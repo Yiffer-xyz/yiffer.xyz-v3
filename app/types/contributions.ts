@@ -6,7 +6,7 @@ export type ComicUploadVerdict =
   | 'page-issues';
 
 export const CONTRIBUTION_POINTS = {
-  comicProblem: {
+  comicSuggestion: {
     good: {
       points: 30,
       description: undefined,
