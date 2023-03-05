@@ -1,13 +1,24 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
+import {
+  getComicSuggestions,
+  getComicUploads,
+  getProblems,
+  getTagSuggestions,
+} from './data-fetchers';
 
-interface UserOrIP {
+type UserOrIP = {
   username?: string;
   userId?: number;
   ip?: string;
-}
+};
 
-interface DashboardAction {
+type UsernameAndUserId = {
+  username: string;
+  userId: number;
+};
+
+export type DashboardAction = {
   type: 'tagSuggestion' | 'comicProblem' | 'comicSuggestion' | 'comicUpload';
   id: number;
   primaryField: string;
@@ -15,19 +26,35 @@ interface DashboardAction {
   description?: string;
   isProcessed: boolean;
   timestamp: string;
-  assignedModName?: string;
+  assignedMod?: UsernameAndUserId;
   user: UserOrIP;
   verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
-}
-
-// import mockDashboardList from './mockdata.json';
-// TODO-D1: Implement fetching logic here instead of in old api.
-async function getDashboardContent(): Promise<DashboardAction[]> {
-  return [];
-}
+};
 
 export async function loader(args: LoaderArgs) {
-  return await getDashboardContent();
+  const urlBase = args.context.DB_API_URL_BASE as string;
+
+  const [tagSuggestions, problems, uploads, comicSuggestions] = await Promise.all([
+    getTagSuggestions(urlBase),
+    getProblems(urlBase),
+    getComicUploads(urlBase),
+    getComicSuggestions(urlBase),
+  ]);
+
+  const allSuggestions = [
+    ...tagSuggestions,
+    ...problems,
+    ...uploads,
+    ...comicSuggestions,
+  ];
+
+  allSuggestions.sort((a, b) => {
+    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+  });
+
+  return {
+    allSuggestions,
+  };
 }
 
 export { ErrorBoundary } from '../../error';
@@ -38,9 +65,18 @@ export default function Dashboard({}) {
   return (
     <>
       <h1>Action dashboard</h1>
-      <p>
-        Content: <pre>{JSON.stringify(dashboardContent, null, 2)}</pre>
-      </p>
+      {dashboardContent.allSuggestions.map(suggestion => (
+        <div key={suggestion.id} className="border border-theme1-primary my-4 w-full">
+          <h2>
+            {suggestion.primaryField} ({suggestion.type})
+          </h2>
+          <pre>
+            <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {JSON.stringify(suggestion)}
+            </p>
+          </pre>
+        </div>
+      ))}
     </>
   );
 }
