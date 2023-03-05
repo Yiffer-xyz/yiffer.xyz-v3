@@ -1,4 +1,4 @@
-export type ComicProblemVerdict = 'good' | 'bad';
+export type ComicSuggestionVerdict = 'good' | 'bad';
 export type ComicUploadVerdict =
   | 'excellent'
   | 'minor-issues'
