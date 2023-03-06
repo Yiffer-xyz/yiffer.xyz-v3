@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
 import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
 import { capitalizeString } from '~/utils/general';
-import { authLoader } from '~/utils/loaders';
+import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import { PointInfo } from '../scoreboard';
 import {
@@ -54,13 +54,12 @@ export type Contribution =
 
 export async function loader(args: LoaderArgs) {
   const urlBase: string = args.context.DB_API_URL_BASE as string;
-  const auth = await authLoader(args);
-  if (!auth.user) throw redirect('/');
+  const user = await redirectIfNotLoggedIn(args);
 
-  const uploadedComicsPromise = getYourContributedComics(urlBase, auth.user.userId);
-  const tagSuggestionsPromise = getYourTagSuggestions(urlBase, auth.user.userId);
-  const comicProblemsPromise = getYourComicProblems(urlBase, auth.user.userId);
-  const comicSuggestionsPromise = getYourComicSuggestions(urlBase, auth.user.userId);
+  const uploadedComicsPromise = getYourContributedComics(urlBase, user.userId);
+  const tagSuggestionsPromise = getYourTagSuggestions(urlBase, user.userId);
+  const comicProblemsPromise = getYourComicProblems(urlBase, user.userId);
+  const comicSuggestionsPromise = getYourComicSuggestions(urlBase, user.userId);
 
   const [uploadedComicsRes, tagSuggestionsRes, comicProblemsRes, comicSuggestionsRes] =
     await Promise.all([

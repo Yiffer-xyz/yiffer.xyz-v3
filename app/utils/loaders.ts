@@ -6,32 +6,27 @@ export async function authLoader(args: LoaderArgs) {
     args.request,
     args.context.JWT_CONFIG_STR as string
   );
-  const data = {
-    user: userSession,
-  };
-  return data;
+  return userSession;
 }
 
 export async function redirectIfNotLoggedIn(args: LoaderArgs) {
-  const userObj = await authLoader(args);
-  if (!userObj || !userObj.user) throw redirect('/');
-  else return null;
+  const user = await authLoader(args);
+  if (!user) throw redirect('/');
+  return user;
 }
 
 export async function redirectIfNotMod(args: LoaderArgs) {
-  const userObj = await authLoader(args);
-  if (
-    !userObj ||
-    !userObj.user ||
-    (userObj.user.userType !== 'moderator' && userObj.user.userType !== 'admin')
-  ) {
+  const user = await authLoader(args);
+  if (user?.userType !== 'moderator' && user?.userType !== 'admin') {
     throw redirect('/');
-  } else return null;
+  }
+  return user;
 }
 
 export async function redirectIfNotAdmin(args: LoaderArgs) {
-  const userObj = await authLoader(args);
-  if (!userObj || !userObj.user || userObj.user.userType !== 'admin') {
+  const user = await authLoader(args);
+  if (user?.userType !== 'admin') {
     throw redirect('/');
-  } else return null;
+  }
+  return user;
 }

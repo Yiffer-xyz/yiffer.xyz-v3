@@ -20,11 +20,11 @@ import {
 
 export async function loader(args: LoaderArgs) {
   const user = await authLoader(args);
-  if (!user.user) throw redirect('/');
+  if (!user) throw redirect('/');
 
   const existingApplication = await getModApplicationForUser(
     args.context.DB_API_URL_BASE as string,
-    user.user.userId
+    user.userId
   );
 
   return { hasExistingApplication: existingApplication !== null };
@@ -43,9 +43,9 @@ export async function action(args: ActionArgs) {
     return create400Json('Invalid telegram username');
 
   const user = await authLoader(args);
-  if (!user.user) return create400Json('Not logged in');
+  if (!user) return create400Json('Not logged in');
 
-  const existingApplication = await getModApplicationForUser(urlBase, user.user.userId);
+  const existingApplication = await getModApplicationForUser(urlBase, user.userId);
   if (existingApplication) {
     return create400Json('You already have an existing application');
   }
@@ -53,7 +53,7 @@ export async function action(args: ActionArgs) {
   const insertQuery = `
     INSERT INTO modapplication (userId, telegramUsername, notes)
     VALUES (?, ?, ?)`;
-  const insertParams = [user.user.userId, telegram, notes];
+  const insertParams = [user.userId, telegram, notes];
 
   const insertResult = await queryDb(urlBase, insertQuery, insertParams);
   if (insertResult.errorMessage) {

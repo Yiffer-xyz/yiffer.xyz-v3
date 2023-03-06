@@ -80,7 +80,7 @@ export default function JoinUs() {
 }
 
 const ApplyLink = () => {
-  const { user } = useLoaderData<typeof authLoader>();
+  const user = useLoaderData<typeof authLoader>();
 
   return user ? (
     <p className="mb-6">

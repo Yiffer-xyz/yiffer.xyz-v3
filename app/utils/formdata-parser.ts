@@ -4,7 +4,7 @@ import { authLoader } from './loaders';
 
 export type ParsedFormdataJson<T> = {
   fields: T;
-  user: { user: UserSession | null };
+  user: UserSession | null;
   isUnauthorized: boolean;
 };
 
@@ -16,19 +16,19 @@ export async function parseFormJson<T>(
 ): Promise<ParsedFormdataJson<T>> {
   const user = await authLoader(args);
 
-  if (validateUser === 'user' && !user.user) {
+  if (validateUser === 'user' && !user) {
     return makeUnauthorizedResponse(user);
   }
 
   if (
     validateUser === 'mod' &&
-    user.user?.userType !== 'moderator' &&
-    user.user?.userType !== 'admin'
+    user?.userType !== 'moderator' &&
+    user?.userType !== 'admin'
   ) {
     return makeUnauthorizedResponse(user);
   }
 
-  if (validateUser === 'admin' && user.user?.userType !== 'admin') {
+  if (validateUser === 'admin' && user?.userType !== 'admin') {
     return makeUnauthorizedResponse(user);
   }
 
@@ -42,9 +42,7 @@ export async function parseFormJson<T>(
   };
 }
 
-function makeUnauthorizedResponse<T>(user: {
-  user: UserSession | null;
-}): ParsedFormdataJson<T> {
+function makeUnauthorizedResponse<T>(user: UserSession | null): ParsedFormdataJson<T> {
   return {
     fields: {} as T,
     user,

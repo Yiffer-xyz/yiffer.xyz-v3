@@ -1,6 +1,6 @@
 import { ActionArgs } from '@remix-run/cloudflare';
+import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import { authLoader } from '~/utils/loaders';
 
 export type ProcessTagSuggestionBody = {
   isApproved: boolean;
@@ -26,7 +26,7 @@ export async function action(args: ActionArgs) {
 
   await processTagSuggestion(
     urlBase,
-    user.user?.userId as number,
+    user?.userId as number,
     fields.isApproved,
     fields.actionId,
     fields.isAdding,
