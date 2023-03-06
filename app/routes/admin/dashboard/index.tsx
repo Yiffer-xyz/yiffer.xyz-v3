@@ -8,8 +8,7 @@ import {
 } from './data-fetchers';
 import InfoBox from '~/components/InfoBox';
 import LoadingButton from '~/components/Buttons/LoadingButton';
-import { authLoader } from '~/utils/loaders';
-import { UserSession } from '~/types/types';
+import { redirectIfNotMod } from '~/utils/loaders';
 import { ProcessTagSuggestionBody } from '~/routes/api/admin/process-tag-suggestion';
 import { useState } from 'react';
 import { AssignActionBody } from '~/routes/api/admin/assign-action';
@@ -50,8 +49,7 @@ export type TagSuggestionAction = DashboardAction & {
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
-
-  const user = await authLoader(args);
+  const user = await redirectIfNotMod(args);
 
   // TODO: Should have a max cap on these things, hmm. Can make it relatively high i suppose,
   // It's an issue since we can only limit each thing separately, not the whole list.
@@ -76,7 +74,7 @@ export async function loader(args: LoaderArgs) {
 
   return {
     allSuggestions,
-    user: user.user as UserSession,
+    user,
   };
 }
 

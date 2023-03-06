@@ -5,11 +5,11 @@ import YifferLink from '~/components/Link';
 import { authLoader } from '~/utils/loaders';
 
 export async function loader(args: LoaderArgs) {
-  return { user: await authLoader(args) };
+  return await authLoader(args);
 }
 
 export default function Index() {
-  const { user } = useLoaderData<typeof loader>();
+  const user = useLoaderData<typeof loader>();
 
   return (
     <div>

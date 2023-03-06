@@ -48,8 +48,8 @@ export async function action(args: ActionArgs) {
   const user = await authLoader(args);
   let userIp = null;
   let userId = null;
-  if (user.user) {
-    userId = user.user.userId;
+  if (user) {
+    userId = user.userId;
   } else {
     userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
   }
@@ -83,7 +83,7 @@ export default function Upload() {
   const [differentComic, setDifferentComic] = useState(false);
   const [bannedArtistNames, setBannedArtistNames] = useState<string[]>([]);
   const [differentArtist, setDifferentArtist] = useState(false);
-  const { user } = useLoaderData<typeof loader>();
+  const user = useLoaderData<typeof loader>();
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
   const transition = useTransition();
