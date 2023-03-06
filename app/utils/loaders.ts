@@ -15,6 +15,12 @@ export async function redirectIfNotLoggedIn(args: LoaderArgs) {
   return user;
 }
 
+export async function redirectIfLoggedIn(args: LoaderArgs) {
+  const user = await authLoader(args);
+  if (user) throw redirect('/');
+  return user;
+}
+
 export async function redirectIfNotMod(args: LoaderArgs) {
   const user = await authLoader(args);
   if (user?.userType !== 'moderator' && user?.userType !== 'admin') {

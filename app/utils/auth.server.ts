@@ -1,32 +1,121 @@
-// import bcrypt from 'bcryptjs';
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import { JwtConfig, User, UserSession } from '~/types/types';
+import { queryDb } from './database-facade';
+import { ErrorCodes } from './request-helpers';
+import { createWelcomeEmail, sendEmail } from './send-email';
+const bcrypt = require('bcryptjs');
+const { hash, compare } = bcrypt;
+
+type AuthResponse = {
+  redirect?: Response;
+  errorMessage?: string;
+};
+
+type UserWithPassword = User & { password: string };
 
 export async function login(
   username: string,
   password: string,
   urlBase: string,
   jwtConfigStr: string
-): Promise<boolean | Response> {
-  const response = await fetch(`${urlBase}/api/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      username,
-      password,
-    }),
-  });
-
-  if (response.status !== 200) {
-    return false;
+): Promise<AuthResponse> {
+  const { errorMessage, user } = await authenticate(urlBase, username, password);
+  if (errorMessage) {
+    return { errorMessage };
   }
 
-  const userFromApi = await response.json();
-  const userFromApiParsed = userFromApi as User;
-  return createUserSession(userFromApiParsed, jwtConfigStr);
+  const redirect = await createUserSession(user as User, jwtConfigStr);
+  return { redirect };
+}
+
+export async function signup(
+  username: string,
+  email: string,
+  password: string,
+  urlBase: string,
+  jwtConfigStr: string,
+  postmarkToken: string
+): Promise<AuthResponse> {
+  const usernameQuery = 'SELECT * FROM user WHERE username = ?';
+  const emailQuery = 'SELECT * FROM user WHERE email = ?';
+
+  const [usernameResult, emailResult] = await Promise.all([
+    queryDb<any[]>(urlBase, usernameQuery, [username]),
+    queryDb<any[]>(urlBase, emailQuery, [email]),
+  ]);
+  if (usernameResult.errorMessage || emailResult.errorMessage) {
+    return {
+      errorMessage: `Server error. Please report this to our Feedback page with error code: ${ErrorCodes.SIGNUP_ERROR_CHECK}`,
+    };
+  }
+  if (usernameResult.result?.length) {
+    return { errorMessage: 'Username already exists' };
+  }
+  if (emailResult.result?.length) {
+    return { errorMessage: 'Email already exists' };
+  }
+
+  // TODO: prevent spam, as in old api
+
+  const hashedPassword = await hash(password, 8);
+  const insertQuery = 'INSERT INTO user (username, password, email) VALUES (?, ?, ?)';
+  const insertResult = await queryDb(urlBase, insertQuery, [
+    username,
+    hashedPassword,
+    email,
+  ]);
+  if (insertResult.errorMessage || !insertResult.insertId) {
+    return {
+      errorMessage: `Server error. Please report this to our Feedback page with error code: ${ErrorCodes.SIGNUP_ERROR_INSERT}`,
+    };
+  }
+
+  const user: User = {
+    id: insertResult.insertId,
+    username,
+    email,
+    userType: 'user',
+  };
+
+  sendEmail(createWelcomeEmail(username, email), postmarkToken);
+
+  const redirect = await createUserSession(user, jwtConfigStr);
+
+  return { redirect };
+}
+
+async function authenticate(
+  urlBase: string,
+  usernameOrEmail: string,
+  password: string
+): Promise<{ errorMessage?: string; user?: User }> {
+  const query =
+    'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
+  const queryParams = [usernameOrEmail, usernameOrEmail];
+
+  const result = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
+  if (result.errorMessage) {
+    return { errorMessage: 'Server error' };
+  }
+  if (!result.result?.length) {
+    return { errorMessage: 'Invalid username or password' };
+  }
+
+  const user = result.result[0];
+  const isPasswordValid = await compare(password, user.password);
+  if (!isPasswordValid) {
+    return { errorMessage: 'Invalid username or password' };
+  }
+
+  return {
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      userType: user.userType,
+    },
+  };
 }
 
 // To get the user data - {userId, username}

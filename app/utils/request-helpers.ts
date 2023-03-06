@@ -5,6 +5,8 @@ export enum ErrorCodes {
   EXISTING_COMIC_CHECK = '1001',
   COMIC_PROBLEM_SUBMIT = '1002',
   EXISTING_MODAPPL_SUMIT = '1003',
+  SIGNUP_ERROR_CHECK = '1004',
+  SIGNUP_ERROR_INSERT = '1005',
 }
 
 export function create500Json(message: string) {
