@@ -72,7 +72,7 @@ export default function Button({
   const fullClassName =
     `rounded ${
       noPadding ? '' : 'py-1.5 px-3'
-    } font-bold flex flex-nowrap justify-around ` +
+    } font-bold flex flex-nowrap justify-center ` +
     `items-center transition-all duration-100 break-all text-sm` +
     ` ${widthClass}` +
     ` ${variantClassname} ${className} `;
