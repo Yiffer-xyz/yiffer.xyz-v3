@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/components/Checkbox/CheckboxUncontrolled';
 import SearchableSelect from '~/components/SearchableSelect/SearchableSelect';
 import Select from '~/components/Select/Select';
-import { Artist } from '~/types/types';
-import { AnyKindOfComic, NewComicData } from '.';
+import { Artist, ComicTiny } from '~/types/types';
+import { NewComicData } from '.';
 import Step2Comicname from './step2-comicname';
 import Step2NewArtist from './step2-new-artist';
 
@@ -24,7 +24,7 @@ type Step2Props = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
   artists: Artist[];
-  comics: AnyKindOfComic[];
+  comics: ComicTiny[];
 };
 
 export default function Step2ComicData({
@@ -41,16 +41,8 @@ export default function Step2ComicData({
   );
 
   const allComicOptions = useMemo(() => {
-    return comics.map(c => {
-      if (c.isPending) {
-        return { value: c, text: c.comicName + ' (PENDING)' };
-      }
-      if (c.isUpload) {
-        return { value: c, text: c.comicName + ' (UPLOADED)' };
-      }
-      return { value: c, text: c.comicName };
-    });
-  }, []);
+    return comics.map(c => ({ value: c, text: c.name }));
+  }, [comics]);
 
   return (
     <>

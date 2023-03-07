@@ -1,4 +1,10 @@
-import { ActionFunction, json, LoaderArgs, LoaderFunction } from '@remix-run/cloudflare';
+import {
+  ActionArgs,
+  ActionFunction,
+  json,
+  LoaderArgs,
+  LoaderFunction,
+} from '@remix-run/cloudflare';
 import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -6,7 +12,7 @@ import InfoBox from '~/components/InfoBox';
 import { getAllArtists } from '~/routes/api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from '~/routes/api/funcs/get-comics';
 import { getAllTags } from '~/routes/api/funcs/get-tags';
-import { Artist, Tag, UserSession } from '~/types/types';
+import { Artist, ComicTiny, Tag, UserSession } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
@@ -15,6 +21,7 @@ import Step3Pagemanager from './step3-pagemanager';
 import Step4Thumbnail from './step4-thumbnail';
 import Step5Tags from './step5-tags';
 import SuccessMessage from './success';
+import { processUpload } from './upload-handler.server';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
@@ -22,7 +29,7 @@ export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
 
   const allArtistsPromise = getAllArtists(urlBase, { includePending: true });
-  const comicsPromise = getAllComicNamesAndIDs(urlBase as string);
+  const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
   const tagsPromise = getAllTags(urlBase);
   const userPromise = authLoader(args);
   const [artists, comics, tags, user] = await Promise.all([
@@ -41,45 +48,42 @@ export async function loader(args: LoaderArgs) {
   };
 }
 
-export const action: ActionFunction = async ({ request, context }) => {
-  const formData = await request.formData();
+export async function action(args: ActionArgs) {
+  const user = await authLoader(args);
+  const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
+  console.log('-111');
   const { error } = validateUploadForm(body);
   if (error) {
     return json({ error }, { status: 400 });
   }
+  console.log('000');
 
-  const response = await fetch(`${context.DB_API_URL_BASE}/new-api/upload`, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    return json({ error: await response.text() }, { status: response.status });
+  try {
+    console.log('111');
+    await processUpload(
+      args.context.DB_API_URL_BASE as string,
+      body,
+      user.user?.userId || undefined,
+      args.request.headers.get('CF-Connecting-IP') || 'unknown'
+    );
+  } catch (e: any) {
+    console.log('2.5', e);
+    return json({ error: e.message }, { status: 500 });
   }
+  console.log('222');
 
   return json({ success: true });
-};
-
-interface ComponentLoaderData {
-  artists: Artist[];
-  comics: AnyKindOfComic[];
-  uploadUrlBase: string;
-  tags: Tag[];
-  user: UserSession | null;
 }
 
-interface ApiResponse {
+type ApiResponse = {
   error?: string;
   success?: boolean;
-}
+};
 
 export default function Upload() {
   const submitThing = useSubmit();
-  const actionData = useActionData();
+  const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
   const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
@@ -132,10 +136,8 @@ export default function Upload() {
       newArtist: newArtist,
       artistId: comicData.artistId,
       numberOfPages: comicData.files.length - 1,
-      previousComic: comicData.previousComic?.comicId
-        ? comicData.previousComic
-        : undefined,
-      nextComic: comicData.nextComic?.comicId ? comicData.nextComic : undefined,
+      previousComic: comicData.previousComic?.id ? comicData.previousComic : undefined,
+      nextComic: comicData.nextComic?.id ? comicData.nextComic : undefined,
     };
 
     const formData = new FormData();
@@ -339,23 +341,15 @@ function createEmptyUploadData(): NewComicData {
   };
 }
 
-export interface NewArtist {
+export type NewArtist = {
   artistName: string;
   e621Name: string;
   patreonName: string;
   links: string[];
-}
-
-// Can be either a live comic, a pending comic, or one uploaded but awaiting processing
-export interface AnyKindOfComic {
-  comicId: number;
-  comicName: string;
-  isPending: boolean;
-  isUpload: boolean;
-}
+};
 
 // The submitted payload
-export interface UploadBody {
+export type UploadBody = {
   uploadId: string;
   comicName: string;
   artistId?: number;
@@ -363,14 +357,14 @@ export interface UploadBody {
   category: string;
   classification: string;
   state: string;
-  previousComic?: AnyKindOfComic;
-  nextComic?: AnyKindOfComic;
+  previousComic?: ComicTiny;
+  nextComic?: ComicTiny;
   tagIds: number[];
   numberOfPages: number;
-}
+};
 
 // For handling upload data internally in the front-end
-export interface NewComicData {
+export type NewComicData = {
   comicName: string;
   artistId?: number;
   uploadArtistId?: number;
@@ -378,8 +372,8 @@ export interface NewComicData {
   category: string;
   classification: string;
   state: string;
-  previousComic?: AnyKindOfComic;
-  nextComic?: AnyKindOfComic;
+  previousComic?: ComicTiny;
+  nextComic?: ComicTiny;
   tagIds: number[];
   validation: {
     isLegalComicName: boolean;
@@ -387,4 +381,4 @@ export interface NewComicData {
   };
   files: File[];
   thumbnailFile?: File;
-}
+};

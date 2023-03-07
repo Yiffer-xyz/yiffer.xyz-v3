@@ -24,6 +24,19 @@ export type Comic = {
   isPending?: boolean;
 };
 
+export type ComicPublishStatus =
+  | 'published'
+  | 'pending'
+  | 'uploaded'
+  | 'rejected'
+  | 'rejected-list';
+
+export type ComicTiny = {
+  id: number;
+  name: string;
+  publishStatus: ComicPublishStatus;
+};
+
 export type UploadedComic = {
   id: number;
   name: string;

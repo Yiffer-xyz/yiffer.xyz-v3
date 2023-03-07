@@ -1,38 +1,26 @@
-import { AnyKindOfComic } from '~/routes/contribute/upload';
+import { ComicTiny } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 
-export async function getAllComicNamesAndIDs(urlBase: string): Promise<AnyKindOfComic[]> {
-  let normalComicsQuery = 'SELECT Name AS comicName, Id AS comicId FROM comic';
-  let pendingComicsQuery =
-    'SELECT Name AS comicName, Id AS comicId FROM pendingcomic WHERE processed=0';
-  let uploadComicsQuery = `SELECT ComicName AS comicName, Id AS comicId FROM comicupload WHERE Status = 'pending'`;
+export async function getAllComicNamesAndIDs(
+  urlBase: string,
+  options?: {
+    modifyNameIncludeType?: boolean;
+  }
+): Promise<ComicTiny[]> {
+  let query = 'SELECT name, id, publishStatus FROM comic';
+  const response = await queryDbDirect<ComicTiny[]>(urlBase, query);
 
-  let [normalComics, pendingComics, uploadComics] = await Promise.all([
-    queryDbDirect<AnyKindOfComic[]>(urlBase, normalComicsQuery),
-    queryDbDirect<AnyKindOfComic[]>(urlBase, pendingComicsQuery),
-    queryDbDirect<AnyKindOfComic[]>(urlBase, uploadComicsQuery),
-  ]);
+  if (!options?.modifyNameIncludeType) return response;
 
-  const response = [
-    ...normalComics.map(comic => ({
-      comicName: comic.comicName,
-      comicId: comic.comicId,
-      isPending: false,
-      isUpload: false,
-    })),
-    ...pendingComics.map(comic => ({
-      comicName: comic.comicName,
-      comicId: comic.comicId,
-      isPending: true,
-      isUpload: false,
-    })),
-    ...uploadComics.map(comic => ({
-      comicName: comic.comicName,
-      comicId: comic.comicId,
-      isPending: false,
-      isUpload: true,
-    })),
-  ];
+  const mappedComics = response.map(comic => {
+    if (comic.publishStatus === 'uploaded') {
+      comic.name = comic.name + ' (UPLOADED)';
+    }
+    if (comic.publishStatus === 'pending') {
+      comic.name = comic.name + ' (PENDING)';
+    }
+    return comic;
+  });
 
-  return response;
+  return mappedComics;
 }
