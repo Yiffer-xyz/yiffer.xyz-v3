@@ -1,4 +1,4 @@
-import { LoaderArgs, LoaderFunction, redirect } from '@remix-run/cloudflare';
+import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';

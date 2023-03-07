@@ -135,7 +135,7 @@ export default function Step2Comicname({
 
           {similarComics.exactMatchComic && (
             <InfoBox
-              text="A comic with this name already exists in the system. You cannot submit this comic name."
+              text={`A comic with this name already exists in the system. You cannot submit this comic name. If you think this is a different comic with the same name, you can add "(<artistname>)" to the end of the comic's name. Please verify that this is not a duplicate before submitting.`}
               variant="error"
               className="mt-2 w-fit"
             />

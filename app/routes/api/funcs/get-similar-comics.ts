@@ -1,8 +1,6 @@
-import { AnyKindOfComic } from '~/routes/contribute/upload';
-import { UploadedComic } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
 import stringDistance from '~/utils/string-distance';
 import { SimilarComicResponse } from '../search-similarly-named-comic';
+import { getAllComicNamesAndIDs } from './get-comics';
 
 export async function getSimilarlyNamedComics(
   urlBase: string,
@@ -20,11 +18,6 @@ export async function getSimilarlyNamedComics(
     distanceThreshold = 2;
   }
 
-  let allComicsQuery = 'SELECT Name AS comicName FROM comic';
-  let pendingComicsQuery = 'SELECT Name AS comicName FROM pendingcomic WHERE processed=0';
-  let uploadComicsQuery = `SELECT ComicName AS name, Status AS status FROM comicupload 
-  WHERE Status = 'pending' OR Status = 'rejected-list'`;
-
   let response: SimilarComicResponse = {
     similarComics: [],
     exactMatchComic: undefined,
@@ -32,31 +25,35 @@ export async function getSimilarlyNamedComics(
     exactMatchRejectedComic: undefined,
   };
 
-  let [allComics, pendingComics, uploadComics] = await Promise.all([
-    queryDbDirect<AnyKindOfComic[]>(urlBase, allComicsQuery, []),
-    queryDbDirect<AnyKindOfComic[]>(urlBase, pendingComicsQuery, []),
-    queryDbDirect<UploadedComic[]>(urlBase, uploadComicsQuery, []),
-  ]);
-  let anyComicsArray = [...allComics, ...pendingComics];
+  let allComicsTiny = await getAllComicNamesAndIDs(urlBase);
 
-  for (let comic of anyComicsArray) {
-    let distance = stringDistance(comicName, comic.comicName);
+  for (let comic of allComicsTiny.filter(
+    c => c.publishStatus === 'published' || c.publishStatus === 'pending'
+  )) {
+    let distance = stringDistance(comicName, comic.name);
+    console.log(distance);
+
     if (distance === 0) {
-      response.exactMatchComic = comic.comicName;
+      response.exactMatchComic = comic.name;
     } else if (distance <= distanceThreshold) {
-      response.similarComics.push(comic.comicName);
+      response.similarComics.push(comic.name);
     }
   }
-  for (let comic of uploadComics) {
+  for (let comic of allComicsTiny.filter(
+    c =>
+      c.publishStatus === 'uploaded' ||
+      c.publishStatus === 'rejected' ||
+      c.publishStatus === 'rejected-list'
+  )) {
     let distance = stringDistance(comicName, comic.name);
     if (distance === 0) {
-      if (comic.status === 'rejected-list') {
+      if (comic.publishStatus === 'rejected-list') {
         response.exactMatchRejectedComic = comic.name;
       } else {
         response.exactMatchComic = comic.name;
       }
     } else if (distance <= distanceThreshold) {
-      if (comic.status === 'rejected-list') {
+      if (comic.publishStatus === 'rejected-list') {
         response.similarRejectedComics.push(comic.name);
       } else {
         response.similarComics.push(comic.name);
