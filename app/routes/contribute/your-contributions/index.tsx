@@ -185,7 +185,7 @@ export default function YourContributions() {
         </button>
       </p>
 
-      {showPointInfo && <PointInfo />}
+      {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
 
       <Table horizontalScroll={true} className="mx-auto mt-8">
         <TableHeadRow isTableMaxHeight={false}>

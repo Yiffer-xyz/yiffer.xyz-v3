@@ -1,10 +1,3 @@
-export type ComicSuggestionVerdict = 'good' | 'bad';
-export type ComicUploadVerdict =
-  | 'excellent'
-  | 'minor-issues'
-  | 'major-issues'
-  | 'page-issues';
-
 export const CONTRIBUTION_POINTS = {
   comicSuggestion: {
     good: {

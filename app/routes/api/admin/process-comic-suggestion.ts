@@ -1,5 +1,5 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { ComicSuggestionVerdict } from '~/types/contributions';
+import { ComicSuggestionVerdict } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 

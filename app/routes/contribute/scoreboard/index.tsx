@@ -198,64 +198,74 @@ const pInfoColors = {
   },
 };
 
-export function PointInfo() {
+export function PointInfo({ showInfoAboutUploadedComics = false }) {
   return (
-    <div
-      className="grid gap-y-1 gap-x-2 mt-4 mx-auto w-fit"
-      style={{ gridTemplateColumns: 'auto auto' }}
-    >
-      <p className={pInfoColors.pValues.green}>
-        <b>200</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
+    <>
+      <div
+        className="grid gap-y-1 gap-x-2 mt-4 mx-auto w-fit"
+        style={{ gridTemplateColumns: 'auto auto' }}
+      >
+        <p className={pInfoColors.pValues.green}>
+          <b>200</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
 
-      <p className={pInfoColors.pValues.green}>
-        <b>150</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.green}>
-        Uploaded comic, minor issues found (incorrect category/classification, wrong name)
-      </p>
+        <p className={pInfoColors.pValues.green}>
+          <b>150</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.green}>
+          Uploaded comic, minor issues found (incorrect category/classification, wrong
+          name)
+        </p>
 
-      <p className={pInfoColors.pValues.green}>
-        <b>120</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.green}>
-        Uploaded comic, major issues found (lacking artist links, poor tagging, bad
-        thumbnail)
-      </p>
+        <p className={pInfoColors.pValues.green}>
+          <b>120</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.green}>
+          Uploaded comic, major issues found (lacking artist links, poor tagging, bad
+          thumbnail)
+        </p>
 
-      <p className={pInfoColors.pValues.green}>
-        <b>50</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.green}>
-        Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
-      </p>
+        <p className={pInfoColors.pValues.green}>
+          <b>50</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.green}>
+          Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
+        </p>
 
-      <p className={pInfoColors.pValues.blue}>
-        <b>30</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.blue}>
-        Comic suggestion approved with good links/information
-      </p>
+        <p className={pInfoColors.pValues.blue}>
+          <b>30</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.blue}>
+          Comic suggestion approved with good links/information
+        </p>
 
-      <p className={pInfoColors.pValues.blue}>
-        <b>15</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.blue}>
-        Comic suggestion approved with lacking links/information
-      </p>
+        <p className={pInfoColors.pValues.blue}>
+          <b>15</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.blue}>
+          Comic suggestion approved with lacking links/information
+        </p>
 
-      <p className={pInfoColors.pValues.purple}>
-        <b>10</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.purple}>Comic problem reported</p>
+        <p className={pInfoColors.pValues.purple}>
+          <b>10</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.purple}>Comic problem reported</p>
 
-      <p className={pInfoColors.pValues.yellow}>
-        <b>5</b>
-      </p>
-      <p className={pInfoColors.pDescriptions.yellow}>
-        Add/remove tag suggestion approved
-      </p>
-    </div>
+        <p className={pInfoColors.pValues.yellow}>
+          <b>5</b>
+        </p>
+        <p className={pInfoColors.pDescriptions.yellow}>
+          Add/remove tag suggestion approved
+        </p>
+      </div>
+      {showInfoAboutUploadedComics && (
+        <p className="mt-4 text-center">
+          Note that even if your comic upload has the status Approved it might still not
+          be available on the site. This is because we queue comics to spread them evenly
+          over time.
+        </p>
+      )}
+    </>
   );
 }

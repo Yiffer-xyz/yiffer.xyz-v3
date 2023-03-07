@@ -52,26 +52,21 @@ export async function action(args: ActionArgs) {
   const user = await authLoader(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
-  console.log('-111');
   const { error } = validateUploadForm(body);
   if (error) {
     return json({ error }, { status: 400 });
   }
-  console.log('000');
 
   try {
-    console.log('111');
     await processUpload(
       args.context.DB_API_URL_BASE as string,
       body,
-      user.user?.userId || undefined,
+      user?.userId || undefined,
       args.request.headers.get('CF-Connecting-IP') || 'unknown'
     );
   } catch (e: any) {
-    console.log('2.5', e);
     return json({ error: e.message }, { status: 500 });
   }
-  console.log('222');
 
   return json({ success: true });
 }
@@ -83,7 +78,7 @@ type ApiResponse = {
 
 export default function Upload() {
   const submitThing = useSubmit();
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData();
   const transition = useTransition();
 
   const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
