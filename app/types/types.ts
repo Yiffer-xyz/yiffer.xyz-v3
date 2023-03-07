@@ -1,6 +1,6 @@
 export enum UserType {
   Admin = 'admin',
-  Mod = 'mod',
+  Mod = 'moderator',
   User = 'user',
 }
 
@@ -22,6 +22,7 @@ export type Comic = {
   previousComic?: Comic;
   nextComic?: Comic;
   isPending?: boolean;
+  unpublishedData?: UnpublishedComicData;
 };
 
 export type ComicPublishStatus =
@@ -37,25 +38,24 @@ export type ComicTiny = {
   publishStatus: ComicPublishStatus;
 };
 
-export type UploadedComic = {
-  id: number;
-  name: string;
-  artistId?: number;
-  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
-  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
-  state: 'WIP' | 'Cancelled' | 'Finished';
-  numberOfPages: number;
+export type ComicSuggestionVerdict = 'good' | 'bad';
+export type ComicUploadVerdict =
+  | 'excellent'
+  | 'minor-issues'
+  | 'major-issues'
+  | 'page-issues';
+
+export type UnpublishedComicData = {
+  comicId: number;
   timestamp: string;
-  status: 'pending' | 'approved' | 'rejected' | 'rejected-list';
-  points?: number;
-  pointsDescription?: string;
+  errorText?: string;
+  publishDate?: string;
+  modId?: number;
   modComment?: string;
-  userId?: number;
-  userIP?: string;
-  uploadId: string; // TODO: what is this
-  newArtistName?: string;
-  newArtistPatreonName?: string;
-  newArtistE621Name?: string;
+  verdict?: ComicUploadVerdict;
+  uploadUserId?: number;
+  uploadUserIP?: string;
+  uploadId: string;
 };
 
 export type Tag = {

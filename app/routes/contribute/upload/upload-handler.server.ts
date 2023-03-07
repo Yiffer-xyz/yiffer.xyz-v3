@@ -43,7 +43,6 @@ async function createComicTags(urlBase: string, tagIds: number[], comicId: numbe
 
   const result = await queryDb(urlBase, query, params);
   if (result.errorMessage) {
-    console.log(result.errorMessage);
     throw new Error(result.errorMessage); // TODO: error handling
   }
 }

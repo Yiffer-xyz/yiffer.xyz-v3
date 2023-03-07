@@ -2,40 +2,57 @@ import { queryDbDirect } from '~/utils/database-facade';
 import { ComicProblem, ComicSuggestion, ContributedComic, TagSuggestion } from '.';
 import type { ContributionStatus } from '.';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
+import { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 
-type DbUploadedComicContribution = {
-  comicName: string;
+type DbContributedComic = {
+  name: string;
   timestamp: string;
-  status: ContributionStatus;
-  verdict?: 'excellent' | 'minor-issues' | 'major-issues' | 'page-issues';
+  publishStatus: ComicPublishStatus;
+  verdict?: ComicUploadVerdict;
   modComment?: string;
   artistName: string;
   numberOfPages: number;
   numberOfKeywords: number;
 };
 
+function publishStatusToContributionStatus(
+  publishStatus: ComicPublishStatus
+): ContributionStatus {
+  switch (publishStatus) {
+    case 'published':
+      return 'approved';
+    case 'pending':
+      return 'approved';
+    case 'uploaded':
+      return 'pending';
+    case 'rejected':
+      return 'rejected';
+    case 'rejected-list':
+      return 'rejected';
+  }
+}
+
 export async function getYourContributedComics(
   urlBase: string,
   userId: number
 ): Promise<ContributedComic[]> {
   const query = `SELECT 
-      comicName,
+      comic.name,
       timestamp,
-      status,
+      publishStatus,
       verdict,
       modComment,
-      COALESCE(NewArtistName, artist.Name) AS artistName,
+      artist.name AS artistName,
       numberOfPages,
       COUNT(*) AS numberOfKeywords
-    FROM comicupload 
-    LEFT JOIN artist ON (artist.Id = comicupload.ArtistId)
-    LEFT JOIN comicuploadkeyword ON (comicuploadkeyword.ComicUploadId = comicupload.Id)
-    WHERE UserId = ?
-    GROUP BY comicName, timestamp, status, verdict, modComment, artistName, numberOfPages`;
+    FROM comic 
+    INNER JOIN artist ON (artist.Id = comic.Artist)
+    INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+    LEFT JOIN comickeyword ON (comickeyword.comicId = comic.id)
+    WHERE unpublishedcomic.uploadUserId = ?
+    GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
 
-  const dbComics = await queryDbDirect<DbUploadedComicContribution[]>(urlBase, query, [
-    userId,
-  ]);
+  const dbComics = await queryDbDirect<DbContributedComic[]>(urlBase, query, [userId]);
 
   const comics: ContributedComic[] = dbComics.map(dbComic => {
     const { points, description } = dbComic.verdict
@@ -43,8 +60,8 @@ export async function getYourContributedComics(
       : { points: 0, description: undefined };
 
     return {
-      comicName: dbComic.comicName,
-      status: dbComic.status,
+      comicName: dbComic.name,
+      status: publishStatusToContributionStatus(dbComic.publishStatus),
       timestamp: dbComic.timestamp,
       points,
       pointsDescription: description,
