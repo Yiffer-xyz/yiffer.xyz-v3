@@ -31,7 +31,6 @@ export async function getSimilarlyNamedComics(
     c => c.publishStatus === 'published' || c.publishStatus === 'pending'
   )) {
     let distance = stringDistance(comicName, comic.name);
-    console.log(distance);
 
     if (distance === 0) {
       response.exactMatchComic = comic.name;
@@ -39,6 +38,7 @@ export async function getSimilarlyNamedComics(
       response.similarComics.push(comic.name);
     }
   }
+
   for (let comic of allComicsTiny.filter(
     c =>
       c.publishStatus === 'uploaded' ||

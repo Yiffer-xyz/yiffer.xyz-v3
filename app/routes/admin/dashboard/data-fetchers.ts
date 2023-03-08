@@ -1,4 +1,4 @@
-import { ComicSuggestionVerdict, ComicUploadVerdict } from '~/types/contributions';
+import { ComicSuggestionVerdict, ComicUploadVerdict } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import { DashboardAction } from '.';
 

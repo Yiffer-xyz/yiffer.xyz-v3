@@ -16,12 +16,24 @@ export type Artist = {
 export type Comic = {
   name: string;
   id: number;
-  state: 'WIP' | 'Cancelled' | 'Finished';
+  state: 'wip' | 'cancelled' | 'finished';
+  publishStatus: ComicPublishStatus;
   classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
   category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
-  previousComic?: Comic;
-  nextComic?: Comic;
-  isPending?: boolean;
+  numberOfPages: number;
+  previousComic?: {
+    id: number;
+    name: string;
+  };
+  nextComic?: {
+    id: number;
+    name: string;
+  };
+  artist: {
+    id: number;
+    name: string;
+  };
+  tags: Tag[];
   unpublishedData?: UnpublishedComicData;
 };
 
@@ -46,7 +58,6 @@ export type ComicUploadVerdict =
   | 'page-issues';
 
 export type UnpublishedComicData = {
-  comicId: number;
   timestamp: string;
   errorText?: string;
   publishDate?: string;
@@ -55,7 +66,6 @@ export type UnpublishedComicData = {
   verdict?: ComicUploadVerdict;
   uploadUserId?: number;
   uploadUserIP?: string;
-  uploadId: string;
 };
 
 export type Tag = {
@@ -63,7 +73,7 @@ export type Tag = {
   name: string;
 };
 
-export interface JwtConfig {
+export type JwtConfig = {
   tokenSecret: string;
   cookie: {
     name: string;
@@ -72,23 +82,23 @@ export interface JwtConfig {
     maxAge: number;
     httpOnly: boolean;
   };
-}
+};
 
-export interface UserSession {
+export type UserSession = {
   userId: number;
   username: string;
   userType: 'admin' | 'moderator' | 'user';
-}
+};
 
 // Will definitely be expanded when we get more stuff in here
-export interface User {
+export type User = {
   id: number;
   username: string;
   email: string;
   userType: 'admin' | 'moderator' | 'user';
-}
+};
 
-export interface ModApplication {
+export type ModApplication = {
   id: number;
   userId: number;
   timestamp: string;
@@ -96,4 +106,4 @@ export interface ModApplication {
   username: string;
   notes: string;
   status: 'pending' | 'approved' | 'rejected' | 'on hold';
-}
+};
