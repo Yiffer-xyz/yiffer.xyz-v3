@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Button from '~/components/Buttons/Button';
-import TextInput from '~/components/TextInput/TextInput';
-import { IoClose, IoCheckmark } from 'react-icons/io5';
 import { Comic, UnpublishedComicData } from '~/types/types';
-import { Form, useFetcher, useNavigate, useTransition } from '@remix-run/react';
-import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
+import { useFetcher, useNavigate } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { HasError, SetError } from './pending/Error';
 import { Reject } from './pending/Reject';
@@ -16,7 +13,6 @@ type PendingComicSectionProps = {
   updateComic: () => void;
 };
 
-type PendingComicActionState = 'initial' | 'scheduled' | 'has-error' | 'rejected';
 type ActionState = 'none' | 'set-error' | 'scheduling' | 'rejecting';
 
 export default function PendingComicSection({
