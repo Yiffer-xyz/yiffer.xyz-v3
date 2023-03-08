@@ -1,5 +1,5 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData, useOutletContext } from '@remix-run/react';
 import {
   getComicSuggestions,
   getComicUploads,
@@ -14,8 +14,9 @@ import { useState } from 'react';
 import { AssignActionBody } from '~/routes/api/admin/assign-action';
 import { UnAssignActionBody } from '~/routes/api/admin/unassign-action';
 import { ProcessComicProblemBody } from '~/routes/api/admin/process-comic-problem';
-import { ComicSuggestionVerdict } from '~/types/contributions';
 import { ProcessComicSuggestionBody } from '~/routes/api/admin/process-comic-suggestion';
+import { GlobalAdminContext } from '~/routes/admin';
+import { ComicSuggestionVerdict } from '~/types/types';
 
 type UserOrIP = {
   username?: string;
@@ -87,6 +88,8 @@ export default function Dashboard({}) {
   // actually pressed (like, approve or reject for example)
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
+
+  const globalContext: GlobalAdminContext = useOutletContext();
 
   const processTagFetcher = useFetcher();
   const assignModFetcher = useFetcher();

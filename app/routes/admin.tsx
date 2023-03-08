@@ -1,11 +1,22 @@
 import { LoaderArgs, redirect } from '@remix-run/cloudflare';
-import { Link, Outlet, useMatches } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
+import { Artist, ComicTiny, Tag } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
+import { getAllArtists } from './api/funcs/get-artists';
+import { getAllComicNamesAndIDs } from './api/funcs/get-comics';
+import { getAllTags } from './api/funcs/get-tags';
+
+export type GlobalAdminContext = {
+  comics: ComicTiny[];
+  artists: Artist[];
+  tags: Tag[];
+};
 
 export async function loader(args: LoaderArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
   await redirectIfNotMod(args);
 
   const url = new URL(args.request.url);
@@ -13,7 +24,15 @@ export async function loader(args: LoaderArgs) {
     return redirect('/admin/dashboard');
   }
 
-  return null;
+  const [comics, artists, tags] = await Promise.all([
+    getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true }),
+    getAllArtists(urlBase, { includePending: true }),
+    getAllTags(urlBase),
+  ]);
+
+  const globalContext: GlobalAdminContext = { comics, artists, tags };
+
+  return globalContext;
 }
 
 const navWidth = 200;
@@ -22,6 +41,8 @@ const mobileClosedBarTailwindUnits = mobileClosedBarW / 4;
 
 export default function Admin({}) {
   const { isLgUp, width } = useWindowSize();
+  const globalContext = useLoaderData<typeof loader>();
+
   return (
     <>
       <Sidebar alwaysShow={isLgUp} delay={!width} />
@@ -29,7 +50,7 @@ export default function Admin({}) {
         className="pb-4 px-6 lg:px-8"
         style={{ marginLeft: isLgUp ? navWidth : mobileClosedBarW }}
       >
-        <Outlet />
+        <Outlet context={globalContext} />
       </div>
     </>
   );

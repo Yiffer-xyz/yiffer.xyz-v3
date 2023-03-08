@@ -11,6 +11,7 @@ export interface ButtonProps {
   className?: string;
   style?: React.CSSProperties;
   buttonRef?: React.Ref<HTMLButtonElement>;
+  isSubmit?: boolean;
 }
 
 export default function Button({
@@ -26,6 +27,7 @@ export default function Button({
   className,
   style = {},
   buttonRef,
+  isSubmit = false,
   ...props
 }: ButtonProps) {
   let variantClassname = '';
@@ -85,6 +87,7 @@ export default function Button({
       {...props}
       style={style}
       ref={buttonRef}
+      type={isSubmit ? 'submit' : 'button'}
     >
       {StartIcon ? <StartIcon style={{ marginRight: '4px' }} /> : undefined} {text}{' '}
       {EndIcon ? <EndIcon style={{ marginLeft: '4px' }} /> : undefined}
