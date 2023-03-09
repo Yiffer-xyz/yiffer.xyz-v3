@@ -1,6 +1,7 @@
 import { ActionArgs, json } from '@remix-run/cloudflare';
 import { ComicUploadVerdict } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
+import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
@@ -19,6 +20,8 @@ export async function action(args: ActionArgs) {
   if (!formComicId) return create400Json('Missing comicId');
   const formVerdict = formDataBody.get('verdict');
   if (!formVerdict) return create400Json('Missing verdict');
+  const formComicName = formDataBody.get('comicName');
+  if (!formComicName) return create400Json('Missing comicName');
 
   const verdict: ComicUploadVerdict = formVerdict.toString() as ComicUploadVerdict;
   const formModComment = formDataBody.get('modComment');
@@ -28,6 +31,7 @@ export async function action(args: ActionArgs) {
     await processUserUpload(
       urlBase,
       parseInt(formComicId.toString()),
+      formComicName.toString(),
       verdict,
       modComment
     );
@@ -41,22 +45,33 @@ export async function action(args: ActionArgs) {
 export async function processUserUpload(
   urlBase: string,
   comicId: number,
-  verdict: ComicUploadVerdict,
+  comicName: string,
+  frontendVerdict: ComicUploadVerdict,
   modComment?: string
 ) {
   let publishStatus = 'pending';
-  if (verdict === 'rejected') publishStatus = 'rejected';
-  if (verdict === 'rejected-list') {
+  let verdict: ComicUploadVerdict = frontendVerdict.toString() as ComicUploadVerdict;
+  if (frontendVerdict === 'rejected') publishStatus = 'rejected';
+  if (frontendVerdict === 'rejected-list') {
     publishStatus = 'rejected-list';
     verdict = 'rejected';
   }
 
-  const comicQuery = 'UPDATE comic SET publishStatus = ? WHERE id = ?';
-  const comicQueryParams = [publishStatus, comicId];
-
-  const detailsQuery =
+  let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
+  let comicQueryParams = [publishStatus, comicId];
+  let detailsQuery =
     'UPDATE unpublishedcomic SET verdict = ?, modComment = ? WHERE comicId = ?';
-  const detailsQueryParams = [verdict, modComment, comicId];
+  let detailsQueryParams = [verdict, modComment, comicId];
+
+  if (frontendVerdict === 'rejected') {
+    const randomStr = randomString(6);
+    const newComicName = `${comicName}-REJECTED-${randomStr}`;
+    comicQuery = `UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?`;
+    comicQueryParams = [publishStatus, newComicName, comicId];
+    detailsQuery =
+      'UPDATE unpublishedcomic SET verdict = ?, modComment = ?, originalNameIfRejected = ? WHERE comicId = ?';
+    detailsQueryParams = [verdict, modComment, comicName, comicId];
+  }
 
   await Promise.all([
     queryDbDirect(urlBase, comicQuery, comicQueryParams),

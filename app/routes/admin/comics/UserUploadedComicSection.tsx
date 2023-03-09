@@ -41,6 +41,7 @@ export default function UserUploadSection({
 
     const body: any = {
       comicId: comicData.id.toString(),
+      comicName: comicData.name,
       verdict,
     };
     if (modComment) body.modComment = modComment;
