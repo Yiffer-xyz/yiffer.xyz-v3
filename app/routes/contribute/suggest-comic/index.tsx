@@ -24,6 +24,7 @@ import {
 } from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
+import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
 
 export async function loader(args: LoaderArgs) {
   return await authLoader(args);
@@ -79,19 +80,51 @@ export default function Upload() {
   const [comicName, setComicName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [comments, setComments] = useState('');
-  const [similarComicNames, setSimilarComicNames] = useState<string[]>([]);
-  const [differentComic, setDifferentComic] = useState(false);
-  const [bannedArtistNames, setBannedArtistNames] = useState<string[]>([]);
-  const [differentArtist, setDifferentArtist] = useState(false);
+
+  const [similarComics, setSimilarComics] = useState<SimilarComicResponse>();
+  const [isComicnameLegal, setIsComicnameLegal] = useState(true);
+  const [hasConfirmedDifferentComic, setHasConfirmedDifferentComic] = useState(false);
+
+  const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
+  const [isArtistNameLegal, setIsArtistNameLegal] = useState(true);
+  const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
+
   const user = useLoaderData<typeof loader>();
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
   const transition = useTransition();
 
+  useEffect(() => {
+    if (similarArtistsFetcher.data) {
+      setSimilarArtists(similarArtistsFetcher.data);
+    }
+  }, [similarArtistsFetcher.data]);
+
+  useEffect(() => {
+    let isLegal = false;
+
+    if (similarArtists) {
+      const isExactMatch =
+        similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist;
+      const isAnyKindOfSimilarArtist =
+        similarArtists.similarArtists.length > 0 ||
+        similarArtists.similarBannedArtists.length > 0;
+
+      if (!isExactMatch && artistName.length > 2) {
+        isLegal = !isAnyKindOfSimilarArtist || hasConfirmedNewArtist;
+      }
+    }
+
+    setIsArtistNameLegal(isLegal);
+  }, [similarArtists, hasConfirmedNewArtist]);
+
   useEffect(onComicNameChange, [comicName]);
 
   function onComicNameChange() {
-    setSimilarComicNames([]);
+    setSimilarComics(undefined);
+    setIsComicnameLegal(false);
+    setHasConfirmedDifferentComic(false);
+
     if (debounceTimeoutComicRef.current) clearTimeout(debounceTimeoutComicRef.current);
     if (comicName.length < 3) return;
 
@@ -104,41 +137,42 @@ export default function Upload() {
   }
 
   useEffect(() => {
-    const similarComics = similarComicsFetcher.data as SimilarComicResponse;
-    if (similarComics) {
-      const names: string[] = [];
-      if (similarComics.exactMatchComic) {
-        names.push(similarComics.exactMatchComic);
-      }
-      if (similarComics.exactMatchRejectedComic) {
-        names.push(similarComics.exactMatchRejectedComic);
-      }
-      names.push(...similarComics.similarComics, ...similarComics.similarRejectedComics);
+    if (!similarComicsFetcher.data) return;
 
-      setSimilarComicNames(names);
+    const similarComics = similarComicsFetcher.data as SimilarComicResponse;
+
+    const isExactMatch =
+      similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
+
+    const isAnySimilar =
+      similarComics.similarComics.length > 0 ||
+      similarComics.similarRejectedComics.length > 0;
+
+    let isLegal = false;
+    if (!isExactMatch && comicName.length > 2) {
+      isLegal = !isAnySimilar || hasConfirmedDifferentComic;
     }
-  }, [similarComicsFetcher.data]);
+
+    setSimilarComics(similarComics);
+    setIsComicnameLegal(isLegal);
+  }, [similarComicsFetcher.data, hasConfirmedDifferentComic, comicName]);
 
   useEffect(onArtistNameChange, [artistName]);
 
   function onArtistNameChange() {
-    setBannedArtistNames([]);
+    setHasConfirmedNewArtist(false);
+    setSimilarArtists(undefined);
+
     if (debounceTimeoutArtistRef.current) clearTimeout(debounceTimeoutArtistRef.current);
-    if (artistName.length < 3) return;
+    if (!artistName || artistName.length < 3) return;
 
     debounceTimeoutArtistRef.current = setTimeout(() => {
       similarArtistsFetcher.submit(
         { artistName },
-        { method: 'post', action: '/api/search-banned-artists' }
+        { method: 'post', action: '/api/search-similar-artist' }
       );
     }, 1500);
   }
-
-  useEffect(() => {
-    if (similarArtistsFetcher.data) {
-      setBannedArtistNames(similarArtistsFetcher.data);
-    }
-  }, [similarArtistsFetcher.data]);
 
   function getSuccessText() {
     if (user) {
@@ -151,23 +185,26 @@ export default function Upload() {
     );
   }
 
-  function getArtistText() {
-    let name = '';
-
-    bannedArtistNames.forEach((artist: string, idx) => {
-      name += artist;
-      if (idx !== bannedArtistNames.length) name += ', ';
-    });
-
-    return name;
-  }
-
   const isSubmitDisabled =
-    !comicName ||
-    !artistName ||
-    !comments ||
-    (similarComicNames.length > 0 && !differentComic) ||
-    (bannedArtistNames.length > 0 && !differentArtist);
+    !comicName || !artistName || !comments || !isComicnameLegal || !isArtistNameLegal;
+
+  const isExactComicnameMatch =
+    similarComics?.exactMatchComic || similarComics?.exactMatchRejectedComic;
+  const isAnySimilarComics =
+    similarComics &&
+    !isExactComicnameMatch &&
+    (similarComics.similarComics.length > 0 ||
+      similarComics.similarRejectedComics.length > 0);
+
+  const isExactArtistMatch =
+    similarArtists &&
+    (similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist);
+
+  const isAnySimilarArtists =
+    !isExactArtistMatch &&
+    similarArtists &&
+    (similarArtists.similarArtists.length > 0 ||
+      similarArtists.similarBannedArtists.length > 0);
 
   return (
     <section className="container mx-auto justify-items-center">
@@ -222,25 +259,72 @@ export default function Upload() {
                 value={comicName}
               />
 
-              {similarComicNames.length > 0 && (
+              {similarComics && (
                 <>
-                  <p>
-                    The following comics with similar names already exists in our system.
-                    If the comic you are suggesting is the same as one of these, please do
-                    not suggest it. If the comics are not available to you currently on
-                    Yiffer.xyz, they are most likely in a pending state from someone
-                    else&apos;s submission or have been removed.
-                  </p>
-                  <ul className="list-none ml-4 spaced mb-4 mt-2">
-                    {similarComicNames.map((result, index) => (
-                      <li key={`result${index}`}>{result.toString()}</li>
-                    ))}
-                  </ul>
-                  <Checkbox
-                    label="The suggested comic is not one of the above"
-                    checked={differentComic}
-                    onChange={setDifferentComic}
-                  />
+                  {isAnySimilarComics && (
+                    <>
+                      {!hasConfirmedDifferentComic && (
+                        <InfoBox
+                          variant="warning"
+                          boldText={false}
+                          className="mt-2 w-fit"
+                          disableElevation
+                        >
+                          {similarComics.similarComics.length > 0 && (
+                            <>
+                              <p>
+                                The following comics with similar names already exist in
+                                the system:
+                              </p>
+                              <ul>
+                                {similarComics.similarComics.map((comicName: string) => (
+                                  <li key={comicName}>{comicName}</li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                          {similarComics.similarRejectedComics.length > 0 && (
+                            <>
+                              <p>
+                                The following comics with similar names have been
+                                rejected. If one of these is your comic, do not upload it:
+                              </p>
+                              <ul>
+                                {similarComics.similarRejectedComics.map(
+                                  (comicName: string) => (
+                                    <li key={comicName}>{comicName}</li>
+                                  )
+                                )}
+                              </ul>
+                            </>
+                          )}
+                        </InfoBox>
+                      )}
+                      <Checkbox
+                        label="The suggested comic is not one of the above"
+                        checked={hasConfirmedDifferentComic}
+                        onChange={setHasConfirmedDifferentComic}
+                        className="mt-2"
+                      />
+                    </>
+                  )}
+
+                  {similarComics.exactMatchComic && (
+                    <InfoBox
+                      text={`A comic with this name already exists in the system. You cannot submit this comic name. If you think this is a different comic with the same name, you can add "(<artistname>)" to the end of the comic's name. Please verify that this is not a duplicate before submitting.`}
+                      variant="error"
+                      className="mt-2 w-fit"
+                      disableElevation
+                    />
+                  )}
+                  {similarComics.exactMatchRejectedComic && (
+                    <InfoBox
+                      text="A comic with this name has been rejected. You cannot submit this comic name."
+                      variant="error"
+                      className="mt-2 w-fit"
+                      disableElevation
+                    />
+                  )}
                 </>
               )}
 
@@ -252,16 +336,63 @@ export default function Upload() {
                 value={artistName}
               />
 
-              {bannedArtistNames.length > 0 && (
+              {isExactArtistMatch && (
+                <InfoBox
+                  variant="error"
+                  className="mt-2"
+                  disableElevation
+                  text={
+                    similarArtists.exactMatchArtist
+                      ? 'An artist with this name already exists in the system'
+                      : 'An artist with this name has been banned or has requested their comics not be published here'
+                  }
+                />
+              )}
+
+              {isAnySimilarArtists && (
                 <>
-                  <p className="mb-4">
-                    An artist with the name {getArtistText()} has requested we do not host
-                    their comics.{' '}
-                  </p>
+                  {!hasConfirmedNewArtist && (
+                    <InfoBox
+                      variant="warning"
+                      className="mt-2"
+                      boldText={false}
+                      disableElevation
+                    >
+                      {similarArtists.similarArtists.length > 0 && (
+                        <>
+                          <p>
+                            The following existing artist names are somewhat similar to
+                            the one you entered:
+                          </p>
+                          <ul>
+                            {similarArtists.similarArtists.map(name => (
+                              <li key={name}>{name}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                      {similarArtists.similarBannedArtists.length > 0 && (
+                        <>
+                          <p>
+                            The artists are somewhat similar to the one you entered, and
+                            have been banned or have requested their comics not be
+                            published here:
+                          </p>
+                          <ul>
+                            {similarArtists.similarBannedArtists.map(name => (
+                              <li key={name}>{name}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </InfoBox>
+                  )}
+
                   <Checkbox
-                    label="This is a different artist."
-                    checked={differentArtist}
-                    onChange={setDifferentArtist}
+                    label="This is not one of the above artists"
+                    checked={hasConfirmedNewArtist}
+                    onChange={setHasConfirmedNewArtist}
+                    className="mt-2"
                   />
                 </>
               )}
@@ -275,7 +406,12 @@ export default function Upload() {
               />
 
               {actionData?.error && (
-                <InfoBox variant="error" text={actionData.error} className="my-2" />
+                <InfoBox
+                  variant="error"
+                  text={actionData.error}
+                  className="my-2"
+                  disableElevation
+                />
               )}
 
               <p>
