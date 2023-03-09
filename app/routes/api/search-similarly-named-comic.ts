@@ -1,18 +1,18 @@
-import { ActionFunction, json } from '@remix-run/cloudflare';
+import { ActionArgs, json } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from './funcs/get-similar-comics';
 
-export interface SimilarComicResponse {
+export type SimilarComicResponse = {
   similarComics: string[];
   exactMatchComic?: string;
   similarRejectedComics: string[];
   exactMatchRejectedComic?: string;
-}
+};
 
-export const action: ActionFunction = async function ({ request, context }) {
-  const urlBase = context.DB_API_URL_BASE as string;
-  const body = await request.formData();
+export async function action(args: ActionArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const body = await args.request.formData();
   const comicName = body.get('comicName') as string;
 
   const data = await getSimilarlyNamedComics(urlBase, comicName);
   return json(data);
-};
+}

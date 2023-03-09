@@ -25,7 +25,9 @@ export async function getSimilarlyNamedComics(
     exactMatchRejectedComic: undefined,
   };
 
-  let allComicsTiny = await getAllComicNamesAndIDs(urlBase);
+  let allComicsTiny = await getAllComicNamesAndIDs(urlBase, {
+    includeRejectedList: true,
+  });
 
   for (let comic of allComicsTiny.filter(
     c => c.publishStatus === 'published' || c.publishStatus === 'pending'

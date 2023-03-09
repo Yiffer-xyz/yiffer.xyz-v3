@@ -9,6 +9,7 @@ type InfoBoxProps = {
   closable?: Boolean;
   boldText?: Boolean;
   centerText?: Boolean;
+  disableElevation?: Boolean;
   children?: React.ReactNode;
   className?: string;
 };
@@ -21,6 +22,7 @@ export default function InfoBox({
   closable = false,
   boldText = true,
   centerText = false,
+  disableElevation = false,
   children,
   className = '',
   ...props
@@ -49,7 +51,8 @@ export default function InfoBox({
   }
 
   let fullClassname = `px-6 py-4 flex flex-row justify-between items-center gap-2
-    rounded shadow-md bg-gradient-to-r text-white ${variantClassname} ${className}`;
+    rounded ${disableElevation ? '' : 'shadow-md'} bg-gradient-to-r 
+    text-white ${variantClassname} ${className}`;
 
   if (boldText) {
     fullClassname += ' font-semibold';

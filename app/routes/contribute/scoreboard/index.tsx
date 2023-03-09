@@ -2,7 +2,7 @@ import type { ActionFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { useFetcher } from '@remix-run/react';
 import { add, format, isEqual, set, sub } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import {
   MdArrowBack,
   MdArrowDropDown,
@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/component
 import Username from '~/components/Username';
 import { alltimequery, defaultquery } from '~/mock-data/top-contributions';
 import BackToContribute from '~/routes/contribute/BackToContribute';
+import { CONTRIBUTION_POINTS } from '~/types/contributions';
 
 export const action: ActionFunction = async function ({ request }) {
   const reqBody = await request.formData();
@@ -198,6 +199,13 @@ const pInfoColors = {
   },
 };
 
+const nonRejectedUploads = Object.entries(CONTRIBUTION_POINTS.comicUpload)
+  .filter(([verdict]) => verdict !== 'rejected' && verdict !== 'rejected-list')
+  .map(([_, value]) => ({
+    points: value.points,
+    text: value.scoreListDescription,
+  }));
+
 export function PointInfo({ showInfoAboutUploadedComics = false }) {
   return (
     <>
@@ -205,33 +213,14 @@ export function PointInfo({ showInfoAboutUploadedComics = false }) {
         className="grid gap-y-1 gap-x-2 mt-4 mx-auto w-fit"
         style={{ gridTemplateColumns: 'auto auto' }}
       >
-        <p className={pInfoColors.pValues.green}>
-          <b>200</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.green}>Uploaded comic, no issues found</p>
-
-        <p className={pInfoColors.pValues.green}>
-          <b>150</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.green}>
-          Uploaded comic, minor issues found (incorrect category/classification, wrong
-          name)
-        </p>
-
-        <p className={pInfoColors.pValues.green}>
-          <b>120</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.green}>
-          Uploaded comic, major issues found (lacking artist links, poor tagging, bad
-          thumbnail)
-        </p>
-
-        <p className={pInfoColors.pValues.green}>
-          <b>50</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.green}>
-          Uploaded comic, page issues (resolution, ordering, premium pages uploaded)
-        </p>
+        {nonRejectedUploads.map(({ points, text }) => (
+          <Fragment key={points}>
+            <p className={pInfoColors.pValues.green}>
+              <b>{points}</b>
+            </p>
+            <p className={pInfoColors.pDescriptions.green}>{text}</p>
+          </Fragment>
+        ))}
 
         <p className={pInfoColors.pValues.blue}>
           <b>30</b>

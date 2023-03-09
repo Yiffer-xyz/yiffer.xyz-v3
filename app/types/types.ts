@@ -56,7 +56,8 @@ export type ComicUploadVerdict =
   | 'minor-issues'
   | 'major-issues'
   | 'page-issues'
-  | 'rejected';
+  | 'rejected'
+  | 'rejected-list';
 
 export type UnpublishedComicData = {
   timestamp: string;
@@ -68,6 +69,7 @@ export type UnpublishedComicData = {
   uploadUserId?: number;
   uploadUserIP?: string;
   uploadUsername?: string;
+  originalNameIfRejected?: string;
 };
 
 export type Tag = {

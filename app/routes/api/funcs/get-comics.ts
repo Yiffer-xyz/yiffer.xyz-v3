@@ -5,9 +5,15 @@ export async function getAllComicNamesAndIDs(
   urlBase: string,
   options?: {
     modifyNameIncludeType?: boolean;
+    includeRejectedList?: boolean;
   }
 ): Promise<ComicTiny[]> {
-  let query = 'SELECT name, id, publishStatus FROM comic';
+  let query =
+    'SELECT name, id, publishStatus FROM comic WHERE publishStatus != "rejected"';
+  if (!options?.includeRejectedList) {
+    query += ' AND publishStatus != "rejected-list" ';
+  }
+
   const response = await queryDbDirect<ComicTiny[]>(urlBase, query);
 
   if (!options?.modifyNameIncludeType) return response;

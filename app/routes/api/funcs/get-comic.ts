@@ -20,6 +20,7 @@ type DbComic = {
   uploadUserId?: number;
   uploadUserIP?: string;
   uploadUsername?: string;
+  originalNameIfRejected?: string;
 };
 
 type DbComicLink = {
@@ -120,6 +121,7 @@ export async function mergeDbFieldsToComic(
       uploadUserId: dbComic.uploadUserId,
       uploadUserIP: dbComic.uploadUserIP,
       uploadUsername: dbComic.uploadUsername,
+      originalNameIfRejected: dbComic.originalNameIfRejected,
     };
   }
 
@@ -149,7 +151,8 @@ async function getDbComicByField(
       unpublishedcomic.verdict,
       unpublishedcomic.uploadUserId,
       unpublishedcomic.uploadUserIP,
-      user.username AS uploadUsername
+      user.username AS uploadUsername,
+      unpublishedcomic.originalNameIfRejected
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)

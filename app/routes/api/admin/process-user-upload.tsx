@@ -1,6 +1,6 @@
 import { ActionArgs, json } from '@remix-run/cloudflare';
 import { ComicUploadVerdict } from '~/types/types';
-import { queryDb, queryDbDirect } from '~/utils/database-facade';
+import { queryDbDirect } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
@@ -44,10 +44,15 @@ export async function processUserUpload(
   verdict: ComicUploadVerdict,
   modComment?: string
 ) {
-  const isApproved = verdict !== 'rejected';
+  let publishStatus = 'pending';
+  if (verdict === 'rejected') publishStatus = 'rejected';
+  if (verdict === 'rejected-list') {
+    publishStatus = 'rejected-list';
+    verdict = 'rejected';
+  }
 
   const comicQuery = 'UPDATE comic SET publishStatus = ? WHERE id = ?';
-  const comicQueryParams = [isApproved ? 'pending' : 'rejected', comicId];
+  const comicQueryParams = [publishStatus, comicId];
 
   const detailsQuery =
     'UPDATE unpublishedcomic SET verdict = ?, modComment = ? WHERE comicId = ?';

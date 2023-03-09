@@ -6,31 +6,21 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import { format } from 'date-fns';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import TextInput from '~/components/TextInput/TextInput';
-import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
-import { ApiResponse, MaybeApiResponse } from '~/utils/request-helpers';
+import { MaybeApiResponse } from '~/utils/request-helpers';
 import InfoBox from '~/components/InfoBox';
+import { CONTRIBUTION_POINTS } from '~/types/contributions';
 
 type UserUploadSectionProps = {
   comicData: Comic;
   updateComic: () => void;
 };
 
-const reviewOptions = [
-  { value: 'excellent', text: 'No issues found' },
-  {
-    value: 'minor-issues',
-    text: 'Minor issues (e.g. incorrect category/classification, name spelling error)',
-  },
-  {
-    value: 'major-issues',
-    text: 'Major issues (e.g. lacking artist links, poor tagging, bad thumbnail)',
-  },
-  {
-    value: 'page-issues',
-    text: 'Poor resolution, wrong ordering, premium pages uploaded',
-  },
-  { value: 'rejected', text: 'Not usable, reject submission' },
-];
+const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
+  ([verdict, value]) => ({
+    value: verdict,
+    text: value.modPanelDescription,
+  })
+);
 
 export default function UserUploadSection({
   comicData,
@@ -86,13 +76,37 @@ export default function UserUploadSection({
         className="mt-2"
       />
 
+      {(verdict === 'rejected' || verdict === 'rejected-list') && (
+        <InfoBox
+          variant="info"
+          title="Rejecting"
+          showIcon
+          className="mt-4 max-w-4xl"
+          boldText={false}
+        >
+          <p className="mt-2">
+            If the comic should not be on Yiffer.xyz at all - for example if the art
+            quality is too bad, if it's a cub comic, if it's not in English, or if it's
+            got censoring bars (etc.) - use the upper of the two reject options. This will
+            add the comic's name to a <u>ban list</u>, preventing others from uploading
+            it. It is therefore important that you <u>fix the name</u> in case it's
+            misspelled. If choosing this, you should absolutely leave a brief comment
+            explaining why.
+          </p>
+          <p className="mt-4">
+            If the comic could be on Yiffer.xyz but the quality upload is garbage, use the
+            lower of the two options. Use this one if it's spam/trolling as well.
+          </p>
+        </InfoBox>
+      )}
+
       <p className="mt-4">
         You can add a comment for the user to see. Keep it <u>short</u> and constructive!
         The goal is to help the user do better next time.
       </p>
       <p>
         You <i>can</i> leave it blank even if there are issues, but helping the user helps
-        us in the long run.
+        us in the long run. Do not comment on obvious trolling.
       </p>
 
       <TextInput

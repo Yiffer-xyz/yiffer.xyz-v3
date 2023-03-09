@@ -35,14 +35,14 @@ export default function Step2Comicname({
       setIsLegalComicnameState(false);
       return;
     }
-    const isExactMath =
+    const isExactMatch =
       similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
     const isAnySimilar =
       similarComics.similarComics.length > 0 ||
       similarComics.similarRejectedComics.length > 0;
 
     let isLegal = false;
-    if (!isExactMath && comicName.length > 2) {
+    if (!isExactMatch && comicName.length > 2) {
       isLegal = !isAnySimilar || hasConfirmedNewComic;
     }
 

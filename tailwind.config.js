@@ -18,8 +18,8 @@ module.exports = {
           dark: '#eee',
         },
         status: {
-          info1: '#57b5f3',
-          info2: '#57b5f3',
+          info1: '#39a6ef',
+          info2: '#39a6ef',
           // error1: // use red.strong.300
           error2: '#e2557f',
           warn1: '#ec9e3f',
