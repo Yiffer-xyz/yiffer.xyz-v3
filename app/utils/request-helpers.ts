@@ -9,17 +9,24 @@ export enum ErrorCodes {
   SIGNUP_ERROR_INSERT = '1005',
 }
 
-export function create500Json(message: string) {
+export type ApiResponse = {
+  success: boolean;
+  error: string | null;
+};
+
+export type MaybeApiResponse = ApiResponse | undefined;
+
+export function create500Json(message?: string): TypedResponse<ApiResponse> {
   return json(
     {
-      error: message,
+      error: message || 'Unknown error',
       success: false,
     },
     { status: 500 }
   );
 }
 
-export function create400Json(message: string) {
+export function create400Json(message: string): TypedResponse<ApiResponse> {
   return json(
     {
       error: message,
@@ -29,7 +36,8 @@ export function create400Json(message: string) {
   );
 }
 
-export function createGeneric500Json(errorCode: ErrorCodes) {
+export function createGeneric500Json(errorCode?: ErrorCodes): TypedResponse<ApiResponse> {
+  if (!errorCode) return create500Json('Unknown error');
   return create500Json(
     `Something went wrong. Please report it to our Feedback page with error code: ${errorCode}`
   );
@@ -38,10 +46,7 @@ export function createGeneric500Json(errorCode: ErrorCodes) {
 // This exists because it returns the correct response type,
 // allowing us to infer a single type with useActionData<typeof action>()
 // in the actual component.
-export function createSuccessJson(): TypedResponse<{
-  success: boolean;
-  error: string | null;
-}> {
+export function createSuccessJson(): TypedResponse<ApiResponse> {
   return json(
     {
       success: true,

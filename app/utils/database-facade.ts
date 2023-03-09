@@ -12,10 +12,13 @@ export async function queryDbDirect<T>(
   params: any[] = []
 ): Promise<T> {
   const result = await queryDb<T>(urlBase, query, params);
-  if (result.errorCode || result.errorMessage) {
+  if (result.errorCode && result.errorMessage) {
     throw new Error(
       `Error querying database: ${result.errorCode} - ${result.errorMessage}`
     );
+  }
+  if (result.errorMessage) {
+    throw new Error(`Error querying database: ${result.errorMessage}`);
   }
   if (result.result === undefined) {
     throw new Error('Error querying database: Undefined result');

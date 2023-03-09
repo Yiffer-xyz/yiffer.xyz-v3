@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export type BaseRadioButtonGroupProps<T> = {
   options: { text: string; value: T }[];
-  title: string;
+  title?: string;
   name: string;
   className?: string;
 };
@@ -48,7 +48,7 @@ export default function RadioButtonGroup<T>({
 
   return (
     <div className={`flex flex-col ${className}`}>
-      <label className="mb-2">{title}</label>
+      {title && <label className="mb-2">{title}</label>}
       <div
         className="flex flex-col gap-2"
         onBlur={() => setCurrentlyHighlightedIndex(-1)}

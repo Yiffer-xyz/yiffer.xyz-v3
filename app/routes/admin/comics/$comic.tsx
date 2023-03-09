@@ -9,6 +9,7 @@ import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
 import AnonUploadSection from './AnonUploadedComicSection';
 import PendingComicSection from './PendingComicSection';
+import UserUploadSection from './UserUploadedComicSection';
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
@@ -42,6 +43,16 @@ export default function ManageComicInner() {
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>User-uploaded comic, anonymous</h3>
           <AnonUploadSection
+            comicData={comicData}
+            updateComic={() => revalidator.revalidate()}
+          />
+        </div>
+      )}
+
+      {isUserUpload && (
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+          <h3>User-uploaded comic</h3>
+          <UserUploadSection
             comicData={comicData}
             updateComic={() => revalidator.revalidate()}
           />

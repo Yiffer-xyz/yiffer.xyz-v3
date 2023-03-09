@@ -55,7 +55,8 @@ export type ComicUploadVerdict =
   | 'excellent'
   | 'minor-issues'
   | 'major-issues'
-  | 'page-issues';
+  | 'page-issues'
+  | 'rejected';
 
 export type UnpublishedComicData = {
   timestamp: string;
@@ -66,6 +67,7 @@ export type UnpublishedComicData = {
   verdict?: ComicUploadVerdict;
   uploadUserId?: number;
   uploadUserIP?: string;
+  uploadUsername?: string;
 };
 
 export type Tag = {

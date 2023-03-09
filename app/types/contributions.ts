@@ -26,5 +26,9 @@ export const CONTRIBUTION_POINTS = {
       points: 50,
       description: 'Page issues',
     },
+    rejected: {
+      points: 0,
+      description: undefined,
+    },
   },
 };

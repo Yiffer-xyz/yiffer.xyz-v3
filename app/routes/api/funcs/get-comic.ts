@@ -19,6 +19,7 @@ type DbComic = {
   verdict?: ComicUploadVerdict;
   uploadUserId?: number;
   uploadUserIP?: string;
+  uploadUsername?: string;
 };
 
 type DbComicLink = {
@@ -44,7 +45,13 @@ export async function getComicById(
     getTagsByComicId(urlBase, comicId),
   ]);
 
-  return mergeDbFieldsToComic(dbComic, dbLinksRows, dbTagsRows, excludeUnpublishedData);
+  const finalComic = mergeDbFieldsToComic(
+    dbComic,
+    dbLinksRows,
+    dbTagsRows,
+    excludeUnpublishedData
+  );
+  return finalComic;
 }
 
 export async function getComicByName(
@@ -112,6 +119,7 @@ export async function mergeDbFieldsToComic(
       verdict: dbComic.verdict,
       uploadUserId: dbComic.uploadUserId,
       uploadUserIP: dbComic.uploadUserIP,
+      uploadUsername: dbComic.uploadUsername,
     };
   }
 
@@ -140,10 +148,12 @@ async function getDbComicByField(
       unpublishedcomic.modComment,
       unpublishedcomic.verdict,
       unpublishedcomic.uploadUserId,
-      unpublishedcomic.uploadUserIP
+      unpublishedcomic.uploadUserIP,
+      user.username AS uploadUsername
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+    LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
     WHERE comic.${fieldName} = ?`;
 
   const comicRows = await queryDbDirect<DbComic[]>(urlBase, comicQuery, [fieldValue]);
