@@ -84,6 +84,7 @@ export default function UserUploadSection({
           showIcon
           className="mt-4 max-w-4xl"
           boldText={false}
+          disableElevation
         >
           <p className="mt-2">
             If the comic should not be on Yiffer.xyz at all - for example if the art
@@ -91,8 +92,7 @@ export default function UserUploadSection({
             got censoring bars (etc.) - use the upper of the two reject options. This will
             add the comic's name to a <u>ban list</u>, preventing others from uploading
             it. It is therefore important that you <u>fix the name</u> in case it's
-            misspelled. If choosing this, you should absolutely leave a brief comment
-            explaining why.
+            misspelled.
           </p>
           <p className="mt-4">
             If the comic could be on Yiffer.xyz but the quality upload is garbage, use the

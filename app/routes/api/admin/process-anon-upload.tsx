@@ -1,6 +1,14 @@
-import { ActionArgs, json } from '@remix-run/cloudflare';
+import { ActionArgs } from '@remix-run/cloudflare';
+import { AllowedAnonComicVerdict } from '~/routes/admin/comics/AnonUploadedComicSection';
 import { queryDbDirect } from '~/utils/database-facade';
+import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
+import {
+  create400Json,
+  create500Json,
+  createGeneric500Json,
+  createSuccessJson,
+} from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -9,23 +17,47 @@ export async function action(args: ActionArgs) {
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
-  if (!formComicId) return new Response('Missing comicId', { status: 400 });
-  const formIsApproved = formDataBody.get('isApproved');
-  if (!formIsApproved) return new Response('Missing isApproved', { status: 400 });
-  const isApproved = formIsApproved ? formIsApproved.toString() === 'true' : false;
+  if (!formComicId) return create400Json('Missing comicId');
 
-  await processAnonUpload(urlBase, parseInt(formComicId.toString()), isApproved);
+  const formComicName = formDataBody.get('comicName');
+  if (!formComicName) return create400Json('Missing comicName');
 
-  return json({ success: true });
+  const formVerdict = formDataBody.get('verdict');
+  if (!formVerdict) return create400Json('Missing verdict');
+  const verdict = formVerdict.toString() as AllowedAnonComicVerdict;
+
+  try {
+    await processAnonUpload(
+      urlBase,
+      parseInt(formComicId.toString()),
+      formComicName.toString(),
+      verdict
+    );
+  } catch (e) {
+    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+  }
+
+  return createSuccessJson();
 }
 
 export async function processAnonUpload(
   urlBase: string,
   comicId: number,
-  isApproved: boolean
+  comicName: string,
+  verdict: AllowedAnonComicVerdict
 ) {
-  const query = 'UPDATE comic SET publishStatus = ? WHERE id = ?';
-  const queryParams = [isApproved ? 'pending' : 'rejected', comicId];
+  let query: string;
+  let queryParams: any[];
+
+  if (verdict === 'approved' || verdict === 'rejected-list') {
+    query = 'UPDATE comic SET publishStatus = ? WHERE id = ?';
+    queryParams = [verdict, comicId];
+  } else {
+    const randomStr = randomString(6);
+    const newComicName = `${comicName}-REJECTED-${randomStr}`;
+    query = 'UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?';
+    queryParams = ['rejected', newComicName, comicId];
+  }
 
   await queryDbDirect(urlBase, query, queryParams);
 
