@@ -75,9 +75,20 @@ export default function Button({
     variantClassname += ` bg-transparent dark:text-white text-red-weak-200 ${paddingString} `;
   }
 
-  if (disabled) {
+  if (disabled && variant === 'contained') {
     variantClassname += ` bg-gray-800 hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-600
     text-gray-900 dark:text-gray-700 cursor-not-allowed `;
+  }
+
+  if (disabled && variant === 'outlined') {
+    variantClassname += ` bg-transparent border-2 border-gray-800 dark:border-gray-600
+    text-gray-800 dark:text-gray-700 cursor-not-allowed
+    hover:bg-transparent focus:bg-transparent dark:hover:bg-transparent dark:focus:bg-transparent
+    hover:text-gray-800 focus:text-gray-800 hover:border-gray-800 focus:border-gray-800`;
+  }
+
+  if (disabled && variant === 'naked') {
+    variantClassname += ` text-gray-800 dark:text-gray-700 cursor-not-allowed `;
   }
 
   const widthClass = noPadding ? '' : fullWidth ? 'w-full' : 'w-fit';
