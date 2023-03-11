@@ -1,8 +1,13 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
-import { MdCheck, MdError } from 'react-icons/md';
+import { MdArrowDownward, MdArrowUpward, MdCheck, MdError } from 'react-icons/md';
+import Button from '~/components/Buttons/Button';
+import IconButton from '~/components/Buttons/IconButton';
+import LoadingButton from '~/components/Buttons/LoadingButton';
+import LoadingIconButton from '~/components/Buttons/LoadingIconButton';
+import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import { ComicPublishStatus } from '~/types/types';
@@ -26,6 +31,7 @@ type DbPendingComic = {
   timestamp: string;
   errorText?: string;
   publishDate?: string;
+  publishingQueuePos?: number;
   uploadUserId?: number;
   uploadUserIP?: string;
   uploadUsername?: string;
@@ -51,6 +57,7 @@ export async function loader(args: LoaderArgs) {
               uploadUserId,
               uploadUserIP,
               publishDate,
+              publishingQueuePos,
               user.username AS uploadUsername,
               modId AS reviewerModId,
               scheduleModId
@@ -75,6 +82,9 @@ export async function loader(args: LoaderArgs) {
 
   return {
     pendingComics: result,
+    dailySchedulePublishCount: parseInt(
+      args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string
+    ),
   };
 }
 
@@ -94,18 +104,62 @@ function isProblematic(pendingComic: DbPendingComic): boolean {
 }
 
 export default function PendingComics({}) {
-  const { pendingComics } = useLoaderData<typeof loader>();
+  const { pendingComics, dailySchedulePublishCount } = useLoaderData<typeof loader>();
   const { isMobile } = useWindowSize();
+  const moveUpFetcher = useFetcher();
+  const moveDownFetcher = useFetcher();
+  const recalculateFetcher = useFetcher();
 
   const [filter, setFilter] = useState<PendingComicsFilter>('all');
+
+  const totalPublishingQueueLength = useMemo(
+    () => pendingComics.filter(comic => comic.publishingQueuePos).length,
+    [pendingComics]
+  );
+
+  function moveComic(comicId: number, direction: 'up' | 'down') {
+    if (direction === 'up') {
+      moveUpFetcher.submit(
+        { comicId: comicId.toString(), direction: 'up' },
+        { method: 'post', action: '/api/admin/move-queued-comic' }
+      );
+    }
+    if (direction === 'down') {
+      moveDownFetcher.submit(
+        { comicId: comicId.toString(), direction: 'down' },
+        { method: 'post', action: '/api/admin/move-queued-comic' }
+      );
+    }
+  }
+
+  function recalculatePublishingQueuePositions() {
+    recalculateFetcher.submit(
+      {},
+      { method: 'post', action: '/api/admin/recalculate-publishing-queue' }
+    );
+  }
 
   const filteredComics = useMemo(() => {
     if (filter === 'all') {
       return pendingComics;
     }
 
+    // When viewing the publishing queue, sort by publishingQueuePos instead of timestamp
     if (filter === 'scheduled') {
-      return pendingComics.filter(comic => comic.publishStatus === 'scheduled');
+      return pendingComics
+        .filter(comic => comic.publishStatus === 'scheduled')
+        .sort((a, b) => {
+          if (a.publishingQueuePos && b.publishingQueuePos) {
+            return a.publishingQueuePos - b.publishingQueuePos;
+          }
+          if (a.publishingQueuePos) {
+            return 1;
+          }
+          if (b.publishingQueuePos) {
+            return -1;
+          }
+          return 0;
+        });
     }
 
     if (filter === 'unscheduled') {
@@ -121,6 +175,11 @@ export default function PendingComics({}) {
     return pendingComics;
   }, [filter, pendingComics]);
 
+  const error =
+    moveUpFetcher.data?.error ||
+    moveDownFetcher.data?.error ||
+    recalculateFetcher.data?.error;
+
   return (
     <>
       <h1>Pending comics</h1>
@@ -128,7 +187,15 @@ export default function PendingComics({}) {
         This is the home of comics that have been uploaded by mods, or by users and then
         passed a mod review.
       </p>
-      <p>Only admins can set schedule pending comics for publishing.</p>
+      <p className="mt-2">
+        Only admins can set schedule pending comics for publishing or add them to the
+        publishing queue.
+      </p>
+      <p className="mt-2">
+        Comics in the publishing queue are published daily at noon, ET.{' '}
+        <b>{dailySchedulePublishCount}</b> comics are scheduled daily, as long as there
+        are enough in the queue.
+      </p>
 
       <div className="flex flex-row flex-wrap my-4">
         <RadioButtonGroup
@@ -139,6 +206,21 @@ export default function PendingComics({}) {
           name="filter"
         />
       </div>
+
+      {filter === 'scheduled' && (
+        <>
+          <LoadingButton
+            isLoading={recalculateFetcher.state === 'submitting'}
+            onClick={recalculatePublishingQueuePositions}
+            text="Recalculate publishing queue positions"
+          />
+          <p className="text-sm mb-4">
+            In case some comics are missing placement or something else is wrong
+          </p>
+        </>
+      )}
+
+      {error && <InfoBox variant="error" text={error} showIcon className="w-fit my-4" />}
 
       <div className={`flex flex-col gap-2 ${isMobile ? 'w-full' : 'w-fit'}`}>
         {filteredComics.map(comic => {
@@ -157,9 +239,27 @@ export default function PendingComics({}) {
 
           const scheduledP = comic.publishStatus === 'scheduled' &&
             !comic.publishDate && (
-              <p>
-                <MdCheck /> In publishing queue
-              </p>
+              <div className="flex flex-row items-center">
+                <p>
+                  <MdCheck /> Publishing queue, {comic.publishingQueuePos ?? '?'}/
+                  {totalPublishingQueueLength}
+                </p>
+                <LoadingIconButton
+                  icon={MdArrowDownward}
+                  variant="naked"
+                  isLoading={moveDownFetcher.state === 'submitting'}
+                  onClick={() => moveComic(comic.comicId, 'down')}
+                  disabled={comic.publishingQueuePos === totalPublishingQueueLength}
+                  className="ml-2"
+                />
+                <LoadingIconButton
+                  icon={MdArrowUpward}
+                  variant="naked"
+                  isLoading={moveUpFetcher.state === 'submitting'}
+                  disabled={comic.publishingQueuePos === 1}
+                  onClick={() => moveComic(comic.comicId, 'up')}
+                />
+              </div>
             );
 
           const noTagsP = comic.numberOfTags === 0 && (
