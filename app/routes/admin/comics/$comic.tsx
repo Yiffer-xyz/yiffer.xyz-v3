@@ -5,59 +5,60 @@ import {
   useParams,
   useRevalidator,
 } from '@remix-run/react';
+import { MdCheckCircle } from 'react-icons/md';
 import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
+import { redirectIfNotMod } from '~/utils/loaders';
 import AnonUploadSection from './AnonUploadedComicSection';
+import LiveComic from './LiveComic';
 import PendingComicSection from './PendingComicSection';
+import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 
 export async function loader(args: LoaderArgs) {
+  const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
   const comicParam = args.params.comic as string;
 
   const comicId = parseInt(comicParam);
 
   const comic = await getComicById(urlBase, comicId);
-  return comic;
+  return { comic, user };
 }
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
   const globalContext: GlobalAdminContext = useOutletContext();
-  const comicData = useLoaderData<typeof loader>();
+  const { comic, user } = useLoaderData<typeof loader>();
 
   const isAnonUpload =
-    comicData.publishStatus === 'uploaded' && !comicData.unpublishedData?.uploadUserId;
+    comic.publishStatus === 'uploaded' && !comic.unpublishedData?.uploadUserId;
   const isUserUpload =
-    comicData.publishStatus === 'uploaded' && comicData.unpublishedData?.uploadUserId;
+    comic.publishStatus === 'uploaded' && comic.unpublishedData?.uploadUserId;
   const isPendingOrScheduled =
-    comicData.publishStatus === 'pending' || comicData.publishStatus === 'scheduled';
+    comic.publishStatus === 'pending' || comic.publishStatus === 'scheduled';
+
+  function updateComic() {
+    revalidator.revalidate();
+  }
 
   return (
     <>
-      <h2 className="mb-2">{comicData.name}</h2>
+      <h2 className="mb-2">{comic.name}</h2>
 
-      {comicData.publishStatus === 'rejected' && (
-        <p>REJECTED!!!!! TODO FIGURE THIS OUT</p>
-      )}
+      {comic.publishStatus === 'rejected' && <p>REJECTED!!!!! TODO FIGURE THIS OUT</p>}
 
       {isAnonUpload && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>User-uploaded comic, anonymous</h3>
-          <AnonUploadSection
-            comicData={comicData}
-            updateComic={() => revalidator.revalidate()}
-          />
+          <AnonUploadSection comicData={comic} updateComic={updateComic} />
         </div>
       )}
 
       {isUserUpload && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>User-uploaded comic</h3>
-          <UserUploadSection
-            comicData={comicData}
-            updateComic={() => revalidator.revalidate()}
-          />
+          <UserUploadSection comicData={comic} updateComic={updateComic} />
         </div>
       )}
 
@@ -70,13 +71,20 @@ export default function ManageComicInner() {
             the comic.
           </p>
 
-          <PendingComicSection
-            comicData={comicData}
-            updateComic={() => revalidator.revalidate()}
-          />
+          <PendingComicSection comicData={comic} updateComic={updateComic} />
         </div>
       )}
-      <pre className="mt-32">{JSON.stringify(comicData, null, 2)}</pre>
+
+      {comic.publishStatus === 'unlisted' && (
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+          <h3>Unlisted comic</h3>
+          <UnlistedComicSection comicData={comic} updateComic={updateComic} user={user} />
+        </div>
+      )}
+
+      {comic.publishStatus === 'published' && (
+        <LiveComic comic={comic} user={user} updateComic={updateComic} />
+      )}
     </>
   );
 }

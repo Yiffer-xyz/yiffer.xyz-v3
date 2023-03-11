@@ -27,6 +27,7 @@ export async function getSimilarlyNamedComics(
 
   let allComicsTiny = await getAllComicNamesAndIDs(urlBase, {
     includeRejectedList: true,
+    includeUnlisted: true,
   });
 
   for (let comic of allComicsTiny.filter(

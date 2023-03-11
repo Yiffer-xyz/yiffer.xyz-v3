@@ -6,12 +6,16 @@ export async function getAllComicNamesAndIDs(
   options?: {
     modifyNameIncludeType?: boolean;
     includeRejectedList?: boolean;
+    includeUnlisted?: boolean;
   }
 ): Promise<ComicTiny[]> {
   let query =
     'SELECT name, id, publishStatus FROM comic WHERE publishStatus != "rejected"';
   if (!options?.includeRejectedList) {
     query += ' AND publishStatus != "rejected-list" ';
+  }
+  if (!options?.includeUnlisted) {
+    query += ' AND publishStatus != "unlisted" ';
   }
 
   const response = await queryDbDirect<ComicTiny[]>(urlBase, query);
@@ -27,6 +31,9 @@ export async function getAllComicNamesAndIDs(
     }
     if (comic.publishStatus === 'scheduled') {
       comic.name = comic.name + ' (SCHEDULED)';
+    }
+    if (comic.publishStatus === 'unlisted') {
+      comic.name = comic.name + ' (UNLISTED)';
     }
     return comic;
   });

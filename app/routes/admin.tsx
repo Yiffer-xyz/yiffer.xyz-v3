@@ -25,7 +25,10 @@ export async function loader(args: LoaderArgs) {
   }
 
   const [comics, artists, tags] = await Promise.all([
-    getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true }),
+    getAllComicNamesAndIDs(urlBase, {
+      modifyNameIncludeType: true,
+      includeUnlisted: true,
+    }),
     getAllArtists(urlBase, { includePending: true }),
     getAllTags(urlBase),
   ]);

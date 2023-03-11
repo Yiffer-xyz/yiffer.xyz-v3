@@ -12,8 +12,9 @@ export default function RadioButtonGroupUncontrolled<T>({
   direction = 'vertical',
   className = '',
 }: BaseRadioButtonGroupProps<T>) {
-  const [state, setState] = useState<T|null>(null);
-  const isTypeLegalForInput = typeof options[0].value === 'string' || typeof options[0].value === 'number';
+  const [state, setState] = useState<T | null>(null);
+  const isTypeLegalForInput =
+    typeof options[0].value === 'string' || typeof options[0].value === 'number';
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -28,7 +29,9 @@ export default function RadioButtonGroupUncontrolled<T>({
             <input
               type="radio"
               name={name}
-              value={isTypeLegalForInput ? option.value as string|number : option.text}
+              value={
+                isTypeLegalForInput ? (option.value as string | number) : option.text
+              }
               checked={state === option.value}
               onChange={() => {}}
             />
@@ -38,4 +41,4 @@ export default function RadioButtonGroupUncontrolled<T>({
       </div>
     </div>
   );
-})
+}

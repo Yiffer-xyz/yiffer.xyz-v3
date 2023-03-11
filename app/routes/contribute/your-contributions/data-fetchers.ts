@@ -20,16 +20,13 @@ function publishStatusToContributionStatus(
   publishStatus: ComicPublishStatus
 ): ContributionStatus {
   switch (publishStatus) {
-    case 'published':
-    case 'pending':
-    case 'scheduled':
-      return 'approved';
     case 'uploaded':
       return 'pending';
     case 'rejected':
-      return 'rejected';
     case 'rejected-list':
       return 'rejected';
+    default:
+      return 'approved';
   }
 }
 

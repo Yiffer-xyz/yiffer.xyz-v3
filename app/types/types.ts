@@ -43,7 +43,8 @@ export type ComicPublishStatus =
   | 'uploaded'
   | 'rejected'
   | 'rejected-list'
-  | 'scheduled';
+  | 'scheduled'
+  | 'unlisted';
 
 export type ComicTiny = {
   id: number;
@@ -71,6 +72,7 @@ export type UnpublishedComicData = {
   uploadUserIP?: string;
   uploadUsername?: string;
   originalNameIfRejected?: string;
+  unlistComment?: string;
 };
 
 export type Tag = {
