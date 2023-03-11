@@ -14,6 +14,7 @@ export const CONTRIBUTION_POINTS = {
       points: 200,
       description: undefined,
       scoreListDescription: 'Uploaded comic, excellent info',
+      actionDashboardDescription: 'Excellent info',
       modPanelDescription: 'No issues found',
     },
     'minor-issues': {
@@ -21,6 +22,7 @@ export const CONTRIBUTION_POINTS = {
       description: 'Minor issues',
       scoreListDescription:
         'Uploaded comic, minor issues found (incorrect category/classification, wrong name)',
+      actionDashboardDescription: 'Minor issues',
       modPanelDescription:
         'Minor issues (e.g. incorrect category/classification, name spelling error)',
     },
@@ -29,6 +31,7 @@ export const CONTRIBUTION_POINTS = {
       description: 'Major issues',
       scoreListDescription:
         'Uploaded comic, major issues found (lacking artist links, poor tagging, bad thumbnail)',
+      actionDashboardDescription: 'Major issues',
       modPanelDescription:
         'Major issues (e.g. lacking artist links, poor tagging, bad thumbnail)',
     },
@@ -37,6 +40,7 @@ export const CONTRIBUTION_POINTS = {
       description: 'Page issues',
       scoreListDescription:
         'Uploaded comic, page issues (resolution, ordering, some premium pages uploaded)',
+      actionDashboardDescription: 'Page issues',
       modPanelDescription:
         'Page issues (poor resolution, wrong ordering, some premium pages uploaded)',
     },
@@ -45,12 +49,14 @@ export const CONTRIBUTION_POINTS = {
       description: 'Major page issues',
       scoreListDescription:
         'Uploaded comic, major page issues (most/all pages needed replacing)',
+      actionDashboardDescription: 'Major page issues',
       modPanelDescription: 'Major page issues (most/all pages needs replacing)',
     },
     'rejected-list': {
       points: 0,
       description: undefined,
       scoreListDescription: '',
+      actionDashboardDescription: 'Rejected, added to ban list',
       modPanelDescription:
         'Reject submission due to the nature of the comic - add to ban list (click to read more)',
     },
@@ -58,6 +64,7 @@ export const CONTRIBUTION_POINTS = {
       points: 0,
       description: undefined,
       scoreListDescription: '',
+      actionDashboardDescription: 'Rejected',
       modPanelDescription:
         'Reject submission due to poorly provided info in the submission (click to read more)',
     },

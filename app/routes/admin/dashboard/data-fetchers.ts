@@ -1,4 +1,9 @@
-import { ComicSuggestionVerdict, ComicUploadVerdict } from '~/types/types';
+import { CONTRIBUTION_POINTS } from '~/types/contributions';
+import {
+  ComicPublishStatus,
+  ComicSuggestionVerdict,
+  ComicUploadVerdict,
+} from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import { DashboardAction } from '.';
 
@@ -218,38 +223,38 @@ export async function getComicSuggestions(urlBase: string): Promise<DashboardAct
 type DbComicUpload = {
   id: number;
   comicName: string;
-  artistName?: string;
-  newArtistName?: string;
-  status: string;
+  artistName: string;
+  publishStatus: ComicPublishStatus;
+  verdict?: ComicUploadVerdict;
   timestamp: string;
-  userId?: number;
-  userIP?: string;
-  username?: string;
+  uploadUserId?: number;
+  uploadUserIP?: string;
+  uploadUsername?: string;
   modId?: number;
   modName?: string;
   modComment?: string;
-  verdict?: ComicUploadVerdict;
 };
 
 export async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
-  const query = `SELECT Q1.*, user.username AS modName
+  const query = `
+      SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
-          comicupload.id AS id,
-          comicName,
+          comic.id,
+          comic.name AS comicName,
           artist.name AS artistName,
-          newArtistName,
-          status,
-          timestamp,
+          publishStatus,
           verdict,
-          userId,
-          userIP,
-          user.username AS username,
+          timestamp,
+          unpublishedcomic.uploadUserId,
+          unpublishedcomic.uploadUserIP,
+          user.username AS uploadUsername,
           modId,
           modComment
-        FROM comicupload
-        LEFT JOIN artist ON (artist.id = comicupload.artistId)
-        LEFT JOIN user ON (user.id = comicupload.userId)
+        FROM comic
+        INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+        INNER JOIN artist ON (artist.id = comic.artist)
+        LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
       ) AS Q1
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
@@ -257,28 +262,34 @@ export async function getComicUploads(urlBase: string): Promise<DashboardAction[
   const result = await queryDbDirect<DbComicUpload[]>(urlBase, query);
 
   const mappedResults: DashboardAction[] = result.map(dbComicUpload => {
-    let verdictText = undefined;
-    if (dbComicUpload.status === 'approved' || dbComicUpload.status === 'rejected') {
-      verdictText = dbComicUpload.status === 'approved' ? 'Approved' : 'Rejected';
-    }
-    if (dbComicUpload.verdict) {
-      verdictText += ` - ${dbComicUpload.verdict.replace('-', ' ')}`;
-    }
-    if (dbComicUpload.modComment) {
-      verdictText += ` - mod comment: ${dbComicUpload.modComment}`;
+    let fullVerdictText = '';
+    const isProcessed = dbComicUpload.publishStatus !== 'uploaded';
+
+    if (isProcessed && dbComicUpload.verdict) {
+      const verdictText =
+        CONTRIBUTION_POINTS.comicUpload[dbComicUpload.verdict].actionDashboardDescription;
+      const isRejected =
+        dbComicUpload.verdict === 'rejected' || dbComicUpload.verdict === 'rejected-list';
+
+      fullVerdictText = isRejected ? 'Rejected' : 'Approved';
+      if (verdictText) {
+        fullVerdictText += ` - ${verdictText}`;
+      }
+      if (dbComicUpload.modComment) {
+        fullVerdictText += ` - mod comment: ${dbComicUpload.modComment}`;
+      }
     }
 
     return {
       type: 'comicUpload',
       id: dbComicUpload.id,
       primaryField: `${dbComicUpload.comicName} - ${dbComicUpload.artistName}`,
-      secondaryField: dbComicUpload.newArtistName,
-      isProcessed: dbComicUpload.status !== 'pending',
+      isProcessed: dbComicUpload.publishStatus !== 'uploaded',
       timestamp: dbComicUpload.timestamp,
-      user: dbComicUpload.userId
-        ? { userId: dbComicUpload.userId, username: dbComicUpload.username }
-        : { ip: dbComicUpload.userIP },
-      verdict: verdictText,
+      user: dbComicUpload.uploadUsername
+        ? { userId: dbComicUpload.uploadUserId, username: dbComicUpload.uploadUsername }
+        : { ip: dbComicUpload.uploadUserIP },
+      verdict: isProcessed ? fullVerdictText : undefined,
       assignedMod:
         dbComicUpload.modId && dbComicUpload.modName
           ? { userId: dbComicUpload.modId, username: dbComicUpload.modName }
