@@ -1,25 +1,28 @@
-import Button, { ButtonProps } from './Button';
+import { ButtonProps } from './Button';
+import IconButton from './IconButton';
 
 type LoadingButtonProps = {
+  icon: React.ElementType;
   isLoading: boolean;
-} & ButtonProps;
+} & Omit<ButtonProps, 'startIcon' | 'endIcon' | 'fullWidth' | 'text'>;
 
-export default function LoadingButton({
+export default function LoadingIconButton({
   isLoading,
   variant = 'contained',
   color = 'primary',
+  icon,
   onClick,
   ...props
 }: LoadingButtonProps) {
   const className = (isLoading ? 'opacity-70 ' : '') + props.className;
 
   return (
-    <Button
+    <IconButton
       {...props}
-      startIcon={isLoading ? Spinner(variant, color) : props.startIcon}
       variant={variant}
       color={color}
       className={className}
+      icon={isLoading ? Spinner(variant, color) : icon}
       onClick={isLoading ? () => {} : onClick}
     />
   );
@@ -46,7 +49,7 @@ const Spinner = (
 
   return () => (
     <div
-      className={`mr-3 w-4 h-4 animate-spin border-solid border-transparent ${borderRightColor} border border-r-2 rounded-full`}
+      className={`w-4 h-4 animate-spin border-solid border-transparent ${borderRightColor} border border-r-2 rounded-full`}
     />
   );
 };

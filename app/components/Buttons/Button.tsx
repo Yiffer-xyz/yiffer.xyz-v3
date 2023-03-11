@@ -1,6 +1,6 @@
 export interface ButtonProps {
   text: string;
-  variant?: 'contained' | 'outlined';
+  variant?: 'contained' | 'outlined' | 'naked';
   color?: 'primary' | 'error';
   fullWidth?: boolean;
   onClick?: () => void;
@@ -32,36 +32,47 @@ export default function Button({
 }: ButtonProps) {
   let variantClassname = '';
 
+  const paddingString = noPadding
+    ? ''
+    : variant === 'contained' || variant === 'naked'
+    ? ' py-1.25 px-3 '
+    : ' py-1 px-2.75 ';
+
   if (variant === 'contained' && color === 'primary') {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
       dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100 dark:focus:bg-blue-strong-100
       shadow hover:shadow-md focus:shadow-md
-      text-white
-      ${noPadding ? '' : ' py-1.25 px-3 '} `;
+      text-white ${paddingString} `;
   }
 
   if (variant === 'outlined' && color === 'primary') {
-    variantClassname += ` bg-transparent hover:bg-blue-weak-200 focus:bg-blue-weak-200
+    variantClassname += ` bg-transparent 
+      hover:bg-blue-weak-200 focus:bg-blue-weak-200
       dark:hover:bg-blue-strong-200 dark:focus:bg-blue-strong-200
-      border-2 border-blue-weak-200 dark:border-blue-strong-200
-      hover:text-white focus:text-white dark:text-white text-blue-weak-200
-      ${noPadding ? '' : ' py-1 px-2.75 '}`;
+      hover:text-white focus:text-white border-2 border-blue-weak-200 dark:border-blue-strong-200
+      dark:text-white text-blue-weak-200 ${paddingString} `;
+  }
+
+  if (variant === 'naked' && color === 'primary') {
+    variantClassname += ` bg-transparent dark:text-white text-blue-weak-200 ${paddingString} `;
   }
 
   if (variant === 'contained' && color === 'error') {
     variantClassname += ` bg-red-weak-200 hover:bg-red-weak-100 focus:bg-red-weak-100
       dark:bg-red-strong-200 dark:hover:bg-red-strong-100 dark:focus:bg-red-strong-100
       shadow hover:shadow-md focus:shadow-md
-      text-white
-      ${noPadding ? '' : ' py-1.25 px-3 '} `;
+      text-white ${paddingString} `;
   }
 
   if (variant === 'outlined' && color === 'error') {
     variantClassname += ` bg-transparent hover:bg-red-weak-200 focus:bg-red-weak-200
       dark:hover:bg-red-strong-200 dark:focus:bg-red-strong-200
-      border-2 border-red-weak-200 dark:border-red-strong-200
       hover:text-white focus:text-white dark:text-white text-red-weak-200
-      ${noPadding ? '' : ' py-1 px-2.75 '}`;
+      border-2 border-red-weak-200 dark:border-red-strong-200 ${paddingString} `;
+  }
+
+  if (variant === 'naked' && color === 'error') {
+    variantClassname += ` bg-transparent dark:text-white text-red-weak-200 ${paddingString} `;
   }
 
   if (disabled) {
@@ -89,8 +100,8 @@ export default function Button({
       ref={buttonRef}
       type={isSubmit ? 'submit' : 'button'}
     >
-      {StartIcon ? <StartIcon style={{ marginRight: '4px' }} /> : undefined} {text}{' '}
-      {EndIcon ? <EndIcon style={{ marginLeft: '4px' }} /> : undefined}
+      {StartIcon ? <StartIcon style={text ? { marginRight: '4px' } : {}} /> : undefined}{' '}
+      {text} {EndIcon ? <EndIcon style={text ? { marginLeft: '4px' } : {}} /> : undefined}
     </button>
   );
 }
