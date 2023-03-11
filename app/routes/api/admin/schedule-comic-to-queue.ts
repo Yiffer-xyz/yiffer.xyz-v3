@@ -7,6 +7,7 @@ import {
   createGeneric500Json,
   createSuccessJson,
 } from '~/utils/request-helpers';
+import { recalculatePublishingQueue } from '../funcs/publishing-queue';
 
 export async function action(args: ActionArgs) {
   const user = await redirectIfNotMod(args);
@@ -34,4 +35,6 @@ export async function scheduleComic(urlBase: string, comicId: number, modId: num
     queryDbDirect(urlBase, unpublishedQuery, [modId, comicId]),
     queryDbDirect(urlBase, comicQuery, [comicId]),
   ]);
+
+  await recalculatePublishingQueue(urlBase);
 }

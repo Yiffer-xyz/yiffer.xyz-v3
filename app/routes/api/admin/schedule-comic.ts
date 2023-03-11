@@ -7,6 +7,7 @@ import {
   createGeneric500Json,
   createSuccessJson,
 } from '~/utils/request-helpers';
+import { recalculatePublishingQueue } from '../funcs/publishing-queue';
 
 export async function action(args: ActionArgs) {
   const user = await redirectIfNotMod(args);
@@ -41,11 +42,13 @@ export async function scheduleComic(
   modId: number
 ) {
   const unpublishedQuery =
-    'UPDATE unpublishedcomic SET publishDate = ?, scheduleModId = ? WHERE comicId = ?';
+    'UPDATE unpublishedcomic SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
 
   await Promise.all([
     queryDbDirect(urlBase, unpublishedQuery, [publishDate, modId, comicId]),
     queryDbDirect(urlBase, comicQuery, [comicId]),
   ]);
+
+  recalculatePublishingQueue(urlBase); // Can run in background
 }

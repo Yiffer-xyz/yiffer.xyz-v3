@@ -22,10 +22,8 @@ export async function moveComicInQueue(urlBase: string, comicId: number, moveBy:
     'UPDATE unpublishedcomic SET publishingQueuePos = ? WHERE publishingQueuePos = ?';
   const moveOtherComicQueryParams = [oldPos, oldPos + moveBy];
 
-  await Promise.all([
-    queryDbDirect(urlBase, moveComicQuery, moveComicQueryParams),
-    queryDbDirect(urlBase, moveOtherComicQuery, moveOtherComicQueryParams),
-  ]);
+  await queryDbDirect(urlBase, moveOtherComicQuery, moveOtherComicQueryParams);
+  await queryDbDirect(urlBase, moveComicQuery, moveComicQueryParams);
 }
 
 export async function recalculatePublishingQueue(urlBase: string) {

@@ -316,7 +316,7 @@ export default function PendingComics({}) {
                     {errorP}
                   </div>
 
-                  <div className="w-fit flex flex-col items-end text-end">
+                  <div className="w-fit flex flex-col items-end text-end justify-between">
                     {addedReviewerP}
                     {scheduledByP}
                   </div>
