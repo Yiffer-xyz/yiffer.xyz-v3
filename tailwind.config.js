@@ -53,6 +53,7 @@ module.exports = {
             200: '#3a7fab',
           },
           trans: '#3fb9f340',
+          moreTrans: '#3fb9f31a',
         },
         red: {
           // "strong" because the saturation is high. To be used in DARK mode
@@ -66,6 +67,8 @@ module.exports = {
             100: '#9d3f3f',
             200: '#c24747',
           },
+          trans: '#ff575740',
+          moreTrans: '#ff57571a',
         },
         gray: {
           950: '#fafafa',
@@ -76,6 +79,7 @@ module.exports = {
           700: '#9a9a9a',
           600: '#717579',
           500: '#5d6164',
+          450: '#4f5255',
           400: '#4d4f52',
           300: '#383f45',
           200: '#272d2f',

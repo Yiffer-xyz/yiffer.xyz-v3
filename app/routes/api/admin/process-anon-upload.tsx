@@ -50,13 +50,14 @@ export async function processAnonUpload(
   let queryParams: any[];
 
   if (verdict === 'approved' || verdict === 'rejected-list') {
+    const newStatus = verdict === 'approved' ? 'pending' : 'rejected-list';
     query = 'UPDATE comic SET publishStatus = ? WHERE id = ?';
-    queryParams = [verdict, comicId];
+    queryParams = [newStatus, comicId];
   } else {
     const randomStr = randomString(6);
     const newComicName = `${comicName}-REJECTED-${randomStr}`;
-    query = 'UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?';
-    queryParams = ['rejected', newComicName, comicId];
+    query = `UPDATE comic SET publishStatus = 'rejected', name = ? WHERE id = ?`;
+    queryParams = [newComicName, comicId];
   }
 
   await queryDbDirect(urlBase, query, queryParams);

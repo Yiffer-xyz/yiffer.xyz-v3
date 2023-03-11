@@ -28,7 +28,7 @@ export async function action(args: ActionArgs) {
 
 export async function unScheduleComic(urlBase: string, comicId: number) {
   const unpublishedQuery =
-    'UPDATE unpublishedcomic SET publishDate = NULL WHERE comicId = ?';
+    'UPDATE unpublishedcomic SET publishDate = NULL, scheduleModId = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'pending' WHERE id = ?`;
 
   await Promise.all([

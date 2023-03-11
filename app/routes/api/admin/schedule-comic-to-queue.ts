@@ -9,7 +9,7 @@ import {
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
-  await redirectIfNotMod(args);
+  const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
 
   const formDataBody = await args.request.formData();
@@ -17,7 +17,7 @@ export async function action(args: ActionArgs) {
   if (!formComicId) return create400Json('Missing comicId');
 
   try {
-    await scheduleComic(urlBase, parseInt(formComicId.toString()));
+    await scheduleComic(urlBase, parseInt(formComicId.toString()), user.userId);
   } catch (e) {
     return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
   }
@@ -25,7 +25,13 @@ export async function action(args: ActionArgs) {
   return createSuccessJson();
 }
 
-export async function scheduleComic(urlBase: string, comicId: number) {
+export async function scheduleComic(urlBase: string, comicId: number, modId: number) {
+  const unpublishedQuery =
+    'UPDATE unpublishedcomic SET scheduleModId = ? WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
-  await queryDbDirect(urlBase, comicQuery, [comicId]);
+
+  await Promise.all([
+    queryDbDirect(urlBase, unpublishedQuery, [modId, comicId]),
+    queryDbDirect(urlBase, comicQuery, [comicId]),
+  ]);
 }
