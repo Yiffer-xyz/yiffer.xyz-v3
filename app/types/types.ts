@@ -42,7 +42,8 @@ export type ComicPublishStatus =
   | 'pending'
   | 'uploaded'
   | 'rejected'
-  | 'rejected-list';
+  | 'rejected-list'
+  | 'scheduled';
 
 export type ComicTiny = {
   id: number;

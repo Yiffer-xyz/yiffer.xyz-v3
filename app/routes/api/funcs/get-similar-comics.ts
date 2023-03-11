@@ -30,7 +30,10 @@ export async function getSimilarlyNamedComics(
   });
 
   for (let comic of allComicsTiny.filter(
-    c => c.publishStatus === 'published' || c.publishStatus === 'pending'
+    c =>
+      c.publishStatus === 'published' ||
+      c.publishStatus === 'pending' ||
+      c.publishStatus === 'scheduled'
   )) {
     let distance = stringDistance(comicName, comic.name);
 

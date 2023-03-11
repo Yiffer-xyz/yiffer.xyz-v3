@@ -15,16 +15,10 @@ export async function action(args: ActionArgs) {
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
-  const formPublishDate = formDataBody.get('publishDate');
-
   if (!formComicId) return create400Json('Missing comicId');
 
   try {
-    await scheduleComic(
-      urlBase,
-      parseInt(formComicId.toString()),
-      formPublishDate ? formPublishDate.toString() : null
-    );
+    await unScheduleComic(urlBase, parseInt(formComicId.toString()));
   } catch (e) {
     return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
   }
@@ -32,17 +26,13 @@ export async function action(args: ActionArgs) {
   return createSuccessJson();
 }
 
-export async function scheduleComic(
-  urlBase: string,
-  comicId: number,
-  publishDate: string | null
-) {
+export async function unScheduleComic(urlBase: string, comicId: number) {
   const unpublishedQuery =
-    'UPDATE unpublishedcomic SET publishDate = ? WHERE comicId = ?';
-  const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
+    'UPDATE unpublishedcomic SET publishDate = NULL WHERE comicId = ?';
+  const comicQuery = `UPDATE comic SET publishStatus = 'pending' WHERE id = ?`;
 
   await Promise.all([
-    queryDbDirect(urlBase, unpublishedQuery, [publishDate, comicId]),
+    queryDbDirect(urlBase, unpublishedQuery, [comicId]),
     queryDbDirect(urlBase, comicQuery, [comicId]),
   ]);
 

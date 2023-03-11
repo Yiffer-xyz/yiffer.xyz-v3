@@ -9,6 +9,7 @@ export default function RadioButtonGroupUncontrolled<T>({
   options,
   title,
   name,
+  direction = 'vertical',
   className = '',
 }: BaseRadioButtonGroupProps<T>) {
   const [state, setState] = useState<T|null>(null);

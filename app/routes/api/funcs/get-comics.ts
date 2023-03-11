@@ -25,6 +25,9 @@ export async function getAllComicNamesAndIDs(
     if (comic.publishStatus === 'pending') {
       comic.name = comic.name + ' (PENDING)';
     }
+    if (comic.publishStatus === 'scheduled') {
+      comic.name = comic.name + ' (SCHEDULED)';
+    }
     return comic;
   });
 

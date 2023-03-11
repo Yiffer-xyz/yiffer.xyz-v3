@@ -30,6 +30,8 @@ export default function ManageComicInner() {
     comicData.publishStatus === 'uploaded' && !comicData.unpublishedData?.uploadUserId;
   const isUserUpload =
     comicData.publishStatus === 'uploaded' && comicData.unpublishedData?.uploadUserId;
+  const isPendingOrScheduled =
+    comicData.publishStatus === 'pending' || comicData.publishStatus === 'scheduled';
 
   return (
     <>
@@ -59,7 +61,7 @@ export default function ManageComicInner() {
         </div>
       )}
 
-      {comicData.publishStatus === 'pending' && (
+      {isPendingOrScheduled && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>Pending comic</h3>
           <p className="mb-4">

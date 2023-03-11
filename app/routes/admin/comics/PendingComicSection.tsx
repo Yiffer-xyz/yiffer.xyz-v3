@@ -7,6 +7,7 @@ import { HasError, SetError } from './pending/Error';
 import { Reject } from './pending/Reject';
 import { Schedule } from './scheduling/Schedule';
 import { ScheduledComic } from './scheduling/Scheduled';
+import InfoBox from '~/components/InfoBox';
 
 type PendingComicSectionProps = {
   comicData: Comic;
@@ -23,19 +24,34 @@ export default function PendingComicSection({
   const unpublishedData = comicData.unpublishedData as UnpublishedComicData;
   const [actionState, setActionState] = useState<ActionState>('none');
   const publishNowFetcher = useFetcher();
+  const addToPublishingQueueFetcher = useFetcher();
 
   const comicState = useMemo(() => {
     if (comicData.publishStatus === 'rejected') return 'rejected';
-    if (unpublishedData.publishDate) return 'scheduled';
+    if (comicData.publishStatus === 'scheduled') return 'scheduled';
     if (unpublishedData.errorText) return 'has-error';
     return 'initial';
   }, [comicData]);
 
   useEffect(() => {
-    if (publishNowFetcher.data?.success) {
+    if (publishNowFetcher.data?.success || addToPublishingQueueFetcher.data?.success) {
       updateComic();
     }
   }, [publishNowFetcher]);
+
+  function publishNow() {
+    publishNowFetcher.submit(
+      { comicId: comicData.id.toString() },
+      { method: 'post', action: '/api/admin/publish-comic' }
+    );
+  }
+
+  function addToPublishingQueue() {
+    addToPublishingQueueFetcher.submit(
+      { comicId: comicData.id.toString() },
+      { method: 'post', action: '/api/admin/schedule-comic-to-queue' }
+    );
+  }
 
   if (actionState === 'set-error') {
     return (
@@ -81,7 +97,7 @@ export default function PendingComicSection({
     );
   }
 
-  if (!!unpublishedData.publishDate) {
+  if (comicData.publishStatus === 'scheduled') {
     return (
       <ScheduledComic
         comicData={comicData}
@@ -92,35 +108,62 @@ export default function PendingComicSection({
   }
 
   return (
-    <publishNowFetcher.Form action="/api/admin/publish-comic" method="post">
-      <input type="hidden" name="comicId" value={comicData.id} />
+    <div>
+      <p className="mb-4 -mt-2">
+        Normally, add the comic to the publishing queue. Only in specific cases (for
+        example per an artist's request) should a comic be scheduled for a specific date.
+      </p>
+
+      {publishNowFetcher.data?.error && (
+        <InfoBox
+          variant="error"
+          text={publishNowFetcher.data.error}
+          showIcon
+          className="mt-4"
+        />
+      )}
+      {addToPublishingQueueFetcher.data?.error && (
+        <InfoBox
+          variant="error"
+          text={addToPublishingQueueFetcher.data.error}
+          showIcon
+          className="mt-4"
+        />
+      )}
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-row gap-4 flex-wrap">
+          <LoadingButton
+            text="Add to publishing queue"
+            onClick={addToPublishingQueue}
+            isLoading={addToPublishingQueueFetcher.state === 'submitting'}
+            className="min-w-40"
+          />
           <Button
-            text="Schedule"
+            text="Schedule for specific date"
             onClick={() => setActionState('scheduling')}
-            className="w-40"
+            className="min-w-40"
           />
           <LoadingButton
             text="Publish now"
-            className="w-40"
+            onClick={publishNow}
             isLoading={publishNowFetcher.state === 'submitting'}
-            isSubmit
+            className="min-w-40"
           />
         </div>
         <Button
           text="Set error"
+          color="error"
           onClick={() => setActionState('set-error')}
-          className="w-40"
+          className="min-w-40"
         />
         <Button
           text="Reject comic"
           color="error"
           onClick={() => setActionState('rejecting')}
-          className="w-40"
+          className="min-w-40"
         />
       </div>
-    </publishNowFetcher.Form>
+    </div>
   );
 }

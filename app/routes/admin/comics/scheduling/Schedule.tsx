@@ -37,15 +37,17 @@ export function Schedule({ comicData, onCancel, onFinish }: ScheduleParams) {
         <input type="hidden" name="comicId" value={comicData.id} />
         <input type="hidden" name="publishDate" value={dateString} />
 
-        <Calendar value={publishDate} onChange={setPublishDate} className="py-6" />
+        <Calendar value={publishDate} onChange={setPublishDate} className="pb-2 w-fit" />
 
-        <p>
-          {publishDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+        <p className="mb-4">
+          <b>
+            {publishDate.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </b>
         </p>
 
         <div className="flex flex-row gap-4">

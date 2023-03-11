@@ -21,8 +21,8 @@ function publishStatusToContributionStatus(
 ): ContributionStatus {
   switch (publishStatus) {
     case 'published':
-      return 'approved';
     case 'pending':
+    case 'scheduled':
       return 'approved';
     case 'uploaded':
       return 'pending';

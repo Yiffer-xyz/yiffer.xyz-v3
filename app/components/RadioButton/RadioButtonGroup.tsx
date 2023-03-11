@@ -4,6 +4,7 @@ export type BaseRadioButtonGroupProps<T> = {
   options: { text: string; value: T }[];
   title?: string;
   name: string;
+  direction?: 'vertical' | 'horizontal';
   className?: string;
 };
 
@@ -16,6 +17,7 @@ export default function RadioButtonGroup<T>({
   options,
   title,
   name,
+  direction = 'vertical',
   value,
   onChange,
   className = '',
@@ -46,13 +48,13 @@ export default function RadioButtonGroup<T>({
     }
   }
 
+  const wrapperClassName =
+    direction === 'vertical' ? 'flex flex-col gap-2' : 'flex flex-row gap-6';
+
   return (
     <div className={`flex flex-col ${className}`}>
       {title && <label className="mb-2">{title}</label>}
-      <div
-        className="flex flex-col gap-2"
-        onBlur={() => setCurrentlyHighlightedIndex(-1)}
-      >
+      <div className={wrapperClassName} onBlur={() => setCurrentlyHighlightedIndex(-1)}>
         {options.map((option, index) => (
           <div
             key={index}
