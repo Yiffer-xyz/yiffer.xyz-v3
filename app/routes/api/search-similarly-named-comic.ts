@@ -12,7 +12,12 @@ export async function action(args: ActionArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
   const body = await args.request.formData();
   const comicName = body.get('comicName') as string;
+  const excludeName = body.get('excludeName');
 
-  const data = await getSimilarlyNamedComics(urlBase, comicName);
+  const data = await getSimilarlyNamedComics(
+    urlBase,
+    comicName,
+    excludeName ? excludeName.toString() : undefined
+  );
   return json(data);
 }

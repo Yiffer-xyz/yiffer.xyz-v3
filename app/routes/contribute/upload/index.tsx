@@ -16,10 +16,10 @@ import { Artist, ComicTiny, Tag, UserSession } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
-import Step2ComicData from './step2-comicdata';
+import ComicDataEditor from '../../../components/ComicManager/ComicData';
 import Step3Pagemanager from './step3-pagemanager';
 import Step4Thumbnail from './step4-thumbnail';
-import Step5Tags from './step5-tags';
+import TagsEditor from '../../../components/ComicManager/Tags';
 import SuccessMessage from './success';
 import { processUpload } from './upload-handler.server';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
@@ -113,6 +113,15 @@ export default function Upload() {
     const uploadId = `${comicData.comicName}-${randomId}`;
     setError(null);
 
+    if (!comicData.validation.isLegalComicName) {
+      setError('This comic name cannot be uploaded');
+      return;
+    }
+    if (!comicData.validation.isLegalNewArtist) {
+      setError('The artist name cannot be uploaded');
+      return;
+    }
+
     let newArtist: NewArtist | undefined;
     if (comicData.newArtist.artistName) {
       newArtist = {
@@ -180,7 +189,7 @@ export default function Upload() {
 
       {step === 2 && (
         <>
-          <Step2ComicData
+          <ComicDataEditor
             comicData={comicData}
             onUpdate={setComicData}
             artists={artists}
@@ -188,8 +197,10 @@ export default function Upload() {
           />
 
           <Step3Pagemanager comicData={comicData} onUpdate={setComicData} />
+
           <Step4Thumbnail />
-          <Step5Tags allTags={tags} comicData={comicData} onUpdate={setComicData} />
+
+          <TagsEditor allTags={tags} comicData={comicData} onUpdate={setComicData} />
 
           <h4 className="mt-8">Finish</h4>
 

@@ -83,7 +83,14 @@ export default function ManageComicInner() {
       )}
 
       {comic.publishStatus === 'published' && (
-        <LiveComic comic={comic} user={user} updateComic={updateComic} />
+        <LiveComic
+          comic={comic}
+          user={user}
+          updateComic={updateComic}
+          allComics={globalContext.comics}
+          allArtists={globalContext.artists}
+          allTags={globalContext.tags}
+        />
       )}
     </>
   );

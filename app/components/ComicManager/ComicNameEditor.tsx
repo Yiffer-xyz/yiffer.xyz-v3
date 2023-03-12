@@ -3,19 +3,22 @@ import { useEffect, useRef, useState } from 'react';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
-import { SimilarComicResponse } from '../../api/search-similarly-named-comic';
+import { Comic } from '~/types/types';
+import { SimilarComicResponse } from '../../routes/api/search-similarly-named-comic';
 
-type Step2ComicnameProps = {
+type ComicNameEditor = {
   comicName: string;
   setIsLegalComicnameState: (isLegal: boolean) => void;
   onUpdate: (newData: string) => void;
+  existingComic?: Comic;
 };
 
-export default function Step2Comicname({
+export default function ComicNameEditor({
   comicName,
   setIsLegalComicnameState, // For parent component, validation
   onUpdate,
-}: Step2ComicnameProps) {
+  existingComic,
+}: ComicNameEditor) {
   const similarComicsFetcher = useFetcher();
   const [similarComics, setSimilarComics] = useState<SimilarComicResponse>();
   const [hasConfirmedNewComic, setHasConfirmedNewComic] = useState(false);
@@ -54,6 +57,11 @@ export default function Step2Comicname({
     setHasConfirmedNewComic(false);
     setSimilarComics(undefined);
 
+    if (existingComic && existingComic.name === comicName) {
+      setIsLegalComicnameState(true);
+      return;
+    }
+
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
@@ -63,10 +71,12 @@ export default function Step2Comicname({
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      similarComicsFetcher.submit(
-        { comicName },
-        { method: 'post', action: '/api/search-similarly-named-comic' }
-      );
+      const body: any = { comicName };
+      if (existingComic) body.excludeName = existingComic.name;
+      similarComicsFetcher.submit(body, {
+        method: 'post',
+        action: '/api/search-similarly-named-comic',
+      });
     }, 1000);
   }
 

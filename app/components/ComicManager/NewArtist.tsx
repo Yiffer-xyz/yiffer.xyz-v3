@@ -6,15 +6,15 @@ import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
 import { Artist } from '~/types/types';
-import { NewArtist, NewComicData } from '.';
+import { NewArtist, NewComicData } from '../../routes/contribute/upload';
 
-type Step2NewArtistProps = {
+type NewArtistProps = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
   artists: Artist[];
 };
 
-export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistProps) {
+export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
   const similarArtistsFetcher = useFetcher();
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
@@ -69,25 +69,32 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
     let isLegal = false;
 
     if (similarArtists) {
-      const isExactMatch = similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist;
+      const isExactMatch =
+        similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist;
       const isAnyKindOfSimilarArtist =
-        similarArtists.similarArtists.length > 0 || similarArtists.similarBannedArtists.length > 0;
+        similarArtists.similarArtists.length > 0 ||
+        similarArtists.similarBannedArtists.length > 0;
 
       if (!isExactMatch && comicData.newArtist.artistName.length > 2) {
         isLegal = !isAnyKindOfSimilarArtist || hasConfirmedNewArtist;
       }
     }
 
-    onUpdate({ ...comicData, validation: { ...comicData.validation, isLegalNewArtist: isLegal } });
+    onUpdate({
+      ...comicData,
+      validation: { ...comicData.validation, isLegalNewArtist: isLegal },
+    });
   }, [similarArtists, hasConfirmedNewArtist]);
 
   const isExactMatch =
-    similarArtists && (similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist);
+    similarArtists &&
+    (similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist);
 
   const isAnySimilar =
     !isExactMatch &&
     similarArtists &&
-    (similarArtists.similarArtists.length > 0 || similarArtists.similarBannedArtists.length > 0);
+    (similarArtists.similarArtists.length > 0 ||
+      similarArtists.similarBannedArtists.length > 0);
 
   return (
     <div className="my-4 p-4 border border-4 border-theme1-primary flex flex-col">
@@ -118,7 +125,8 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
               {similarArtists.similarArtists.length > 0 && (
                 <>
                   <p>
-                    The following existing artist names are somewhat similar to the one you entered:
+                    The following existing artist names are somewhat similar to the one
+                    you entered:
                   </p>
                   <ul>
                     {similarArtists.similarArtists.map(name => (
@@ -130,8 +138,8 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
               {similarArtists.similarBannedArtists.length > 0 && (
                 <>
                   <p>
-                    The artists are somewhat similar to the one you entered, and have been banned or
-                    have requested their comics not be published here:
+                    The artists are somewhat similar to the one you entered, and have been
+                    banned or have requested their comics not be published here:
                   </p>
                   <ul>
                     {similarArtists.similarBannedArtists.map(name => (
@@ -184,7 +192,9 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
           label="Patreon name"
           name="patreonName"
           value={comicData.newArtist.patreonName}
-          onChange={newVal => updateArtist({ ...comicData.newArtist, patreonName: newVal })}
+          onChange={newVal =>
+            updateArtist({ ...comicData.newArtist, patreonName: newVal })
+          }
           className="mt-4"
           helperText="Only the name - not the full link"
           placeholder='e.g. "braeburned"'
@@ -206,17 +216,17 @@ export default function Step2NewArtist({ comicData, onUpdate }: Step2NewArtistPr
 
       <h4 className="mt-8">Other links</h4>
       <p>
-        It's important to be on good terms with artists. Links to their profiles are vital. If you
-        do not provide any links, or vastly insufficient ones, the comic might be rejected. Any
-        website links go below here. Examples: Twitter, FurAffinity, Inkbunny, personal websites,
-        etc. Full URLs.
+        It's important to be on good terms with artists. Links to their profiles are
+        vital. If you do not provide any links, or vastly insufficient ones, the comic
+        might be rejected. Any website links go below here. Examples: Twitter,
+        FurAffinity, Inkbunny, personal websites, etc. Full URLs.
       </p>
 
       <p className="mt-4">
-        Tips for finding good links: Check FurAffinity, and check the e621 artist page, by clicking
-        the “?” next to the artist's name in the top left of any post tagged by them, as illustrated
-        in the picture below. If you cannot find any other sites, make one last attempt by Googling
-        "furry &lt;artist name&gt;"".
+        Tips for finding good links: Check FurAffinity, and check the e621 artist page, by
+        clicking the “?” next to the artist's name in the top left of any post tagged by
+        them, as illustrated in the picture below. If you cannot find any other sites,
+        make one last attempt by Googling "furry &lt;artist name&gt;"".
       </p>
 
       <p>!!!!e621 pic here!!!!</p>

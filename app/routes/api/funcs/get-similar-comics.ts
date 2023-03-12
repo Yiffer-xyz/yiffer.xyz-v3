@@ -4,7 +4,8 @@ import { getAllComicNamesAndIDs } from './get-comics';
 
 export async function getSimilarlyNamedComics(
   urlBase: string,
-  comicName: string
+  comicName: string,
+  excludeName?: string
 ): Promise<SimilarComicResponse> {
   if (comicName.length < 2) {
     return { similarComics: [], similarRejectedComics: [] };
@@ -32,9 +33,10 @@ export async function getSimilarlyNamedComics(
 
   for (let comic of allComicsTiny.filter(
     c =>
-      c.publishStatus === 'published' ||
-      c.publishStatus === 'pending' ||
-      c.publishStatus === 'scheduled'
+      c.name !== excludeName &&
+      (c.publishStatus === 'published' ||
+        c.publishStatus === 'pending' ||
+        c.publishStatus === 'scheduled')
   )) {
     let distance = stringDistance(comicName, comic.name);
 
@@ -47,9 +49,10 @@ export async function getSimilarlyNamedComics(
 
   for (let comic of allComicsTiny.filter(
     c =>
-      c.publishStatus === 'uploaded' ||
-      c.publishStatus === 'rejected' ||
-      c.publishStatus === 'rejected-list'
+      c.name !== excludeName &&
+      (c.publishStatus === 'uploaded' ||
+        c.publishStatus === 'rejected' ||
+        c.publishStatus === 'rejected-list')
   )) {
     let distance = stringDistance(comicName, comic.name);
     if (distance === 0) {

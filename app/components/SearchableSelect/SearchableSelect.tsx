@@ -15,6 +15,7 @@ export type BaseSearchableSelectProps<T> = {
   name: string;
   disabled?: boolean;
   mobileCompact?: boolean;
+  equalValueFunc?: (a: T, b: T | undefined) => boolean;
   className?: string;
 };
 
@@ -38,6 +39,7 @@ export default function SearchableSelect<T>({
   name,
   disabled = false,
   mobileCompact = false,
+  equalValueFunc,
   className = '',
   ...props
 }: FullSelectProps<T>) {
@@ -196,6 +198,9 @@ export default function SearchableSelect<T>({
   }
 
   const convertedValue = useMemo(() => {
+    if (equalValueFunc) {
+      return options.find(option => equalValueFunc(option.value, value));
+    }
     return options.find(option => option.value === value);
   }, [options, value]);
 
@@ -208,7 +213,7 @@ export default function SearchableSelect<T>({
     disabled:border-gray-800 dark:disabled:border-gray-600
     after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
     after:border-t-text-light dark:after:border-t-text-dark after:right-3
-    placeholder-gray-800 dark:placeholder-gray-700 w-full`;
+    placeholder-gray-800 dark:placeholder-gray-700 w-full outline-none`;
 
   return (
     <div
@@ -229,6 +234,7 @@ export default function SearchableSelect<T>({
           style={{ ...borderStyle }}
           onFocus={onFilledInputActivated}
           className={inputClassname}
+          onChange={() => {}}
         />
       ) : (
         <input

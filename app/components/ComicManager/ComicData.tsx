@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/components/Checkbox/CheckboxUncontrolled';
 import SearchableSelect from '~/components/SearchableSelect/SearchableSelect';
 import Select from '~/components/Select/Select';
-import { Artist, ComicTiny } from '~/types/types';
-import { NewComicData } from '.';
-import Step2Comicname from './step2-comicname';
-import Step2NewArtist from './step2-new-artist';
+import { Artist, Comic, ComicTiny } from '~/types/types';
+import { NewComicData } from '../../routes/contribute/upload';
+import ComicNameEditor from './ComicNameEditor';
+import Step2NewArtist from './NewArtist';
 
 const categoryOptions = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].map(c => ({
   value: c,
@@ -15,24 +15,29 @@ const classificationOptions = ['Furry', 'Pokemon', 'MLP', 'Other'].map(c => ({
   value: c,
   text: c,
 }));
-const stateOptions = ['Finished', 'WIP', 'Cancelled'].map(c => ({
-  value: c,
-  text: c,
-}));
+const stateOptions = [
+  { text: 'Finished', value: 'finished' },
+  { text: 'WIP', value: 'wip' },
+  { text: 'Cancelled', value: 'cancelled' },
+];
 
-type Step2Props = {
+type ComicDataEditorProps = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
   artists: Artist[];
   comics: ComicTiny[];
+  existingComic?: Comic;
+  isAdminPanel?: boolean;
 };
 
-export default function Step2ComicData({
+export default function ComicDataEditor({
   artists,
   comics,
   comicData,
   onUpdate,
-}: Step2Props) {
+  existingComic,
+  isAdminPanel,
+}: ComicDataEditorProps) {
   const [artistNotInList, setArtistNotInList] = useState(false);
 
   const artistOptions = useMemo(
@@ -46,7 +51,7 @@ export default function Step2ComicData({
 
   return (
     <>
-      <Step2Comicname
+      <ComicNameEditor
         comicName={comicData.comicName}
         setIsLegalComicnameState={isLegal =>
           onUpdate({
@@ -55,6 +60,7 @@ export default function Step2ComicData({
           })
         }
         onUpdate={newVal => onUpdate({ ...comicData, comicName: newVal })}
+        existingComic={existingComic}
       />
 
       <div className="flex flex-row flex-wrap mt-6 items-end gap-4">
@@ -67,16 +73,18 @@ export default function Step2ComicData({
           title="Artist"
           name="artistId"
         />
-        <CheckboxUncontrolled
-          label="Artist is not in the list"
-          name="artistNotInList"
-          onChange={newVal => {
-            setArtistNotInList(newVal);
-            if (newVal === true) {
-              onUpdate({ ...comicData, artistId: undefined });
-            }
-          }}
-        />
+        {!isAdminPanel && (
+          <CheckboxUncontrolled
+            label="Artist is not in the list"
+            name="artistNotInList"
+            onChange={newVal => {
+              setArtistNotInList(newVal);
+              if (newVal === true) {
+                onUpdate({ ...comicData, artistId: undefined });
+              }
+            }}
+          />
+        )}
       </div>
 
       {artistNotInList && (
@@ -109,23 +117,29 @@ export default function Step2ComicData({
         />
       </div>
 
-      <div style={{ fontSize: '0.75rem' }} className="mt-2">
-        <p>M, F: Male only, female only.</p>
-        <p>MF: One male on one female.</p>
-        <p>MM, FF: Two or more males or females together.</p>
-        <p>MF+: One or more male on one or more female action.</p>
-        <p>I: Anything involving intersex characters or nonbinary genders.</p>
-      </div>
+      {!isAdminPanel && (
+        <div style={{ fontSize: '0.75rem' }} className="mt-2">
+          <p>M, F: Male only, female only.</p>
+          <p>MF: One male on one female.</p>
+          <p>MM, FF: Two or more males or females together.</p>
+          <p>MF+: One or more male on one or more female action.</p>
+          <p>I: Anything involving intersex characters or nonbinary genders.</p>
+        </div>
+      )}
 
       <h4 className="mt-8">Connected comics</h4>
-      <p>
-        If this is a standalone comic, leave these fields empty. If it's part of a series,
-        fill in the previous and/or next comics.
-      </p>
-      <p>
-        If you are uploading multiple chapters of a series, you can leave the "next comic"
-        empty and only fill in the previous comic for each.
-      </p>
+      {!isAdminPanel && (
+        <>
+          <p>
+            If this is a standalone comic, leave these fields empty. If it's part of a
+            series, fill in the previous and/or next comics.
+          </p>
+          <p>
+            If you are uploading multiple chapters of a series, you can leave the "next
+            comic" empty and only fill in the previous comic for each.
+          </p>
+        </>
+      )}
 
       <div className="flex flex-row flex-wrap gap-4 mt-2">
         <SearchableSelect
@@ -137,6 +151,7 @@ export default function Step2ComicData({
           name="previousComicId"
           placeholder="Leave blank if none"
           mobileCompact
+          equalValueFunc={(a, b) => a.id === b?.id}
         />
         <SearchableSelect
           value={comicData.nextComic}
@@ -147,6 +162,7 @@ export default function Step2ComicData({
           name="nextComicId"
           placeholder="Leave blank if none"
           mobileCompact
+          equalValueFunc={(a, b) => a.id === b?.id}
         />
       </div>
     </>

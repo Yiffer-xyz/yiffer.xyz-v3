@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import MultiSelect from '~/components/MultiSelect/MultiSelect';
-import Select from '~/components/Select/Select';
 import { Tag } from '~/types/types';
-import { NewComicData } from '.';
+import { NewComicData } from '../../routes/contribute/upload';
 
-type Step5TagsProps = {
+type TagsEditorProps = {
   allTags: Tag[];
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
 };
 
-export default function Step5Tags({ allTags, comicData, onUpdate }: Step5TagsProps) {
+export default function TagsEditor({ allTags, comicData, onUpdate }: TagsEditorProps) {
   const tagOptions = allTags.map(tag => ({ value: tag, text: tag.name }));
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
