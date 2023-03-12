@@ -1,5 +1,5 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData, useRevalidator } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import { MdArrowForward, MdCheck, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/components/ArtistEditor';
@@ -33,10 +33,10 @@ export async function loader(args: LoaderArgs) {
 }
 
 export default function ManageComicInner() {
-  const revalidator = useRevalidator();
   const { isMobile } = useWindowSize();
-  const { artist } = useLoaderData<typeof loader>();
+  const { artist, user } = useLoaderData<typeof loader>();
   const saveChangesFetcher = useFetcher();
+  const banArtistFetcher = useFetcher();
 
   const [updatedArtistData, setUpdatedArtistData] = useState<NewArtist>();
   const [needsUpdate, setNeedsUpdate] = useState(false);
@@ -108,15 +108,61 @@ export default function ManageComicInner() {
     return true;
   }, [artistChanges]);
 
+  function toggleArtistBan() {
+    banArtistFetcher.submit(
+      { isBanned: artist.isBanned ? 'false' : 'true', artistId: artist.id.toString() },
+      {
+        method: 'post',
+        action: `/api/admin/toggle-artist-ban`,
+      }
+    );
+  }
+
   return (
     <>
       <h2 className="mb-2">{artist.name}</h2>
+
+      {artist.isBanned && (
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit mb-6">
+          <h3>Banned artist</h3>
+          <p>
+            This artist cannot be chosen for new/existing comics, and cannot be suggested.
+            The reasons could be that they've asked not to be featured on the site, or
+            anything else.
+          </p>
+
+          {user.userType === 'admin' ? (
+            <LoadingButton
+              onClick={toggleArtistBan}
+              className="mt-2"
+              isLoading={banArtistFetcher.state === 'submitting'}
+              color="error"
+              text="Unban artist"
+            />
+          ) : (
+            <p>Only admins can unban artists.</p>
+          )}
+        </div>
+      )}
+
+      {artist.isPending && (
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit mb-6">
+          <h3>Pending artist</h3>
+          <p>
+            This artist is pending. This means that a user has uploaded a comic and in the
+            same process created a new artist. If the comic is approved, the artist stops
+            being pending. If the comic is rejected, this artist is deleted (fully - not
+            banned, actually deleted).
+          </p>
+        </div>
+      )}
 
       {updatedArtistData && (
         <ArtistEditor
           newArtistData={updatedArtistData}
           existingArtist={artist}
           onUpdate={setUpdatedArtistData}
+          hideBorderTitle
           className="max-w-3xl"
         />
       )}
@@ -175,11 +221,11 @@ export default function ManageComicInner() {
             </div>
           </div>
 
-          {saveChangesFetcher.data?.error && (
+          {(saveChangesFetcher.data?.error || banArtistFetcher.data?.error) && (
             <InfoBox
               variant="error"
               className="mt-4 w-fit"
-              text={saveChangesFetcher.data.error}
+              text={saveChangesFetcher.data.error || banArtistFetcher.data.error}
               showIcon
             />
           )}
@@ -200,6 +246,19 @@ export default function ManageComicInner() {
             />
           </div>
         </>
+      )}
+
+      {user.userType === 'admin' && !artist.isBanned && (
+        <div className="mt-10">
+          <h3>Admin tools</h3>
+          <LoadingButton
+            isLoading={banArtistFetcher.state === 'submitting'}
+            text="Ban artist"
+            onClick={toggleArtistBan}
+            color="error"
+            className="mt-2"
+          />
+        </div>
       )}
     </>
   );

@@ -13,6 +13,7 @@ type NewArtistProps = {
   newArtistData: NewArtist;
   existingArtist?: Artist;
   onUpdate: (newData: NewArtist) => void;
+  hideBorderTitle?: boolean;
   className?: string;
 };
 
@@ -20,6 +21,7 @@ export default function ArtistEditor({
   newArtistData,
   existingArtist,
   onUpdate,
+  hideBorderTitle = false,
   className = '',
 }: NewArtistProps) {
   const similarArtistsFetcher = useFetcher();
@@ -47,7 +49,10 @@ export default function ArtistEditor({
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    if (newArtistData.artistName.length < 3) {
+    if (
+      newArtistData.artistName.length < 3 ||
+      newArtistData.artistName === existingArtist?.name
+    ) {
       return;
     }
 
@@ -112,9 +117,11 @@ export default function ArtistEditor({
 
   return (
     <div
-      className={`${existingArtist ? adminPanelClassname : uploadClassname} ${className}`}
+      className={`${
+        hideBorderTitle ? adminPanelClassname : uploadClassname
+      } ${className}`}
     >
-      {!existingArtist && <h3>New artist</h3>}
+      {!hideBorderTitle && <h3>New artist</h3>}
 
       <TextInput
         label="Artist name"
@@ -232,7 +239,7 @@ export default function ArtistEditor({
       />
 
       <h4 className="mt-8">Other links</h4>
-      {!existingArtist && (
+      {!hideBorderTitle && (
         <p className="mb-4">
           It's important to be on good terms with artists. Links to their profiles are
           vital. If you do not provide any links, or vastly insufficient ones, the comic

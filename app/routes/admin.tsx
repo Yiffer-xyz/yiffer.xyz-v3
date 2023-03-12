@@ -29,7 +29,11 @@ export async function loader(args: LoaderArgs) {
       modifyNameIncludeType: true,
       includeUnlisted: true,
     }),
-    getAllArtists(urlBase, { includePending: true }),
+    getAllArtists(urlBase, {
+      includePending: true,
+      includeBanned: true,
+      modifyNameIncludeType: true,
+    }),
     getAllTags(urlBase),
   ]);
 
@@ -64,7 +68,9 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
   const [isOpen, setIsOpen] = useState(alwaysShow);
 
   function isRoute(matchString: string) {
-    return matches.some(m => m.pathname.includes(`/admin/${matchString}`));
+    return matches.some(match => {
+      return match.pathname.includes(`/admin/${matchString}`);
+    });
   }
 
   // Close on navigation - aka a link selected
@@ -117,15 +123,15 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
           <p className="py-2 px-4 cursor-default">Artists</p>
           <SidebarLink
             isIndented
-            href="/admin/artists/manage"
+            href="/admin/artists"
             text="Manage artist"
-            isSelected={isRoute('artists/manage')}
+            isSelected={isRoute('artists')}
           />
           <SidebarLink
             isIndented
-            href="/admin/artists/new"
+            href="/admin/new-artist"
             text="New artist"
-            isSelected={isRoute('artists/new')}
+            isSelected={isRoute('new-artist')}
           />
 
           <p className="py-2 px-4 cursor-default">Tags</p>
