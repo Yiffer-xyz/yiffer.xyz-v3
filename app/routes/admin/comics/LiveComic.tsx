@@ -8,7 +8,8 @@ import TagsEditor from '~/components/ComicManager/Tags';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { NewArtist, NewComicData } from '~/routes/contribute/upload';
-import { Artist, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
+import { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
+import { FieldChange } from '~/utils/general';
 import useWindowSize from '~/utils/useWindowSize';
 
 type LiveComicProps = {
@@ -16,15 +17,8 @@ type LiveComicProps = {
   user: UserSession;
   updateComic: () => void;
   allComics: ComicTiny[];
-  allArtists: Artist[];
+  allArtists: ArtistTiny[];
   allTags: Tag[];
-};
-
-type ComicDataChange = {
-  field: string;
-  oldValue?: string;
-  newValue?: string;
-  newDataValue?: any;
 };
 
 const emptyUnusedNewArtist: NewArtist = {
@@ -61,7 +55,7 @@ export default function LiveComic({
   const [isUnlisting, setIsUnlisting] = useState(false);
   const [unlistComment, setUnlistComment] = useState('');
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
-  const [comicDataChanges, setComicDataChanges] = useState<ComicDataChange[]>([]);
+  const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
 
   useEffect(() => {
@@ -124,14 +118,13 @@ export default function LiveComic({
       }
     }
 
-    if (comicDataChanges)
-      saveChangesFetcher.submit(
-        { body: JSON.stringify(body) },
-        {
-          method: 'post',
-          action: '/api/admin/update-comic-data',
-        }
-      );
+    saveChangesFetcher.submit(
+      { body: JSON.stringify(body) },
+      {
+        method: 'post',
+        action: '/api/admin/update-comic-data',
+      }
+    );
   }
 
   function unlistComic() {
@@ -347,11 +340,11 @@ function comicLinkToTinyComic(comic?: {
 function getComicDataChanges(
   updatedComicData: NewComicData | undefined,
   comic: Comic,
-  allArtists: Artist[],
+  allArtists: ArtistTiny[],
   allComics: ComicTiny[]
-): ComicDataChange[] {
+): FieldChange[] {
   if (!updatedComicData) return [];
-  const changes: ComicDataChange[] = [];
+  const changes: FieldChange[] = [];
 
   if (comic.name !== updatedComicData.comicName) {
     changes.push({

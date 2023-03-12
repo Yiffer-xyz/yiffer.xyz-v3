@@ -1,25 +1,31 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
-import Button from '~/components/Buttons/Button';
+import { MdDelete } from 'react-icons/md';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
 import { Artist } from '~/types/types';
-import { NewArtist, NewComicData } from '../../routes/contribute/upload';
+import { NewArtist } from '../routes/contribute/upload';
+import IconButton from './Buttons/IconButton';
 
 type NewArtistProps = {
-  comicData: NewComicData;
-  onUpdate: (newData: NewComicData) => void;
-  artists: Artist[];
+  newArtistData: NewArtist;
+  existingArtist?: Artist;
+  onUpdate: (newData: NewArtist) => void;
+  className?: string;
 };
 
-export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
+export default function ArtistEditor({
+  newArtistData,
+  existingArtist,
+  onUpdate,
+  className = '',
+}: NewArtistProps) {
   const similarArtistsFetcher = useFetcher();
+
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
-  const [artistNotE621, setArtistNotE621] = useState(false);
-  const [artistNotPatreon, setArtistNotPatreon] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -30,7 +36,7 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
   }, [similarArtistsFetcher.data]);
 
   function updateArtist(newArtist: NewArtist) {
-    onUpdate({ ...comicData, newArtist: newArtist });
+    onUpdate(newArtist);
   }
 
   useEffect(() => {
@@ -41,28 +47,33 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    if (comicData.newArtist.artistName.length < 3) {
+    if (newArtistData.artistName.length < 3) {
       return;
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      similarArtistsFetcher.submit(
-        { artistName: comicData.newArtist.artistName },
-        { method: 'post', action: '/api/search-similar-artist' }
-      );
+      const body: any = { artistName: newArtistData.artistName };
+      if (existingArtist) {
+        body.excludeName = existingArtist.name;
+      }
+
+      similarArtistsFetcher.submit(body, {
+        method: 'post',
+        action: '/api/search-similar-artist',
+      });
     }, 1000);
-  }, [comicData.newArtist.artistName]);
+  }, [newArtistData.artistName, existingArtist?.name]);
 
   // Add new empty string link if all are filled
   useEffect(() => {
-    const links = comicData.newArtist.links;
+    const links = newArtistData.links;
     if (links.length > 0 && links.every(l => l.length > 0)) {
-      updateArtist({ ...comicData.newArtist, links: [...links, ''] });
+      updateArtist({ ...newArtistData, links: [...links, ''] });
     }
     if (!links.every(l => l.length === 0)) {
       setNoLinks(false);
     }
-  }, [comicData.newArtist.links]);
+  }, [newArtistData.links]);
 
   // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
   useEffect(() => {
@@ -75,14 +86,14 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
         similarArtists.similarArtists.length > 0 ||
         similarArtists.similarBannedArtists.length > 0;
 
-      if (!isExactMatch && comicData.newArtist.artistName.length > 2) {
+      if (!isExactMatch && newArtistData.artistName.length > 2) {
         isLegal = !isAnyKindOfSimilarArtist || hasConfirmedNewArtist;
       }
     }
 
-    onUpdate({
-      ...comicData,
-      validation: { ...comicData.validation, isLegalNewArtist: isLegal },
+    updateArtist({
+      ...newArtistData,
+      isValidName: isLegal,
     });
   }, [similarArtists, hasConfirmedNewArtist]);
 
@@ -96,14 +107,20 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
     (similarArtists.similarArtists.length > 0 ||
       similarArtists.similarBannedArtists.length > 0);
 
+  const uploadClassname = 'my-4 p-4 border border-4 border-theme1-primary flex flex-col';
+  const adminPanelClassname = 'flex flex-col';
+
   return (
-    <div className="my-4 p-4 border border-4 border-theme1-primary flex flex-col">
-      <h3>New artist</h3>
+    <div
+      className={`${existingArtist ? adminPanelClassname : uploadClassname} ${className}`}
+    >
+      {!existingArtist && <h3>New artist</h3>}
+
       <TextInput
         label="Artist name"
         name="artistName"
-        value={comicData.newArtist.artistName}
-        onChange={newVal => updateArtist({ ...comicData.newArtist, artistName: newVal })}
+        value={newArtistData.artistName}
+        onChange={newVal => updateArtist({ ...newArtistData, artistName: newVal })}
       />
 
       {isExactMatch && (
@@ -162,67 +179,69 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
 
       <h4 className="mt-8">E621 and Patreon</h4>
 
-      {!artistNotE621 && (
+      {!newArtistData.hasConfirmedNoE621Name && (
         <TextInput
           label="E621 name"
           name="e621Name"
-          value={comicData.newArtist.e621Name}
-          onChange={newVal => updateArtist({ ...comicData.newArtist, e621Name: newVal })}
+          value={newArtistData.e621Name}
+          onChange={newVal => updateArtist({ ...newArtistData, e621Name: newVal })}
           className="mt-2"
           helperText="Only the name - not the full link"
           placeholder='e.g. "braeburned"'
-          disabled={artistNotE621}
+          disabled={newArtistData.hasConfirmedNoE621Name}
         />
       )}
 
       <Checkbox
         label="Artist is not on e621 (this is unlikely!)"
-        checked={artistNotE621}
+        checked={!!newArtistData.hasConfirmedNoE621Name}
         onChange={newVal => {
-          setArtistNotE621(newVal);
+          const newArtist = { ...newArtistData, hasConfirmedNoE621Name: newVal };
           if (newVal) {
-            updateArtist({ ...comicData.newArtist, e621Name: '' });
+            newArtist.e621Name = '';
           }
+          updateArtist(newArtist);
         }}
         className="mt-2"
       />
 
-      {!artistNotPatreon && (
+      {!newArtistData.hasConfirmedNoPatreonName && (
         <TextInput
           label="Patreon name"
           name="patreonName"
-          value={comicData.newArtist.patreonName}
-          onChange={newVal =>
-            updateArtist({ ...comicData.newArtist, patreonName: newVal })
-          }
-          className="mt-4"
+          value={newArtistData.patreonName}
+          onChange={newVal => updateArtist({ ...newArtistData, patreonName: newVal })}
+          className="mt-6"
           helperText="Only the name - not the full link"
           placeholder='e.g. "braeburned"'
-          disabled={artistNotPatreon}
+          disabled={newArtistData.hasConfirmedNoPatreonName}
         />
       )}
 
       <Checkbox
         label="Artist is not on Patreon"
-        checked={artistNotPatreon}
+        checked={!!newArtistData.hasConfirmedNoPatreonName}
         onChange={newVal => {
-          setArtistNotPatreon(newVal);
+          const newArtist = { ...newArtistData, hasConfirmedNoPatreonName: newVal };
           if (newVal) {
-            updateArtist({ ...comicData.newArtist, patreonName: '' });
+            newArtist.patreonName = '';
           }
+          updateArtist(newArtist);
         }}
         className="mt-2"
       />
 
       <h4 className="mt-8">Other links</h4>
-      <p>
-        It's important to be on good terms with artists. Links to their profiles are
-        vital. If you do not provide any links, or vastly insufficient ones, the comic
-        might be rejected. Any website links go below here. Examples: Twitter,
-        FurAffinity, Inkbunny, personal websites, etc. Full URLs.
-      </p>
+      {!existingArtist && (
+        <p className="mb-4">
+          It's important to be on good terms with artists. Links to their profiles are
+          vital. If you do not provide any links, or vastly insufficient ones, the comic
+          might be rejected. Any website links go below here. Examples: Twitter,
+          FurAffinity, Inkbunny, personal websites, etc. Full URLs.
+        </p>
+      )}
 
-      <p className="mt-4">
+      <p>
         Tips for finding good links: Check FurAffinity, and check the e621 artist page, by
         clicking the “?” next to the artist's name in the top left of any post tagged by
         them, as illustrated in the picture below. If you cannot find any other sites,
@@ -234,44 +253,49 @@ export default function NewArtist({ comicData, onUpdate }: NewArtistProps) {
       <div className="flex flex-col gap-2 mt-4">
         {!noLinks && (
           <>
-            {comicData.newArtist.links.map((link, i) => (
-              <div className="flex flex-row -mt-1 items-end">
-                <TextInput
-                  key={i}
-                  label={`Link:`}
-                  name={`otherLink${i}`}
-                  value={link}
-                  placeholder="e.g. https://twitter.com/braeburned"
-                  onChange={newVal => {
-                    const newLinks = [...comicData.newArtist.links];
-                    newLinks[i] = newVal;
-                    updateArtist({ ...comicData.newArtist, links: newLinks });
-                  }}
-                  className="mt-2 grow"
-                  disabled={noLinks}
-                />
-
-                {comicData.newArtist.links.length > 1 && (
-                  <Button
-                    className="ml-2 mt-4 h-fit"
-                    color="primary"
-                    variant="outlined"
-                    text="del"
-                    onClick={() => {
-                      const newLinks = [...comicData.newArtist.links];
-                      newLinks.splice(i, 1);
-                      updateArtist({ ...comicData.newArtist, links: newLinks });
+            {newArtistData.links.map((link, i) => {
+              const isLastLink = i === newArtistData.links.length - 1;
+              return (
+                <div
+                  className={`flex flex-row -mt-1 items-end ${isLastLink ? 'mr-10' : ''}`}
+                >
+                  <TextInput
+                    key={i}
+                    label={`Link:`}
+                    name={`otherLink${i}`}
+                    value={link}
+                    placeholder="e.g. https://twitter.com/braeburned"
+                    onChange={newVal => {
+                      const newLinks = [...newArtistData.links];
+                      newLinks[i] = newVal;
+                      updateArtist({ ...newArtistData, links: newLinks });
                     }}
+                    className="mt-2 grow"
+                    disabled={noLinks}
                   />
-                )}
-              </div>
-            ))}
+
+                  {!isLastLink && (
+                    <IconButton
+                      className="ml-2 mt-4"
+                      color="primary"
+                      variant="naked"
+                      icon={MdDelete}
+                      onClick={() => {
+                        const newLinks = [...newArtistData.links];
+                        newLinks.splice(i, 1);
+                        updateArtist({ ...newArtistData, links: newLinks });
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </>
         )}
 
-        {comicData.newArtist.links.every(l => l.length === 0) && (
+        {newArtistData.links.every(l => l.length === 0) && (
           <Checkbox
-            label="Artist has no other links (unlikely!)"
+            label="Artist has no links (unlikely!)"
             checked={noLinks}
             onChange={setNoLinks}
             className="mt-2"

@@ -1,4 +1,4 @@
-import { Artist } from '~/types/types';
+import { ArtistTiny } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 
 export async function getAllArtists(
@@ -7,7 +7,7 @@ export async function getAllArtists(
     includePending?: boolean;
     includeBanned?: boolean;
   }
-): Promise<Artist[]> {
+): Promise<ArtistTiny[]> {
   let query = `SELECT
       Id AS id,
       Name AS name,
@@ -27,5 +27,5 @@ export async function getAllArtists(
     query += ' WHERE IsBanned = 0';
   }
 
-  return queryDbDirect<Artist[]>(urlBase, query);
+  return queryDbDirect<ArtistTiny[]>(urlBase, query);
 }

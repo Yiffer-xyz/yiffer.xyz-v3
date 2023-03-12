@@ -2,7 +2,7 @@ import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
-import { Artist, ComicTiny, Tag } from '~/types/types';
+import { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
 import { getAllArtists } from './api/funcs/get-artists';
@@ -11,7 +11,7 @@ import { getAllTags } from './api/funcs/get-tags';
 
 export type GlobalAdminContext = {
   comics: ComicTiny[];
-  artists: Artist[];
+  artists: ArtistTiny[];
   tags: Tag[];
 };
 

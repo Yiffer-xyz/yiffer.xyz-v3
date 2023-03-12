@@ -1,5 +1,5 @@
 import { ActionFunction, json } from '@remix-run/cloudflare';
-import { queryDb, queryDbDirect } from '~/utils/database-facade';
+import { queryDbDirect } from '~/utils/database-facade';
 import stringDistance from '~/utils/string-distance';
 
 export type SimilarArtistResponse = {
@@ -14,15 +14,21 @@ export const action: ActionFunction = async function ({ request, context }) {
   const urlBase = context.DB_API_URL_BASE as string;
   const body = await request.formData();
   const artistName = body.get('artistName') as string;
+  const excludeName = body.get('excludeName');
 
-  const data = await getSimilarArtists(urlBase, artistName);
+  const data = await getSimilarArtists(
+    urlBase,
+    artistName,
+    excludeName ? excludeName.toString() : undefined
+  );
 
   return json(data);
 };
 
 export async function getSimilarArtists(
   urlBase: string,
-  newArtistName: string
+  newArtistName: string,
+  excludeName?: string
 ): Promise<SimilarArtistResponse> {
   let response: SimilarArtistResponse = {
     similarArtists: [],
@@ -49,6 +55,8 @@ export async function getSimilarArtists(
   );
 
   for (let artist of allArtists) {
+    if (artist.name === excludeName) continue;
+
     let distance = stringDistance(artist.name, newArtistName);
     if (distance === 0) {
       if (artist.isBanned) {

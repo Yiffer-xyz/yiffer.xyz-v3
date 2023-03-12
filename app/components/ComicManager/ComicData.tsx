@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/components/Checkbox/CheckboxUncontrolled';
 import SearchableSelect from '~/components/SearchableSelect/SearchableSelect';
 import Select from '~/components/Select/Select';
-import { Artist, Comic, ComicTiny } from '~/types/types';
+import { ArtistTiny, Comic, ComicTiny } from '~/types/types';
 import { NewComicData } from '../../routes/contribute/upload';
 import ComicNameEditor from './ComicNameEditor';
-import Step2NewArtist from './NewArtist';
+import Step2NewArtist from '../ArtistEditor';
 
 const categoryOptions = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].map(c => ({
   value: c,
@@ -24,7 +24,7 @@ const stateOptions = [
 type ComicDataEditorProps = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
-  artists: Artist[];
+  artists: ArtistTiny[];
   comics: ComicTiny[];
   existingComic?: Comic;
   isAdminPanel?: boolean;
@@ -88,7 +88,10 @@ export default function ComicDataEditor({
       </div>
 
       {artistNotInList && (
-        <Step2NewArtist artists={artists} comicData={comicData} onUpdate={onUpdate} />
+        <Step2NewArtist
+          newArtistData={comicData.newArtist}
+          onUpdate={newArtist => onUpdate({ ...comicData, newArtist })}
+        />
       )}
 
       <div className="flex flex-row flex-wrap gap-4 mt-8">

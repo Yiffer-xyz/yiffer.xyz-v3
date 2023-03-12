@@ -12,7 +12,7 @@ import InfoBox from '~/components/InfoBox';
 import { getAllArtists } from '~/routes/api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from '~/routes/api/funcs/get-comics';
 import { getAllTags } from '~/routes/api/funcs/get-tags';
-import { Artist, ComicTiny, Tag, UserSession } from '~/types/types';
+import { ArtistTiny, ComicTiny, Tag, UserSession } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';
@@ -114,12 +114,30 @@ export default function Upload() {
     setError(null);
 
     if (!comicData.validation.isLegalComicName) {
-      setError('This comic name cannot be uploaded');
+      setError('There is an error regarding the comic name');
       return;
     }
-    if (!comicData.validation.isLegalNewArtist && comicData.newArtist.artistName) {
-      setError('The artist name cannot be uploaded');
-      return;
+
+    if (comicData.newArtist.artistName) {
+      const isNameIllegal = !comicData.newArtist.isValidName;
+      const isE621Illegal =
+        !comicData.newArtist.e621Name && !comicData.newArtist.hasConfirmedNoE621Name;
+      const isPatreonIllegal =
+        !comicData.newArtist.patreonName &&
+        !comicData.newArtist.hasConfirmedNoPatreonName;
+        
+      if (isNameIllegal) {
+        setError('There is an error regarding the artist name');
+        return;
+      }
+      if (isE621Illegal) {
+        setError('You must confirm that the artist does not have an e621 name');
+        return;
+      }
+      if (isPatreonIllegal) {
+        setError('You must confirm that the artist does not have a patreon name');
+        return;
+      }
     }
 
     let newArtist: NewArtist | undefined;
@@ -340,21 +358,25 @@ function createEmptyUploadData(): NewComicData {
       e621Name: '',
       patreonName: '',
       links: [''],
+      isValidName: false,
     },
     // Validation that must be computed from within components, rather than on submit
     validation: {
       isLegalComicName: false,
-      isLegalNewArtist: undefined,
     },
     files: [],
   };
 }
 
 export type NewArtist = {
+  id?: number;
   artistName: string;
   e621Name: string;
   patreonName: string;
   links: string[];
+  isValidName?: boolean;
+  hasConfirmedNoE621Name?: boolean;
+  hasConfirmedNoPatreonName?: boolean;
 };
 
 // The submitted payload
@@ -387,7 +409,6 @@ export type NewComicData = {
   tags: Tag[];
   validation: {
     isLegalComicName: boolean;
-    isLegalNewArtist?: boolean;
   };
   files: File[];
   thumbnailFile?: File;

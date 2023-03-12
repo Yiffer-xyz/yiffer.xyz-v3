@@ -18,3 +18,10 @@ export function randomString(i: number): string {
 
   return text;
 }
+
+export type FieldChange = {
+  field: string;
+  oldValue?: string;
+  newValue?: string;
+  newDataValue?: any;
+};

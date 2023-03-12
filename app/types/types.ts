@@ -11,6 +11,14 @@ export type Artist = {
   e621Name: string;
   isPending: boolean;
   isBanned: boolean;
+  links: string[];
+};
+
+export type ArtistTiny = {
+  id: number;
+  name: string;
+  isPending: boolean;
+  isBanned: boolean;
 };
 
 export type Comic = {
