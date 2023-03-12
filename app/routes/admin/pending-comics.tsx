@@ -66,6 +66,7 @@ export async function loader(args: LoaderArgs) {
             INNER JOIN artist ON (artist.id = comic.artist)
             INNER JOIN comickeyword ON (comic.id = comickeyword.comicId)
             LEFT JOIN user ON (user.id = uploadUserId)
+            WHERE publishStatus = 'pending' OR publishStatus = 'scheduled'
             GROUP BY comic.id, timestamp, errorText, uploadUserId, uploadUserIP, publishDate, modId, scheduleModId
         ) AS Q1
       LEFT JOIN user ON (Q1.reviewerModId = user.id)

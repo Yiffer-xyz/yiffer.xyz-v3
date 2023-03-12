@@ -4,6 +4,7 @@ import { useFetcher } from 'react-router-dom';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import ComicDataEditor from '~/components/ComicManager/ComicData';
+import TagsEditor from '~/components/ComicManager/Tags';
 import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import TextInput from '~/components/TextInput/TextInput';
@@ -34,6 +35,18 @@ const emptyUnusedNewArtist: NewArtist = {
   links: [],
 };
 
+export type ComicDataChanges = {
+  comicId: number;
+  name?: string;
+  artistId?: number;
+  tagIds?: number[];
+  category?: string;
+  classification?: string;
+  state?: string;
+  previousComicId?: number;
+  nextComicId?: number;
+};
+
 export default function LiveComic({
   comic,
   user,
@@ -50,13 +63,13 @@ export default function LiveComic({
   const [unlistComment, setUnlistComment] = useState('');
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
   const [comicDataChanges, setComicDataChanges] = useState<ComicDataChange[]>([]);
+  const [needsUpdate, setNeedsUpdate] = useState(false);
 
   useEffect(() => {
-    if (unlistFetcher.data?.success || saveChangesFetcher.data?.success) {
-      updateComic();
-      setupInitialUpdatedComic(comic);
+    if (saveChangesFetcher.data?.success && saveChangesFetcher.state === 'loading') {
+      setNeedsUpdate(true);
     }
-  }, [unlistFetcher]);
+  }, [saveChangesFetcher]);
 
   useEffect(() => {
     setComicDataChanges(
@@ -64,7 +77,16 @@ export default function LiveComic({
     );
   }, [updatedComicData]);
 
-  useEffect(setInitialComicData, [comic.id]);
+  useEffect(() => {
+    if (
+      !updatedComicData?.comicName ||
+      needsUpdate ||
+      comic.name !== updatedComicData.comicName
+    ) {
+      setInitialComicData();
+      setNeedsUpdate(false);
+    }
+  }, [comic]);
 
   function setInitialComicData() {
     const newUpdatedComicData = setupInitialUpdatedComic(comic);
@@ -74,16 +96,16 @@ export default function LiveComic({
   function saveComicDataChanges() {
     if (!comicDataChanges) return;
 
-    const body: any = {
-      comicId: comic.id.toString(),
+    const body: ComicDataChanges = {
+      comicId: comic.id,
     };
     for (const change of comicDataChanges) {
       if (change.field === 'Name') {
         body.name = change.newDataValue;
       } else if (change.field === 'Artist') {
-        body.newArtistId = change.newDataValue;
-      } else if (change.field === 'Tags' || change.field === 'Number of tags') {
-        body.newTagIds = change.newDataValue;
+        body.artistId = change.newDataValue;
+      } else if (change.field === 'New tags' || change.field === 'Removed tags') {
+        body.tagIds = change.newDataValue;
       } else if (change.field === 'Category') {
         body.category = change.newDataValue;
       } else if (change.field === 'Classification') {
@@ -98,10 +120,13 @@ export default function LiveComic({
     }
 
     if (comicDataChanges)
-      saveChangesFetcher.submit(body, {
-        method: 'post',
-        action: '/api/admin/update-comic-data',
-      });
+      saveChangesFetcher.submit(
+        { body: JSON.stringify(body) },
+        {
+          method: 'post',
+          action: '/api/admin/update-comic-data',
+        }
+      );
   }
 
   function unlistComic() {
@@ -173,14 +198,23 @@ export default function LiveComic({
       <div className="mt-4">
         <h4 className="mb-1">Comic data</h4>
         {updatedComicData && (
-          <ComicDataEditor
-            comicData={updatedComicData}
-            artists={allArtists}
-            comics={allComics}
-            onUpdate={setUpdatedComicData}
-            existingComic={comic}
-            isAdminPanel={true}
-          />
+          <>
+            <ComicDataEditor
+              comicData={updatedComicData}
+              artists={allArtists}
+              comics={allComics}
+              onUpdate={setUpdatedComicData}
+              existingComic={comic}
+              isAdminPanel={true}
+            />
+
+            <TagsEditor
+              allTags={allTags}
+              comicData={updatedComicData}
+              onUpdate={setUpdatedComicData}
+              className="mt-8 max-w-5xl"
+            />
+          </>
         )}
 
         {comicDataChanges.length > 0 && (
@@ -196,7 +230,8 @@ export default function LiveComic({
                 style={{ gridTemplateColumns: isMobile ? 'auto' : 'auto auto' }}
               >
                 {comicDataChanges.map(change => {
-                  const hasDetails = change.oldValue && change.newValue;
+                  const hasDetails = !!change.newValue;
+
                   return isMobile ? (
                     <div>
                       <p className={hasDetails ? '' : 'col-span-2'}>
@@ -204,7 +239,13 @@ export default function LiveComic({
                       </p>
                       {hasDetails && (
                         <p>
-                          {change.oldValue} <MdArrowForward /> {change.newValue}
+                          {change.oldValue ? (
+                            <>
+                              {change.oldValue} <MdArrowForward /> {change.newValue}
+                            </>
+                          ) : (
+                            change.newValue
+                          )}
                         </p>
                       )}
                     </div>
@@ -215,7 +256,13 @@ export default function LiveComic({
                       </p>
                       {hasDetails && (
                         <p>
-                          {change.oldValue} <MdArrowForward /> {change.newValue}
+                          {change.oldValue ? (
+                            <>
+                              {change.oldValue} <MdArrowForward /> {change.newValue}
+                            </>
+                          ) : (
+                            change.newValue
+                          )}
                         </p>
                       )}
                     </>
@@ -223,6 +270,16 @@ export default function LiveComic({
                 })}
               </div>
             </div>
+
+            {saveChangesFetcher.data?.error && (
+              <InfoBox
+                variant="error"
+                className="mt-4 w-fit"
+                text={saveChangesFetcher.data.error}
+                showIcon
+              />
+            )}
+
             <div className="flex flex-row gap-2 mt-4">
               <Button
                 variant="outlined"
@@ -257,7 +314,7 @@ function setupInitialUpdatedComic(comic: Comic): NewComicData {
     validation: {
       isLegalComicName: true,
     },
-    tagIds: comic.tags.map(tag => tag.id),
+    tags: comic.tags,
     previousComic: comicLinkToTinyComic(comic.previousComic),
     nextComic: comicLinkToTinyComic(comic.nextComic),
     files: [],
@@ -331,14 +388,6 @@ function getComicDataChanges(
       newDataValue: updatedComicData.state,
     });
   }
-  if (comic.tags.length !== updatedComicData.tagIds.length) {
-    changes.push({
-      field: 'Number of tags',
-      oldValue: comic.tags.length.toString(),
-      newValue: updatedComicData.tagIds.length.toString(),
-      newDataValue: updatedComicData.tagIds.join(','),
-    });
-  }
   if (comic.previousComic?.id !== updatedComicData.previousComic?.id) {
     changes.push({
       field: 'Previous comic',
@@ -358,19 +407,32 @@ function getComicDataChanges(
     });
   }
 
-  let tagsInnerChanged = false;
-  if (comic.tags.length === updatedComicData.tagIds.length) {
-    for (const tag of comic.tags) {
-      if (!updatedComicData.tagIds.includes(tag.id)) {
-        tagsInnerChanged = true;
-        break;
-      }
+  let newTags: Tag[] = [];
+  let removedTags: Tag[] = [];
+  for (const tag of comic.tags) {
+    if (!updatedComicData.tags.find(t => t.id === tag.id)) {
+      removedTags.push(tag);
     }
   }
-  if (tagsInnerChanged) {
+  for (const tag of updatedComicData.tags) {
+    if (!comic.tags.find(t => t.id === tag.id)) {
+      newTags.push(tag);
+    }
+  }
+  if (newTags.length > 0) {
     changes.push({
-      field: 'Tags',
-      newDataValue: updatedComicData.tagIds.join(','),
+      field: 'New tags',
+      oldValue: undefined,
+      newValue: `${newTags.length}: ${newTags.map(t => t.name).join(', ')}`,
+      newDataValue: updatedComicData.tags.map(t => t.id),
+    });
+  }
+  if (removedTags.length > 0) {
+    changes.push({
+      field: 'Removed tags',
+      oldValue: undefined,
+      newValue: `${removedTags.length}: ${removedTags.map(t => t.name).join(', ')}`,
+      newDataValue: updatedComicData.tags.map(t => t.id),
     });
   }
 

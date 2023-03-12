@@ -117,7 +117,7 @@ export default function Upload() {
       setError('This comic name cannot be uploaded');
       return;
     }
-    if (!comicData.validation.isLegalNewArtist) {
+    if (!comicData.validation.isLegalNewArtist && comicData.newArtist.artistName) {
       setError('The artist name cannot be uploaded');
       return;
     }
@@ -136,7 +136,7 @@ export default function Upload() {
       category: comicData.category,
       classification: comicData.classification,
       state: comicData.state,
-      tagIds: comicData.tagIds,
+      tagIds: comicData.tags.map(tag => tag.id),
       newArtist: newArtist,
       artistId: comicData.artistId,
       numberOfPages: comicData.files.length - 1,
@@ -200,13 +200,16 @@ export default function Upload() {
 
           <Step4Thumbnail />
 
-          <TagsEditor allTags={tags} comicData={comicData} onUpdate={setComicData} />
+          <TagsEditor
+            allTags={tags}
+            comicData={comicData}
+            onUpdate={setComicData}
+            className="mt-8"
+          />
 
           <h4 className="mt-8">Finish</h4>
 
-          {error && (
-            <InfoBox variant="error" text={error} className="mt-2 mb-4 w-fit" closable />
-          )}
+          {error && <InfoBox variant="error" text={error} className="mt-2 mb-4 w-fit" />}
 
           {isSubmitting && (
             <InfoBox variant="info" boldText={false} className="mt-2 mb-4">
@@ -331,7 +334,7 @@ function createEmptyUploadData(): NewComicData {
     category: '',
     classification: '',
     state: '',
-    tagIds: [],
+    tags: [],
     newArtist: {
       artistName: '',
       e621Name: '',
@@ -380,7 +383,7 @@ export type NewComicData = {
   state: string;
   previousComic?: ComicTiny;
   nextComic?: ComicTiny;
-  tagIds: number[];
+  tags: Tag[];
   validation: {
     isLegalComicName: boolean;
     isLegalNewArtist?: boolean;

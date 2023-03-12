@@ -7,29 +7,29 @@ type TagsEditorProps = {
   allTags: Tag[];
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
+  className?: string;
 };
 
-export default function TagsEditor({ allTags, comicData, onUpdate }: TagsEditorProps) {
+export default function TagsEditor({
+  allTags,
+  comicData,
+  onUpdate,
+  className = '',
+}: TagsEditorProps) {
   const tagOptions = allTags.map(tag => ({ value: tag, text: tag.name }));
-  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-
-  function onTagsUpdate(newVal: Tag[]) {
-    setSelectedTags(newVal);
-    const newTagIds = newVal.map(tag => tag.id);
-    onUpdate({ ...comicData, tagIds: newTagIds });
-  }
 
   return (
-    <>
-      <h4 className="mt-8">Tags</h4>
+    <div className={className}>
+      <h4>Tags</h4>
 
       <MultiSelect
         name="tags"
         title="Tags"
         options={tagOptions}
-        value={selectedTags}
-        onChange={onTagsUpdate}
+        value={comicData.tags}
+        onChange={newTags => onUpdate({ ...comicData, tags: newTags })}
+        equalSingleItemValueFunc={(a, b) => a.id === b?.id}
       />
-    </>
+    </div>
   );
 }

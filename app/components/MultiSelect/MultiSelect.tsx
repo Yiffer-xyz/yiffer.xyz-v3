@@ -3,6 +3,7 @@ import { RiCloseLine } from 'react-icons/ri';
 
 export type BaseMultiSelectProps<T> = {
   options: { text: string; value: T }[];
+  equalSingleItemValueFunc?: (a: T, b: T | undefined) => boolean;
   title?: string;
   maxWidth?: number;
   initialWidth?: number;
@@ -21,6 +22,7 @@ export default function MultiSelect<T>({
   title = '',
   value,
   onChange,
+  equalSingleItemValueFunc,
   maxWidth = 999999,
   initialWidth = 0, // TODO needed?
   name,
@@ -58,7 +60,13 @@ export default function MultiSelect<T>({
       }
 
       if (value) {
-        isValidOption = isValidOption && !value.find(val => val === option.value);
+        if (equalSingleItemValueFunc) {
+          isValidOption =
+            isValidOption &&
+            !value.find(val => equalSingleItemValueFunc(option.value, val));
+        } else {
+          isValidOption = isValidOption && !value.find(val => val === option.value);
+        }
       }
 
       return isValidOption;
@@ -133,6 +141,9 @@ export default function MultiSelect<T>({
   }
 
   function getTextFromValue(value: T) {
+    if (equalSingleItemValueFunc) {
+      return options.find(option => equalSingleItemValueFunc(option.value, value))?.text;
+    }
     return options.find(option => option.value === value)?.text;
   }
 
