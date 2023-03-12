@@ -6,7 +6,6 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import ComicDataEditor from '~/components/ComicManager/ComicData';
 import TagsEditor from '~/components/ComicManager/Tags';
 import InfoBox from '~/components/InfoBox';
-import Link from '~/components/Link';
 import TextInput from '~/components/TextInput/TextInput';
 import { NewArtist, NewComicData } from '~/routes/contribute/upload';
 import { Artist, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
@@ -72,6 +71,12 @@ export default function LiveComic({
   }, [saveChangesFetcher]);
 
   useEffect(() => {
+    if (unlistFetcher.data?.success && unlistFetcher.state === 'loading') {
+      cancelUnlisting();
+    }
+  }, [unlistFetcher]);
+
+  useEffect(() => {
     setComicDataChanges(
       getComicDataChanges(updatedComicData, comic, allArtists, allComics)
     );
@@ -81,7 +86,7 @@ export default function LiveComic({
     if (
       !updatedComicData?.comicName ||
       needsUpdate ||
-      comic.name !== updatedComicData.comicName
+      comic.id !== updatedComicData.comicId
     ) {
       setInitialComicData();
       setNeedsUpdate(false);
@@ -136,65 +141,20 @@ export default function LiveComic({
     );
   }
 
+  function cancelUnlisting() {
+    setIsUnlisting(false);
+    setUnlistComment('');
+  }
+
   const isNameChangedAndInvalid =
     comicDataChanges.some(change => change.field === 'Name') &&
     !updatedComicData?.validation.isLegalComicName;
 
+  const canSave =
+    !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.comicName;
+
   return (
     <>
-      <p className="text-lg text-theme1-darker">
-        This comic is live!
-        <Link
-          href={`/${comic.id}`}
-          className="ml-2"
-          text="Go to live comic"
-          IconRight={MdArrowForward}
-        />
-      </p>
-
-      {unlistFetcher.data?.error && (
-        <InfoBox
-          variant="error"
-          className="mt-2 w-fit"
-          text={unlistFetcher.data.error}
-          showIcon
-        />
-      )}
-
-      {user.userType === 'admin' && !isUnlisting && (
-        <Button
-          text="Unlist comic"
-          className="mt-2"
-          onClick={() => setIsUnlisting(true)}
-          color="error"
-        />
-      )}
-      {isUnlisting && (
-        <div className="mt-2">
-          <h3>Unlist comic</h3>
-          <TextInput
-            label="Reason for unlisting"
-            value={unlistComment}
-            onChange={setUnlistComment}
-            className="mb-2 max-w-lg"
-            name="unlistComment"
-          />
-          <div className="flex flex-row gap-2 mt-2">
-            <Button
-              text="Cancel"
-              onClick={() => setIsUnlisting(false)}
-              variant="outlined"
-            />
-            <LoadingButton
-              text="Confirm unlisting"
-              isLoading={unlistFetcher.state === 'submitting'}
-              onClick={unlistComic}
-              color="error"
-            />
-          </div>
-        </div>
-      )}
-
       <div className="mt-4">
         <h4 className="mb-1">Comic data</h4>
         {updatedComicData && (
@@ -292,20 +252,65 @@ export default function LiveComic({
                 isLoading={saveChangesFetcher.state === 'submitting'}
                 onClick={saveComicDataChanges}
                 startIcon={MdCheck}
-                disabled={isNameChangedAndInvalid}
+                disabled={!canSave}
               />
             </div>
           </>
         )}
       </div>
 
-      <pre className="mt-32">{JSON.stringify(comic, null, 2)}</pre>
+      {user.userType === 'admin' && comic.publishStatus !== 'unlisted' && (
+        <div className="mt-8">
+          <h3>Admin tools</h3>
+
+          {unlistFetcher.data?.error && (
+            <InfoBox
+              variant="error"
+              className="mt-2 w-fit"
+              text={unlistFetcher.data.error}
+              showIcon
+            />
+          )}
+
+          {!isUnlisting && (
+            <Button
+              text="Unlist comic"
+              className="mt-2"
+              onClick={() => setIsUnlisting(true)}
+              color="error"
+            />
+          )}
+
+          {isUnlisting && (
+            <div className="mt-2">
+              <h4>Unlist comic</h4>
+              <TextInput
+                label="Reason for unlisting"
+                value={unlistComment}
+                onChange={setUnlistComment}
+                className="mb-2 max-w-lg"
+                name="unlistComment"
+              />
+              <div className="flex flex-row gap-2 mt-2">
+                <Button text="Cancel" onClick={cancelUnlisting} variant="outlined" />
+                <LoadingButton
+                  text="Confirm unlisting"
+                  isLoading={unlistFetcher.state === 'submitting'}
+                  onClick={unlistComic}
+                  color="error"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
 
 function setupInitialUpdatedComic(comic: Comic): NewComicData {
   const newComicData: NewComicData = {
+    comicId: comic.id,
     comicName: comic.name,
     artistId: comic.artist.id,
     category: comic.category,

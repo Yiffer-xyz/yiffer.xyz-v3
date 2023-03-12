@@ -374,6 +374,7 @@ export type UploadBody = {
 
 // For handling upload data internally in the front-end
 export type NewComicData = {
+  comicId?: number;
   comicName: string;
   artistId?: number;
   uploadArtistId?: number;

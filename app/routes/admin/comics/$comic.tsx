@@ -5,7 +5,8 @@ import {
   useParams,
   useRevalidator,
 } from '@remix-run/react';
-import { MdCheckCircle } from 'react-icons/md';
+import { MdArrowForward, MdCheckCircle } from 'react-icons/md';
+import Link from '~/components/Link';
 import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -83,15 +84,27 @@ export default function ManageComicInner() {
       )}
 
       {comic.publishStatus === 'published' && (
-        <LiveComic
-          comic={comic}
-          user={user}
-          updateComic={updateComic}
-          allComics={globalContext.comics}
-          allArtists={globalContext.artists}
-          allTags={globalContext.tags}
-        />
+        <>
+          <p className="text-lg text-theme1-darker">
+            This comic is live!
+            <Link
+              href={`/${comic.name}`}
+              className="ml-2"
+              text="Go to live comic"
+              IconRight={MdArrowForward}
+            />
+          </p>
+        </>
       )}
+
+      <LiveComic
+        comic={comic}
+        user={user}
+        updateComic={updateComic}
+        allComics={globalContext.comics}
+        allArtists={globalContext.artists}
+        allTags={globalContext.tags}
+      />
     </>
   );
 }
