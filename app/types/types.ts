@@ -40,6 +40,7 @@ export type Comic = {
   artist: {
     id: number;
     name: string;
+    isPending: boolean;
   };
   tags: Tag[];
   unpublishedData?: UnpublishedComicData;

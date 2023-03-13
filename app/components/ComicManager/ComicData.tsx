@@ -6,6 +6,8 @@ import { ArtistTiny, Comic, ComicTiny } from '~/types/types';
 import { NewComicData } from '../../routes/contribute/upload';
 import ComicNameEditor from './ComicNameEditor';
 import Step2NewArtist from '../ArtistEditor';
+import Link from '../Link';
+import { MdArrowForward, MdOpenInNew } from 'react-icons/md';
 
 const categoryOptions = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].map(c => ({
   value: c,
@@ -36,7 +38,7 @@ export default function ComicDataEditor({
   comicData,
   onUpdate,
   existingComic,
-  isAdminPanel,
+  isAdminPanel = false,
 }: ComicDataEditorProps) {
   const [artistNotInList, setArtistNotInList] = useState(false);
 
@@ -48,6 +50,19 @@ export default function ComicDataEditor({
   const allComicOptions = useMemo(() => {
     return comics.map(c => ({ value: c, text: c.name }));
   }, [comics]);
+
+  function getComicLink(comic: ComicTiny) {
+    if (comic.publishStatus === 'published') {
+      return `/${comic.name}`;
+    }
+    if (comic.publishStatus === 'pending' || comic.publishStatus === 'uploaded') {
+      if (isAdminPanel) {
+        return `/admin/comics/${comic.id}`;
+      }
+    }
+
+    return undefined;
+  }
 
   return (
     <>
@@ -64,15 +79,25 @@ export default function ComicDataEditor({
       />
 
       <div className="flex flex-row flex-wrap mt-6 items-end gap-4">
-        <SearchableSelect
-          value={comicData.artistId}
-          onChange={newVal => onUpdate({ ...comicData, artistId: newVal })}
-          onValueCleared={() => onUpdate({ ...comicData, artistId: undefined })}
-          options={artistOptions}
-          disabled={artistNotInList}
-          title="Artist"
-          name="artistId"
-        />
+        <div className="flex flex-row flex-wrap gap-x-4 gap-y-1 items-end">
+          <SearchableSelect
+            value={comicData.artistId}
+            onChange={newVal => onUpdate({ ...comicData, artistId: newVal })}
+            onValueCleared={() => onUpdate({ ...comicData, artistId: undefined })}
+            options={artistOptions}
+            disabled={artistNotInList}
+            title="Artist"
+            name="artistId"
+          />
+          {comicData.artistId && (
+            <div>
+              <ViewArtistLink
+                artist={artists.find(a => a.id === comicData.artistId)}
+                isAdminPanel={isAdminPanel}
+              />
+            </div>
+          )}
+        </div>
         {!isAdminPanel && (
           <CheckboxUncontrolled
             label="Artist is not in the list"
@@ -145,29 +170,161 @@ export default function ComicDataEditor({
       )}
 
       <div className="flex flex-row flex-wrap gap-4 mt-2">
-        <SearchableSelect
-          value={comicData.previousComic}
-          onChange={newVal => onUpdate({ ...comicData, previousComic: newVal })}
-          onValueCleared={() => onUpdate({ ...comicData, previousComic: undefined })}
-          options={allComicOptions}
-          title="Previous comic"
-          name="previousComicId"
-          placeholder="Leave blank if none"
-          mobileCompact
-          equalValueFunc={(a, b) => a.id === b?.id}
-        />
-        <SearchableSelect
-          value={comicData.nextComic}
-          onChange={newVal => onUpdate({ ...comicData, nextComic: newVal })}
-          onValueCleared={() => onUpdate({ ...comicData, nextComic: undefined })}
-          options={allComicOptions}
-          title="Next comic"
-          name="nextComicId"
-          placeholder="Leave blank if none"
-          mobileCompact
-          equalValueFunc={(a, b) => a.id === b?.id}
-        />
+        <div>
+          <SearchableSelect
+            value={comicData.previousComic}
+            onChange={newVal => onUpdate({ ...comicData, previousComic: newVal })}
+            onValueCleared={() => onUpdate({ ...comicData, previousComic: undefined })}
+            options={allComicOptions}
+            title="Previous comic"
+            name="previousComicId"
+            placeholder="Leave blank if none"
+            mobileCompact
+            equalValueFunc={(a, b) => a.id === b?.id}
+          />
+          {comicData.previousComic && getComicLink(comicData.previousComic) && (
+            <div className="mt-1">
+              <ViewComicLink
+                comic={comicData.previousComic}
+                isAdminPanel={isAdminPanel}
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <SearchableSelect
+            value={comicData.nextComic}
+            onChange={newVal => onUpdate({ ...comicData, nextComic: newVal })}
+            onValueCleared={() => onUpdate({ ...comicData, nextComic: undefined })}
+            options={allComicOptions}
+            title="Next comic"
+            name="nextComicId"
+            placeholder="Leave blank if none"
+            mobileCompact
+            equalValueFunc={(a, b) => a.id === b?.id}
+          />
+          {comicData.nextComic && getComicLink(comicData.nextComic) && (
+            <div className="mt-1">
+              <ViewComicLink comic={comicData.nextComic} isAdminPanel={isAdminPanel} />
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
+}
+
+export function findArtistNameById(artists: ArtistTiny[], id: number) {
+  const artist = artists.find(a => a.id === id);
+  return artist ? artist.name : '';
+}
+
+function ViewArtistLink({
+  artist,
+  isAdminPanel,
+}: {
+  artist: ArtistTiny | undefined;
+  isAdminPanel: boolean;
+}) {
+  if (!artist) return null;
+
+  if (isAdminPanel) {
+    if (isAdminPanel && !artist.isPending && !artist.isBanned) {
+      return (
+        <>
+          <Link
+            href={`/admin/artists/${artist.id}`}
+            text="View admin"
+            IconRight={MdArrowForward}
+            className="ml-2"
+          />
+          <Link
+            href={`/artists/${artist.name}`}
+            text="View live"
+            IconRight={MdOpenInNew}
+            className="ml-4"
+            newTab
+          />
+        </>
+      );
+    }
+  }
+
+  if (isAdminPanel) {
+    return (
+      <Link
+        href={`/admin/artists/${artist.id}`}
+        text="View admin"
+        IconRight={MdArrowForward}
+        className="ml-2"
+      />
+    );
+  }
+
+  if (!artist.isPending && !artist.isBanned) {
+    return (
+      <Link
+        href={`/artist/${artist.name}`}
+        text="View artist"
+        IconRight={MdOpenInNew}
+        newTab
+      />
+    );
+  }
+
+  return null;
+}
+
+function ViewComicLink({
+  comic,
+  isAdminPanel,
+}: {
+  comic: ComicTiny;
+  isAdminPanel: boolean;
+}) {
+  if (isAdminPanel && comic.publishStatus === 'published') {
+    return (
+      <>
+        <Link
+          href={`/admin/comics/${comic.id}`}
+          text="View admin"
+          IconRight={MdArrowForward}
+          className="ml-2"
+        />
+        <Link
+          href={`/${comic.name}`}
+          text="View live"
+          IconRight={MdOpenInNew}
+          className="ml-4"
+          newTab
+        />
+      </>
+    );
+  }
+
+  if (isAdminPanel) {
+    return (
+      <Link
+        href={`/admin/comics/${comic.id}`}
+        text="View admin"
+        IconRight={MdArrowForward}
+        className="ml-2"
+      />
+    );
+  }
+
+  if (comic.publishStatus === 'published') {
+    return (
+      <Link
+        href={`/${comic.name}`}
+        text="View comic"
+        IconRight={MdOpenInNew}
+        newTab
+        className="ml-2"
+      />
+    );
+  }
+
+  return null;
 }

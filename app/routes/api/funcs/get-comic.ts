@@ -11,6 +11,7 @@ type DbComic = {
   numberOfPages: number;
   artistId: number;
   artistName: string;
+  artistIsPending: boolean;
   timestamp: string;
   errorText?: string;
   publishDate?: string;
@@ -88,6 +89,7 @@ export async function mergeDbFieldsToComic(
     artist: {
       id: dbComic.artistId,
       name: dbComic.artistName,
+      isPending: dbComic.artistIsPending,
     },
     tags: dbTagsRows.map(tag => ({
       id: tag.tagId,
@@ -145,6 +147,7 @@ async function getDbComicByField(
       numberOfPages,
       artist.id AS artistId,
       artist.name AS artistName,
+      artist.isPending AS artistIsPending,
       unpublishedcomic.timestamp,
       unpublishedcomic.errorText,
       unpublishedcomic.publishDate,

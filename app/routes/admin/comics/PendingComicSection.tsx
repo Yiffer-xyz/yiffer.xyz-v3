@@ -109,10 +109,20 @@ export default function PendingComicSection({
 
   return (
     <div>
-      <p className="mb-4 -mt-2">
-        Normally, add the comic to the publishing queue. Only in specific cases (for
-        example per an artist's request) should a comic be scheduled for a specific date.
-      </p>
+      <div className="mb-4 -mt-2">
+        <p>
+          Normally, add the comic to the publishing queue. Only in specific cases (for
+          example per an artist's request) should a comic be scheduled for a specific
+          date.
+        </p>
+
+        {comicData.artist.isPending && (
+          <p className="mt-2">
+            This comic's <b>artist is pending</b>. Once this or any other pending comic by
+            the artist is published, the artist will automatically do the same.
+          </p>
+        )}
+      </div>
 
       {publishNowFetcher.data?.error && (
         <InfoBox

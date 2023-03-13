@@ -1,11 +1,6 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import {
-  useLoaderData,
-  useOutletContext,
-  useParams,
-  useRevalidator,
-} from '@remix-run/react';
-import { MdArrowForward, MdCheckCircle } from 'react-icons/md';
+import { useLoaderData, useOutletContext, useRevalidator } from '@remix-run/react';
+import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/components/Link';
 import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
@@ -90,8 +85,9 @@ export default function ManageComicInner() {
             <Link
               href={`/${comic.name}`}
               className="ml-2"
-              text="Go to live comic"
-              IconRight={MdArrowForward}
+              text="View live comic"
+              IconRight={MdOpenInNew}
+              newTab
             />
           </p>
         </>

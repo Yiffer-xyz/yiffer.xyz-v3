@@ -28,7 +28,10 @@ const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  const allArtistsPromise = getAllArtists(urlBase, { includePending: true });
+  const allArtistsPromise = getAllArtists(urlBase, {
+    includePending: true,
+    modifyNameIncludeType: true,
+  });
   const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
   const tagsPromise = getAllTags(urlBase);
   const userPromise = authLoader(args);
@@ -125,7 +128,7 @@ export default function Upload() {
       const isPatreonIllegal =
         !comicData.newArtist.patreonName &&
         !comicData.newArtist.hasConfirmedNoPatreonName;
-        
+
       if (isNameIllegal) {
         setError('There is an error regarding the artist name');
         return;
