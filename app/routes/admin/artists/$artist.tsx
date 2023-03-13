@@ -1,12 +1,14 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
-import { MdArrowForward, MdCheck, MdReplay } from 'react-icons/md';
+import { MdArrowForward, MdCheck, MdOpenInNew, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/components/ArtistEditor';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
+import Link from '~/components/Link';
 import { getArtistById } from '~/routes/api/funcs/get-artist';
+import { getComicsByArtistId } from '~/routes/api/funcs/get-comics';
 import { NewArtist } from '~/routes/contribute/upload';
 import { Artist } from '~/types/types';
 import { FieldChange } from '~/utils/general';
@@ -28,13 +30,17 @@ export async function loader(args: LoaderArgs) {
 
   const artistId = parseInt(artistParam);
 
-  const artist = await getArtistById(urlBase, artistId);
-  return { artist, user };
+  const artistPromise = getArtistById(urlBase, artistId);
+  const comicsPromise = getComicsByArtistId(urlBase, artistId);
+
+  const [artist, comics] = await Promise.all([artistPromise, comicsPromise]);
+
+  return { artist, comics, user };
 }
 
 export default function ManageComicInner() {
   const { isMobile } = useWindowSize();
-  const { artist, user } = useLoaderData<typeof loader>();
+  const { artist, comics, user } = useLoaderData<typeof loader>();
   const saveChangesFetcher = useFetcher();
   const banArtistFetcher = useFetcher();
 
@@ -154,6 +160,51 @@ export default function ManageComicInner() {
             being pending. If the comic is rejected, this artist is deleted (fully - not
             banned, actually deleted).
           </p>
+        </div>
+      )}
+
+      {!artist.isBanned && (
+        <div className="mb-6">
+          {!artist.isPending && (
+            <p className="text-lg text-theme1-darker">
+              This artist is live!
+              <Link
+                href={`/artist/${artist.name}`}
+                className="ml-2"
+                text="View live artist page"
+                IconRight={MdOpenInNew}
+                newTab
+              />
+            </p>
+          )}
+
+          <h4 className="mt-2">Comics</h4>
+          <div className="flex flex-wrap gap-x-3 gap-y-2">
+            {comics.length ? (
+              comics.map(comic => (
+                <div className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3">
+                  <p>{comic.name}</p>
+                  <div className="flex flex-row gap-3">
+                    {comic.publishStatus === 'published' && (
+                      <Link
+                        href={`/${comic.name}`}
+                        text="Live"
+                        newTab
+                        IconRight={MdOpenInNew}
+                      />
+                    )}
+                    <Link
+                      href={`/admin/comics/${comic.id}`}
+                      text="Admin"
+                      IconRight={MdArrowForward}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>This artist has no comics that are uploaded, pending, or live.</p>
+            )}
+          </div>
         </div>
       )}
 

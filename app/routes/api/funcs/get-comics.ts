@@ -22,7 +22,29 @@ export async function getAllComicNamesAndIDs(
 
   if (!options?.modifyNameIncludeType) return response;
 
-  const mappedComics = response.map(comic => {
+  const mappedComics = addStateToComicNames(response);
+  return mappedComics;
+}
+
+export async function getComicsByArtistId(
+  urlBase: string,
+  artistId: number
+): Promise<ComicTiny[]> {
+  const query = `SELECT
+      name, id, publishStatus
+    FROM comic
+    WHERE artist = ?
+      AND publishStatus != "rejected"
+      AND publishStatus != "rejected-list"
+      AND publishStatus != "unlisted"`;
+
+  const response = await queryDbDirect<ComicTiny[]>(urlBase, query, [artistId]);
+  const mappedComics = addStateToComicNames(response);
+  return mappedComics;
+}
+
+function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {
+  const mappedComics = comics.map(comic => {
     if (comic.publishStatus === 'uploaded') {
       comic.name = comic.name + ' (UPLOADED)';
     }
