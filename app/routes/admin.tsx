@@ -66,6 +66,7 @@ export default function Admin({}) {
 function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean }) {
   const matches = useMatches();
   const [isOpen, setIsOpen] = useState(alwaysShow);
+  const [lastRoute, setLastRoute] = useState('');
 
   function isRoute(matchString: string) {
     return matches.some(match => {
@@ -73,10 +74,14 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
     });
   }
 
+  useEffect(() => {
+    setLastRoute(matches[matches.length - 1].pathname);
+  }, [matches]);
+
   // Close on navigation - aka a link selected
   useEffect(() => {
     setIsOpen(alwaysShow);
-  }, [matches]);
+  }, [lastRoute]);
 
   // Prevent initially rendering wrong until the window size has been determined
   if (delay) {
@@ -115,43 +120,24 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             isSelected={isRoute('dashboard')}
           />
           <SidebarLink
+            href="/admin/pending-comics"
+            text="Pending comics"
+            isSelected={isRoute('pending-comics')}
+          />
+          <SidebarLink
             href="/admin/comics"
             text="Comic manager"
             isSelected={isRoute('comics')}
           />
-
-          <p className="py-2 px-4 cursor-default">Artists</p>
           <SidebarLink
-            isIndented
             href="/admin/artists"
-            text="Manage artist"
+            text="Artist manager"
             isSelected={isRoute('artists')}
           />
           <SidebarLink
-            isIndented
-            href="/admin/new-artist"
-            text="New artist"
-            isSelected={isRoute('new-artist')}
-          />
-
-          <p className="py-2 px-4 cursor-default">Tags</p>
-          <SidebarLink
-            isIndented
-            href="/admin/tags/manage"
-            text="Manage tag"
-            isSelected={isRoute('tags/manage')}
-          />
-          <SidebarLink
-            isIndented
-            href="/admin/tags/new"
-            text="New tag"
-            isSelected={isRoute('tags/new')}
-          />
-
-          <SidebarLink
-            href="/admin/pending-comics"
-            text="Pending comics"
-            isSelected={isRoute('pending-comics')}
+            href="/admin/tags"
+            text="Tag manager"
+            isSelected={isRoute('tags')}
           />
         </div>
       </div>
