@@ -18,7 +18,7 @@ export async function action(args: ActionArgs) {
   if (!formComicId) return create400Json('Missing comicId');
 
   try {
-    await unlistComic(urlBase, parseInt(formComicId.toString()));
+    await relistComic(urlBase, parseInt(formComicId.toString()));
   } catch (e) {
     return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
   }
@@ -26,7 +26,7 @@ export async function action(args: ActionArgs) {
   return createSuccessJson();
 }
 
-export async function unlistComic(urlBase: string, comicId: number) {
+export async function relistComic(urlBase: string, comicId: number) {
   const comicQuery = `UPDATE comic SET publishStatus = 'published' WHERE id = ?`;
   const unpublishedQuery =
     'UPDATE unpublishedcomic SET unlistComment = NULL WHERE comicId = ?';

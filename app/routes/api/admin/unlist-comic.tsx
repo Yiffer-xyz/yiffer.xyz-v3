@@ -38,8 +38,8 @@ export async function unlistComic(
   comicId: number,
   unlistComment: string
 ) {
-  const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
   const getDetailsQuery = 'SELECT comicId FROM unpublishedcomic WHERE comicId = ?';
+  const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
   const [detailsResult, _] = await Promise.all([
     queryDbDirect<{ comicId: number }[]>(urlBase, getDetailsQuery, [comicId]),

@@ -28,7 +28,10 @@ export async function getAllComicNamesAndIDs(
 
 export async function getComicsByArtistId(
   urlBase: string,
-  artistId: number
+  artistId: number,
+  options?: {
+    includeUnlisted: boolean;
+  }
 ): Promise<ComicTiny[]> {
   const query = `SELECT
       name, id, publishStatus
@@ -36,7 +39,7 @@ export async function getComicsByArtistId(
     WHERE artist = ?
       AND publishStatus != "rejected"
       AND publishStatus != "rejected-list"
-      AND publishStatus != "unlisted"`;
+      ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
 
   const response = await queryDbDirect<ComicTiny[]>(urlBase, query, [artistId]);
   const mappedComics = addStateToComicNames(response);

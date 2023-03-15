@@ -1,7 +1,7 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
 import { useFetcher, useLoaderData } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
-import { MdArrowForward, MdCheck, MdOpenInNew, MdReplay } from 'react-icons/md';
+import { MdArrowForward, MdCheck, MdClose, MdOpenInNew, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/components/ArtistEditor';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -31,7 +31,7 @@ export async function loader(args: LoaderArgs) {
   const artistId = parseInt(artistParam);
 
   const artistPromise = getArtistById(urlBase, artistId);
-  const comicsPromise = getComicsByArtistId(urlBase, artistId);
+  const comicsPromise = getComicsByArtistId(urlBase, artistId, { includeUnlisted: true });
 
   const [artist, comics] = await Promise.all([artistPromise, comicsPromise]);
 
@@ -46,6 +46,7 @@ export default function ManageComicInner() {
 
   const [updatedArtistData, setUpdatedArtistData] = useState<NewArtist>();
   const [needsUpdate, setNeedsUpdate] = useState(false);
+  const [isBanning, setIsBanning] = useState(false);
 
   useEffect(() => {
     if (
@@ -61,6 +62,7 @@ export default function ManageComicInner() {
   useEffect(() => {
     if (saveChangesFetcher.data?.success && saveChangesFetcher.state === 'loading') {
       setNeedsUpdate(true);
+      setIsBanning(false);
     }
   }, [saveChangesFetcher]);
 
@@ -138,13 +140,19 @@ export default function ManageComicInner() {
           </p>
 
           {user.userType === 'admin' ? (
-            <LoadingButton
-              onClick={toggleArtistBan}
-              className="mt-2"
-              isLoading={banArtistFetcher.state === 'submitting'}
-              color="error"
-              text="Unban artist"
-            />
+            <>
+              <p className="mt-4 mb-2">
+                If unbanning an artist with unlisted comics, you will still have to
+                re-list the comics individually if they should be shown on the site.
+              </p>
+              <LoadingButton
+                onClick={toggleArtistBan}
+                className="mt-2"
+                isLoading={banArtistFetcher.state === 'submitting'}
+                color="error"
+                text="Unban artist"
+              />
+            </>
           ) : (
             <p>Only admins can unban artists.</p>
           )}
@@ -177,36 +185,36 @@ export default function ManageComicInner() {
               />
             </p>
           )}
-
-          <h4 className="mt-2">Comics</h4>
-          <div className="flex flex-wrap gap-x-3 gap-y-2">
-            {comics.length ? (
-              comics.map(comic => (
-                <div className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3">
-                  <p>{comic.name}</p>
-                  <div className="flex flex-row gap-3">
-                    {comic.publishStatus === 'published' && (
-                      <Link
-                        href={`/${comic.name}`}
-                        text="Live"
-                        newTab
-                        IconRight={MdOpenInNew}
-                      />
-                    )}
-                    <Link
-                      href={`/admin/comics/${comic.id}`}
-                      text="Admin"
-                      IconRight={MdArrowForward}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>This artist has no comics that are uploaded, pending, or live.</p>
-            )}
-          </div>
         </div>
       )}
+
+      <h4 className="mt-2">Comics</h4>
+      <div className="flex flex-wrap gap-x-3 gap-y-2 mb-6">
+        {comics.length ? (
+          comics.map(comic => (
+            <div className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3">
+              <p>{comic.name}</p>
+              <div className="flex flex-row gap-3">
+                {comic.publishStatus === 'published' && (
+                  <Link
+                    href={`/${comic.name}`}
+                    text="Live"
+                    newTab
+                    IconRight={MdOpenInNew}
+                  />
+                )}
+                <Link
+                  href={`/admin/comics/${comic.id}`}
+                  text="Admin"
+                  IconRight={MdArrowForward}
+                />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>This artist has no comics that are uploaded, pending, or live.</p>
+        )}
+      </div>
 
       {updatedArtistData && (
         <ArtistEditor
@@ -302,13 +310,39 @@ export default function ManageComicInner() {
       {user.userType === 'admin' && !artist.isBanned && (
         <div className="mt-10">
           <h3>Admin tools</h3>
-          <LoadingButton
-            isLoading={banArtistFetcher.state === 'submitting'}
-            text="Ban artist"
-            onClick={toggleArtistBan}
-            color="error"
-            className="mt-2"
-          />
+          {!isBanning && (
+            <Button
+              text="Ban artist"
+              onClick={() => setIsBanning(true)}
+              color="error"
+              className="mt-2"
+            />
+          )}
+          {isBanning && (
+            <>
+              <h4>Ban artist</h4>
+              <p className="mt-2">
+                Banning an artist will unlist any comics they have, and prevent users from
+                suggesting or uploading comics by them. It will also reject any pending
+                and user uploaded comic by them.
+              </p>
+              <div className="flex flex-row gap-2 flex-wrap mt-2">
+                <Button
+                  variant="outlined"
+                  text="Cancel"
+                  onClick={() => setIsBanning(false)}
+                  startIcon={MdClose}
+                />
+                <LoadingButton
+                  isLoading={banArtistFetcher.state === 'submitting'}
+                  text="Ban artist"
+                  onClick={toggleArtistBan}
+                  color="error"
+                  startIcon={MdCheck}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
