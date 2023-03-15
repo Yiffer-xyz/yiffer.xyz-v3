@@ -14,6 +14,7 @@ type DbContributedComic = {
   numberOfPages: number;
   numberOfKeywords: number;
   originalNameIfRejected?: string;
+  originalArtistIfRejected?: string;
 };
 
 function publishStatusToContributionStatus(
@@ -43,7 +44,8 @@ export async function getYourContributedComics(
       artist.name AS artistName,
       numberOfPages,
       COUNT(*) AS numberOfKeywords,
-      unpublishedcomic.originalNameIfRejected
+      unpublishedcomic.originalNameIfRejected,
+      unpublishedcomic.originalArtistIfRejected
     FROM comic 
     INNER JOIN artist ON (artist.Id = comic.Artist)
     INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
@@ -59,19 +61,25 @@ export async function getYourContributedComics(
       : { points: 0, description: undefined };
 
     let comicName = dbComic.name;
-    if (dbComic.publishStatus === 'rejected' && dbComic.originalNameIfRejected) {
-      comicName = dbComic.originalNameIfRejected || dbComic.name;
+    let artistName = dbComic.artistName;
+    if (dbComic.publishStatus === 'rejected') {
+      if (dbComic.originalNameIfRejected) {
+        comicName = dbComic.originalNameIfRejected || dbComic.name;
+      }
+      if (dbComic.originalArtistIfRejected) {
+        artistName = dbComic.originalArtistIfRejected;
+      }
     }
 
     return {
       comicName: comicName,
+      artistName: artistName,
       status: publishStatusToContributionStatus(dbComic.publishStatus),
       timestamp: dbComic.timestamp,
       points,
       pointsDescription: description,
       modComment: dbComic.modComment,
       type: 'ContributedComic',
-      artistName: dbComic.artistName,
       numberOfPages: dbComic.numberOfPages,
       numberOfKeywords: dbComic.numberOfKeywords,
     };

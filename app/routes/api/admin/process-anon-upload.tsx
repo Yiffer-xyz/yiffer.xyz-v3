@@ -9,6 +9,8 @@ import {
   createGeneric500Json,
   createSuccessJson,
 } from '~/utils/request-helpers';
+import { getArtistByComicId } from '../funcs/get-artist';
+import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -60,7 +62,16 @@ export async function processAnonUpload(
     queryParams = [newComicName, comicId];
   }
 
-  await queryDbDirect(urlBase, query, queryParams);
+  const [artist, _] = await Promise.all([
+    getArtistByComicId(urlBase, comicId),
+    queryDbDirect(urlBase, query, queryParams),
+  ]);
 
-  return;
+  if (artist.isPending) {
+    if (verdict === 'approved') {
+      await setArtistNotPending(urlBase, artist.id);
+    } else {
+      await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+    }
+  }
 }

@@ -1,5 +1,4 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { processUpload } from '~/routes/contribute/upload/upload-handler.server';
 import { queryDbDirect } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {

@@ -16,16 +16,14 @@ export async function getAllArtists(
       e621Name,
       isPending,
       isBanned
-    FROM artist`;
+    FROM artist
+    WHERE isRejected = 0`;
 
-  if (!options.includePending && !options.includeBanned) {
-    query += ' WHERE IsPending = 0 AND IsBanned = 0';
+  if (!options.includePending) {
+    query += ' AND IsPending = 0';
   }
-  if (options.includePending && !options.includeBanned) {
-    query += ' WHERE IsBanned = 0';
-  }
-  if (options.includeBanned && !options.includePending) {
-    query += ' WHERE IsPending = 0';
+  if (!options.includeBanned) {
+    query += ' AND IsBanned = 0';
   }
 
   const artists = await queryDbDirect<ArtistTiny[]>(urlBase, query);

@@ -11,6 +11,7 @@ export type Artist = {
   e621Name: string;
   isPending: boolean;
   isBanned: boolean;
+  isRejected: boolean;
   links: string[];
 };
 
@@ -81,6 +82,7 @@ export type UnpublishedComicData = {
   uploadUserIP?: string;
   uploadUsername?: string;
   originalNameIfRejected?: string;
+  originalArtistIfRejected?: string;
   unlistComment?: string;
 };
 

@@ -1,4 +1,4 @@
-import { ActionArgs, json } from '@remix-run/cloudflare';
+import { ActionArgs } from '@remix-run/cloudflare';
 import { ComicUploadVerdict } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
@@ -9,6 +9,8 @@ import {
   createGeneric500Json,
   createSuccessJson,
 } from '~/utils/request-helpers';
+import { getArtistByComicId } from '../funcs/get-artist';
+import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -59,24 +61,59 @@ export async function processUserUpload(
 
   let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
   let comicQueryParams = [publishStatus, comicId];
-  let detailsQuery =
-    'UPDATE unpublishedcomic SET verdict = ?, modComment = ? WHERE comicId = ?';
-  let detailsQueryParams = [verdict, modComment, comicId];
 
   if (frontendVerdict === 'rejected') {
     const randomStr = randomString(6);
     const newComicName = `${comicName}-REJECTED-${randomStr}`;
     comicQuery = `UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?`;
     comicQueryParams = [publishStatus, newComicName, comicId];
-    detailsQuery =
-      'UPDATE unpublishedcomic SET verdict = ?, modComment = ?, originalNameIfRejected = ? WHERE comicId = ?';
-    detailsQueryParams = [verdict, modComment, comicName, comicId];
   }
 
-  await Promise.all([
+  const [artist, _] = await Promise.all([
+    getArtistByComicId(urlBase, comicId),
     queryDbDirect(urlBase, comicQuery, comicQueryParams),
-    queryDbDirect(urlBase, detailsQuery, detailsQueryParams),
   ]);
+
+  if (artist.isPending) {
+    if (verdict === 'rejected' || verdict === 'rejected-list') {
+      await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+    } else {
+      await setArtistNotPending(urlBase, artist.id);
+    }
+  }
+
+  let detailsQuery = `
+    UPDATE unpublishedcomic 
+    SET
+      verdict = ?,
+      modComment = ?
+    WHERE comicId = ?`;
+  let detailsQueryParams = [verdict, modComment, comicId];
+
+  if (frontendVerdict === 'rejected') {
+    detailsQuery = `
+      UPDATE unpublishedcomic
+      SET
+        verdict = ?,
+        modComment = ?,
+        originalNameIfRejected = ?,
+        originalArtistIfRejected = ?
+      WHERE comicId = ?`;
+    detailsQueryParams = [verdict, modComment, comicName, artist.name, comicId];
+  }
+
+  if (frontendVerdict === 'rejected-list') {
+    detailsQuery = `
+      UPDATE unpublishedcomic
+      SET
+        verdict = ?,
+        modComment = ?,
+        originalArtistIfRejected = ?,
+      WHERE comicId = ?`;
+    detailsQueryParams = [verdict, modComment, artist.name, comicId];
+  }
+
+  await queryDbDirect(urlBase, detailsQuery, detailsQueryParams);
 
   return;
 }

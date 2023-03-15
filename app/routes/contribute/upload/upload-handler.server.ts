@@ -151,20 +151,13 @@ async function createArtistLinks(
   newArtist: NewArtist,
   newArtistId: number
 ) {
-  let linksWithTypes = newArtist.links
-    .map(extractLinkTypeFromLinkUrl)
-    .filter(link => link.linkUrl.length > 0);
-
-  let linkInsertQuery = `INSERT INTO artistlink (ArtistId, LinkUrl, LinkType) VALUES `;
-
+  let filteredLinks = newArtist.links.filter(link => link.length > 0);
+  let linkInsertQuery = `INSERT INTO artistlink (ArtistId, LinkUrl) VALUES `;
   const linkInsertValues = [];
-  for (let i = 0; i < linksWithTypes.length; i++) {
-    linkInsertQuery += `(?, ?, ?)`;
-    linkInsertValues.push(
-      newArtistId,
-      linksWithTypes[i].linkUrl,
-      linksWithTypes[i].linkType
-    );
+
+  for (let i = 0; i < filteredLinks.length; i++) {
+    linkInsertQuery += `(?, ?)`;
+    linkInsertValues.push(newArtistId, filteredLinks[i]);
     if (i < newArtist.links.length - 1) {
       linkInsertQuery += ', ';
     }
