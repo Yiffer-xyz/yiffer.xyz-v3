@@ -4,7 +4,9 @@ import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/components/Link';
 import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
+import { Comic } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
+import { create500Json, logError } from '~/utils/request-helpers';
 import AnonUploadSection from './AnonUploadedComicSection';
 import LiveComic from './LiveComic';
 import PendingComicSection from './PendingComicSection';
@@ -18,8 +20,13 @@ export async function loader(args: LoaderArgs) {
 
   const comicId = parseInt(comicParam);
 
-  const comic = await getComicById(urlBase, comicId);
-  return { comic, user };
+  const { comic, err } = await getComicById(urlBase, comicId);
+  if (err) {
+    logError(`Error getting comic in admin>comic`, err);
+    throw create500Json(err.clientMessage);
+  }
+
+  return { comic: comic as Comic, user };
 }
 
 export default function ManageComicInner() {

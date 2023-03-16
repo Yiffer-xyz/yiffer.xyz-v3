@@ -1,5 +1,6 @@
 import { Artist } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError } from '~/utils/request-helpers';
 
 type DbArtist = {
   id: number;
@@ -12,7 +13,10 @@ type DbArtist = {
   linksString: string;
 };
 
-export async function getArtistById(urlBase: string, artistId: number): Promise<Artist> {
+export async function getArtistById(
+  urlBase: string,
+  artistId: number
+): Promise<{ artist?: Artist; notFound?: boolean; err?: ApiError }> {
   const artistQuery = `
     SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
@@ -20,25 +24,37 @@ export async function getArtistById(urlBase: string, artistId: number): Promise<
     FROM artist LEFT JOIN artistlink ON (artistlink.artistId = artist.id)
     WHERE id = ?`;
 
-  const artistResult = await queryDbDirect<DbArtist[]>(urlBase, artistQuery, [artistId]);
-  if (!artistResult || artistResult.length === 0) throw new Error('Artist not found');
-
+  const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [artistId]);
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting artist',
+        logMessage: `Error getting artist by id: ${artistId}`,
+        error: dbRes,
+      },
+    };
+  }
+  if (!dbRes.result || dbRes.result.length === 0) {
+    return { notFound: true };
+  }
   return {
-    id: artistResult[0].id,
-    name: artistResult[0].name,
-    patreonName: artistResult[0].patreonName,
-    e621Name: artistResult[0].e621Name,
-    isPending: artistResult[0].isPending === 1,
-    isBanned: artistResult[0].isBanned === 1,
-    isRejected: artistResult[0].isRejected === 1,
-    links: artistResult[0].linksString ? artistResult[0].linksString.split(',') : [],
+    artist: {
+      id: dbRes.result[0].id,
+      name: dbRes.result[0].name,
+      patreonName: dbRes.result[0].patreonName,
+      e621Name: dbRes.result[0].e621Name,
+      isPending: dbRes.result[0].isPending === 1,
+      isBanned: dbRes.result[0].isBanned === 1,
+      isRejected: dbRes.result[0].isRejected === 1,
+      links: dbRes.result[0].linksString ? dbRes.result[0].linksString.split(',') : [],
+    },
   };
 }
 
 export async function getArtistByComicId(
   urlBase: string,
   comicId: number
-): Promise<Artist> {
+): Promise<{ artist?: Artist; notFound?: boolean; err?: ApiError }> {
   const artistQuery = `SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
       GROUP_CONCAT(DISTINCT linkUrl SEPARATOR ',') AS linksString 
@@ -46,17 +62,30 @@ export async function getArtistByComicId(
     WHERE artist.id = (SELECT artist FROM comic WHERE comic.id = ?)
     GROUP BY id, name, patreonName, e621Name, isPending, isBanned, isRejected`;
 
-  const artistResult = await queryDbDirect<DbArtist[]>(urlBase, artistQuery, [comicId]);
-  if (!artistResult || artistResult.length === 0) throw new Error('Artist not found');
+  const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [comicId]);
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting artist',
+        logMessage: `Error getting artist by comic id. Comic id: ${comicId}`,
+        error: dbRes,
+      },
+    };
+  }
+  if (!dbRes.result || dbRes.result.length === 0) {
+    return { notFound: true };
+  }
 
-  return {
-    id: artistResult[0].id,
-    name: artistResult[0].name,
-    patreonName: artistResult[0].patreonName,
-    e621Name: artistResult[0].e621Name,
-    isPending: artistResult[0].isPending === 1,
-    isBanned: artistResult[0].isBanned === 1,
-    isRejected: artistResult[0].isRejected === 1,
-    links: artistResult[0].linksString ? artistResult[0].linksString.split(',') : [],
+  const artist: Artist = {
+    id: dbRes.result[0].id,
+    name: dbRes.result[0].name,
+    patreonName: dbRes.result[0].patreonName,
+    e621Name: dbRes.result[0].e621Name,
+    isPending: dbRes.result[0].isPending === 1,
+    isBanned: dbRes.result[0].isBanned === 1,
+    isRejected: dbRes.result[0].isRejected === 1,
+    links: dbRes.result[0].linksString ? dbRes.result[0].linksString.split(',') : [],
   };
+
+  return { artist };
 }

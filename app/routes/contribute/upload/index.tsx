@@ -22,7 +22,7 @@ import Step4Thumbnail from './step4-thumbnail';
 import TagsEditor from '../../../components/ComicManager/Tags';
 import SuccessMessage from './success';
 import { processUpload } from './upload-handler.server';
-import { create500Json, createSuccessJson } from '~/utils/request-helpers';
+import { create500Json, createSuccessJson, logError } from '~/utils/request-helpers';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
@@ -68,6 +68,7 @@ export async function action(args: ActionArgs) {
     args.request.headers.get('CF-Connecting-IP') || 'unknown'
   );
   if (err) {
+    logError('Error in upload comic submit', err);
     return create500Json(err.clientMessage);
   }
 

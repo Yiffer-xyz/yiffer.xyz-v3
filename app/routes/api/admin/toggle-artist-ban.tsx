@@ -1,11 +1,13 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
+  ApiError,
   create400Json,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  logError,
+  wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicsByArtistId } from '../funcs/get-comics';
 import { processUserUpload } from './process-user-upload';
@@ -20,20 +22,25 @@ export async function action(args: ActionArgs) {
 
   const formArtistId = formDataBody.get('artistId');
   if (!formArtistId) return create400Json('Missing artistId');
-  const formIsBanned = formDataBody.get('isBanned');
+
+  let formIsBanned = formDataBody.get('isBanned');
   if (!formIsBanned) return create400Json('Missing isBanned');
+  formIsBanned = formIsBanned.toString();
   if (formIsBanned !== 'true' && formIsBanned !== 'false') {
     return create400Json('isBanned must be true or false');
   }
 
-  try {
-    await toggleArtistBan(
-      urlBase,
-      parseInt(formArtistId.toString()),
-      formIsBanned === 'true'
+  const err = await toggleArtistBan(
+    urlBase,
+    parseInt(formArtistId.toString()),
+    formIsBanned === 'true'
+  );
+  if (err) {
+    logError(
+      `Error in /toggle-artist-ban for artist id ${formArtistId.toString()}, is banned: ${formIsBanned}`,
+      err
     );
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+    return create500Json(err.clientMessage);
   }
 
   return createSuccessJson();
@@ -43,33 +50,54 @@ export async function toggleArtistBan(
   urlBase: string,
   artistId: number,
   isBanned: boolean
-) {
+): Promise<ApiError | undefined> {
   const query = `UPDATE artist SET isBanned = ? WHERE id = ?`;
   const params = [isBanned, artistId];
-  await queryDbDirect(urlBase, query, params);
+  const dbRes = await queryDb(urlBase, query, params);
+  if (dbRes.errorMessage) {
+    return {
+      clientMessage: 'Error setting artist banned/unbanned',
+      logMessage: 'Error banning/unbanning artist',
+      error: dbRes,
+    };
+  }
 
-  if (isBanned) {
-    const comics = await getComicsByArtistId(urlBase, artistId);
-    if (comics.length === 0) return;
+  if (!isBanned) return;
 
-    const liveComics = comics.filter(c => c.publishStatus === 'published');
-    const pendingComics = comics.filter(c => c.publishStatus === 'pending');
-    const uploadedComics = comics.filter(c => c.publishStatus === 'uploaded');
+  const { comics, err } = await getComicsByArtistId(urlBase, artistId);
+  if (err) {
+    return wrapApiError(err, 'Error banning/unbanning artist');
+  }
+  if (!comics || comics.length === 0) return;
 
-    const processComicPromises: Promise<any>[] = [];
+  const liveComics = comics.filter(c => c.publishStatus === 'published');
+  const pendingComics = comics.filter(c => c.publishStatus === 'pending');
+  const uploadedComics = comics.filter(c => c.publishStatus === 'uploaded');
 
-    liveComics.forEach(c => {
-      processComicPromises.push(unlistComic(urlBase, c.id, 'Artist banned'));
-    });
-    pendingComics.forEach(c => {
-      processComicPromises.push(rejectComic(urlBase, c.id));
-    });
-    uploadedComics.forEach(c => {
-      processComicPromises.push(
-        processUserUpload(urlBase, c.id, c.name, 'rejected', 'Artist rejected/banned')
-      );
-    });
+  const processComicPromises: Promise<ApiError | undefined>[] = [];
+  const logBodies: any[] = [];
 
-    await Promise.all(processComicPromises);
+  liveComics.forEach(c => {
+    processComicPromises.push(unlistComic(urlBase, c.id, 'Artist banned'));
+    logBodies.push(`comic name/id ${c.name} / ${c.id}`);
+  });
+  pendingComics.forEach(c => {
+    processComicPromises.push(rejectComic(urlBase, c.id));
+    logBodies.push(`comic name/id ${c.name} / ${c.id}`);
+  });
+  uploadedComics.forEach(c => {
+    processComicPromises.push(
+      processUserUpload(urlBase, c.id, c.name, 'rejected', 'Artist rejected/banned')
+    );
+    logBodies.push(`comic name/id ${c.name} / ${c.id}`);
+  });
+
+  const processErrors = await Promise.all(processComicPromises);
+
+  for (let i = 0; i < processErrors.length; i++) {
+    const err = processErrors[i];
+    if (err !== undefined) {
+      return wrapApiError(err, `Error banning artist, for ${logBodies[i]}`);
+    }
   }
 }

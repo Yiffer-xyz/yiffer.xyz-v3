@@ -1,13 +1,15 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { AllowedAnonComicVerdict } from '~/routes/admin/comics/AnonUploadedComicSection';
-import { queryDbDirect } from '~/utils/database-facade';
+import { Artist } from '~/types/types';
+import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
+  ApiError,
   create400Json,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  logError,
 } from '~/utils/request-helpers';
 import { getArtistByComicId } from '../funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
@@ -21,35 +23,16 @@ export async function action(args: ActionArgs) {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  const formComicName = formDataBody.get('comicName');
-  if (!formComicName) return create400Json('Missing comicName');
+  const comicName = formDataBody.get('comicName');
+  if (!comicName) return create400Json('Missing comicName');
 
   const formVerdict = formDataBody.get('verdict');
   if (!formVerdict) return create400Json('Missing verdict');
   const verdict = formVerdict.toString() as AllowedAnonComicVerdict;
 
-  try {
-    await processAnonUpload(
-      urlBase,
-      parseInt(formComicId.toString()),
-      formComicName.toString(),
-      verdict
-    );
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
-  }
-
-  return createSuccessJson();
-}
-
-export async function processAnonUpload(
-  urlBase: string,
-  comicId: number,
-  comicName: string,
-  verdict: AllowedAnonComicVerdict
-) {
   let query: string;
   let queryParams: any[];
+  const comicId = parseInt(formComicId.toString());
 
   if (verdict === 'approved' || verdict === 'rejected-list') {
     const newStatus = verdict === 'approved' ? 'pending' : 'rejected-list';
@@ -62,16 +45,41 @@ export async function processAnonUpload(
     queryParams = [newComicName, comicId];
   }
 
-  const [artist, _] = await Promise.all([
+  const [artistRes, updateComicDbRes] = await Promise.all([
     getArtistByComicId(urlBase, comicId),
-    queryDbDirect(urlBase, query, queryParams),
+    queryDb(urlBase, query, queryParams),
   ]);
 
+  if (updateComicDbRes.errorMessage) {
+    logError(`Error processing anon upload`, updateComicDbRes);
+    return create500Json('Error processing upload');
+  }
+  if (artistRes.notFound) {
+    return create400Json('Artist not found');
+  }
+  if (artistRes.err) {
+    logError('Error processing anon upload', artistRes.err);
+    return create500Json(artistRes.err.clientMessage);
+  }
+  const artist = artistRes.artist as Artist;
+
   if (artist.isPending) {
+    let pendingErr: ApiError | undefined;
     if (verdict === 'approved') {
-      await setArtistNotPending(urlBase, artist.id);
+      pendingErr = await setArtistNotPending(urlBase, artist.id);
     } else {
-      await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+      const rejectRes = await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+      pendingErr = rejectRes.err;
+    }
+
+    if (pendingErr) {
+      logError(
+        `Error processing anon upload. Name/id: ${comicName}, ${comicId}`,
+        pendingErr
+      );
+      return create500Json(pendingErr.clientMessage);
     }
   }
+
+  return createSuccessJson();
 }

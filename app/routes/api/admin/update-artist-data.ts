@@ -1,12 +1,13 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { ArtistDataChanges } from '~/routes/admin/artists/$artist';
 import { Artist } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { DBResponse, queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
+  ApiError,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  wrapApiError,
 } from '~/utils/request-helpers';
 import { getArtistById } from '../funcs/get-artist';
 
@@ -16,17 +17,19 @@ export async function action(args: ActionArgs) {
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;
 
-  try {
-    await updateArtistData(urlBase, body);
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+  const err = await updateArtistData(urlBase, body);
+  if (err) {
+    return create500Json(err.clientMessage);
   }
 
   return createSuccessJson();
 }
 
-export async function updateArtistData(urlBase: string, changes: ArtistDataChanges) {
-  let promises: Promise<any>[] = [];
+export async function updateArtistData(
+  urlBase: string,
+  changes: ArtistDataChanges
+): Promise<ApiError | undefined> {
+  let promises: Promise<ApiError | undefined>[] = [];
 
   if (
     changes.name ||
@@ -36,12 +39,21 @@ export async function updateArtistData(urlBase: string, changes: ArtistDataChang
     promises.push(updateGeneralDetails(urlBase, changes));
   }
   if (changes.links) {
-    const existingArtist = await getArtistById(urlBase, changes.artistId);
-    promises.push(updateLinks(urlBase, changes.artistId, changes.links, existingArtist));
+    const { artist, err: artistErr } = await getArtistById(urlBase, changes.artistId);
+    if (artistErr) {
+      return wrapApiError(artistErr, `Error updating artist, changes: ${changes}`);
+    }
+    promises.push(
+      updateLinks(urlBase, changes.artistId, changes.links, artist as Artist)
+    );
   }
 
-  await Promise.all(promises);
-  return createSuccessJson();
+  const maybeErrors = await Promise.all(promises);
+  for (const err of maybeErrors) {
+    if (err) {
+      return wrapApiError(err, `Error updating artist data, changes: ${changes}`);
+    }
+  }
 }
 
 async function updateLinks(
@@ -49,33 +61,50 @@ async function updateLinks(
   artistId: number,
   links: string[],
   existingArtist: Artist
-) {
+): Promise<ApiError | undefined> {
   const newLinks = links.filter(l => !existingArtist.links.includes(l));
   const deletedLinks = existingArtist.links.filter(l => !links.includes(l));
 
-  let addPromise: Promise<any> = Promise.resolve();
-  let deletePromise: Promise<any> = Promise.resolve();
+  const dbPromises: Promise<DBResponse<any>>[] = [];
+  const logStrings: string[] = [];
+
   if (newLinks.length > 0) {
     const addLinksQuery = `INSERT INTO artistlink (artistId, linkUrl) VALUES ${newLinks
       .map(() => '(?, ?)')
       .join(', ')}`;
-    addPromise = queryDbDirect(
-      urlBase,
-      addLinksQuery,
-      newLinks.flatMap(l => [artistId, l])
+    dbPromises.push(
+      queryDb(
+        urlBase,
+        addLinksQuery,
+        newLinks.flatMap(l => [artistId, l])
+      )
     );
+    logStrings.push(`insert links: ${newLinks}`);
   }
   if (deletedLinks.length > 0) {
     const deleteLinksQuery = `DELETE FROM artistlink WHERE artistId = ? AND linkUrl IN (${deletedLinks
       .map(() => '?')
       .join(', ')})`;
-    deletePromise = queryDbDirect(urlBase, deleteLinksQuery, [artistId, ...deletedLinks]);
+    dbPromises.push(queryDb<any>(urlBase, deleteLinksQuery, [artistId, ...deletedLinks]));
+    logStrings.push(`delete links: ${deletedLinks}`);
   }
 
-  await Promise.all([addPromise, deletePromise]);
+  const dbResponses = await Promise.all(dbPromises);
+  for (let i = 0; i < dbResponses.length; i++) {
+    if (dbResponses[i].errorMessage) {
+      return {
+        clientMessage: 'Error updating artist links',
+        logMessage: `Error updating artist links - ${logStrings[i]}`,
+        error: dbResponses[i],
+      };
+    }
+  }
 }
 
-async function updateGeneralDetails(urlBase: string, changes: ArtistDataChanges) {
+async function updateGeneralDetails(
+  urlBase: string,
+  changes: ArtistDataChanges
+): Promise<ApiError | undefined> {
   let updateFieldStr = '';
   let updateFieldValues: any[] = [];
   if (changes.name) {
@@ -95,5 +124,11 @@ async function updateGeneralDetails(urlBase: string, changes: ArtistDataChanges)
   updateFieldValues.push(changes.artistId);
 
   const updateQuery = `UPDATE artist SET ${updateFieldStr} WHERE id = ?`;
-  await queryDbDirect(urlBase, updateQuery, updateFieldValues);
+  const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
+  if (dbRes.errorMessage) {
+    return {
+      clientMessage: 'Error updating artist details',
+      logMessage: 'Error updating artist details',
+    };
+  }
 }

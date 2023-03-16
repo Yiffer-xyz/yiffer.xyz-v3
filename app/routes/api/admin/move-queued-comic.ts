@@ -3,10 +3,10 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  logError,
 } from '~/utils/request-helpers';
-import { moveComicInQueue, recalculatePublishingQueue } from '../funcs/publishing-queue';
+import { moveComicInQueue } from '../funcs/publishing-queue';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -22,20 +22,15 @@ export async function action(args: ActionArgs) {
     return create400Json('Missing direction, needs to be up or down');
   }
 
-  try {
-    await moveQueuedComic(urlBase, parseInt(formComicId.toString()), formMoveDirection);
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+  const err = await moveComicInQueue(
+    urlBase,
+    parseInt(formComicId.toString()),
+    formMoveDirection === 'up' ? -1 : 1
+  );
+  if (err) {
+    logError('Error moving comic in queue', err);
+    return create500Json(err.clientMessage);
   }
 
   return createSuccessJson();
-}
-
-export async function moveQueuedComic(
-  urlBase: string,
-  comicId: number,
-  direction: 'up' | 'down'
-) {
-  await moveComicInQueue(urlBase, comicId, direction === 'up' ? -1 : 1);
-  return;
 }

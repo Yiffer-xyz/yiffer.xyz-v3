@@ -71,7 +71,7 @@ async function createComicTags(
   if (dbRes.errorMessage) {
     return {
       error: dbRes,
-      message: `Error creating comic tags. Tag ids: ${JSON.stringify(
+      logMessage: `Error creating comic tags. Tag ids: ${JSON.stringify(
         tagIds
       )}. Comic id: ${comicId}`,
       clientMessage: 'Error adding tags to comic',
@@ -105,7 +105,9 @@ async function createComicLinks(
   if (dbRes.errorMessage) {
     return {
       error: dbRes,
-      message: `Error creating comic links. Upload body: ${JSON.stringify(uploadBody)}`,
+      logMessage: `Error creating comic links. Upload body: ${JSON.stringify(
+        uploadBody
+      )}`,
       clientMessage: 'Error creating prev/next comic',
     };
   }
@@ -130,7 +132,7 @@ async function createUnpublishedComicData(
   if (dbRes.errorMessage) {
     return {
       error: dbRes,
-      message: `Error creating unpublished comic data. Upload body: ${JSON.stringify(
+      logMessage: `Error creating unpublished comic data. Upload body: ${JSON.stringify(
         uploadBody
       )}`,
       clientMessage: 'Error creating unpublished comic data',
@@ -164,7 +166,7 @@ async function createComic(
       comicId: -1,
       err: {
         error: result,
-        message: `Error creating comic. Upload body: ${JSON.stringify(uploadBody)}`,
+        logMessage: `Error creating comic. Upload body: ${JSON.stringify(uploadBody)}`,
         clientMessage: 'Error creating comic',
       },
     };
@@ -174,7 +176,7 @@ async function createComic(
       comicId: -1,
       err: {
         error: result,
-        message: `Error creating comic, no insert result. Body: ${JSON.stringify(
+        logMessage: `Error creating comic, no insert result. Body: ${JSON.stringify(
           uploadBody
         )}`,
         clientMessage: 'Error creating comic',
@@ -207,7 +209,7 @@ async function createArtist(
     return {
       artistId: -1,
       err: {
-        message: `Error inserting artist into database. Artist: ${JSON.stringify(
+        logMessage: `Error inserting artist into database. Artist: ${JSON.stringify(
           newArtist
         )}`,
         clientMessage: 'Error creating artist',
@@ -247,7 +249,7 @@ async function createArtistLinks(
   if (dbRes.errorMessage) {
     return {
       error: dbRes,
-      message: `Error creating artist links. New artist ID: ${newArtistId}. Artist ${JSON.stringify(
+      logMessage: `Error creating artist links. New artist ID: ${newArtistId}. Artist ${JSON.stringify(
         newArtist
       )}.`,
       clientMessage: 'Error creating artist links',

@@ -1,5 +1,6 @@
 import { ComicTiny } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb, queryDbDirect } from '~/utils/database-facade';
+import { ApiError } from '~/utils/request-helpers';
 
 export async function getAllComicNamesAndIDs(
   urlBase: string,
@@ -32,7 +33,7 @@ export async function getComicsByArtistId(
   options?: {
     includeUnlisted: boolean;
   }
-): Promise<ComicTiny[]> {
+): Promise<{ comics?: ComicTiny[]; err?: ApiError }> {
   const query = `SELECT
       name, id, publishStatus
     FROM comic
@@ -41,9 +42,21 @@ export async function getComicsByArtistId(
       AND publishStatus != "rejected-list"
       ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
 
-  const response = await queryDbDirect<ComicTiny[]>(urlBase, query, [artistId]);
-  const mappedComics = addStateToComicNames(response);
-  return mappedComics;
+  const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting comics by artist',
+        logMessage: `Error getting comics by artist id. Artist id: ${artistId}. Options: ${options}.`,
+        error: dbRes,
+      },
+    };
+  }
+
+  const mappedComics = addStateToComicNames(dbRes.result as ComicTiny[]);
+  return {
+    comics: mappedComics,
+  };
 }
 
 function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {

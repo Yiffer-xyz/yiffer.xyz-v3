@@ -17,10 +17,11 @@ import TopGradientBox from '~/components/TopGradientBox';
 import { SimilarComicResponse } from '~/routes/api/search-similarly-named-comic';
 import { queryDb } from '~/utils/database-facade';
 import {
+  ApiError,
   create400Json,
-  createGeneric500Json,
+  create500Json,
   createSuccessJson,
-  ErrorCodes,
+  logError,
 } from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
@@ -38,12 +39,17 @@ export async function action(args: ActionArgs) {
     return create400Json('Some field is missing');
   }
 
-  const errorToReturn = await checkForExistingComicOrSuggestion(
+  const errors = await checkForExistingComicOrSuggestion(
     args.context.DB_API_URL_BASE as string,
     comicName as string
   );
-  if (errorToReturn) {
-    return errorToReturn; // TODO: TEST it
+  if (errors?.apiErr) {
+    logError(`Error in suggest-comic submit`, errors.apiErr);
+    return create500Json(errors.apiErr.clientMessage);
+  } else if (errors?.comicExists) {
+    return create400Json('Comic already exists');
+  } else if (errors?.suggestionExists) {
+    return create400Json('A suggestion for this comic already exists');
   }
 
   const user = await authLoader(args);
@@ -55,19 +61,21 @@ export async function action(args: ActionArgs) {
     userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
   }
 
-  let insertQuery = `INSERT INTO comicsuggestion 
-    (Name, ArtistName, Description, UserId, UserIp)
+  let insertQuery = `
+    INSERT INTO comicsuggestion 
+      (Name, ArtistName, Description, UserId, UserIp)
     VALUES (?, ?, ?, ?, ?)`;
   let insertParams = [comicName, artist, linksComments, userId, userIp];
 
-  const response = await queryDb(
+  const dbRes = await queryDb(
     args.context.DB_API_URL_BASE as string,
     insertQuery,
     insertParams
   );
 
-  if (response.errorMessage) {
-    return createGeneric500Json(ErrorCodes.COMIC_PROBLEM_SUBMIT);
+  if (dbRes.errorMessage) {
+    logError('Error creating comic suggestion', dbRes);
+    return create500Json('Error creating comic suggestion');
   }
 
   return createSuccessJson();
@@ -436,7 +444,12 @@ export default function Upload() {
   );
 }
 
-async function checkForExistingComicOrSuggestion(dbUrlBase: string, comicName: string) {
+async function checkForExistingComicOrSuggestion(
+  dbUrlBase: string,
+  comicName: string
+): Promise<
+  { apiErr?: ApiError; suggestionExists?: boolean; comicExists?: boolean } | undefined
+> {
   let existingSuggestionQueryPromise = queryDb<{ count: number }[]>(
     dbUrlBase,
     `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
@@ -448,24 +461,34 @@ async function checkForExistingComicOrSuggestion(dbUrlBase: string, comicName: s
     [comicName]
   );
 
-  const [existingSuggestionQuery, existingComicQuery] = await Promise.all([
+  const [existingSuggestionDbRes, existingComicDbRes] = await Promise.all([
     existingSuggestionQueryPromise,
     existingComicQueryPromise,
   ]);
 
-  if (existingSuggestionQuery.errorMessage) {
-    return createGeneric500Json(ErrorCodes.EXISTING_SUGG_CHECK);
+  if (existingSuggestionDbRes.errorMessage) {
+    return {
+      apiErr: {
+        clientMessage: `Error checking for existing suggestions. Comic: ${comicName}`,
+        logMessage: 'Error checking for existing suggestions',
+        error: existingSuggestionDbRes,
+      },
+    };
   }
-  if (existingSuggestionQuery.result && existingSuggestionQuery.result[0].count > 0) {
-    return create400Json('A suggestion for this comic already exists.');
+  if (existingSuggestionDbRes.result && existingSuggestionDbRes.result[0].count > 0) {
+    return { suggestionExists: true };
   }
 
-  if (existingComicQuery.errorMessage) {
-    return createGeneric500Json(ErrorCodes.EXISTING_COMIC_CHECK);
+  if (existingComicDbRes.errorMessage) {
+    return {
+      apiErr: {
+        clientMessage: `Error checking for existing comics. Comic: ${comicName}`,
+        logMessage: 'Error checking for existing comics',
+        error: existingComicDbRes,
+      },
+    };
   }
-  if (existingComicQuery.result && existingComicQuery.result[0].count > 0) {
-    return create400Json('This comic already exists.');
+  if (existingComicDbRes.result && existingComicDbRes.result[0].count > 0) {
+    return { comicExists: true };
   }
-
-  return null;
 }

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Comic, UserSession } from '~/types/types';
 import { useFetcher } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
-import { MaybeApiResponse } from '~/utils/request-helpers';
+import { ApiResponse } from '~/utils/request-helpers';
 import InfoBox from '~/components/InfoBox';
 
 type UnlistedComicSectionProps = {
@@ -16,7 +16,7 @@ export default function UnlistedComicSection({
   user,
   updateComic,
 }: UnlistedComicSectionProps) {
-  const fetcher = useFetcher<MaybeApiResponse>();
+  const fetcher = useFetcher<ApiResponse | undefined>();
 
   useEffect(() => {
     if (fetcher.data?.success) {

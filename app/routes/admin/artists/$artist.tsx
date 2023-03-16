@@ -10,9 +10,10 @@ import Link from '~/components/Link';
 import { getArtistById } from '~/routes/api/funcs/get-artist';
 import { getComicsByArtistId } from '~/routes/api/funcs/get-comics';
 import { NewArtist } from '~/routes/contribute/upload';
-import { Artist } from '~/types/types';
+import { Artist, ComicTiny, UserSession } from '~/types/types';
 import { FieldChange } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
+import { create400Json, create500Json, logError } from '~/utils/request-helpers';
 import useWindowSize from '~/utils/useWindowSize';
 
 export type ArtistDataChanges = {
@@ -23,22 +24,42 @@ export type ArtistDataChanges = {
   links?: string[];
 };
 
+type LoaderData = {
+  artist: Artist;
+  comics: ComicTiny[];
+  user: UserSession;
+};
+
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
   const artistParam = args.params.artist as string;
-
   const artistId = parseInt(artistParam);
 
   const artistPromise = getArtistById(urlBase, artistId);
   const comicsPromise = getComicsByArtistId(urlBase, artistId, { includeUnlisted: true });
+  const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
 
-  const [artist, comics] = await Promise.all([artistPromise, comicsPromise]);
+  if (artistRes.err) {
+    logError(`Error getting artist for admin>artist. Id ${artistId}`, artistRes.err);
+    throw create500Json('Error getting artist data');
+  }
+  if (comicsRes.err) {
+    logError(`Error getting comic for admin>artist. Id ${artistId}`, comicsRes.err);
+    throw create500Json(`Error getting artist's comics`);
+  }
+  if (artistRes.notFound || !artistRes.artist) {
+    throw create400Json('Artist not found');
+  }
 
-  return { artist, comics, user };
+  return {
+    artist: artistRes.artist,
+    comics: comicsRes.comics as ComicTiny[],
+    user,
+  };
 }
 
-export default function ManageComicInner() {
+export default function ManageArtist() {
   const { isMobile } = useWindowSize();
   const { artist, comics, user } = useLoaderData<typeof loader>();
   const saveChangesFetcher = useFetcher();

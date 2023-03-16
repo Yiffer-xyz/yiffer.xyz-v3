@@ -1,13 +1,15 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { ComicUploadVerdict } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { Artist, ComicUploadVerdict } from '~/types/types';
+import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
+  ApiError,
   create400Json,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  logError,
+  wrapApiError,
 } from '~/utils/request-helpers';
 import { getArtistByComicId } from '../funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
@@ -28,17 +30,22 @@ export async function action(args: ActionArgs) {
   const verdict: ComicUploadVerdict = formVerdict.toString() as ComicUploadVerdict;
   const formModComment = formDataBody.get('modComment');
   const modComment = formModComment ? formModComment.toString() : undefined;
+  const comicId = parseInt(formComicId.toString());
 
-  try {
-    await processUserUpload(
-      urlBase,
-      parseInt(formComicId.toString()),
-      formComicName.toString(),
-      verdict,
-      modComment
+  const err = await processUserUpload(
+    urlBase,
+    comicId,
+    formComicName.toString(),
+    verdict,
+    modComment
+  );
+
+  if (err) {
+    logError(
+      `Error in /process-user-upload for comic name/id ${formComicName.toString()} / ${comicId}, verdict: ${verdict}`,
+      err
     );
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+    create500Json(err.clientMessage);
   }
 
   return createSuccessJson();
@@ -50,7 +57,7 @@ export async function processUserUpload(
   comicName: string,
   frontendVerdict: ComicUploadVerdict,
   modComment?: string
-) {
+): Promise<ApiError | undefined> {
   let publishStatus = 'pending';
   let verdict: ComicUploadVerdict = frontendVerdict.toString() as ComicUploadVerdict;
   if (frontendVerdict === 'rejected') publishStatus = 'rejected';
@@ -69,16 +76,40 @@ export async function processUserUpload(
     comicQueryParams = [publishStatus, newComicName, comicId];
   }
 
-  const [artist, _] = await Promise.all([
+  const [artistRes, updateComicDbRes] = await Promise.all([
     getArtistByComicId(urlBase, comicId),
-    queryDbDirect(urlBase, comicQuery, comicQueryParams),
+    queryDb(urlBase, comicQuery, comicQueryParams),
   ]);
 
+  if (updateComicDbRes.errorMessage) {
+    return {
+      clientMessage: 'Error processing upload',
+      logMessage: `Error updating comic in db (processUserUpload)`,
+      error: updateComicDbRes,
+    };
+  }
+  if (artistRes.notFound) {
+    return {
+      clientMessage: 'Artist not found',
+      logMessage: `Error getting artist (processUserUpload)`,
+    };
+  }
+  if (artistRes.err) {
+    return wrapApiError(artistRes.err, `Error getting artist (processUserUpload)`);
+  }
+  const artist = artistRes.artist as Artist;
+
   if (artist.isPending) {
+    let pendingErr: ApiError | undefined;
     if (verdict === 'rejected' || verdict === 'rejected-list') {
-      await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+      const rejectRes = await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+      pendingErr = rejectRes.err;
     } else {
-      await setArtistNotPending(urlBase, artist.id);
+      pendingErr = await setArtistNotPending(urlBase, artist.id);
+    }
+
+    if (pendingErr) {
+      return wrapApiError(pendingErr, `Error processing user upload`);
     }
   }
 
@@ -113,7 +144,12 @@ export async function processUserUpload(
     detailsQueryParams = [verdict, modComment, artist.name, comicId];
   }
 
-  await queryDbDirect(urlBase, detailsQuery, detailsQueryParams);
-
-  return;
+  const detailsDbRes = await queryDb(urlBase, detailsQuery, detailsQueryParams);
+  if (detailsDbRes.errorMessage) {
+    return {
+      clientMessage: 'Error updating comic details',
+      logMessage: `Error updating unpublishedcomic`,
+      error: detailsDbRes,
+    };
+  }
 }

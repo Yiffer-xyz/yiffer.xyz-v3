@@ -6,7 +6,7 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import { format } from 'date-fns';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import TextInput from '~/components/TextInput/TextInput';
-import { MaybeApiResponse } from '~/utils/request-helpers';
+import { ApiResponse } from '~/utils/request-helpers';
 import InfoBox from '~/components/InfoBox';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 
@@ -26,7 +26,7 @@ export default function UserUploadSection({
   comicData,
   updateComic,
 }: UserUploadSectionProps) {
-  const fetcher = useFetcher<MaybeApiResponse>();
+  const fetcher = useFetcher<ApiResponse | undefined>();
   const [verdict, setVerdict] = useState<string | null>();
   const [modComment, setModComment] = useState<string>('');
 
