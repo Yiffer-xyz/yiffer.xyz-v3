@@ -33,6 +33,8 @@ export default function ManageComicInner() {
     comic.publishStatus === 'uploaded' && comic.unpublishedData?.uploadUserId;
   const isPendingOrScheduled =
     comic.publishStatus === 'pending' || comic.publishStatus === 'scheduled';
+  const isRejected =
+    comic.publishStatus === 'rejected' || comic.publishStatus === 'rejected-list';
 
   function updateComic() {
     revalidator.revalidate();
@@ -42,7 +44,26 @@ export default function ManageComicInner() {
     <>
       <h2 className="mb-2">{comic.name}</h2>
 
-      {comic.publishStatus === 'rejected' && <p>REJECTED!!!!! TODO FIGURE THIS OUT</p>}
+      {isRejected && (
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+          <h3>Rejected comic</h3>
+          <p className="mb-2">This comic has been rejected.</p>
+          {comic.publishStatus === 'rejected' && (
+            <p>It has not been added to the ban list.</p>
+          )}
+          {comic.publishStatus === 'rejected-list' && (
+            <>
+              <p>
+                It has been added to the ban list, so users will be warned when trying to
+                suggest or upload comics with this name.
+              </p>
+              {comic.unpublishedData?.modComment && (
+                <p>Mod comment: {comic.unpublishedData.modComment}</p>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {isAnonUpload && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
