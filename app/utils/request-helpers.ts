@@ -1,4 +1,5 @@
 import { json, TypedResponse } from '@remix-run/cloudflare';
+import { DBResponse } from './database-facade';
 
 export enum ErrorCodes {
   EXISTING_SUGG_CHECK = '1000',
@@ -7,6 +8,9 @@ export enum ErrorCodes {
   EXISTING_MODAPPL_SUMIT = '1003',
   SIGNUP_ERROR_CHECK = '1004',
   SIGNUP_ERROR_INSERT = '1005',
+  CREATECOMIC_TAGS = '1006',
+  CREATECOMIC_LINKS = '1007',
+  CREATECOMIC_UNPUBLISHED = '1008',
 }
 
 export type ApiResponse = {
@@ -14,7 +18,21 @@ export type ApiResponse = {
   error: string | null;
 };
 
+export type ApiError = {
+  error?: Error | DBResponse<any>;
+  message?: string;
+  clientMessage: string;
+};
+
 export type MaybeApiResponse = ApiResponse | undefined;
+
+export function wrapApiError(err: ApiError, message: string): ApiError {
+  return {
+    message: message + ' >> ' + err.message,
+    error: err.error,
+    clientMessage: err.clientMessage,
+  };
+}
 
 export function create500Json(message?: string): TypedResponse<ApiResponse> {
   return json(
@@ -54,4 +72,8 @@ export function createSuccessJson(): TypedResponse<ApiResponse> {
     },
     { status: 200 }
   );
+}
+
+export function logError(customMessage: string, err?: Error | DBResponse<any> | string) {
+  console.log(customMessage, err);
 }

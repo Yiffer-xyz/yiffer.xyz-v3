@@ -1,31 +1,57 @@
-import { queryDb } from '~/utils/database-facade';
+import { TypedResponse } from '@remix-run/cloudflare';
+import { UserSession } from '~/types/types';
+import { DBResponse, queryDb, queryDbDirect } from '~/utils/database-facade';
+import { ApiError, wrapApiError } from '~/utils/request-helpers';
 import { NewArtist, UploadBody } from '.';
 
-// TODO: error handling, waiting for master to avoid clashes..
 export async function processUpload(
   urlBase: string,
   uploadBody: UploadBody,
-  userId?: number,
+  user: UserSession | null,
   userIP?: string
-) {
+): Promise<ApiError | undefined> {
+  const skipApproval = !!user && ['moderator', 'admin'].includes(user?.userType);
+
   if (uploadBody.newArtist) {
-    uploadBody.artistId = await createPendingArtist(urlBase, uploadBody.newArtist);
+    const { artistId, err } = await createArtist(
+      urlBase,
+      uploadBody.newArtist,
+      skipApproval
+    );
+    if (err) {
+      return err;
+    }
+    uploadBody.artistId = artistId;
   }
 
-  const comicId = await createComic(urlBase, uploadBody);
+  let { err, comicId } = await createComic(urlBase, uploadBody, skipApproval);
+  if (err) return err;
 
-  await createUnpublishedComicData(urlBase, comicId, uploadBody, userId, userIP);
+  err = await createUnpublishedComicData(
+    urlBase,
+    comicId,
+    uploadBody,
+    user?.userId,
+    userIP
+  );
+  if (err) return err;
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
-    await createComicLinks(urlBase, uploadBody, comicId);
+    const err = await createComicLinks(urlBase, uploadBody, comicId);
+    if (err) return err;
   }
 
   if (uploadBody.tagIds) {
-    await createComicTags(urlBase, uploadBody.tagIds, comicId);
+    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId);
+    if (err) return err;
   }
 }
 
-async function createComicTags(urlBase: string, tagIds: number[], comicId: number) {
+async function createComicTags(
+  urlBase: string,
+  tagIds: number[],
+  comicId: number
+): Promise<ApiError | undefined> {
   let query = `
     INSERT INTO comickeyword
     (comicId, keywordId)
@@ -41,9 +67,15 @@ async function createComicTags(urlBase: string, tagIds: number[], comicId: numbe
     }
   });
 
-  const result = await queryDb(urlBase, query, params);
-  if (result.errorMessage) {
-    throw new Error(result.errorMessage); // TODO: error handling
+  const dbRes = await queryDb(urlBase, query, params);
+  if (dbRes.errorMessage) {
+    return {
+      error: dbRes,
+      message: `Error creating comic tags. Tag ids: ${JSON.stringify(
+        tagIds
+      )}. Comic id: ${comicId}`,
+      clientMessage: 'Error adding tags to comic',
+    };
   }
 }
 
@@ -51,7 +83,7 @@ async function createComicLinks(
   urlBase: string,
   uploadBody: UploadBody,
   comicId: number
-) {
+): Promise<ApiError | undefined> {
   let query = `
     INSERT INTO comiclink
     (firstComic, lastComic)
@@ -69,7 +101,14 @@ async function createComicLinks(
     query += ', (?, ?)';
   }
 
-  await queryDb(urlBase, query, queryParams);
+  const dbRes = await queryDb(urlBase, query, queryParams);
+  if (dbRes.errorMessage) {
+    return {
+      error: dbRes,
+      message: `Error creating comic links. Upload body: ${JSON.stringify(uploadBody)}`,
+      clientMessage: 'Error creating prev/next comic',
+    };
+  }
 }
 
 async function createUnpublishedComicData(
@@ -78,7 +117,7 @@ async function createUnpublishedComicData(
   uploadBody: UploadBody,
   userId?: number,
   userIP?: string
-) {
+): Promise<ApiError | undefined> {
   const query = `
     INSERT INTO unpublishedcomic
     (comicId, uploadUserId, uploadUserIP, uploadId)
@@ -87,10 +126,23 @@ async function createUnpublishedComicData(
 
   const values = [comicId, userId || null, userIP || null, uploadBody.uploadId];
 
-  await queryDb(urlBase, query, values);
+  const dbRes = await queryDb(urlBase, query, values);
+  if (dbRes.errorMessage) {
+    return {
+      error: dbRes,
+      message: `Error creating unpublished comic data. Upload body: ${JSON.stringify(
+        uploadBody
+      )}`,
+      clientMessage: 'Error creating unpublished comic data',
+    };
+  }
 }
 
-async function createComic(urlBase: string, uploadBody: UploadBody): Promise<number> {
+async function createComic(
+  urlBase: string,
+  uploadBody: UploadBody,
+  skipApproval: boolean
+): Promise<{ comicId: number; err?: ApiError }> {
   const query = `
     INSERT INTO comic
     (name, cat, tag, state, numberOfPages, artist, publishStatus)
@@ -103,25 +155,40 @@ async function createComic(urlBase: string, uploadBody: UploadBody): Promise<num
     uploadBody.state,
     uploadBody.numberOfPages,
     uploadBody.artistId,
-    'uploaded',
+    skipApproval ? 'pending' : 'uploaded',
   ];
 
   const result = await queryDb(urlBase, query, values);
   if (result.errorMessage) {
-    throw new Error(
-      'Error creating comic: Error inserting comic: ' + result.errorMessage
-    );
+    return {
+      comicId: -1,
+      err: {
+        error: result,
+        message: `Error creating comic. Upload body: ${JSON.stringify(uploadBody)}`,
+        clientMessage: 'Error creating comic',
+      },
+    };
   }
   if (!result.insertId) {
-    throw new Error('Error creating comic: No insertId');
+    return {
+      comicId: -1,
+      err: {
+        error: result,
+        message: `Error creating comic, no insert result. Body: ${JSON.stringify(
+          uploadBody
+        )}`,
+        clientMessage: 'Error creating comic',
+      },
+    };
   }
-  return result.insertId; // TODO when error handling is ready
+  return { comicId: result.insertId };
 }
 
-async function createPendingArtist(
+async function createArtist(
   urlBase: string,
-  newArtist: NewArtist
-): Promise<number> {
+  newArtist: NewArtist,
+  skipApproval: boolean
+): Promise<{ artistId: number; err?: ApiError | undefined }> {
   const insertQuery = `
     INSERT INTO artist (name, e621name, patreonName, isPending)
     VALUES (?, ?, ?, ?)
@@ -130,27 +197,40 @@ async function createPendingArtist(
     newArtist.artistName,
     newArtist.e621Name || null,
     newArtist.patreonName || null,
-    true,
+    skipApproval ? 0 : 1,
   ];
-  const insertResult = await queryDb(urlBase, insertQuery, insertValues);
-  const artistId = insertResult.insertId;
+  let dbRes = await queryDb(urlBase, insertQuery, insertValues);
+  const artistId = dbRes.insertId;
 
-  if (insertResult.errorMessage || !artistId) {
-    throw new Error('Error creating pending artist');
+  if (dbRes.errorMessage || !artistId) {
+    dbRes.errorMessage = dbRes.errorMessage || 'Could not create artist';
+    return {
+      artistId: -1,
+      err: {
+        message: `Error inserting artist into database. Artist: ${JSON.stringify(
+          newArtist
+        )}`,
+        clientMessage: 'Error creating artist',
+        error: dbRes,
+      },
+    };
   }
 
   if (newArtist.links) {
-    await createArtistLinks(urlBase, newArtist, artistId);
+    const err = await createArtistLinks(urlBase, newArtist, artistId);
+    if (err) {
+      return { artistId: -1, err: wrapApiError(err, 'Error creating artist links') };
+    }
   }
 
-  return artistId;
+  return { artistId };
 }
 
 async function createArtistLinks(
   urlBase: string,
   newArtist: NewArtist,
   newArtistId: number
-) {
+): Promise<ApiError | undefined> {
   let filteredLinks = newArtist.links.filter(link => link.length > 0);
   let linkInsertQuery = `INSERT INTO artistlink (ArtistId, LinkUrl) VALUES `;
   const linkInsertValues = [];
@@ -163,7 +243,16 @@ async function createArtistLinks(
     }
   }
 
-  await queryDb(urlBase, linkInsertQuery, linkInsertValues);
+  const dbRes = await queryDb(urlBase, linkInsertQuery, linkInsertValues);
+  if (dbRes.errorMessage) {
+    return {
+      error: dbRes,
+      message: `Error creating artist links. New artist ID: ${newArtistId}. Artist ${JSON.stringify(
+        newArtist
+      )}.`,
+      clientMessage: 'Error creating artist links',
+    };
+  }
 }
 
 const linkWebsites = [

@@ -22,6 +22,7 @@ import Step4Thumbnail from './step4-thumbnail';
 import TagsEditor from '../../../components/ComicManager/Tags';
 import SuccessMessage from './success';
 import { processUpload } from './upload-handler.server';
+import { create500Json, createSuccessJson } from '~/utils/request-helpers';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
@@ -60,18 +61,17 @@ export async function action(args: ActionArgs) {
     return json({ error }, { status: 400 });
   }
 
-  try {
-    await processUpload(
-      args.context.DB_API_URL_BASE as string,
-      body,
-      user?.userId || undefined,
-      args.request.headers.get('CF-Connecting-IP') || 'unknown'
-    );
-  } catch (e: any) {
-    return json({ error: e.message }, { status: 500 });
+  const err = await processUpload(
+    args.context.DB_API_URL_BASE as string,
+    body,
+    user,
+    args.request.headers.get('CF-Connecting-IP') || 'unknown'
+  );
+  if (err) {
+    return create500Json(err.clientMessage);
   }
 
-  return json({ success: true });
+  return createSuccessJson();
 }
 
 type ApiResponse = {
@@ -80,7 +80,7 @@ type ApiResponse = {
 };
 
 export default function Upload() {
-  const submitThing = useSubmit();
+  const submitter = useSubmit();
   const actionData = useActionData();
   const transition = useTransition();
 
@@ -194,7 +194,7 @@ export default function Upload() {
     }
 
     // Then, submit the rest of the data
-    submitThing(formData, { encType: 'multipart/form-data', method: 'post' });
+    submitter(formData, { encType: 'multipart/form-data', method: 'post' });
   }
 
   return (
@@ -203,6 +203,13 @@ export default function Upload() {
       <p className="mb-4">
         <BackToContribute />
       </p>
+
+      {user?.userType === 'moderator' && (
+        <InfoBox variant="info" showIcon className="mb-4">
+          You're logged in as a mod. Your comic (and artist, if it's a new one) will
+          therefore skip the regular user upload queue and go straight to 'pending'.
+        </InfoBox>
+      )}
 
       {step === 'success' && <SuccessMessage isLoggedIn={!!user} />}
 
