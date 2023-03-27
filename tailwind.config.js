@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-// RESPONSIVE BREAKPOINTS:
+// RESPONSIVE  BREAKPOINTS:
 // sm 640
 // md 768
 // lg 1024
