@@ -75,6 +75,7 @@ export default function Signup() {
           className="mt-2 mb-6"
           fullWidth
           isLoading={transition.state === 'submitting'}
+          isSubmit
         />
       </div>
 

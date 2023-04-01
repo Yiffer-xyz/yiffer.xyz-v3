@@ -4,7 +4,7 @@ import { isTheme } from './theme-provider';
 const themeStorage = createCookieSessionStorage({
   cookie: {
     name: 'dev-yiffer-theme',
-    secure: true,
+    secure: false, // TODO:
     sameSite: 'lax',
     path: '/',
     httpOnly: false, // TODO:

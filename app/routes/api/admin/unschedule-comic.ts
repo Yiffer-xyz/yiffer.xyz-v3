@@ -1,11 +1,12 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
+  ApiError,
   create400Json,
   create500Json,
-  createGeneric500Json,
   createSuccessJson,
+  logError,
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '../funcs/publishing-queue';
 
@@ -18,24 +19,42 @@ export async function action(args: ActionArgs) {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  try {
-    await unScheduleComic(urlBase, parseInt(formComicId.toString()));
-  } catch (e) {
-    return e instanceof Error ? create500Json(e.message) : createGeneric500Json();
+  const err = await unScheduleComic(urlBase, parseInt(formComicId.toString()));
+  if (err) {
+    logError(`Erorr in /unschedule-comic for comic id ${formComicId}`, err);
+    return create500Json(err.clientMessage);
   }
 
   return createSuccessJson();
 }
 
-export async function unScheduleComic(urlBase: string, comicId: number) {
+export async function unScheduleComic(
+  urlBase: string,
+  comicId: number
+): Promise<ApiError | undefined> {
   const unpublishedQuery =
     'UPDATE unpublishedcomic SET publishDate = NULL, scheduleModId = NULL, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'pending' WHERE id = ?`;
 
-  await Promise.all([
-    queryDbDirect(urlBase, unpublishedQuery, [comicId]),
-    queryDbDirect(urlBase, comicQuery, [comicId]),
+  const [unpublishedDbRes, comicDbRes] = await Promise.all([
+    queryDb(urlBase, unpublishedQuery, [comicId]),
+    queryDb(urlBase, comicQuery, [comicId]),
   ]);
+
+  if (unpublishedDbRes.errorMessage) {
+    return {
+      clientMessage: 'Error un-scheduling comic: Could not update unpublishedcomic table',
+      logMessage: 'Error un-scheduling: could not update unpublishedcomic table',
+      error: unpublishedDbRes,
+    };
+  }
+  if (comicDbRes.errorMessage) {
+    return {
+      clientMessage: 'Error un-scheduling comic: Could not update comic table',
+      logMessage: 'Error un-scheduling: could not update comic table',
+      error: comicDbRes,
+    };
+  }
 
   recalculatePublishingQueue(urlBase); // Can run in background
 }

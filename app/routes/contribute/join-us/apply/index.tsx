@@ -11,12 +11,7 @@ import TopGradientBox from '~/components/TopGradientBox';
 import { getModApplicationForUser } from '~/routes/api/funcs/get-mod-application';
 import { queryDb } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import {
-  create400Json,
-  createGeneric500Json,
-  createSuccessJson,
-  ErrorCodes,
-} from '~/utils/request-helpers';
+import { create400Json, createSuccessJson, logError } from '~/utils/request-helpers';
 
 export async function loader(args: LoaderArgs) {
   const user = await authLoader(args);
@@ -55,9 +50,13 @@ export async function action(args: ActionArgs) {
     VALUES (?, ?, ?)`;
   const insertParams = [user.userId, telegram, notes];
 
-  const insertResult = await queryDb(urlBase, insertQuery, insertParams);
-  if (insertResult.errorMessage) {
-    return createGeneric500Json(ErrorCodes.EXISTING_MODAPPL_SUMIT);
+  const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
+  if (insertDbRes.errorMessage) {
+    logError(
+      `Error inserting mod application for user ${user.userId}, body: ${reqBody}`,
+      insertDbRes
+    );
+    return create400Json('Error creating mod application');
   }
 
   return createSuccessJson();

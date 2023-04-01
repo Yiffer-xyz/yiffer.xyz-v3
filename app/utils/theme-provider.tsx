@@ -67,10 +67,15 @@ function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
       return;
     }
 
-    persistThemeRef.current.submit({ theme }, { action: 'api/set-theme', method: 'post' });
+    persistThemeRef.current.submit(
+      { theme },
+      { action: 'api/set-theme', method: 'post' }
+    );
   }, [theme]);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+  );
 }
 
 function useTheme(): [string | null, Dispatch<SetStateAction<string | null>>] {
@@ -105,7 +110,11 @@ const clientThemeCode = `
 `;
 
 function NonFlashOfWrongThemeEls({ ssrTheme }: { ssrTheme: boolean }) {
-  return <>{ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}</>;
+  return (
+    <>
+      {ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}
+    </>
+  );
 }
 
 export { ThemeProvider, useTheme, isTheme, NonFlashOfWrongThemeEls };

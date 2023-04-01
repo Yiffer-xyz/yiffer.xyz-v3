@@ -2,7 +2,7 @@ import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import { JwtConfig, User, UserSession } from '~/types/types';
 import { queryDb } from './database-facade';
-import { ErrorCodes } from './request-helpers';
+import { logError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 const bcrypt = require('bcryptjs');
 const { hash, compare } = bcrypt;
@@ -44,10 +44,13 @@ export async function signup(
     queryDb<any[]>(urlBase, usernameQuery, [username]),
     queryDb<any[]>(urlBase, emailQuery, [email]),
   ]);
-  if (usernameResult.errorMessage || emailResult.errorMessage) {
-    return {
-      errorMessage: `Server error. Please report this to our Feedback page with error code: ${ErrorCodes.SIGNUP_ERROR_CHECK}`,
-    };
+  if (usernameResult.errorMessage) {
+    logError(`Signup error looking for username ${username}`, usernameResult);
+    return { errorMessage: 'Server error looking up username' };
+  }
+  if (emailResult.errorMessage) {
+    logError(`Signup error looking for email ${email}`, emailResult);
+    return { errorMessage: 'Server error looking up email' };
   }
   if (usernameResult.result?.length) {
     return { errorMessage: 'Username already exists' };
@@ -65,10 +68,16 @@ export async function signup(
     hashedPassword,
     email,
   ]);
-  if (insertResult.errorMessage || !insertResult.insertId) {
-    return {
-      errorMessage: `Server error. Please report this to our Feedback page with error code: ${ErrorCodes.SIGNUP_ERROR_INSERT}`,
-    };
+  if (insertResult.errorMessage) {
+    logError(`Signup error inserting user ${username} and email ${email}`, insertResult);
+    return { errorMessage: 'Server error creating user' };
+  }
+  if (!insertResult.insertId) {
+    logError(
+      `No insert result after signup for ${username} and email ${email}`,
+      insertResult
+    );
+    return { errorMessage: 'Server error creating user' };
   }
 
   const user: User = {
@@ -96,16 +105,17 @@ async function authenticate(
 
   const result = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
   if (result.errorMessage) {
+    logError(`Login error looking for username/email ${usernameOrEmail}`, result);
     return { errorMessage: 'Server error' };
   }
   if (!result.result?.length) {
-    return { errorMessage: 'Invalid username or password' };
+    return { errorMessage: 'Username does not exist or wrong password' };
   }
 
   const user = result.result[0];
   const isPasswordValid = await compare(password, user.password);
   if (!isPasswordValid) {
-    return { errorMessage: 'Invalid username or password' };
+    return { errorMessage: 'Username does not exist or wrong password' };
   }
 
   return {
