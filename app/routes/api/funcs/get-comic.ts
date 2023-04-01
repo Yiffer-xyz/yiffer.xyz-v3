@@ -67,9 +67,9 @@ export async function getComicById(
   }
 
   const finalComic = mergeDbFieldsToComic(
-    comicRes as DbComic,
-    linksRes as DbComicLink[],
-    tagsRes as DbTag[],
+    comicRes.comic!,
+    linksRes.links!,
+    tagsRes.tags!,
     excludeUnpublishedData
   );
 
@@ -87,11 +87,10 @@ export async function getComicByName(
       err: wrapApiError(err, `Error getting comic by name: ${comicName}`),
     };
   }
-  comic = comic as DbComic;
 
   const [linksRes, tagsRes] = await Promise.all([
-    getLinksByComicId(urlBase, comic.id),
-    getTagsByComicId(urlBase, comic.id),
+    getLinksByComicId(urlBase, comic!.id),
+    getTagsByComicId(urlBase, comic!.id),
   ]);
   if (linksRes.err) {
     return {
@@ -105,9 +104,9 @@ export async function getComicByName(
   }
 
   const finalComic = mergeDbFieldsToComic(
-    comic,
-    linksRes.links as DbComicLink[],
-    tagsRes.tags as DbTag[],
+    comic!,
+    linksRes.links!,
+    tagsRes.tags!,
     excludeUnpublishedData
   );
 
