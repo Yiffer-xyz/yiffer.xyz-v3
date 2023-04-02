@@ -33,7 +33,13 @@ export async function publishComic(
   urlBase: string,
   comicId: number
 ): Promise<ApiError | undefined> {
-  const query = 'UPDATE comic SET publishStatus = "published" WHERE id = ?';
+  const query = `
+    UPDATE comic
+    SET publishStatus = "published",
+      published = NOW(),
+      updated = NOW()
+    WHERE id = ?
+  `;
   const dbRes = await queryDb(urlBase, query, [comicId]);
   if (dbRes.errorMessage) {
     return {

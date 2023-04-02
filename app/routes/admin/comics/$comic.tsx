@@ -1,5 +1,6 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useOutletContext, useRevalidator } from '@remix-run/react';
+import { format } from 'date-fns';
 import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/components/Link';
 import { GlobalAdminContext } from '~/routes/admin';
@@ -26,13 +27,17 @@ export async function loader(args: LoaderArgs) {
     throw create500Json(err.clientMessage);
   }
 
-  return { comic: comic as Comic, user };
+  return { comic, user };
 }
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
   const globalContext: GlobalAdminContext = useOutletContext();
-  const { comic, user } = useLoaderData<typeof loader>();
+  const { comic: maybeComic, user } = useLoaderData<typeof loader>();
+  if (!maybeComic) {
+    return <div>Comic not found</div>;
+  }
+  const comic = maybeComic as Comic;
 
   const isAnonUpload =
     comic.publishStatus === 'uploaded' && !comic.unpublishedData?.uploadUserId;
@@ -118,6 +123,12 @@ export default function ManageComicInner() {
               newTab
             />
           </p>
+          {comic.published && comic.updated && (
+            <>
+              <p>Published: {format(new Date(comic.published), 'PPP')}</p>
+              <p>Last updated: {format(new Date(comic.updated), 'PPP')}</p>
+            </>
+          )}
         </>
       )}
 

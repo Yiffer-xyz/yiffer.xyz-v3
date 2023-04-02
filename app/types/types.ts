@@ -44,6 +44,8 @@ export type Comic = {
     isPending: boolean;
   };
   tags: Tag[];
+  published?: string;
+  updated?: string;
   unpublishedData?: UnpublishedComicData;
 };
 

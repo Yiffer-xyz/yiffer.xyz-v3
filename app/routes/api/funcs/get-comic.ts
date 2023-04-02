@@ -10,6 +10,8 @@ type DbComic = {
   classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
   category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
   numberOfPages: number;
+  published?: string;
+  updated?: string;
   artistId: number;
   artistName: string;
   artistIsPending: 0 | 1;
@@ -128,6 +130,8 @@ function mergeDbFieldsToComic(
     classification: dbComic.classification,
     category: dbComic.category,
     numberOfPages: dbComic.numberOfPages,
+    published: dbComic.published,
+    updated: dbComic.updated,
     artist: {
       id: dbComic.artistId,
       name: dbComic.artistName,
@@ -189,6 +193,8 @@ async function getDbComicByField(
       cat AS classification,
       tag AS category,
       numberOfPages,
+      published,
+      updated,
       artist.id AS artistId,
       artist.name AS artistName,
       artist.isPending AS artistIsPending,
