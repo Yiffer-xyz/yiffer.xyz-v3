@@ -63,3 +63,7 @@ export function logError(
   //    this is also an error as this should be handled where it could happen.
   console.log(prependMessage, err);
 }
+
+export async function noGetRoute() {
+  return new Response('Cannot GET this route', { status: 405 });
+}

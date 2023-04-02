@@ -1,6 +1,12 @@
-import { ActionArgs, json } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { ActionArgs } from '@remix-run/cloudflare';
+import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
+import {
+  ApiError,
+  create500Json,
+  createSuccessJson,
+  logError,
+} from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -11,13 +17,29 @@ export async function action(args: ActionArgs) {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return new Response('Missing comicId', { status: 400 });
 
-  await publishComic(urlBase, parseInt(formComicId.toString()));
+  const err = await publishComic(urlBase, parseInt(formComicId.toString()));
+  if (err) {
+    logError(
+      `Error in /publish-comic, failed publishing comic from with id ${formComicId}`,
+      err
+    );
+    return create500Json(err.clientMessage);
+  }
 
-  return json({ success: true });
+  return createSuccessJson();
 }
 
-export async function publishComic(urlBase: string, comicId: number) {
+export async function publishComic(
+  urlBase: string,
+  comicId: number
+): Promise<ApiError | undefined> {
   const query = 'UPDATE comic SET publishStatus = "published" WHERE id = ?';
-  await queryDbDirect(urlBase, query, [comicId]);
-  return;
+  const dbRes = await queryDb(urlBase, query, [comicId]);
+  if (dbRes.errorMessage) {
+    return {
+      clientMessage: 'Error publishing comic: Could not update comic table',
+      logMessage: 'Error publishing comic: could not update comic table',
+      error: dbRes,
+    };
+  }
 }

@@ -7,7 +7,10 @@ import {
   create500Json,
   createSuccessJson,
   logError,
+  noGetRoute,
 } from '~/utils/request-helpers';
+
+export { noGetRoute as loader };
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);

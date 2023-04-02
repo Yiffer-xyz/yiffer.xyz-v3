@@ -62,6 +62,25 @@ export type ComicTiny = {
   publishStatus: ComicPublishStatus;
 };
 
+export type DbPendingComic = {
+  comicName: string;
+  comicId: number;
+  publishStatus: ComicPublishStatus;
+  artistName: string;
+  numberOfTags: number;
+  timestamp: string;
+  errorText?: string;
+  publishDate?: string;
+  publishingQueuePos?: number;
+  uploadUserId?: number;
+  uploadUserIP?: string;
+  uploadUsername?: string;
+  reviewerModId?: number;
+  reviewerModName?: string;
+  scheduleModId?: number;
+  scheduleModName?: string;
+};
+
 export type ComicSuggestionVerdict = 'good' | 'bad';
 export type ComicUploadVerdict =
   | 'excellent'
