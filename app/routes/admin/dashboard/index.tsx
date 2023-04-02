@@ -1,51 +1,18 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData, useOutletContext } from '@remix-run/react';
-import {
-  getComicSuggestions,
-  getComicUploads,
-  getProblems,
-  getTagSuggestions,
-} from './data-fetchers';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import InfoBox from '~/components/InfoBox';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { ProcessTagSuggestionBody } from '~/routes/api/admin/process-tag-suggestion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AssignActionBody } from '~/routes/api/admin/assign-action';
 import { UnAssignActionBody } from '~/routes/api/admin/unassign-action';
 import { ProcessComicProblemBody } from '~/routes/api/admin/process-comic-problem';
 import { ProcessComicSuggestionBody } from '~/routes/api/admin/process-comic-suggestion';
-import { GlobalAdminContext } from '~/routes/admin';
 import { ComicSuggestionVerdict } from '~/types/types';
-
-type UserOrIP = {
-  username?: string;
-  userId?: number;
-  ip?: string;
-};
-
-type UsernameAndUserId = {
-  username: string;
-  userId: number;
-};
-
-export type DashboardAction = {
-  type:
-    | 'tagSuggestion'
-    | 'comicProblem'
-    | 'comicSuggestion'
-    | 'comicUpload'
-    | 'pendingComicProblem';
-  id: number;
-  primaryField: string;
-  secondaryField?: string;
-  description?: string;
-  isProcessed: boolean;
-  timestamp: string;
-  assignedMod?: UsernameAndUserId;
-  user: UserOrIP;
-  verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
-};
+import Chip from '~/components/Chip';
+import Link from '~/components/Link';
+import { DashboardAction } from '~/routes/api/admin/dashboard-data';
 
 export type TagSuggestionAction = DashboardAction & {
   isAdding: boolean;
@@ -57,50 +24,44 @@ export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
   const user = await redirectIfNotMod(args);
 
-  // TODO: Should have a max cap on these things, hmm. Can make it relatively high i suppose,
-  // It's an issue since we can only limit each thing separately, not the whole list.
-  // Figure out later.
-  const [tagSuggestions, problems, uploads, comicSuggestions] = await Promise.all([
-    getTagSuggestions(urlBase),
-    getProblems(urlBase),
-    getComicUploads(urlBase),
-    getComicSuggestions(urlBase),
-  ]);
-
-  const allSuggestions = [
-    ...tagSuggestions,
-    ...problems,
-    ...uploads,
-    ...comicSuggestions,
-  ];
-
-  allSuggestions.sort((a, b) => {
-    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
-  });
-
-  return {
-    allSuggestions,
-    user,
-  };
+  return { user };
 }
 
 export { ErrorBoundary } from '../../error';
 
 export default function Dashboard({}) {
-  const { allSuggestions, user } = useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
   // TODO: The two below are for showing loading states on the buttons.
   // The first to check the element and the 2nd to check which button was
   // actually pressed (like, approve or reject for example)
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
+  const [allDashboardItems, setAllDashboardItems] = useState<DashboardAction[]>([]);
 
-  const globalContext: GlobalAdminContext = useOutletContext();
-
+  const dashboardDataFetcher = useFetcher<DashboardAction[]>();
   const processTagFetcher = useFetcher();
   const assignModFetcher = useFetcher();
   const unassignModFetcher = useFetcher();
   const problemFetcher = useFetcher();
   const comicSuggestionFetcher = useFetcher();
+
+  async function fetchDashboardItems() {
+    setAllDashboardItems([]);
+    dashboardDataFetcher.submit(
+      {},
+      { method: 'get', action: '/api/admin/dashboard-data' }
+    );
+  }
+
+  useEffect(() => {
+    fetchDashboardItems();
+  }, []);
+
+  useEffect(() => {
+    if (dashboardDataFetcher.data) {
+      setAllDashboardItems(dashboardDataFetcher.data);
+    }
+  }, [dashboardDataFetcher.data]);
 
   function processTagSuggestion(action: TagSuggestionAction, isApproved: boolean) {
     const body: ProcessTagSuggestionBody = {
@@ -196,7 +157,17 @@ export default function Dashboard({}) {
         wait 2 sec then do nothing.
       </InfoBox>
 
-      {allSuggestions.map(action => (
+      {allDashboardItems.length === 0 && (
+        <>
+          {Array(6)
+            .fill(0)
+            .map((_, i) => (
+              <div className="w-full h-28 mb-3 bg-gray-900 dark:bg-gray-300 rounded" />
+            ))}
+        </>
+      )}
+
+      {allDashboardItems.map(action => (
         <div className="border border-theme1-primary my-4 w-full">
           {action.type === 'tagSuggestion' && (
             <TagSuggestion
@@ -210,10 +181,13 @@ export default function Dashboard({}) {
             />
           )}
 
-          {/* TODO: the rest here and remove the one below */}
-
           {action.type !== 'tagSuggestion' && (
-            <>
+            <div className="flex flex-row space-between" key={action.id}>
+              <div>
+                <Chip color="#51bac8" text="Tag suggestion" />
+                {/* <Link href={`/comic/${action.}`}> */}
+              </div>
+              <div></div>
               <h2>
                 {action.primaryField} ({action.type})
               </h2>
@@ -222,7 +196,7 @@ export default function Dashboard({}) {
                   {JSON.stringify(action)}
                 </p>
               </pre>
-            </>
+            </div>
           )}
         </div>
       ))}

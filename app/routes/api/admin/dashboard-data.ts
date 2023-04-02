@@ -1,3 +1,61 @@
+import { LoaderArgs } from '@remix-run/cloudflare';
+import { redirectIfNotMod } from '~/utils/loaders';
+
+type UserOrIP = {
+  username?: string;
+  userId?: number;
+  ip?: string;
+};
+
+type UsernameAndUserId = {
+  username: string;
+  userId: number;
+};
+
+export type DashboardAction = {
+  type:
+    | 'tagSuggestion'
+    | 'comicProblem'
+    | 'comicSuggestion'
+    | 'comicUpload'
+    | 'pendingComicProblem';
+  id: number;
+  comicId?: number;
+  primaryField: string;
+  secondaryField?: string;
+  description?: string;
+  isProcessed: boolean;
+  timestamp: string;
+  assignedMod?: UsernameAndUserId;
+  user: UserOrIP;
+  verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
+};
+
+export async function loader(args: LoaderArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const user = await redirectIfNotMod(args);
+
+  const [tagSuggestions, problems, uploads, comicSuggestions] = await Promise.all([
+    getTagSuggestions(urlBase),
+    getProblems(urlBase),
+    getComicUploads(urlBase),
+    getComicSuggestions(urlBase),
+  ]);
+
+  const allSuggestions = [
+    ...tagSuggestions,
+    ...problems,
+    ...uploads,
+    ...comicSuggestions,
+  ];
+
+  allSuggestions.sort((a, b) => {
+    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+  });
+
+  return allSuggestions;
+}
+
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import {
   ComicPublishStatus,
@@ -5,7 +63,6 @@ import {
   ComicUploadVerdict,
 } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
-import { DashboardAction } from '.';
 
 type DbTagSuggestion = {
   id: number;
@@ -23,15 +80,15 @@ type DbTagSuggestion = {
   modName?: string;
 };
 
-export async function getTagSuggestions(urlBase: string): Promise<DashboardAction[]> {
+async function getTagSuggestions(urlBase: string): Promise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName 
       FROM (
         SELECT
             keywordsuggestion.id AS id,
             keywordsuggestion.keywordId AS keywordId,
             keyword.KeywordName AS keywordName,
-            comic.Name AS comicName,
-            keywordsuggestion.comicId AS comicId,
+            comic.name AS comicName,
+            comic.id AS comicId,
             isAdding,
             status,
             keywordsuggestion.timestamp,
@@ -86,6 +143,7 @@ type DbComicProblem = {
   categoryName: string;
   description: string;
   comicName: string;
+  comicId: number;
   status: string;
   timestamp: string;
   userId?: number;
@@ -95,7 +153,7 @@ type DbComicProblem = {
   modName?: string;
 };
 
-export async function getProblems(urlBase: string): Promise<DashboardAction[]> {
+async function getProblems(urlBase: string): Promise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -103,6 +161,7 @@ export async function getProblems(urlBase: string): Promise<DashboardAction[]> {
           comicproblemcategory.Name AS categoryName,
           description,
           comic.name AS comicName,
+          comic.id AS comicId,
           comicproblem.status,
           comicproblem.timestamp,
           userId,
@@ -123,6 +182,7 @@ export async function getProblems(urlBase: string): Promise<DashboardAction[]> {
     return {
       type: 'comicProblem',
       id: dbComicProblem.id,
+      comicId: dbComicProblem.comicId,
       primaryField: dbComicProblem.comicName,
       secondaryField: dbComicProblem.categoryName,
       description: dbComicProblem.description,
@@ -163,7 +223,7 @@ type DbComicSuggestion = {
   verdict?: ComicSuggestionVerdict;
 };
 
-export async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> {
+async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -223,6 +283,7 @@ export async function getComicSuggestions(urlBase: string): Promise<DashboardAct
 type DbComicUpload = {
   id: number;
   comicName: string;
+  comicId: number;
   artistName: string;
   publishStatus: ComicPublishStatus;
   verdict?: ComicUploadVerdict;
@@ -235,13 +296,14 @@ type DbComicUpload = {
   modComment?: string;
 };
 
-export async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
+async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
   const query = `
       SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
           comic.id,
           comic.name AS comicName,
+          comic.id AS comicId,
           artist.name AS artistName,
           publishStatus,
           verdict,
@@ -283,6 +345,7 @@ export async function getComicUploads(urlBase: string): Promise<DashboardAction[
     return {
       type: 'comicUpload',
       id: dbComicUpload.id,
+      comicId: dbComicUpload.comicId,
       primaryField: `${dbComicUpload.comicName} - ${dbComicUpload.artistName}`,
       isProcessed: dbComicUpload.publishStatus !== 'uploaded',
       timestamp: dbComicUpload.timestamp,
@@ -343,6 +406,7 @@ export async function pendingComicProblem(urlBase: string): Promise<DashboardAct
     return {
       type: 'pendingComicProblem',
       id: dbPending.comicId,
+      comicId: dbPending.comicId,
       primaryField: `${dbPending.comicName} - ${dbPending.artistName}`,
       isProcessed: false,
       timestamp: dbPending.timestamp,
