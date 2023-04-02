@@ -70,6 +70,7 @@ export type DbPendingComic = {
   numberOfTags: number;
   timestamp: string;
   errorText?: string;
+  pendingProblemModId?: number;
   publishDate?: string;
   publishingQueuePos?: number;
   uploadUserId?: number;
@@ -103,6 +104,7 @@ export type UnpublishedComicData = {
   originalNameIfRejected?: string;
   originalArtistIfRejected?: string;
   unlistComment?: string;
+  pendingProblemModId?: number;
 };
 
 export type Tag = {

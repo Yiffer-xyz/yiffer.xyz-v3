@@ -299,3 +299,70 @@ export async function getComicUploads(urlBase: string): Promise<DashboardAction[
 
   return mappedResults;
 }
+
+type DbPendingComicSimple = {
+  comicName: string;
+  comicId: number;
+  artistName: string;
+  pendingProblemModId?: number;
+  pendingProblemModName?: string;
+  uploadUserId?: number;
+  uploadUserIP?: string;
+  uploadUsername?: string;
+  timestamp: string;
+  errorText?: string;
+};
+
+export async function pendingComicProblem(urlBase: string): Promise<DashboardAction[]> {
+  const query = `
+    SELECT Q1.*, user.username AS pendingProblemModName
+    FROM (
+      SELECT
+        comic.name AS comicName,
+        comic.id AS comicId,
+        artist.name AS artistName,
+        unpublishedcomic.uploadUserId,
+        unpublishedcomic.uploadUserIP,
+        user.username AS uploadUsername,
+        pendingProblemModId,
+        timestamp,
+        errorText
+      FROM comic
+      INNER JOIN artist ON (artist.id = comic.artist)
+      INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+      LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
+      WHERE publishStatus = 'pending'
+      AND errorText IS NOT NULL
+    ) AS Q1
+    LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
+  `;
+
+  const result = await queryDbDirect<DbPendingComicSimple[]>(urlBase, query);
+
+  const mappedResults: DashboardAction[] = result.map(dbPending => {
+    return {
+      type: 'pendingComicProblem',
+      id: dbPending.comicId,
+      primaryField: `${dbPending.comicName} - ${dbPending.artistName}`,
+      isProcessed: false,
+      timestamp: dbPending.timestamp,
+      user:
+        dbPending.uploadUserId && dbPending.uploadUsername
+          ? {
+              userId: dbPending.uploadUserId,
+              username: dbPending.uploadUsername,
+            }
+          : { ip: dbPending.uploadUserIP },
+      verdict: undefined,
+      assignedMod:
+        dbPending.pendingProblemModId && dbPending.pendingProblemModName
+          ? {
+              userId: dbPending.pendingProblemModId,
+              username: dbPending.pendingProblemModName,
+            }
+          : undefined,
+    };
+  });
+
+  return mappedResults;
+}

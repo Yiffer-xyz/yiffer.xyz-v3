@@ -1,6 +1,7 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
+import { MdCheck, MdError } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
@@ -66,9 +67,18 @@ export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
 
   return (
     <>
-      <p className="mt-2 mb-4">
-        <b>Error: {comicData.unpublishedData?.errorText}</b>
-      </p>
+      <div className="mt-2 mb-4">
+        <p>
+          <b>
+            <MdError /> Error: {comicData.unpublishedData?.errorText}
+          </b>
+        </p>
+        {comicData.unpublishedData?.pendingProblemModId && (
+          <p>
+            <MdCheck /> A mod has been assigned to fix this problem
+          </p>
+        )}
+      </div>
 
       <fetcher.Form action="/api/admin/set-comic-error" method="post">
         <input type="hidden" name="comicId" value={comicData.id} />

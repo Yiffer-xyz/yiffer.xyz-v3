@@ -22,6 +22,7 @@ export async function getPendingComics(
               COUNT(*) AS numberOfTags,
               timestamp,
               errorText,
+              pendingProblemModId,
               uploadUserId,
               uploadUserIP,
               publishDate,
@@ -32,7 +33,7 @@ export async function getPendingComics(
             FROM comic
             INNER JOIN unpublishedcomic ON (comic.id = unpublishedcomic.comicId)
             INNER JOIN artist ON (artist.id = comic.artist)
-            INNER JOIN comickeyword ON (comic.id = comickeyword.comicId)
+            LEFT JOIN comickeyword ON (comic.id = comickeyword.comicId)
             LEFT JOIN user ON (user.id = uploadUserId)
             WHERE ${
               scheduledOnly ? '' : `publishStatus = 'pending' OR`

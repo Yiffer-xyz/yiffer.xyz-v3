@@ -3,14 +3,12 @@ import { useFetcher, useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { MdArrowDownward, MdArrowUpward, MdCheck, MdError } from 'react-icons/md';
-import Button from '~/components/Buttons/Button';
-import IconButton from '~/components/Buttons/IconButton';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import LoadingIconButton from '~/components/Buttons/LoadingIconButton';
 import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
-import { ComicPublishStatus, DbPendingComic } from '~/types/types';
+import { DbPendingComic } from '~/types/types';
 import { logError } from '~/utils/request-helpers';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '../api/funcs/get-pending-comics';
@@ -49,7 +47,7 @@ function getBgColor(pendingComic: DbPendingComic) {
     return 'bg-red-moreTrans dark:bg-red-trans';
   }
 
-  return 'bg-blue-moreTrans dark:bg-blue-trans';
+  return 'bg-white dark:bg-gray-300';
 }
 
 function isProblematic(pendingComic: DbPendingComic): boolean {
@@ -224,6 +222,7 @@ export default function PendingComics({}) {
           const errorP = comic.errorText && (
             <p>
               <MdError /> Error: {comic.errorText}
+              {comic.pendingProblemModId && <span> (mod has been assigned)</span>}
             </p>
           );
 

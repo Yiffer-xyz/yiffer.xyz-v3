@@ -12,7 +12,7 @@ type DbComic = {
   numberOfPages: number;
   artistId: number;
   artistName: string;
-  artistIsPending: boolean;
+  artistIsPending: 0 | 1;
   timestamp: string;
   errorText?: string;
   publishDate?: string;
@@ -25,6 +25,7 @@ type DbComic = {
   originalNameIfRejected?: string;
   originalArtistIfRejected?: string;
   unlistComment?: string;
+  pendingProblemModId?: number;
 };
 
 type DbComicLink = {
@@ -130,7 +131,7 @@ function mergeDbFieldsToComic(
     artist: {
       id: dbComic.artistId,
       name: dbComic.artistName,
-      isPending: dbComic.artistIsPending,
+      isPending: dbComic.artistIsPending === 1,
     },
     tags: dbTagsRows.map(tag => ({
       id: tag.tagId,
@@ -168,6 +169,7 @@ function mergeDbFieldsToComic(
       originalNameIfRejected: dbComic.originalNameIfRejected,
       originalArtistIfRejected: dbComic.originalArtistIfRejected,
       unlistComment: dbComic.unlistComment,
+      pendingProblemModId: dbComic.pendingProblemModId,
     };
   }
 

@@ -30,7 +30,12 @@ type UsernameAndUserId = {
 };
 
 export type DashboardAction = {
-  type: 'tagSuggestion' | 'comicProblem' | 'comicSuggestion' | 'comicUpload';
+  type:
+    | 'tagSuggestion'
+    | 'comicProblem'
+    | 'comicSuggestion'
+    | 'comicUpload'
+    | 'pendingComicProblem';
   id: number;
   primaryField: string;
   secondaryField?: string;
