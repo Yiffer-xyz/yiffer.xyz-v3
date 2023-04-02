@@ -13,6 +13,8 @@ import { ComicSuggestionVerdict } from '~/types/types';
 import Chip from '~/components/Chip';
 import Link from '~/components/Link';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
+import { MdOpenInNew } from 'react-icons/md';
+import { formatDistanceToNow } from 'date-fns';
 
 export type TagSuggestionAction = DashboardAction & {
   isAdding: boolean;
@@ -168,7 +170,7 @@ export default function Dashboard({}) {
       )}
 
       {allDashboardItems.map(action => (
-        <div className="border border-theme1-primary my-4 w-full">
+        <div className="flex flex-col gap-2 md:flex-row justify-between p-3 w-full mb-4 max-w-3xl shadow-md rounded bg-white dark:bg-gray-400">
           {action.type === 'tagSuggestion' && (
             <TagSuggestion
               action={action as TagSuggestionAction}
@@ -182,21 +184,7 @@ export default function Dashboard({}) {
           )}
 
           {action.type !== 'tagSuggestion' && (
-            <div className="flex flex-row space-between" key={action.id}>
-              <div>
-                <Chip color="#51bac8" text="Tag suggestion" />
-                {/* <Link href={`/comic/${action.}`}> */}
-              </div>
-              <div></div>
-              <h2>
-                {action.primaryField} ({action.type})
-              </h2>
-              <pre>
-                <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  {JSON.stringify(action)}
-                </p>
-              </pre>
-            </div>
+            <pre>{JSON.stringify(action, null, 2)}</pre>
           )}
         </div>
       ))}
@@ -219,28 +207,57 @@ function TagSuggestion({
 }: TagSuggestionProps) {
   return (
     <>
-      <h2>
-        {action.primaryField} ({action.type})
-      </h2>
-      <pre>
-        <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-          {JSON.stringify(action)}
+      <div className="flex flex-col justify-between gap-2">
+        <Chip color="#51bac8" text="Tag suggestion" />
+        <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
+          <div className="flex flex-row gap-x-3">
+            <b>{action.primaryField}</b>
+            <Link
+              href={`/admin/comics/${action.comicId!}`}
+              text="Admin"
+              IconRight={MdOpenInNew}
+              newTab
+            />
+            <Link
+              href={`/comics/${action.primaryField}`}
+              text="Live"
+              IconRight={MdOpenInNew}
+              newTab
+            />
+          </div>
+          <p>{action.secondaryField}</p>
+        </div>
+      </div>
+      <div className="flex flex-col md:items-end justify-between gap-2">
+        <p className="text-sm">
+          {action.user.username || action.user.ip}
+          {' - '}
+          {getTimeAgo(action.timestamp)}
         </p>
-      </pre>
-      <div>
-        <LoadingButton
-          color="primary"
-          onClick={() => onProcessSuggestion(action, true)}
-          text="Approve"
-          isLoading={isLoading && loadingAction === 'approve-tag'}
-        />
-        <LoadingButton
-          color="error"
-          onClick={() => onProcessSuggestion(action, false)}
-          text="Reject"
-          isLoading={isLoading && loadingAction === 'reject-tag'}
-        />
+
+        <div className="flex flex-row gap-2 self-end">
+          <LoadingButton
+            color="error"
+            onClick={() => onProcessSuggestion(action, false)}
+            text="Reject"
+            isLoading={isLoading && loadingAction === 'reject-tag'}
+          />
+          <LoadingButton
+            color="primary"
+            onClick={() => onProcessSuggestion(action, true)}
+            text="Approve"
+            isLoading={isLoading && loadingAction === 'approve-tag'}
+          />
+        </div>
       </div>
     </>
   );
+}
+
+function getTimeAgo(time: string) {
+  const timeAgo = formatDistanceToNow(new Date(time), {
+    addSuffix: true,
+  });
+
+  return timeAgo;
 }
