@@ -27,13 +27,7 @@ export async function processUpload(
   let { err, comicId } = await createComic(urlBase, uploadBody, skipApproval);
   if (err) return err;
 
-  err = await createUnpublishedComicData(
-    urlBase,
-    comicId,
-    uploadBody,
-    user?.userId,
-    userIP
-  );
+  err = await createComicMetadata(urlBase, comicId, uploadBody, user?.userId, userIP);
   if (err) return err;
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
@@ -113,7 +107,7 @@ async function createComicLinks(
   }
 }
 
-async function createUnpublishedComicData(
+async function createComicMetadata(
   urlBase: string,
   comicId: number,
   uploadBody: UploadBody,
@@ -121,7 +115,7 @@ async function createUnpublishedComicData(
   userIP?: string
 ): Promise<ApiError | undefined> {
   const query = `
-    INSERT INTO unpublishedcomic
+    INSERT INTO comicmetadata
     (comicId, uploadUserId, uploadUserIP, uploadId)
     VALUES (?, ?, ?, ?)
   `;
@@ -132,10 +126,10 @@ async function createUnpublishedComicData(
   if (dbRes.errorMessage) {
     return {
       error: dbRes,
-      logMessage: `Error creating unpublished comic data. Upload body: ${JSON.stringify(
+      logMessage: `Error creating comic metadata. Upload body: ${JSON.stringify(
         uploadBody
       )}`,
-      clientMessage: 'Error creating unpublished comic data',
+      clientMessage: 'Error creating comic metadata',
     };
   }
 }

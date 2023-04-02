@@ -22,7 +22,7 @@ export function ScheduledComic({
 }: ScheduledComicParams) {
   const fetcher = useFetcher();
 
-  const hasDate = comicData.unpublishedData?.publishDate;
+  const hasDate = comicData.metadata?.publishDate;
 
   useEffect(() => {
     if (fetcher.data?.success) {
@@ -35,8 +35,7 @@ export function ScheduledComic({
       {hasDate ? (
         <p className="mb-2 -mt-2">
           <b>
-            Scheduled for{' '}
-            {format(new Date(comicData.unpublishedData?.publishDate || ''), 'PPP')}
+            Scheduled for {format(new Date(comicData.metadata?.publishDate || ''), 'PPP')}
           </b>
         </p>
       ) : (

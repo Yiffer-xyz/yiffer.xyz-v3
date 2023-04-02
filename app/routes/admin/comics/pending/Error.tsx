@@ -70,10 +70,10 @@ export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
       <div className="mt-2 mb-4">
         <p>
           <b>
-            <MdError /> Error: {comicData.unpublishedData?.errorText}
+            <MdError /> Error: {comicData.metadata?.errorText}
           </b>
         </p>
-        {comicData.unpublishedData?.pendingProblemModId && (
+        {comicData.metadata?.pendingProblemModId && (
           <p>
             <MdCheck /> A mod has been assigned to fix this problem
           </p>

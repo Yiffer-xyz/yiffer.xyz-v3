@@ -114,7 +114,7 @@ export async function processUserUpload(
   }
 
   let detailsQuery = `
-    UPDATE unpublishedcomic 
+    UPDATE comicmetadata 
     SET
       verdict = ?,
       modComment = ?
@@ -123,7 +123,7 @@ export async function processUserUpload(
 
   if (frontendVerdict === 'rejected') {
     detailsQuery = `
-      UPDATE unpublishedcomic
+      UPDATE comicmetadata
       SET
         verdict = ?,
         modComment = ?,
@@ -135,7 +135,7 @@ export async function processUserUpload(
 
   if (frontendVerdict === 'rejected-list') {
     detailsQuery = `
-      UPDATE unpublishedcomic
+      UPDATE comicmetadata
       SET
         verdict = ?,
         modComment = ?,
@@ -148,7 +148,7 @@ export async function processUserUpload(
   if (detailsDbRes.errorMessage) {
     return {
       clientMessage: 'Error updating comic details',
-      logMessage: `Error updating unpublishedcomic`,
+      logMessage: `Error updating comicmetadata`,
       error: detailsDbRes,
     };
   }

@@ -48,10 +48,8 @@ export default function AnonUploadSection({
         You should <b>fix errors</b> before approving. If the quality of the uploaded
         content is not good enough, you should <b>reject it</b>.
       </p>
-      <p>Uploaded by a guest user with IP {comicData.unpublishedData?.uploadUserIP}.</p>
-      <p>
-        Uploaded {format(new Date(comicData.unpublishedData?.timestamp || ''), 'PPPPp')}
-      </p>
+      <p>Uploaded by a guest user with IP {comicData.metadata?.uploadUserIP}.</p>
+      <p>Uploaded {format(new Date(comicData.metadata?.timestamp || ''), 'PPPPp')}</p>
 
       <RadioButtonGroup
         onChange={val => setVerdict(val as AllowedAnonComicVerdict)}

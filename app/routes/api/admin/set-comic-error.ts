@@ -25,7 +25,7 @@ export async function setComicError(
   comicId: number,
   errorText: string | null
 ) {
-  const updateActionQuery = `UPDATE unpublishedcomic SET errorText = ? WHERE comicId = ?`;
+  const updateActionQuery = `UPDATE comicmetadata SET errorText = ? WHERE comicId = ?`;
   const updateActionQueryParams = [errorText, comicId];
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);

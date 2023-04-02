@@ -246,15 +246,15 @@ export async function getComicUploads(urlBase: string): Promise<DashboardAction[
           publishStatus,
           verdict,
           timestamp,
-          unpublishedcomic.uploadUserId,
-          unpublishedcomic.uploadUserIP,
+          comicmetadata.uploadUserId,
+          comicmetadata.uploadUserIP,
           user.username AS uploadUsername,
           modId,
           modComment
         FROM comic
-        INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+        INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
         INNER JOIN artist ON (artist.id = comic.artist)
-        LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
+        LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
       ) AS Q1
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
@@ -321,16 +321,16 @@ export async function pendingComicProblem(urlBase: string): Promise<DashboardAct
         comic.name AS comicName,
         comic.id AS comicId,
         artist.name AS artistName,
-        unpublishedcomic.uploadUserId,
-        unpublishedcomic.uploadUserIP,
+        comicmetadata.uploadUserId,
+        comicmetadata.uploadUserIP,
         user.username AS uploadUsername,
         pendingProblemModId,
         timestamp,
         errorText
       FROM comic
       INNER JOIN artist ON (artist.id = comic.artist)
-      INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
-      LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
+      INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
+      LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
       WHERE publishStatus = 'pending'
       AND errorText IS NOT NULL
     ) AS Q1

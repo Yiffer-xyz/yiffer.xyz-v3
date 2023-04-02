@@ -40,9 +40,8 @@ export default function ManageComicInner() {
   const comic = maybeComic as Comic;
 
   const isAnonUpload =
-    comic.publishStatus === 'uploaded' && !comic.unpublishedData?.uploadUserId;
-  const isUserUpload =
-    comic.publishStatus === 'uploaded' && comic.unpublishedData?.uploadUserId;
+    comic.publishStatus === 'uploaded' && !comic.metadata?.uploadUserId;
+  const isUserUpload = comic.publishStatus === 'uploaded' && comic.metadata?.uploadUserId;
   const isPendingOrScheduled =
     comic.publishStatus === 'pending' || comic.publishStatus === 'scheduled';
   const isRejected =
@@ -69,8 +68,8 @@ export default function ManageComicInner() {
                 It has been added to the ban list, so users will be warned when trying to
                 suggest or upload comics with this name.
               </p>
-              {comic.unpublishedData?.modComment && (
-                <p>Mod comment: {comic.unpublishedData.modComment}</p>
+              {comic.metadata?.modComment && (
+                <p>Mod comment: {comic.metadata.modComment}</p>
               )}
             </>
           )}

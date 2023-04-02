@@ -11,7 +11,7 @@ export async function moveComicInQueue(
   comicId: number,
   moveBy: 1 | -1
 ): Promise<ApiError | undefined> {
-  const getPosQuery = 'SELECT publishingQueuePos FROM unpublishedcomic WHERE comicId = ?';
+  const getPosQuery = 'SELECT publishingQueuePos FROM comicmetadata WHERE comicId = ?';
   const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(
     urlBase,
     getPosQuery,
@@ -29,11 +29,11 @@ export async function moveComicInQueue(
   const oldPos = positionDbRes.result[0].publishingQueuePos;
 
   const moveComicQuery =
-    'UPDATE unpublishedcomic SET publishingQueuePos = ? WHERE comicId = ?';
+    'UPDATE comicmetadata SET publishingQueuePos = ? WHERE comicId = ?';
   const moveComicQueryParams = [oldPos + moveBy, comicId];
 
   const moveOtherComicQuery =
-    'UPDATE unpublishedcomic SET publishingQueuePos = ? WHERE publishingQueuePos = ?';
+    'UPDATE comicmetadata SET publishingQueuePos = ? WHERE publishingQueuePos = ?';
   const moveOtherComicQueryParams = [oldPos, oldPos + moveBy];
 
   const moveOtherDbRes = await queryDb(
@@ -64,7 +64,7 @@ export async function recalculatePublishingQueue(
 ): Promise<ApiError | undefined> {
   const query = `
     SELECT publishingQueuePos, comicId
-    FROM unpublishedcomic INNER JOIN comic ON (comic.id = unpublishedcomic.comicId)
+    FROM comicmetadata INNER JOIN comic ON (comic.id = comicmetadata.comicId)
     WHERE
       publishStatus = 'scheduled'
       AND publishDate IS NULL
@@ -116,7 +116,7 @@ export async function recalculatePublishingQueue(
   }
 
   const updateQuery = `
-    UPDATE unpublishedcomic
+    UPDATE comicmetadata
     SET publishingQueuePos = ?
     WHERE comicId = ?
   `;

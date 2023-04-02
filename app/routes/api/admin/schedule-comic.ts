@@ -42,20 +42,20 @@ export async function scheduleComic(
   publishDate: string,
   modId: number
 ): Promise<ApiError | undefined> {
-  const unpublishedQuery =
-    'UPDATE unpublishedcomic SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
+  const metadataQuery =
+    'UPDATE comicmetadata SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
 
-  const [unpublishedDbRes, comicDbRes] = await Promise.all([
-    queryDb(urlBase, unpublishedQuery, [publishDate, modId, comicId]),
+  const [metadataDbRes, comicDbRes] = await Promise.all([
+    queryDb(urlBase, metadataQuery, [publishDate, modId, comicId]),
     queryDb(urlBase, comicQuery, [comicId]),
   ]);
 
-  if (unpublishedDbRes.errorMessage) {
+  if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error scheduling comic: Could not update unpublishedcomic table',
-      logMessage: 'Error scheduling: could not update unpublishedcomic table',
-      error: unpublishedDbRes,
+      clientMessage: 'Error scheduling comic: Could not update comicmetadata table',
+      logMessage: 'Error scheduling: could not update comicmetadata table',
+      error: metadataDbRes,
     };
   }
   if (comicDbRes.errorMessage) {

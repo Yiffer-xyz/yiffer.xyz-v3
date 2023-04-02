@@ -45,7 +45,7 @@ type DbTag = {
 export async function getComicById(
   urlBase: string,
   comicId: number,
-  excludeUnpublishedData: boolean = false
+  excludeMetadata: boolean = false
 ): Promise<{ comic?: Comic; err?: ApiError }> {
   const [comicRes, linksRes, tagsRes] = await Promise.all([
     getDbComicByField(urlBase, 'id', comicId),
@@ -73,7 +73,7 @@ export async function getComicById(
     comicRes.comic!,
     linksRes.links!,
     tagsRes.tags!,
-    excludeUnpublishedData
+    excludeMetadata
   );
 
   return { comic: finalComic };
@@ -82,7 +82,7 @@ export async function getComicById(
 export async function getComicByName(
   urlBase: string,
   comicName: string,
-  excludeUnpublishedData: boolean = false
+  excludeMetadata: boolean = false
 ): Promise<{ comic?: Comic; err?: ApiError }> {
   let { comic, err } = await getDbComicByField(urlBase, 'name', comicName);
   if (err) {
@@ -110,7 +110,7 @@ export async function getComicByName(
     comic!,
     linksRes.links!,
     tagsRes.tags!,
-    excludeUnpublishedData
+    excludeMetadata
   );
 
   return { comic: finalComic };
@@ -120,7 +120,7 @@ function mergeDbFieldsToComic(
   dbComic: DbComic,
   dbLinksRows: DbComicLink[],
   dbTagsRows: DbTag[],
-  excludeUnpublishedData: boolean
+  excludeMetadata: boolean
 ): Comic {
   const comic: Comic = {
     id: dbComic.id,
@@ -159,8 +159,8 @@ function mergeDbFieldsToComic(
     }
   }
 
-  if (!excludeUnpublishedData) {
-    comic.unpublishedData = {
+  if (!excludeMetadata) {
+    comic.metadata = {
       timestamp: dbComic.timestamp,
       errorText: dbComic.errorText,
       publishDate: dbComic.publishDate,
@@ -198,22 +198,22 @@ async function getDbComicByField(
       artist.id AS artistId,
       artist.name AS artistName,
       artist.isPending AS artistIsPending,
-      unpublishedcomic.timestamp,
-      unpublishedcomic.errorText,
-      unpublishedcomic.publishDate,
-      unpublishedcomic.modId,
-      unpublishedcomic.modComment,
-      unpublishedcomic.verdict,
-      unpublishedcomic.uploadUserId,
-      unpublishedcomic.uploadUserIP,
+      comicmetadata.timestamp,
+      comicmetadata.errorText,
+      comicmetadata.publishDate,
+      comicmetadata.modId,
+      comicmetadata.modComment,
+      comicmetadata.verdict,
+      comicmetadata.uploadUserId,
+      comicmetadata.uploadUserIP,
       user.username AS uploadUsername,
-      unpublishedcomic.originalNameIfRejected,
-      unpublishedcomic.originalArtistIfRejected,
-      unpublishedcomic.unlistComment
+      comicmetadata.originalNameIfRejected,
+      comicmetadata.originalArtistIfRejected,
+      comicmetadata.unlistComment
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
-    LEFT JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
-    LEFT JOIN user ON (user.id = unpublishedcomic.uploadUserId)
+    LEFT JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
+    LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
     WHERE comic.${fieldName} = ?`;
 
   const comicDbRes = await queryDb<DbComic[]>(urlBase, comicQuery, [fieldValue]);

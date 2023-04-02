@@ -44,13 +44,13 @@ export async function getYourContributedComics(
       artist.name AS artistName,
       numberOfPages,
       COUNT(*) AS numberOfKeywords,
-      unpublishedcomic.originalNameIfRejected,
-      unpublishedcomic.originalArtistIfRejected
+      comicmetadata.originalNameIfRejected,
+      comicmetadata.originalArtistIfRejected
     FROM comic 
     INNER JOIN artist ON (artist.Id = comic.Artist)
-    INNER JOIN unpublishedcomic ON (unpublishedcomic.comicId = comic.id)
+    INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
     LEFT JOIN comickeyword ON (comickeyword.comicId = comic.id)
-    WHERE unpublishedcomic.uploadUserId = ?
+    WHERE comicmetadata.uploadUserId = ?
     GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
 
   const dbComics = await queryDbDirect<DbContributedComic[]>(urlBase, query, [userId]);

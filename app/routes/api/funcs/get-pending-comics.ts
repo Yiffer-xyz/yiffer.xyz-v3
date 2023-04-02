@@ -31,7 +31,7 @@ export async function getPendingComics(
               modId AS reviewerModId,
               scheduleModId
             FROM comic
-            INNER JOIN unpublishedcomic ON (comic.id = unpublishedcomic.comicId)
+            INNER JOIN comicmetadata ON (comic.id = comicmetadata.comicId)
             INNER JOIN artist ON (artist.id = comic.artist)
             LEFT JOIN comickeyword ON (comic.id = comickeyword.comicId)
             LEFT JOIN user ON (user.id = uploadUserId)

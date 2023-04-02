@@ -43,7 +43,7 @@ export async function unlistComic(
   comicId: number,
   unlistComment: string
 ): Promise<ApiError | undefined> {
-  const getDetailsQuery = 'SELECT comicId FROM unpublishedcomic WHERE comicId = ?';
+  const getDetailsQuery = 'SELECT comicId FROM comicmetadata WHERE comicId = ?';
   const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
   const [detailsDbRes, updateDbRes] = await Promise.all([
@@ -66,21 +66,21 @@ export async function unlistComic(
     };
   }
 
-  let unpublishedDbRes: DBResponse<any>;
+  let metadataDbRes: DBResponse<any>;
   if (detailsDbRes.result?.length === 0) {
     const insertQuery =
-      'INSERT INTO unpublishedcomic (comicId, unlistComment) VALUES (?, ?)';
-    unpublishedDbRes = await queryDb(urlBase, insertQuery, [comicId, unlistComment]);
+      'INSERT INTO comicmetadata (comicId, unlistComment) VALUES (?, ?)';
+    metadataDbRes = await queryDb(urlBase, insertQuery, [comicId, unlistComment]);
   } else {
-    const updateQuery = 'UPDATE unpublishedcomic SET unlistComment = ? WHERE comicId = ?';
-    unpublishedDbRes = await queryDb(urlBase, updateQuery, [unlistComment, comicId]);
+    const updateQuery = 'UPDATE comicmetadata SET unlistComment = ? WHERE comicId = ?';
+    metadataDbRes = await queryDb(urlBase, updateQuery, [unlistComment, comicId]);
   }
 
-  if (unpublishedDbRes.errorMessage) {
+  if (metadataDbRes.errorMessage) {
     return {
       clientMessage: 'Error unlisting comic',
-      logMessage: `Error unlisting comic, could not insert/update unpublishedcomic`,
-      error: unpublishedDbRes,
+      logMessage: `Error unlisting comic, could not insert/update comicmetadata`,
+      error: metadataDbRes,
     };
   }
 }

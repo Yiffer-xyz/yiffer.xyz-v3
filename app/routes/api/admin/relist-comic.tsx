@@ -35,12 +35,11 @@ export async function relistComic(
   comicId: number
 ): Promise<ApiError | undefined> {
   const comicQuery = `UPDATE comic SET publishStatus = 'published' WHERE id = ?`;
-  const unpublishedQuery =
-    'UPDATE unpublishedcomic SET unlistComment = NULL WHERE comicId = ?';
+  const metadataQuery = 'UPDATE comicmetadata SET unlistComment = NULL WHERE comicId = ?';
 
-  const [comicDbRes, unpublishedDbRes] = await Promise.all([
+  const [comicDbRes, metadataDbRes] = await Promise.all([
     queryDb(urlBase, comicQuery, [comicId]),
-    queryDb(urlBase, unpublishedQuery, [comicId]),
+    queryDb(urlBase, metadataQuery, [comicId]),
   ]);
 
   if (comicDbRes.errorMessage) {
@@ -50,10 +49,10 @@ export async function relistComic(
       error: comicDbRes,
     };
   }
-  if (unpublishedDbRes.errorMessage) {
+  if (metadataDbRes.errorMessage) {
     return {
       clientMessage: 'Error relisting comic',
-      logMessage: `Error relisting comic with id ${comicId}. Could not update unpublishedcomic table.`,
+      logMessage: `Error relisting comic with id ${comicId}. Could not update comicmetadata table.`,
       error: comicDbRes,
     };
   }

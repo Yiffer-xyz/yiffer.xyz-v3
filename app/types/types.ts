@@ -46,7 +46,7 @@ export type Comic = {
   tags: Tag[];
   published?: string;
   updated?: string;
-  unpublishedData?: UnpublishedComicData;
+  metadata?: ComicMetadata;
 };
 
 export type ComicPublishStatus =
@@ -93,7 +93,7 @@ export type ComicUploadVerdict =
   | 'rejected'
   | 'rejected-list';
 
-export type UnpublishedComicData = {
+export type ComicMetadata = {
   timestamp: string;
   errorText?: string;
   publishDate?: string;

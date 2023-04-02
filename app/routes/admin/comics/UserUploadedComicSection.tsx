@@ -58,10 +58,8 @@ export default function UserUploadSection({
         This comic is not live. It has been uploaded by a user and is now up for mod
         review.
       </p>
-      <p>Uploaded by {comicData.unpublishedData?.uploadUsername}.</p>
-      <p>
-        Uploaded {format(new Date(comicData.unpublishedData?.timestamp || ''), 'PPPPp')}
-      </p>
+      <p>Uploaded by {comicData.metadata?.uploadUsername}.</p>
+      <p>Uploaded {format(new Date(comicData.metadata?.timestamp || ''), 'PPPPp')}</p>
 
       <h4 className="mt-4">Review submission</h4>
       <p>

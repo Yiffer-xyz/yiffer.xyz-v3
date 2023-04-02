@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Button from '~/components/Buttons/Button';
-import { Comic, UnpublishedComicData } from '~/types/types';
+import { Comic, ComicMetadata } from '~/types/types';
 import { useFetcher, useNavigate } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { HasError, SetError } from './pending/Error';
@@ -21,7 +21,7 @@ export default function PendingComicSection({
   updateComic,
 }: PendingComicSectionProps) {
   const navigate = useNavigate();
-  const unpublishedData = comicData.unpublishedData as UnpublishedComicData;
+  const metadata = comicData.metadata as ComicMetadata;
   const [actionState, setActionState] = useState<ActionState>('none');
   const publishNowFetcher = useFetcher();
   const addToPublishingQueueFetcher = useFetcher();
@@ -29,7 +29,7 @@ export default function PendingComicSection({
   const comicState = useMemo(() => {
     if (comicData.publishStatus === 'rejected') return 'rejected';
     if (comicData.publishStatus === 'scheduled') return 'scheduled';
-    if (unpublishedData.errorText) return 'has-error';
+    if (metadata.errorText) return 'has-error';
     return 'initial';
   }, [comicData]);
 

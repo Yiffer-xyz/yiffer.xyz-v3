@@ -32,7 +32,7 @@ export default function UnlistedComicSection({
       </p>
 
       <p>
-        <b>Reason for unlisting</b>: {comicData.unpublishedData?.unlistComment}
+        <b>Reason for unlisting</b>: {comicData.metadata?.unlistComment}
       </p>
 
       {fetcher.data?.error && (
