@@ -28,6 +28,7 @@ export async function loader(args: LoaderArgs) {
     getAllComicNamesAndIDs(urlBase, {
       modifyNameIncludeType: true,
       includeUnlisted: true,
+      includeThumbnailStatus: true,
     }),
     getAllArtists(urlBase, {
       includePending: true,
@@ -138,6 +139,11 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             href="/admin/tags"
             text="Tag manager"
             isSelected={isRoute('tags')}
+          />
+          <SidebarLink
+            href="/admin/thumbnails"
+            text="Update thumbnails"
+            isSelected={isRoute('thumbnails')}
           />
         </div>
       </div>

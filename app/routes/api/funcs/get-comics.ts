@@ -1,6 +1,14 @@
-import { ComicTiny } from '~/types/types';
+import { ComicPublishStatus, ComicTiny } from '~/types/types';
 import { queryDb, queryDbDirect } from '~/utils/database-facade';
 import { ApiError } from '~/utils/request-helpers';
+
+type DbComicTiny = {
+  name: string;
+  id: number;
+  publishStatus: ComicPublishStatus;
+  hasHighresThumbnail?: 0 | 1;
+  published?: string;
+};
 
 export async function getAllComicNamesAndIDs(
   urlBase: string,
@@ -8,10 +16,18 @@ export async function getAllComicNamesAndIDs(
     modifyNameIncludeType?: boolean;
     includeRejectedList?: boolean;
     includeUnlisted?: boolean;
+    includeThumbnailStatus?: boolean; // TODO: Remove once all thumbnails are fixed
   }
 ): Promise<ComicTiny[]> {
+  const thumbnailQuery = options?.includeThumbnailStatus
+    ? ', hasHighresThumbnail, published'
+    : '';
+
   let query =
-    'SELECT name, id, publishStatus FROM comic WHERE publishStatus != "rejected"';
+    'SELECT name, id, publishStatus' +
+    thumbnailQuery +
+    ' FROM comic WHERE publishStatus != "rejected"';
+
   if (!options?.includeRejectedList) {
     query += ' AND publishStatus != "rejected-list" ';
   }
@@ -19,11 +35,19 @@ export async function getAllComicNamesAndIDs(
     query += ' AND publishStatus != "unlisted" ';
   }
 
-  const response = await queryDbDirect<ComicTiny[]>(urlBase, query);
+  const response = await queryDbDirect<DbComicTiny[]>(urlBase, query);
 
-  if (!options?.modifyNameIncludeType) return response;
+  const comics: ComicTiny[] = response.map(comic => ({
+    name: comic.name,
+    id: comic.id,
+    publishStatus: comic.publishStatus,
+    temp_published: comic.published,
+    temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
+  }));
 
-  const mappedComics = addStateToComicNames(response);
+  if (!options?.modifyNameIncludeType) return comics;
+
+  const mappedComics = addStateToComicNames(comics);
   return mappedComics;
 }
 

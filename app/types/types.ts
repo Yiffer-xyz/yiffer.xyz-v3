@@ -62,6 +62,8 @@ export type ComicTiny = {
   id: number;
   name: string;
   publishStatus: ComicPublishStatus;
+  temp_hasHighresThumbnail?: boolean; // TODO: Remove when thumbnails have been fixed
+  temp_published?: string; // TODO: Remove when thumbnails have been fixed
 };
 
 export type DbPendingComic = {
