@@ -15,7 +15,7 @@ import { getArtistByComicId } from '../funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
 
 export async function action(args: ActionArgs) {
-  await redirectIfNotMod(args);
+  const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
 
   const formDataBody = await args.request.formData();
@@ -45,20 +45,28 @@ export async function action(args: ActionArgs) {
     queryParams = [newComicName, comicId];
   }
 
-  const [artistRes, updateComicDbRes] = await Promise.all([
+  const metadataQuery = `UPDATE comicmetadata SET modId = ? WHERE comicId = ?`;
+  const metadataQueryParams = [user.userId, comicId];
+
+  const [artistRes, updateComicDbRes, metadataDbRes] = await Promise.all([
     getArtistByComicId(urlBase, comicId),
     queryDb(urlBase, query, queryParams),
+    queryDb(urlBase, metadataQuery, metadataQueryParams),
   ]);
 
   if (updateComicDbRes.errorMessage) {
-    logError(`Error processing anon upload`, updateComicDbRes);
+    logError(`Error processing anon upload, comic table`, updateComicDbRes);
+    return create500Json('Error processing upload');
+  }
+  if (metadataDbRes.errorMessage) {
+    logError('Error processing anon upload, metadata table', metadataDbRes);
     return create500Json('Error processing upload');
   }
   if (artistRes.notFound) {
     return create400Json('Artist not found');
   }
   if (artistRes.err) {
-    logError('Error processing anon upload', artistRes.err);
+    logError('Error processing anon upload, artist table', artistRes.err);
     return create500Json(artistRes.err.clientMessage);
   }
   const artist = artistRes.artist as Artist;

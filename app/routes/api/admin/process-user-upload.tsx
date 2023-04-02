@@ -15,7 +15,7 @@ import { getArtistByComicId } from '../funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
 
 export async function action(args: ActionArgs) {
-  await redirectIfNotMod(args);
+  const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
 
   const formDataBody = await args.request.formData();
@@ -33,6 +33,7 @@ export async function action(args: ActionArgs) {
   const comicId = parseInt(formComicId.toString());
 
   const err = await processUserUpload(
+    user.userId,
     urlBase,
     comicId,
     formComicName.toString(),
@@ -52,6 +53,7 @@ export async function action(args: ActionArgs) {
 }
 
 export async function processUserUpload(
+  modId: number,
   urlBase: string,
   comicId: number,
   comicName: string,
@@ -118,8 +120,9 @@ export async function processUserUpload(
     SET
       verdict = ?,
       modComment = ?
+      modId = ?
     WHERE comicId = ?`;
-  let detailsQueryParams = [verdict, modComment, comicId];
+  let detailsQueryParams = [verdict, modComment, modId, comicId];
 
   if (frontendVerdict === 'rejected') {
     detailsQuery = `
@@ -127,10 +130,11 @@ export async function processUserUpload(
       SET
         verdict = ?,
         modComment = ?,
+        modId = ?
         originalNameIfRejected = ?,
         originalArtistIfRejected = ?
       WHERE comicId = ?`;
-    detailsQueryParams = [verdict, modComment, comicName, artist.name, comicId];
+    detailsQueryParams = [verdict, modComment, modId, comicName, artist.name, comicId];
   }
 
   if (frontendVerdict === 'rejected-list') {
@@ -139,9 +143,10 @@ export async function processUserUpload(
       SET
         verdict = ?,
         modComment = ?,
+        modId = ?
         originalArtistIfRejected = ?,
       WHERE comicId = ?`;
-    detailsQueryParams = [verdict, modComment, artist.name, comicId];
+    detailsQueryParams = [verdict, modComment, modId, artist.name, comicId];
   }
 
   const detailsDbRes = await queryDb(urlBase, detailsQuery, detailsQueryParams);

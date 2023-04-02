@@ -12,13 +12,15 @@ type UsernameAndUserId = {
   userId: number;
 };
 
+export type DashboardActionType =
+  | 'tagSuggestion'
+  | 'comicProblem'
+  | 'comicSuggestion'
+  | 'comicUpload'
+  | 'pendingComicProblem';
+
 export type DashboardAction = {
-  type:
-    | 'tagSuggestion'
-    | 'comicProblem'
-    | 'comicSuggestion'
-    | 'comicUpload'
-    | 'pendingComicProblem';
+  type: DashboardActionType;
   id: number;
   comicId?: number;
   primaryField: string;
@@ -323,7 +325,16 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
 
   const result = await queryDbDirect<DbComicUpload[]>(urlBase, query);
 
-  const mappedResults: DashboardAction[] = result.map(dbComicUpload => {
+  console.log('result', result);
+
+  // If a mod uploads, it skips the verification and goes straight to pending
+  // In these cases, don't show in the dashboard. This is the only case where it
+  // will be not uploaded but lack a modId.
+  const notModUploads = result.filter(
+    dbComicUpload => !(dbComicUpload.publishStatus !== 'uploaded' && !dbComicUpload.modId)
+  );
+
+  const mappedResults: DashboardAction[] = notModUploads.map(dbComicUpload => {
     let fullVerdictText = '';
     const isProcessed = dbComicUpload.publishStatus !== 'uploaded';
 

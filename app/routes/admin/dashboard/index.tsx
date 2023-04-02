@@ -15,12 +15,8 @@ import Link from '~/components/Link';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
 import { MdOpenInNew } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
-
-export type TagSuggestionAction = DashboardAction & {
-  isAdding: boolean;
-  tagId: number;
-  comicId: number;
-};
+import { TagSuggestion, TagSuggestionAction } from './TagSuggestion';
+import { ComicUpload } from './ComicUpload';
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
@@ -70,7 +66,7 @@ export default function Dashboard({}) {
       isApproved,
       actionId: action.id,
       isAdding: action.isAdding,
-      comicId: action.comicId,
+      comicId: action.comicId!,
       tagId: action.tagId,
     };
 
@@ -92,6 +88,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction('assign');
+
     assignModFetcher.submit(
       { body: JSON.stringify(body) },
       { method: 'post', action: '/api/admin/assign-action' }
@@ -169,94 +166,77 @@ export default function Dashboard({}) {
         </>
       )}
 
-      {allDashboardItems.map(action => (
-        <div className="flex flex-col gap-2 md:flex-row justify-between p-3 w-full mb-4 max-w-3xl shadow-md rounded bg-white dark:bg-gray-400">
-          {action.type === 'tagSuggestion' && (
-            <TagSuggestion
-              action={action as TagSuggestionAction}
-              onProcessSuggestion={processTagSuggestion}
-              loadingAction={latestSubmittedAction}
-              isLoading={
-                latestSubmittedId === action.id &&
-                processTagFetcher.state === 'submitting'
-              }
-            />
-          )}
+      {allDashboardItems.map(action => {
+        const isAssignedToOther =
+          !action.isProcessed &&
+          action.assignedMod &&
+          action.assignedMod.userId !== user.userId;
 
-          {action.type !== 'tagSuggestion' && (
-            <pre>{JSON.stringify(action, null, 2)}</pre>
-          )}
-        </div>
-      ))}
-    </>
-  );
-}
+        const isAssignedToMe =
+          !action.isProcessed &&
+          action.assignedMod &&
+          action.assignedMod.userId === user.userId;
 
-type TagSuggestionProps = {
-  action: TagSuggestionAction;
-  onProcessSuggestion: (action: TagSuggestionAction, isApproved: boolean) => void;
-  isLoading: boolean;
-  loadingAction?: string;
-};
+        let assignationBgClass = 'bg-white dark:bg-gray-400';
+        if (isAssignedToOther) {
+          assignationBgClass = 'bg-gray-900 dark:bg-gray-300';
+        }
+        if (isAssignedToMe) {
+          assignationBgClass = 'bg-theme1-primaryLessTrans dark:bg-theme1-primaryTrans';
+        }
+        if (action.isProcessed) {
+          assignationBgClass = 'bg-gray-800 dark:bg-gray-250';
+        }
 
-function TagSuggestion({
-  action,
-  onProcessSuggestion,
-  isLoading,
-  loadingAction,
-}: TagSuggestionProps) {
-  return (
-    <>
-      <div className="flex flex-col justify-between gap-2">
-        <Chip color="#51bac8" text="Tag suggestion" />
-        <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-          <div className="flex flex-row gap-x-3">
-            <b>{action.primaryField}</b>
-            <Link
-              href={`/admin/comics/${action.comicId!}`}
-              text="Admin"
-              IconRight={MdOpenInNew}
-              newTab
-            />
-            <Link
-              href={`/comics/${action.primaryField}`}
-              text="Live"
-              IconRight={MdOpenInNew}
-              newTab
-            />
+        return (
+          <div
+            className={`flex flex-col gap-2 md:flex-row justify-between
+              p-3 w-full mb-4 max-w-3xl shadow-md rounded 
+              ${assignationBgClass}
+            `}
+          >
+            {action.type === 'tagSuggestion' && (
+              <TagSuggestion
+                action={action as TagSuggestionAction}
+                onProcessSuggestion={processTagSuggestion}
+                loadingAction={latestSubmittedAction}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  processTagFetcher.state === 'submitting'
+                }
+              />
+            )}
+
+            {action.type === 'comicUpload' && (
+              <ComicUpload
+                action={action}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (assignModFetcher.state === 'submitting' ||
+                    unassignModFetcher.state === 'submitting')
+                }
+                loadingAction={latestSubmittedAction}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+              />
+            )}
+
+            {!['tagSuggestion', 'comicUpload'].includes(action.type) && (
+              <p>a</p>
+              // <pre>{JSON.stringify(action, null, 2)}</pre>
+            )}
           </div>
-          <p>{action.secondaryField}</p>
-        </div>
-      </div>
-      <div className="flex flex-col md:items-end justify-between gap-2">
-        <p className="text-sm">
-          {action.user.username || action.user.ip}
-          {' - '}
-          {getTimeAgo(action.timestamp)}
-        </p>
-
-        <div className="flex flex-row gap-2 self-end">
-          <LoadingButton
-            color="error"
-            onClick={() => onProcessSuggestion(action, false)}
-            text="Reject"
-            isLoading={isLoading && loadingAction === 'reject-tag'}
-          />
-          <LoadingButton
-            color="primary"
-            onClick={() => onProcessSuggestion(action, true)}
-            text="Approve"
-            isLoading={isLoading && loadingAction === 'approve-tag'}
-          />
-        </div>
-      </div>
+        );
+      })}
     </>
   );
 }
 
-function getTimeAgo(time: string) {
+export function getTimeAgo(time: string) {
   const timeAgo = formatDistanceToNow(new Date(time), {
-    addSuffix: true,
+    addSuffix: false,
   });
 
   return timeAgo;

@@ -1,10 +1,11 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
+import { DashboardActionType } from './dashboard-data';
 
 export type AssignActionBody = {
   actionId: number;
-  actionType: string;
+  actionType: DashboardActionType;
   modId: number;
 };
 
@@ -21,11 +22,18 @@ export async function action(args: ActionArgs) {
 async function assignActionToMod(
   urlBase: string,
   actionId: number,
-  actionType: string,
+  actionType: DashboardActionType,
   modId: number
 ) {
-  const tableToUpdate = actionType.toLowerCase();
-  const query = `UPDATE ${tableToUpdate} SET modId = ? WHERE id = ?`;
+  let table = '';
+  let identifyingColumn = '';
+
+  if (actionType === 'comicUpload') {
+    table = 'comicmetadata';
+    identifyingColumn = 'comicId';
+  }
+
+  const query = `UPDATE ${table} SET modId = ? WHERE ${identifyingColumn} = ?`;
   const queryParams = [modId, actionId];
 
   await queryDbDirect(urlBase, query, queryParams);
