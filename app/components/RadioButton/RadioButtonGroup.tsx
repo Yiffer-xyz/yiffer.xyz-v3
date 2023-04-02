@@ -52,31 +52,34 @@ export default function RadioButtonGroup<T>({
     direction === 'vertical' ? 'flex flex-col gap-2' : 'flex flex-row gap-6';
 
   return (
-    <div className={`flex flex-col ${className}`}>
-      {title && <label className="mb-2">{title}</label>}
-      <div className={wrapperClassName} onBlur={() => setCurrentlyHighlightedIndex(-1)}>
-        {options.map((option, index) => (
-          <div
-            key={index}
-            className="flex flex-row items-center cursor-pointer outline-none"
-            onClick={() => onChange(option.value)}
-            onKeyDown={e => onKeyDown(e, index)}
-            tabIndex={0}
-            onFocus={() => setCurrentlyHighlightedIndex(index)}
-          >
+    <>
+      <div className={`flex flex-col ${className}`}>
+        {title && <label className="mb-2">{title}</label>}
+        <div className={wrapperClassName} onBlur={() => setCurrentlyHighlightedIndex(-1)}>
+          {options.map((option, index) => (
             <div
-              className={`flex flex-shrink-0 items-center justify-center w-5 h-5 rounded-full border
+              key={index}
+              className="flex flex-row items-center cursor-pointer outline-none"
+              onClick={() => onChange(option.value)}
+              onKeyDown={e => onKeyDown(e, index)}
+              tabIndex={0}
+              onFocus={() => setCurrentlyHighlightedIndex(index)}
+            >
+              <div
+                className={`flex flex-shrink-0 items-center justify-center w-5 h-5 rounded-full border
                 border-gray-800 dark:border-gray-600 
               ${currentlyHighlightedIndex === index ? ' bg-theme1-primaryTrans' : ''}`}
-            >
-              {value === option.value && (
-                <div className="w-2 h-2 rounded-full bg-theme1-dark dark:bg-theme1-primary" />
-              )}
+              >
+                {value === option.value && (
+                  <div className="w-2 h-2 rounded-full bg-theme1-dark dark:bg-theme1-primary" />
+                )}
+              </div>
+              <div className="ml-2 text-sm">{option.text}</div>
             </div>
-            <div className="ml-2 text-sm">{option.text}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+      <input type="hidden" name={name} value={value?.toString() || ''} />
+    </>
   );
 }

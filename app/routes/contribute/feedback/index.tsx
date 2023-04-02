@@ -3,6 +3,7 @@ import { Form, useActionData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
+import RadioButtonGroupUncontrolled from '~/components/RadioButton/RadioButtonGroupUncontrolled';
 import Textarea from '~/components/Textarea/Textarea';
 import TopGradientBox from '~/components/TopGradientBox';
 import { getUserSession } from '~/utils/auth.server';
@@ -13,11 +14,11 @@ import BackToContribute from '../BackToContribute';
 export const action: ActionFunction = async function ({ request, context }) {
   const reqBody = await request.formData();
   const urlBase = context.DB_API_URL_BASE as string;
-  const { feedbackText } = Object.fromEntries(reqBody);
+  const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
   const user = await getUserSession(request, context.JWT_CONFIG_STR as string);
 
-  let insertQuery = 'INSERT INTO feedback (Text, UserId) VALUES (?, ?)';
-  const insertParams = [feedbackText, user?.userId ?? null];
+  let insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
+  const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
 
   const dbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (dbRes.errorMessage) {
@@ -51,11 +52,27 @@ export default function Feedback() {
 
       <TopGradientBox containerClassName="my-10 mx-auto shadow-lg max-w-2xl">
         <Form method="post" className="mx-8 py-6">
-          <h3 className="pb-6">Submit feedback</h3>
+          <h3>Submit feedback</h3>
+
           {actionData?.success ? (
-            <InfoBox variant="success" text="Thank you for your feedback!" />
+            <InfoBox
+              variant="success"
+              text="Thank you for your feedback!"
+              className="mt-2"
+              disableElevation
+            />
           ) : (
             <>
+              <RadioButtonGroupUncontrolled
+                name="feedbackType"
+                title="Type of feedback"
+                className="mb-6 mt-2"
+                options={[
+                  { text: 'Bug report', value: 'bug' },
+                  { text: 'General feedback', value: 'general' },
+                ]}
+              />
+
               <Textarea
                 label="Your feedback"
                 name="feedbackText"
