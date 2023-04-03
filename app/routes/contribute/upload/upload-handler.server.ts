@@ -212,7 +212,7 @@ async function createArtist(
     };
   }
 
-  if (newArtist.links) {
+  if (newArtist.links && newArtist.links.length > 0) {
     const err = await createArtistLinks(urlBase, newArtist, artistId);
     if (err) {
       return { artistId: -1, err: wrapApiError(err, 'Error creating artist links') };

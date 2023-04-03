@@ -17,6 +17,7 @@ import { MdOpenInNew } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
 import { TagSuggestion, TagSuggestionAction } from './TagSuggestion';
 import { ComicUpload } from './ComicUpload';
+import { ComicSuggestion } from './ComicSuggestion';
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
@@ -78,7 +79,6 @@ export default function Dashboard({}) {
     );
   }
 
-  // TODO: USE IT (not tested)
   function assignActionToMod(action: DashboardAction) {
     const body: AssignActionBody = {
       actionId: action.id,
@@ -95,7 +95,6 @@ export default function Dashboard({}) {
     );
   }
 
-  // TODO: USE IT (not tested)
   function unassignActionFromMod(action: DashboardAction) {
     const body: UnAssignActionBody = {
       actionId: action.id,
@@ -151,11 +150,6 @@ export default function Dashboard({}) {
     <>
       <h1>Action dashboard</h1>
 
-      <InfoBox variant="info">
-        The tag suggestions are safe to approve/reject, the back-end has been set to just
-        wait 2 sec then do nothing.
-      </InfoBox>
-
       {allDashboardItems.length === 0 && (
         <>
           {Array(6)
@@ -177,21 +171,22 @@ export default function Dashboard({}) {
           action.assignedMod &&
           action.assignedMod.userId === user.userId;
 
-        let assignationBgClass = 'bg-white dark:bg-gray-400';
+        let assignationBgClass = 'bg-white dark:bg-gray-400 shadow-md';
         if (isAssignedToOther) {
           assignationBgClass = 'bg-gray-900 dark:bg-gray-300';
         }
         if (isAssignedToMe) {
-          assignationBgClass = 'bg-theme1-primaryLessTrans dark:bg-theme1-primaryTrans';
+          assignationBgClass =
+            'bg-theme1-primaryLessTrans dark:bg-theme1-primaryTrans shadow-md';
         }
         if (action.isProcessed) {
           assignationBgClass = 'bg-gray-800 dark:bg-gray-250';
         }
+        const innerContainerClassName = `flex flex-col gap-2 md:flex-row justify-between`;
 
         return (
           <div
-            className={`flex flex-col gap-2 md:flex-row justify-between
-              p-3 w-full mb-4 max-w-3xl shadow-md rounded 
+            className={`p-3 w-full mb-4 max-w-3xl rounded 
               ${assignationBgClass}
             `}
           >
@@ -204,6 +199,7 @@ export default function Dashboard({}) {
                   latestSubmittedId === action.id &&
                   processTagFetcher.state === 'submitting'
                 }
+                innerContainerClassName={innerContainerClassName}
               />
             )}
 
@@ -220,10 +216,32 @@ export default function Dashboard({}) {
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}
                 isAssignedToMe={isAssignedToMe}
+                innerContainerClassName={innerContainerClassName}
               />
             )}
 
-            {!['tagSuggestion', 'comicUpload'].includes(action.type) && (
+            {action.type === 'comicSuggestion' && (
+              <ComicSuggestion
+                action={action}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
+                onProcessed={processComicSuggestion}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (assignModFetcher.state === 'submitting' ||
+                    unassignModFetcher.state === 'submitting' ||
+                    comicSuggestionFetcher.state === 'submitting')
+                }
+                loadingAction={latestSubmittedAction}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+                innerContainerClassName={innerContainerClassName}
+              />
+            )}
+
+            {!['tagSuggestion', 'comicUpload', 'comicSuggestion'].includes(
+              action.type
+            ) && (
               <p>a</p>
               // <pre>{JSON.stringify(action, null, 2)}</pre>
             )}

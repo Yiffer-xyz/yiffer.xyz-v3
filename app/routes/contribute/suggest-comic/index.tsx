@@ -434,6 +434,7 @@ export default function Upload() {
                   variant="contained"
                   color="primary"
                   disabled={isSubmitDisabled}
+                  isSubmit
                 />
               </div>
             </Form>

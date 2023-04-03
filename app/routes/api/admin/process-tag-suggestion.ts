@@ -1,6 +1,7 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
+import { createSuccessJson } from '~/utils/request-helpers';
 
 export type ProcessTagSuggestionBody = {
   isApproved: boolean;
@@ -10,7 +11,6 @@ export type ProcessTagSuggestionBody = {
   tagId: number;
 };
 
-// The remix route handler
 export async function action(args: ActionArgs) {
   const { fields, isUnauthorized, user } = await parseFormJson<ProcessTagSuggestionBody>(
     args,
@@ -18,11 +18,6 @@ export async function action(args: ActionArgs) {
   );
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
   const urlBase = args.context.DB_API_URL_BASE as string;
-
-  // TODO: Let this stand for now. Just to simluate loading etc in front-end
-  // without "ruining" the nice testdata in the db.
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  return new Response('OK', { status: 200 });
 
   await processTagSuggestion(
     urlBase,
@@ -34,10 +29,9 @@ export async function action(args: ActionArgs) {
     fields.tagId
   );
 
-  return new Response('OK', { status: 200 });
+  return createSuccessJson();
 }
 
-// The actual logic
 async function processTagSuggestion(
   urlBase: string,
   modId: number,
@@ -66,6 +60,4 @@ async function processTagSuggestion(
   }
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
-
-  return;
 }

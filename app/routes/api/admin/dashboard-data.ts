@@ -292,6 +292,7 @@ type DbComicUpload = {
   timestamp: string;
   uploadUserId?: number;
   uploadUserIP?: string;
+  originalNameIfRejected?: string;
   uploadUsername?: string;
   modId?: number;
   modName?: string;
@@ -312,6 +313,7 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
           timestamp,
           comicmetadata.uploadUserId,
           comicmetadata.uploadUserIP,
+          comicmetadata.originalNameIfRejected,
           user.username AS uploadUsername,
           modId,
           modComment
@@ -325,8 +327,6 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
 
   const result = await queryDbDirect<DbComicUpload[]>(urlBase, query);
 
-  console.log('result', result);
-
   // If a mod uploads, it skips the verification and goes straight to pending
   // In these cases, don't show in the dashboard. This is the only case where it
   // will be not uploaded but lack a modId.
@@ -338,6 +338,17 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
     let fullVerdictText = '';
     const isProcessed = dbComicUpload.publishStatus !== 'uploaded';
 
+    if (isProcessed && !dbComicUpload.uploadUserId) {
+      if (dbComicUpload.publishStatus === 'pending') {
+        fullVerdictText = 'Approved, set to pending';
+      }
+      if (dbComicUpload.publishStatus === 'rejected') {
+        fullVerdictText = 'Rejected';
+      }
+      if (dbComicUpload.publishStatus === 'rejected-list') {
+        fullVerdictText = 'Rejected, added to ban list';
+      }
+    }
     if (isProcessed && dbComicUpload.verdict) {
       const verdictText =
         CONTRIBUTION_POINTS.comicUpload[dbComicUpload.verdict].actionDashboardDescription;
@@ -353,11 +364,16 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
       }
     }
 
+    let comicName = dbComicUpload.comicName;
+    if (dbComicUpload.publishStatus === 'rejected') {
+      comicName = dbComicUpload.originalNameIfRejected || comicName;
+    }
+
     return {
       type: 'comicUpload',
       id: dbComicUpload.id,
       comicId: dbComicUpload.comicId,
-      primaryField: `${dbComicUpload.comicName} - ${dbComicUpload.artistName}`,
+      primaryField: `${comicName} - ${dbComicUpload.artistName}`,
       isProcessed: dbComicUpload.publishStatus !== 'uploaded',
       timestamp: dbComicUpload.timestamp,
       user: dbComicUpload.uploadUsername

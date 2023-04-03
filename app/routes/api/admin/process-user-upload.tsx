@@ -1,5 +1,5 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { Artist, ComicUploadVerdict } from '~/types/types';
+import { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -60,16 +60,44 @@ export async function processUserUpload(
   frontendVerdict: ComicUploadVerdict,
   modComment?: string
 ): Promise<ApiError | undefined> {
-  let publishStatus = 'pending';
-  let verdict: ComicUploadVerdict = frontendVerdict.toString() as ComicUploadVerdict;
+  let publishStatus: ComicPublishStatus = 'pending';
+  let metadataVerdict: ComicUploadVerdict =
+    frontendVerdict.toString() as ComicUploadVerdict;
   if (frontendVerdict === 'rejected') publishStatus = 'rejected';
   if (frontendVerdict === 'rejected-list') {
     publishStatus = 'rejected-list';
-    verdict = 'rejected';
+    metadataVerdict = 'rejected';
   }
 
+  const err = await processAnyUpload(
+    modId,
+    urlBase,
+    comicId,
+    comicName,
+    modComment,
+    publishStatus,
+    frontendVerdict,
+    metadataVerdict
+  );
+
+  if (err) {
+    return wrapApiError(err, 'Error processing logged-in-user upload');
+  }
+}
+
+export async function processAnyUpload(
+  modId: number,
+  urlBase: string,
+  comicId: number,
+  comicName: string,
+  modComment: string | undefined,
+  publishStatus: ComicPublishStatus,
+  frontendVerdict: ComicUploadVerdict,
+  metadataVerdict: ComicUploadVerdict | undefined
+): Promise<ApiError | undefined> {
   let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
-  let comicQueryParams = [publishStatus, comicId];
+  let comicQueryParams: any[] = [publishStatus, comicId];
+  const isRejected = publishStatus === 'rejected' || publishStatus === 'rejected-list';
 
   if (frontendVerdict === 'rejected') {
     const randomStr = randomString(6);
@@ -99,11 +127,11 @@ export async function processUserUpload(
   if (artistRes.err) {
     return wrapApiError(artistRes.err, `Error getting artist (processUserUpload)`);
   }
-  const artist = artistRes.artist as Artist;
+  const artist = artistRes.artist!;
 
   if (artist.isPending) {
     let pendingErr: ApiError | undefined;
-    if (verdict === 'rejected' || verdict === 'rejected-list') {
+    if (isRejected) {
       const rejectRes = await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
       pendingErr = rejectRes.err;
     } else {
@@ -115,46 +143,85 @@ export async function processUserUpload(
     }
   }
 
-  let detailsQuery = `
+  let metadataQuery = 'UPDATE comicmetadata SET modId = ? WHERE comicId = ?';
+  let metadataQueryParams: any[] = [modId, comicId];
+
+  if (metadataVerdict) {
+    metadataQuery = `
     UPDATE comicmetadata 
     SET
       verdict = ?,
-      modComment = ?
+      modComment = ?,
       modId = ?
     WHERE comicId = ?`;
-  let detailsQueryParams = [verdict, modComment, modId, comicId];
+    metadataQueryParams = [metadataVerdict, modComment, modId, comicId];
+  }
 
   if (frontendVerdict === 'rejected') {
-    detailsQuery = `
-      UPDATE comicmetadata
-      SET
-        verdict = ?,
-        modComment = ?,
-        modId = ?
-        originalNameIfRejected = ?,
-        originalArtistIfRejected = ?
-      WHERE comicId = ?`;
-    detailsQueryParams = [verdict, modComment, modId, comicName, artist.name, comicId];
+    if (metadataVerdict) {
+      // For user uploads
+      metadataQuery = `
+        UPDATE comicmetadata
+        SET
+          verdict = ?,
+          modComment = ?,
+          modId = ?,
+          originalNameIfRejected = ?,
+          originalArtistIfRejected = ?
+        WHERE comicId = ?`;
+      metadataQueryParams = [
+        metadataVerdict,
+        modComment,
+        modId,
+        comicName,
+        artist.name,
+        comicId,
+      ];
+    } else {
+      // For anon: Only names
+      metadataQuery = `
+        UPDATE comicmetadata
+        SET
+          modId = ?,
+          originalNameIfRejected = ?,
+          originalArtistIfRejected = ?
+        WHERE comicId = ?`;
+      metadataQueryParams = [modId, comicName, artist.name, comicId];
+    }
   }
 
   if (frontendVerdict === 'rejected-list') {
-    detailsQuery = `
+    if (metadataVerdict) {
+      // For user uploads
+      metadataQuery = `
       UPDATE comicmetadata
       SET
         verdict = ?,
         modComment = ?,
-        modId = ?
-        originalArtistIfRejected = ?,
+        modId = ?,
+        originalArtistIfRejected = ?
       WHERE comicId = ?`;
-    detailsQueryParams = [verdict, modComment, modId, artist.name, comicId];
+      metadataQueryParams = [metadataVerdict, modComment, modId, artist.name, comicId];
+    } else {
+      // For anon: Only names
+      metadataQuery = `
+        UPDATE comicmetadata
+        SET
+          modId = ?,
+          originalArtistIfRejected = ?
+        WHERE comicId = ?`;
+      metadataQueryParams = [modId, artist.name, comicId];
+    }
   }
 
-  const detailsDbRes = await queryDb(urlBase, detailsQuery, detailsQueryParams);
-  if (detailsDbRes.errorMessage) {
+  if (!metadataQuery) return;
+
+  const metadataDbRes = await queryDb(urlBase, metadataQuery, metadataQueryParams);
+  if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error updating comic details',
+      clientMessage: 'Error updating comic metadata',
       logMessage: `Error updating comicmetadata`,
-      error: detailsDbRes,
+      error: metadataDbRes,
     };
   }
 }

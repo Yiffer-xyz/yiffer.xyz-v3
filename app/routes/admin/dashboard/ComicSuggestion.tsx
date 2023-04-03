@@ -5,50 +5,52 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import Chip from '~/components/Chip';
 import Link from '~/components/Link';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
+import { ComicSuggestionVerdict } from '~/types/types';
 import { getTimeAgo } from '.';
 
-type ComicUploadProps = {
+type ComicSuggestionProps = {
   action: DashboardAction;
   isLoading: boolean;
   onAssignMe: (action: DashboardAction) => void;
   onUnassignMe: (action: DashboardAction) => void;
+  onProcessed: (
+    action: DashboardAction,
+    isApproved: boolean,
+    verdict?: ComicSuggestionVerdict,
+    modComment?: string
+  ) => void;
   loadingAction?: string;
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
 };
 
-export function ComicUpload({
+export function ComicSuggestion({
   action,
   isLoading,
   onAssignMe,
   onUnassignMe,
+  onProcessed,
   loadingAction,
   isAssignedToOther,
   isAssignedToMe,
   innerContainerClassName,
-}: ComicUploadProps) {
+}: ComicSuggestionProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div
-      className={`flex flex-col w-full gap-2 ${
-        action.isProcessed ? 'cursor-pointer' : ''
-      }`}
+      className="flex flex-col w-full gap-2 cursor-pointer"
       onClick={() => setIsOpen(!isOpen)}
     >
       <div className={innerContainerClassName}>
         <div className="flex flex-col justify-between gap-2">
-          <Chip color="#5d48b1" text="Comic upload" />
+          <Chip color="#c54b8d" text="Comic suggestion" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-            <div className="flex flex-row gap-x-3">
-              <Link
-                href={`/admin/comics/${action.comicId}`}
-                text={action.primaryField}
-                IconRight={MdOpenInNew}
-                newTab
-              />
-            </div>
+            <p>
+              <b>{action.primaryField}</b>
+            </p>
+            <p>{action.secondaryField}</p>
           </div>
         </div>
 
@@ -90,22 +92,25 @@ export function ComicUpload({
         </div>
       </div>
 
-      {action.isProcessed && (
+      {isOpen ? (
         <>
-          {isOpen ? (
-            <>
-              {action.isProcessed && (
-                <p>
-                  <b>Verdict: {action.verdict}</b>
-                </p>
-              )}
+          <p
+            className="whitespace-pre-wrap cursor-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            {action.description}
+          </p>
 
-              <IoCaretUp className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
-            </>
-          ) : (
-            <IoCaretDown className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
+          {action.isProcessed && (
+            <p>
+              <b>Verdict: {action.verdict}</b>
+            </p>
           )}
+
+          <IoCaretUp className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
         </>
+      ) : (
+        <IoCaretDown className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
       )}
     </div>
   );

@@ -10,6 +10,7 @@ type TagSuggestionProps = {
   onProcessSuggestion: (action: TagSuggestionAction, isApproved: boolean) => void;
   isLoading: boolean;
   loadingAction?: string;
+  innerContainerClassName: string;
 };
 
 export type TagSuggestionAction = DashboardAction & {
@@ -22,9 +23,10 @@ export function TagSuggestion({
   onProcessSuggestion,
   isLoading,
   loadingAction,
+  innerContainerClassName,
 }: TagSuggestionProps) {
   return (
-    <>
+    <div className={innerContainerClassName}>
       <div className="flex flex-col justify-between gap-2">
         <Chip color="#51bac8" text="Tag suggestion" />
         <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
@@ -53,21 +55,28 @@ export function TagSuggestion({
           {getTimeAgo(action.timestamp)}
         </p>
 
-        <div className="flex flex-row gap-2 self-end">
-          <LoadingButton
-            color="error"
-            onClick={() => onProcessSuggestion(action, false)}
-            text="Reject"
-            isLoading={isLoading && loadingAction === 'reject-tag'}
-          />
-          <LoadingButton
-            color="primary"
-            onClick={() => onProcessSuggestion(action, true)}
-            text="Approve"
-            isLoading={isLoading && loadingAction === 'approve-tag'}
-          />
-        </div>
+        {action.isProcessed && (
+          <p>
+            <i>Completed by: {action.assignedMod?.username}</i>
+          </p>
+        )}
+        {!action.isProcessed && (
+          <div className="flex flex-row gap-2 self-end">
+            <LoadingButton
+              color="error"
+              onClick={() => onProcessSuggestion(action, false)}
+              text="Reject"
+              isLoading={isLoading && loadingAction === 'reject-tag'}
+            />
+            <LoadingButton
+              color="primary"
+              onClick={() => onProcessSuggestion(action, true)}
+              text="Approve"
+              isLoading={isLoading && loadingAction === 'approve-tag'}
+            />
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
