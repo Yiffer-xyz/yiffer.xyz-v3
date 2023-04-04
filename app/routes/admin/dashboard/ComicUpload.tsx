@@ -5,6 +5,7 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import Chip from '~/components/Chip';
 import Link from '~/components/Link';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
+import { useTheme } from '~/utils/theme-provider';
 import { getTimeAgo } from '.';
 
 type ComicUploadProps = {
@@ -29,6 +30,8 @@ export function ComicUpload({
   innerContainerClassName,
 }: ComicUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [theme] = useTheme();
+  const themedColor = theme === 'light' ? '#8c7ad5' : '#6751be';
 
   return (
     <div
@@ -39,7 +42,7 @@ export function ComicUpload({
     >
       <div className={innerContainerClassName}>
         <div className="flex flex-col justify-between gap-2">
-          <Chip color="#5d48b1" text="Comic upload" />
+          <Chip color={themedColor} text="Comic upload" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
             <div className="flex flex-row gap-x-3">
               <Link

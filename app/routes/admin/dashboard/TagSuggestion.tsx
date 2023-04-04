@@ -3,6 +3,7 @@ import LoadingButton from '~/components/Buttons/LoadingButton';
 import Chip from '~/components/Chip';
 import Link from '~/components/Link';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
+import { useTheme } from '~/utils/theme-provider';
 import { getTimeAgo } from '.';
 
 type TagSuggestionProps = {
@@ -25,10 +26,13 @@ export function TagSuggestion({
   loadingAction,
   innerContainerClassName,
 }: TagSuggestionProps) {
+  const [theme] = useTheme();
+  const themedColor = theme === 'light' ? '#51bac8' : '#2299a9';
+
   return (
     <div className={innerContainerClassName}>
       <div className="flex flex-col justify-between gap-2">
-        <Chip color="#51bac8" text="Tag suggestion" />
+        <Chip color={themedColor} text="Tag suggestion" />
         <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
           <div className="flex flex-row gap-x-3">
             <b>{action.primaryField}</b>

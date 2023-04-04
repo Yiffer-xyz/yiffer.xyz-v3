@@ -8,6 +8,7 @@ import Chip from '~/components/Chip';
 import TextInput from '~/components/TextInput/TextInput';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
 import { ComicSuggestionVerdict } from '~/types/types';
+import { useTheme } from '~/utils/theme-provider';
 import { getTimeAgo } from '.';
 
 type ComicSuggestionProps = {
@@ -41,6 +42,8 @@ export function ComicSuggestion({
   const [isOpen, setIsOpen] = useState(false);
   const [isRejectingWithComment, setIsRejectingWithComment] = useState(false);
   const [rejectComment, setRejectComment] = useState('');
+  const [theme] = useTheme();
+  const themedColor = theme === 'light' ? '#db72ab' : '#c54b8d';
 
   const isChooseActionButtonLoading =
     isLoading &&
@@ -69,7 +72,7 @@ export function ComicSuggestion({
     >
       <div className={innerContainerClassName}>
         <div className="flex flex-col justify-between gap-2">
-          <Chip color="#c54b8d" text="Comic suggestion" />
+          <Chip color={themedColor} text="Comic suggestion" />
           <p>
             <b>{action.primaryField}</b>
           </p>
