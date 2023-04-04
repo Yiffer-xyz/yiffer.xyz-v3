@@ -27,7 +27,14 @@ export async function processUpload(
   let { err, comicId } = await createComic(urlBase, uploadBody, skipApproval);
   if (err) return err;
 
-  err = await createComicMetadata(urlBase, comicId, uploadBody, user?.userId, userIP);
+  err = await createComicMetadata(
+    urlBase,
+    comicId,
+    uploadBody,
+    skipApproval,
+    user?.userId,
+    userIP
+  );
   if (err) return err;
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
@@ -111,16 +118,23 @@ async function createComicMetadata(
   urlBase: string,
   comicId: number,
   uploadBody: UploadBody,
+  skipApproval: boolean,
   userId?: number,
   userIP?: string
 ): Promise<ApiError | undefined> {
   const query = `
     INSERT INTO comicmetadata
-    (comicId, uploadUserId, uploadUserIP, uploadId)
-    VALUES (?, ?, ?, ?)
+    (comicId, uploadUserId, uploadUserIP, uploadId, verdict)
+    VALUES (?, ?, ?, ?, ?)
   `;
 
-  const values = [comicId, userId || null, userIP || null, uploadBody.uploadId];
+  const values = [
+    comicId,
+    userId || null,
+    userIP || null,
+    uploadBody.uploadId,
+    skipApproval ? 'excellent' : null,
+  ];
 
   const dbRes = await queryDb(urlBase, query, values);
   if (dbRes.errorMessage) {

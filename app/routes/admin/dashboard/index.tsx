@@ -230,7 +230,7 @@ export default function Dashboard({}) {
             .fill(0)
             .map((_, i) => (
               <div
-                className="w-full h-28 mb-3 bg-gray-900 dark:bg-gray-300 rounded"
+                className="w-full max-w-3xl h-20 mb-4 bg-gray-900 dark:bg-gray-300 rounded"
                 key={i}
               />
             ))}

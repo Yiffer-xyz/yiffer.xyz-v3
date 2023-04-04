@@ -1,10 +1,4 @@
-import {
-  ActionArgs,
-  ActionFunction,
-  json,
-  LoaderArgs,
-  LoaderFunction,
-} from '@remix-run/cloudflare';
+import { ActionArgs, json, LoaderArgs } from '@remix-run/cloudflare';
 import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -12,7 +6,7 @@ import InfoBox from '~/components/InfoBox';
 import { getAllArtists } from '~/routes/api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from '~/routes/api/funcs/get-comics';
 import { getAllTags } from '~/routes/api/funcs/get-tags';
-import { ArtistTiny, ComicTiny, Tag, UserSession } from '~/types/types';
+import { ComicTiny, Tag } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import Step1 from './step1';

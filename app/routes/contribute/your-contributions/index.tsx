@@ -187,50 +187,58 @@ export default function YourContributions() {
 
       {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
 
-      <Table horizontalScroll={true} className="mx-auto mt-8">
-        <TableHeadRow isTableMaxHeight={false}>
-          <TableCell>Contribution</TableCell>
-          <TableCell>Status</TableCell>
-          <TableCell>Date</TableCell>
-          <TableCell>Points</TableCell>
-          <TableCell>Mod comment</TableCell>
-          <TableCell>Contribution Details</TableCell>
-        </TableHeadRow>
-        <TableBody>
-          {contributions.map((contribution, index) => (
-            <TableRow
-              key={contribution.comicName + index}
-              className="border-b border-gray-800 dark:border-gray-500"
-            >
-              <TableCell>
-                <p className="font-extralight">{getContributionName(contribution)}</p>
-              </TableCell>
-              <TableCell>
-                <p
-                  className={`${getContributionStatusColor(
-                    contribution.status
-                  )} font-extralight`}
-                >
-                  {capitalizeString(contribution.status)}
-                </p>
-              </TableCell>
-              <TableCell>
-                <p className="font-extralight">{getDate(contribution.timestamp)}</p>
-              </TableCell>
-              <TableCell>
-                <p className="font-semibold">{contribution.points || '-'}</p>
-                <p className="font-extralight">{contribution.pointsDescription}</p>
-              </TableCell>
-              <TableCell>
-                <p className="font-extralight">{contribution.modComment || '-'}</p>
-              </TableCell>
-              <TableCell>
-                <p className="font-extralight">{getContributionDetails(contribution)}</p>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {contributions.length > 0 && (
+        <Table horizontalScroll={true} className="mx-auto mt-8">
+          <TableHeadRow isTableMaxHeight={false}>
+            <TableCell>Contribution</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell>Points</TableCell>
+            <TableCell>Mod comment</TableCell>
+            <TableCell>Contribution Details</TableCell>
+          </TableHeadRow>
+          <TableBody>
+            {contributions.map((contribution, index) => (
+              <TableRow
+                key={contribution.comicName + index}
+                className="border-b border-gray-800 dark:border-gray-500"
+              >
+                <TableCell>
+                  <p className="font-extralight">{getContributionName(contribution)}</p>
+                </TableCell>
+                <TableCell>
+                  <p
+                    className={`${getContributionStatusColor(
+                      contribution.status
+                    )} font-extralight`}
+                  >
+                    {capitalizeString(contribution.status)}
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">{getDate(contribution.timestamp)}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-semibold">{contribution.points || '-'}</p>
+                  <p className="font-extralight">{contribution.pointsDescription}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">{contribution.modComment || '-'}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">
+                    {getContributionDetails(contribution)}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {contributions.length === 0 && (
+        <p className="text-center mt-8">You have no contributions yet.</p>
+      )}
     </section>
   );
 }
