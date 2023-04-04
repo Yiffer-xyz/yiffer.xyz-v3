@@ -26,7 +26,8 @@ async function assignActionToMod(
   modId: number
 ) {
   let table = '';
-  let identifyingColumn = '';
+  let identifyingColumn = 'id';
+  let modIdColumn = 'modId';
 
   if (actionType === 'comicUpload') {
     table = 'comicmetadata';
@@ -34,14 +35,17 @@ async function assignActionToMod(
   }
   if (actionType === 'comicSuggestion') {
     table = 'comicsuggestion';
-    identifyingColumn = 'id';
   }
   if (actionType === 'comicProblem') {
     table = 'comicproblem';
-    identifyingColumn = 'id';
+  }
+  if (actionType === 'pendingComicProblem') {
+    table = 'comicmetadata';
+    identifyingColumn = 'comicId';
+    modIdColumn = 'pendingProblemModId';
   }
 
-  const query = `UPDATE ${table} SET modId = ? WHERE ${identifyingColumn} = ?`;
+  const query = `UPDATE ${table} SET ${modIdColumn} = ? WHERE ${identifyingColumn} = ?`;
   const queryParams = [modId, actionId];
 
   await queryDbDirect(urlBase, query, queryParams);

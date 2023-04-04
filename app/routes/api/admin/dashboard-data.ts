@@ -35,20 +35,22 @@ export type DashboardAction = {
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
-  const user = await redirectIfNotMod(args);
 
-  const [tagSuggestions, problems, uploads, comicSuggestions] = await Promise.all([
-    getTagSuggestions(urlBase),
-    getProblems(urlBase),
-    getComicUploads(urlBase),
-    getComicSuggestions(urlBase),
-  ]);
+  const [tagSuggestions, problems, uploads, comicSuggestions, pendingComicProblems] =
+    await Promise.all([
+      getTagSuggestions(urlBase),
+      getProblems(urlBase),
+      getComicUploads(urlBase),
+      getComicSuggestions(urlBase),
+      getPendingComicProblems(urlBase),
+    ]);
 
   const allSuggestions = [
     ...tagSuggestions,
     ...problems,
     ...uploads,
     ...comicSuggestions,
+    ...pendingComicProblems,
   ];
 
   allSuggestions.sort((a, b) => {
@@ -406,7 +408,9 @@ type DbPendingComicSimple = {
   errorText?: string;
 };
 
-export async function pendingComicProblem(urlBase: string): Promise<DashboardAction[]> {
+export async function getPendingComicProblems(
+  urlBase: string
+): Promise<DashboardAction[]> {
   const query = `
     SELECT Q1.*, user.username AS pendingProblemModName
     FROM (

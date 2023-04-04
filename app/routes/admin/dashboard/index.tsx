@@ -16,6 +16,7 @@ import { ComicSuggestion } from './ComicSuggestion';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import Button from '~/components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
+import { PendingComicProblem } from './PendingComicProblem';
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
@@ -324,6 +325,23 @@ export default function Dashboard({}) {
                   (assignModFetcher.state === 'submitting' ||
                     unassignModFetcher.state === 'submitting' ||
                     problemFetcher.state === 'submitting')
+                }
+                loadingAction={latestSubmittedAction}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+                innerContainerClassName={innerContainerClassName}
+              />
+            )}
+
+            {action.type === 'pendingComicProblem' && (
+              <PendingComicProblem
+                action={action}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (assignModFetcher.state === 'submitting' ||
+                    unassignModFetcher.state === 'submitting')
                 }
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}

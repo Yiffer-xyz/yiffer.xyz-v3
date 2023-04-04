@@ -30,5 +30,12 @@ export async function setComicError(
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
 
+  if (!errorText) {
+    const removeModQuery =
+      'UPDATE comicmetadata SET pendingProblemModId = NULL WHERE comicId = ?';
+    const removeModQueryParams = [comicId];
+    await queryDbDirect(urlBase, removeModQuery, removeModQueryParams);
+  }
+
   return;
 }

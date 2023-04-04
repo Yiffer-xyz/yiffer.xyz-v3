@@ -209,7 +209,8 @@ async function getDbComicByField(
       user.username AS uploadUsername,
       comicmetadata.originalNameIfRejected,
       comicmetadata.originalArtistIfRejected,
-      comicmetadata.unlistComment
+      comicmetadata.unlistComment,
+      comicmetadata.pendingProblemModId
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
