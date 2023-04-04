@@ -257,6 +257,9 @@ async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> 
     if (dbComicSugg.verdict === 'bad') {
       verdictText += ' - bad info';
     }
+    if (dbComicSugg.verdict === 'good') {
+      verdictText += ' - excellent info';
+    }
     if (dbComicSugg.modComment) {
       verdictText += ` - mod comment: ${dbComicSugg.modComment}`;
     }

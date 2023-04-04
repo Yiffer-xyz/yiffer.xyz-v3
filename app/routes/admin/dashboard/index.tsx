@@ -124,7 +124,6 @@ export default function Dashboard({}) {
     );
   }
 
-  // TODO: USE IT (not tested)
   function processComicSuggestion(
     action: DashboardAction,
     isApproved: boolean,
@@ -139,10 +138,10 @@ export default function Dashboard({}) {
     };
 
     setLatestSubmittedId(action.id);
-    setLatestSubmittedAction(isApproved ? 'approve-upload' : 'reject-upload');
+    setLatestSubmittedAction('process-upload');
     comicSuggestionFetcher.submit(
       { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/process-comic-upload' }
+      { method: 'post', action: '/api/admin/process-comic-suggestion' }
     );
   }
 

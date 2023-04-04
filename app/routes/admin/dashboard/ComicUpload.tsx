@@ -53,23 +53,24 @@ export function ComicUpload({
         </div>
 
         <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
-          <p className="text-sm ">
+          <p className="text-sm">
             {action.user.username || action.user.ip}
             {' - '}
             {getTimeAgo(action.timestamp)}
           </p>
 
+          {action.isProcessed && (
+            <p>
+              <i>Completed by: {action.assignedMod?.username}</i>
+            </p>
+          )}
+          {isAssignedToOther && (
+            <p>
+              <i>Assigned to: {action.assignedMod!.username}</i>
+            </p>
+          )}
+
           <div className="flex flex-row gap-2 self-end">
-            {action.isProcessed && (
-              <p>
-                <i>Completed by: {action.assignedMod?.username}</i>
-              </p>
-            )}
-            {isAssignedToOther && (
-              <p>
-                <i>Assigned to: {action.assignedMod!.username}</i>
-              </p>
-            )}
             {isAssignedToMe && (
               <LoadingButton
                 color="error"

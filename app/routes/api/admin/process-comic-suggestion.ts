@@ -37,8 +37,8 @@ async function processComicSuggestion(
   modComment?: string // only potentially if rejected
 ) {
   const updateQuery = `UPDATE comicsuggestion
-    SET status = ?,
-    ${verdict ? 'verdict = ?' : ''}
+    SET status = ?
+    ${verdict ? ', verdict = ?' : ''}
     ${modComment ? ', modComment = ?' : ''}
     WHERE id = ?`;
 

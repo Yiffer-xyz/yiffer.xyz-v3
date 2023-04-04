@@ -3,7 +3,7 @@ export interface ButtonProps {
   variant?: 'contained' | 'outlined' | 'naked';
   color?: 'primary' | 'error';
   fullWidth?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   disabled?: boolean;
   startIcon?: React.ElementType;
   endIcon?: React.ElementType;

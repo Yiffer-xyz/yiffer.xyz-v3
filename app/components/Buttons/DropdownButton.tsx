@@ -6,6 +6,7 @@ import Button, { ButtonProps } from './Button';
 type DropdownButtonProps = {
   options: { text: string; onClick: () => void }[];
   isLoading?: boolean;
+  text: string;
 } & Omit<ButtonProps, 'onClick' | 'endIcon'>;
 
 export default function DropdownButton({
@@ -114,9 +115,10 @@ export default function DropdownButton({
         {...props}
         text={text}
         endIcon={isLoading ? Spinner : IoCaretDown}
-        onClick={() => {
+        onClick={e => {
           if (isLoading) return;
           setIsOpen(isOpenCurrently => !isOpenCurrently);
+          e.stopPropagation();
         }}
         onMouseLeave={closeSoonIfOpen}
         onMouseEnter={cancelCloseTimeout}
@@ -146,7 +148,8 @@ export default function DropdownButton({
             <div
               key={index}
               className={`
-                  block w-full text-left px-4 py-2 text-sm cursor-pointer
+                  block w-full text-left px-4 py-2 text-sm cursor-pointer whitespace-nowrap
+                  font-semibold text-blue-weak-100 dark:text-text-dark
                   ${
                     index === currentlyHighlightedIndex
                       ? 'bg-blue-trans dark:bg-gray-600 '
@@ -156,7 +159,8 @@ export default function DropdownButton({
               role="menuitem"
               onMouseEnter={() => setCurrentlyHighlightedIndex(index)}
               onMouseLeave={() => setCurrentlyHighlightedIndex(-1)}
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation();
                 option.onClick();
                 setIsOpen(false);
               }}
