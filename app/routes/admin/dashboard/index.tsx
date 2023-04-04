@@ -15,6 +15,7 @@ import { ComicUpload } from './ComicUpload';
 import { ComicSuggestion } from './ComicSuggestion';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import Button from '~/components/Buttons/Button';
+import { ComicProblem } from './ComicProblem';
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
@@ -144,7 +145,6 @@ export default function Dashboard({}) {
     );
   }
 
-  // TODO: USE IT (not tested)
   function processComicProblem(action: DashboardAction, isApproved: boolean) {
     const body: ProcessComicProblemBody = {
       isApproved,
@@ -152,7 +152,7 @@ export default function Dashboard({}) {
     };
 
     setLatestSubmittedId(action.id);
-    setLatestSubmittedAction(isApproved ? 'approve-problem' : 'reject-problem');
+    setLatestSubmittedAction('process-problem');
     problemFetcher.submit(
       { body: JSON.stringify(body) },
       { method: 'post', action: '/api/admin/process-comic-problem' }
@@ -228,7 +228,10 @@ export default function Dashboard({}) {
           {Array(6)
             .fill(0)
             .map((_, i) => (
-              <div className="w-full h-28 mb-3 bg-gray-900 dark:bg-gray-300 rounded" />
+              <div
+                className="w-full h-28 mb-3 bg-gray-900 dark:bg-gray-300 rounded"
+                key={i}
+              />
             ))}
         </>
       )}
@@ -244,21 +247,19 @@ export default function Dashboard({}) {
           action.assignedMod &&
           action.assignedMod.userId === user.userId;
 
-        let assignationBgClass = 'bg-white dark:bg-gray-400 shadow-md';
-        if (isAssignedToOther) {
-          assignationBgClass = 'bg-gray-900 dark:bg-gray-300';
+        let assignationBgClass = 'bg-white dark:bg-gray-300 shadow-md';
+        if (isAssignedToOther || action.isProcessed) {
+          assignationBgClass = 'bg-gray-900 dark:bg-gray-250';
         }
         if (isAssignedToMe) {
           assignationBgClass =
             'bg-theme1-primaryLessTrans dark:bg-theme1-primaryTrans shadow-md';
         }
-        if (action.isProcessed) {
-          assignationBgClass = 'bg-gray-800 dark:bg-gray-250';
-        }
         const innerContainerClassName = `flex flex-col gap-2 md:flex-row justify-between`;
 
         return (
           <div
+            key={action.id}
             className={`p-3 w-full mb-4 max-w-3xl rounded 
               ${assignationBgClass}
             `}
@@ -312,11 +313,23 @@ export default function Dashboard({}) {
               />
             )}
 
-            {!['tagSuggestion', 'comicUpload', 'comicSuggestion'].includes(
-              action.type
-            ) && (
-              <p>a</p>
-              // <pre>{JSON.stringify(action, null, 2)}</pre>
+            {action.type === 'comicProblem' && (
+              <ComicProblem
+                action={action}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
+                onProcessed={processComicProblem}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (assignModFetcher.state === 'submitting' ||
+                    unassignModFetcher.state === 'submitting' ||
+                    problemFetcher.state === 'submitting')
+                }
+                loadingAction={latestSubmittedAction}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+                innerContainerClassName={innerContainerClassName}
+              />
             )}
           </div>
         );

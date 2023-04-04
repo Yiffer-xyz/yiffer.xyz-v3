@@ -1,33 +1,24 @@
-import { Form } from '@remix-run/react';
 import { useState } from 'react';
 import { IoCaretDown, IoCaretUp } from 'react-icons/io5';
-import Button from '~/components/Buttons/Button';
 import DropdownButton from '~/components/Buttons/DropdownButton';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import Chip from '~/components/Chip';
-import TextInput from '~/components/TextInput/TextInput';
 import { DashboardAction } from '~/routes/api/admin/dashboard-data';
-import { ComicSuggestionVerdict } from '~/types/types';
 import { getTimeAgo } from '.';
 
-type ComicSuggestionProps = {
+type ComicProblemProps = {
   action: DashboardAction;
   isLoading: boolean;
   onAssignMe: (action: DashboardAction) => void;
   onUnassignMe: (action: DashboardAction) => void;
-  onProcessed: (
-    action: DashboardAction,
-    isApproved: boolean,
-    verdict?: ComicSuggestionVerdict,
-    modComment?: string
-  ) => void;
+  onProcessed: (action: DashboardAction, isApproved: boolean) => void;
   loadingAction?: string;
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
 };
 
-export function ComicSuggestion({
+export function ComicProblem({
   action,
   isLoading,
   onAssignMe,
@@ -37,30 +28,13 @@ export function ComicSuggestion({
   isAssignedToOther,
   isAssignedToMe,
   innerContainerClassName,
-}: ComicSuggestionProps) {
+}: ComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isRejectingWithComment, setIsRejectingWithComment] = useState(false);
-  const [rejectComment, setRejectComment] = useState('');
 
   const isChooseActionButtonLoading =
     isLoading &&
     !!loadingAction &&
-    ['unassign', 'process-upload'].includes(loadingAction);
-
-  function onInitiateRejectComment() {
-    if (!isOpen) setIsOpen(true);
-    setIsRejectingWithComment(true);
-    setRejectComment('');
-  }
-
-  function finishRejectWithComment() {
-    onProcessed(action, false, undefined, rejectComment);
-  }
-
-  // Close after submission
-  if (loadingAction === 'process-upload' && !isLoading && isRejectingWithComment) {
-    setIsRejectingWithComment(false);
-  }
+    ['unassign', 'process-problem'].includes(loadingAction);
 
   return (
     <div
@@ -69,10 +43,13 @@ export function ComicSuggestion({
     >
       <div className={innerContainerClassName}>
         <div className="flex flex-col justify-between gap-2">
-          <Chip color="#c54b8d" text="Comic suggestion" />
-          <p>
-            <b>{action.primaryField}</b>
-          </p>
+          <Chip color="#cd9831" text="Comic problem" />
+          <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
+            <p>
+              <b>{action.primaryField}</b>
+            </p>
+            <p>{action.secondaryField}</p>
+          </div>
         </div>
 
         <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
@@ -105,20 +82,12 @@ export function ComicSuggestion({
                     onClick: () => onUnassignMe(action),
                   },
                   {
-                    text: 'Reject with comment',
-                    onClick: onInitiateRejectComment,
-                  },
-                  {
-                    text: 'Reject as spam/dupl.',
+                    text: 'Remove, irrelevant',
                     onClick: () => onProcessed(action, false),
                   },
                   {
-                    text: 'Completed - excellent info',
-                    onClick: () => onProcessed(action, true, 'good'),
-                  },
-                  {
-                    text: 'Completed - lacking info',
-                    onClick: () => onProcessed(action, true, 'bad'),
+                    text: 'Completed',
+                    onClick: () => onProcessed(action, true),
                   },
                 ]}
               />
@@ -146,44 +115,6 @@ export function ComicSuggestion({
           >
             {action.description}
           </p>
-
-          {isRejectingWithComment && (
-            <div className="mt-4 mb-2 cursor-auto" onClick={e => e.stopPropagation()}>
-              <p>
-                <b>Reject with comment</b>
-              </p>
-              <p>
-                This comment will be visible to the user. Keep it short and grammatically
-                correct!
-              </p>
-              <Form>
-                <TextInput
-                  value={rejectComment}
-                  onChange={setRejectComment}
-                  placeholder={`E.g. "quality too low" or "paywalled content"`}
-                  label="Comment"
-                  name="comment"
-                  className="mt-2 mb-2"
-                />
-                <div className="flex flex-row flex-wrap gap-2">
-                  <LoadingButton
-                    color="primary"
-                    onClick={finishRejectWithComment}
-                    disabled={!rejectComment}
-                    text="Reject suggestion"
-                    isSubmit
-                    isLoading={isLoading && loadingAction === 'process-upload'}
-                  />
-                  <Button
-                    color="error"
-                    variant="outlined"
-                    onClick={() => setIsRejectingWithComment(false)}
-                    text="Cancel"
-                  />
-                </div>
-              </Form>
-            </div>
-          )}
 
           {action.isProcessed && (
             <p>

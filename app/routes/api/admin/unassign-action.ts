@@ -34,6 +34,10 @@ async function assignActionToMod(
     table = 'comicsuggestion';
     identifyingColumn = 'id';
   }
+  if (actionType === 'comicProblem') {
+    table = 'comicproblem';
+    identifyingColumn = 'id';
+  }
 
   const query = `UPDATE ${table} SET modId = NULL WHERE ${identifyingColumn} = ?`;
   const queryParams = [actionId];

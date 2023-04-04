@@ -169,7 +169,7 @@ async function getProblems(urlBase: string): Promise<DashboardAction[]> {
           userId,
           userIP,
           user.username AS username,
-          assignedModId AS modId
+          modId
         FROM comicproblem
         INNER JOIN comicproblemcategory ON (comicproblemcategory.id = comicproblem.problemCategoryId)
         INNER JOIN comic ON (comic.id = comicproblem.comicId)
