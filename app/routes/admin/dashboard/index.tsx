@@ -1,32 +1,44 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
 import { useFetcher, useLoaderData } from '@remix-run/react';
-import InfoBox from '~/components/InfoBox';
-import LoadingButton from '~/components/Buttons/LoadingButton';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { ProcessTagSuggestionBody } from '~/routes/api/admin/process-tag-suggestion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AssignActionBody } from '~/routes/api/admin/assign-action';
 import { UnAssignActionBody } from '~/routes/api/admin/unassign-action';
 import { ProcessComicProblemBody } from '~/routes/api/admin/process-comic-problem';
 import { ProcessComicSuggestionBody } from '~/routes/api/admin/process-comic-suggestion';
 import { ComicSuggestionVerdict } from '~/types/types';
-import Chip from '~/components/Chip';
-import Link from '~/components/Link';
-import { DashboardAction } from '~/routes/api/admin/dashboard-data';
-import { MdOpenInNew } from 'react-icons/md';
+import { DashboardAction, DashboardActionType } from '~/routes/api/admin/dashboard-data';
 import { formatDistanceToNow } from 'date-fns';
 import { TagSuggestion, TagSuggestionAction } from './TagSuggestion';
 import { ComicUpload } from './ComicUpload';
 import { ComicSuggestion } from './ComicSuggestion';
+import Checkbox from '~/components/Checkbox/Checkbox';
+import Button from '~/components/Buttons/Button';
 
 export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
   const user = await redirectIfNotMod(args);
 
   return { user };
 }
 
 export { ErrorBoundary } from '../../error';
+
+const allActionTypes: DashboardActionType[] = [
+  'tagSuggestion',
+  'comicUpload',
+  'comicSuggestion',
+  'comicProblem',
+  'pendingComicProblem',
+];
+
+const actionTypeToLabel: Record<DashboardActionType, string> = {
+  tagSuggestion: 'Tag suggestions',
+  comicUpload: 'Comic uploads',
+  comicSuggestion: 'Comic suggestions',
+  comicProblem: 'Comic problems',
+  pendingComicProblem: 'Pending problems',
+};
 
 export default function Dashboard({}) {
   const { user } = useLoaderData<typeof loader>();
@@ -36,6 +48,13 @@ export default function Dashboard({}) {
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
   const [allDashboardItems, setAllDashboardItems] = useState<DashboardAction[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  const [showOthersTasks, setShowOthersTasks] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<DashboardActionType[]>([
+    ...allActionTypes,
+  ]);
 
   const dashboardDataFetcher = useFetcher<DashboardAction[]>();
   const processTagFetcher = useFetcher();
@@ -43,6 +62,22 @@ export default function Dashboard({}) {
   const unassignModFetcher = useFetcher();
   const problemFetcher = useFetcher();
   const comicSuggestionFetcher = useFetcher();
+
+  const filteredDashboardItems = useMemo(() => {
+    return allDashboardItems.filter(action => {
+      if (
+        action.assignedMod &&
+        action.assignedMod.userId !== user.userId &&
+        !showOthersTasks
+      ) {
+        return false;
+      }
+      if (action.isProcessed && !showCompleted) return false;
+      if (!typeFilter.includes(action.type)) return false;
+
+      return true;
+    });
+  }, [allDashboardItems, showOthersTasks, showCompleted, typeFilter]);
 
   async function fetchDashboardItems() {
     setAllDashboardItems([]);
@@ -149,6 +184,45 @@ export default function Dashboard({}) {
     <>
       <h1>Action dashboard</h1>
 
+      <Button
+        className={`md:hidden mb-3`}
+        onClick={() => setShowMobileFilters(!showMobileFilters)}
+        text={showMobileFilters ? 'Hide filters' : 'Show filters'}
+        variant="outlined"
+      />
+
+      <div className={showMobileFilters ? '' : 'hidden md:block'}>
+        <div className="flex flex-row flex-wrap mb-3 md:mt-2 gap-x-8 gap-y-1">
+          <Checkbox
+            label="Show others' tasks"
+            checked={showOthersTasks}
+            onChange={() => setShowOthersTasks(!showOthersTasks)}
+          />
+
+          <Checkbox
+            label="Show completed"
+            checked={showCompleted}
+            onChange={() => setShowCompleted(!showCompleted)}
+          />
+        </div>
+        <div className="flex flex-row flex-wrap mb-4 gap-x-8 gap-y-1">
+          {allActionTypes.map(type => (
+            <Checkbox
+              key={type}
+              label={actionTypeToLabel[type]}
+              checked={typeFilter.includes(type as DashboardActionType)}
+              onChange={() => {
+                if (typeFilter.includes(type as DashboardActionType)) {
+                  setTypeFilter(typeFilter.filter(t => t !== type));
+                } else {
+                  setTypeFilter([...typeFilter, type as DashboardActionType]);
+                }
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
       {allDashboardItems.length === 0 && (
         <>
           {Array(6)
@@ -159,7 +233,7 @@ export default function Dashboard({}) {
         </>
       )}
 
-      {allDashboardItems.map(action => {
+      {filteredDashboardItems.map(action => {
         const isAssignedToOther =
           !action.isProcessed &&
           action.assignedMod &&
