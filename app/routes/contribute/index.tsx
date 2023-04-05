@@ -48,8 +48,8 @@ export default function Index() {
           href="join-us"
         />
         <ContributionCard
-          title="Feedback"
-          description="Have any tips for how Yiffer.xyz could be better? Let us know!"
+          title="Feedback &amp; Support"
+          description="Have any tips for how Yiffer.xyz could be better? Need help?"
           href="feedback"
         />
       </div>

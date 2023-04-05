@@ -1,13 +1,14 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
-import { Form, useActionData, useTransition } from '@remix-run/react';
+import type { ActionFunction, LoaderArgs } from '@remix-run/cloudflare';
+import { Form, useActionData, useLoaderData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
-import RadioButtonGroupUncontrolled from '~/components/RadioButton/RadioButtonGroupUncontrolled';
+import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import Textarea from '~/components/Textarea/Textarea';
 import TopGradientBox from '~/components/TopGradientBox';
 import { getUserSession } from '~/utils/auth.server';
 import { queryDb } from '~/utils/database-facade';
+import { authLoader } from '~/utils/loaders';
 import { create400Json, createSuccessJson, logError } from '~/utils/request-helpers';
 import BackToContribute from '../BackToContribute';
 
@@ -32,22 +33,30 @@ export const action: ActionFunction = async function ({ request, context }) {
   return createSuccessJson();
 };
 
+export { authLoader as loader };
+
+type FeedbackType = 'bug' | 'general' | 'support';
+
 export default function Feedback() {
+  const userSession = useLoaderData<typeof authLoader>();
   const transition = useTransition();
   const actionData = useActionData();
   const [feedback, setFeedback] = useState('');
+  const [feedbackType, setFeedbackType] = useState<FeedbackType | undefined>();
+
+  let radioOptions: { text: string; value: FeedbackType }[] = [
+    { text: 'General feedback', value: 'general' },
+    { text: 'Bug report', value: 'bug' },
+  ];
+  if (userSession) {
+    radioOptions.push({ text: 'Support', value: 'support' });
+  }
 
   return (
     <section className="container mx-auto justify-items-center">
-      <h1 className="mb-2">Feedback</h1>
+      <h1 className="mb-2">Feedback &amp; Support</h1>
       <p className="mb-4">
         <BackToContribute />
-      </p>
-
-      <p>
-        Thank you for taking the time to help improve our site! Note that we can not reply
-        to your message - if you need assistance or have any questions, you should send an
-        email to contact@yiffer.xyz instead.
       </p>
 
       <TopGradientBox containerClassName="my-10 mx-auto shadow-lg max-w-2xl">
@@ -57,21 +66,52 @@ export default function Feedback() {
           {actionData?.success ? (
             <InfoBox
               variant="success"
-              text="Thank you for your feedback!"
-              className="mt-2"
+              text={
+                feedbackType === 'support'
+                  ? 'Your support request has been submitted. We will look at it as soon as possible. If we deem it necessary, we will contact you via the email associated with your account.'
+                  : 'Your feedback has been submitted. Thank you!'
+              }
+              className="mt-4"
               disableElevation
             />
           ) : (
             <>
-              <RadioButtonGroupUncontrolled
+              <RadioButtonGroup
                 name="feedbackType"
                 title="Type of feedback"
-                className="mb-6 mt-2"
-                options={[
-                  { text: 'Bug report', value: 'bug' },
-                  { text: 'General feedback', value: 'general' },
-                ]}
+                className="mb-4 mt-2"
+                value={feedbackType}
+                onChange={setFeedbackType}
+                options={radioOptions}
               />
+
+              {feedbackType === 'support' && (
+                <InfoBox
+                  variant="info"
+                  showIcon
+                  text="Please do not use the support feature to ask questions. We will only respond to support requests if you have an issue that requires our attention. If we deem it necessary, we will contact you via the email associated with your account."
+                  className="mb-4"
+                  disableElevation
+                />
+              )}
+              {feedbackType === 'bug' && (
+                <InfoBox
+                  variant="info"
+                  showIcon
+                  text="Please report any crashes or obvious errors here. Do not use this to request new features - use the general feedback option above for that."
+                  className="mb-4"
+                  disableElevation
+                />
+              )}
+              {feedbackType === 'general' && (
+                <InfoBox
+                  variant="info"
+                  showIcon
+                  text="Please note that we will not answer any questions."
+                  className="mb-4"
+                  disableElevation
+                />
+              )}
 
               <Textarea
                 label="Your feedback"
