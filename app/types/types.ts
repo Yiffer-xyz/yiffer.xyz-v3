@@ -92,6 +92,7 @@ export type ComicUploadVerdict =
   | 'minor-issues'
   | 'major-issues'
   | 'page-issues'
+  | 'terrible'
   | 'rejected'
   | 'rejected-list';
 
@@ -149,4 +150,23 @@ export type ModApplication = {
   username: string;
   notes: string;
   status: 'pending' | 'approved' | 'rejected' | 'on hold';
+};
+
+// It's not gorgeous, but it'll work. The numbers: counts of how many times
+// this user has been given this type of verdict on their uploads.
+// Counts instead of directly storing points as numbers will keep the points
+// of the contributions changeable retroactively.
+export type ContributionPointsEntry = {
+  id: number;
+  userId: number;
+  yearMonth: 'all-time' | string; // string will be YYYY-MM
+  tagSuggestion: number;
+  comicProblem: number;
+  comicSuggestiongood: number;
+  comicSuggestionbad: number;
+  comicUploadexcellent: number;
+  comicUploadminorissues: number;
+  comicUploadmajorissues: number;
+  comicUploadpageissues: number;
+  comicUploadterrible: number;
 };

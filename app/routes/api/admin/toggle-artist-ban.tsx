@@ -15,7 +15,7 @@ import { rejectComic } from './reject-pending-comic';
 import { unlistComic } from './unlist-comic';
 
 export async function action(args: ActionArgs) {
-  await redirectIfNotMod(args);
+  const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE as string;
 
   const formDataBody = await args.request.formData();
@@ -33,7 +33,8 @@ export async function action(args: ActionArgs) {
   const err = await toggleArtistBan(
     urlBase,
     parseInt(formArtistId.toString()),
-    formIsBanned === 'true'
+    formIsBanned === 'true',
+    user.userId
   );
   if (err) {
     logError(
@@ -49,7 +50,8 @@ export async function action(args: ActionArgs) {
 export async function toggleArtistBan(
   urlBase: string,
   artistId: number,
-  isBanned: boolean
+  isBanned: boolean,
+  modId: number
 ): Promise<ApiError | undefined> {
   const query = `UPDATE artist SET isBanned = ? WHERE id = ?`;
   const params = [isBanned, artistId];
@@ -87,7 +89,14 @@ export async function toggleArtistBan(
   });
   uploadedComics.forEach(c => {
     processComicPromises.push(
-      processUserUpload(urlBase, c.id, c.name, 'rejected', 'Artist rejected/banned')
+      processUserUpload(
+        modId,
+        urlBase,
+        c.id,
+        c.name,
+        'rejected',
+        'Artist rejected/banned'
+      )
     );
     logBodies.push(`comic name/id ${c.name} / ${c.id}`);
   });

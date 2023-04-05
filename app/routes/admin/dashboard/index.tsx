@@ -106,6 +106,7 @@ export default function Dashboard({}) {
       isAdding: action.isAdding,
       comicId: action.comicId!,
       tagId: action.tagId,
+      suggestingUserId: action.user.userId,
     };
 
     setLatestSubmittedId(action.id);
@@ -150,6 +151,7 @@ export default function Dashboard({}) {
     const body: ProcessComicProblemBody = {
       isApproved,
       actionId: action.id,
+      reportingUserId: action.user.userId,
     };
 
     setLatestSubmittedId(action.id);
@@ -171,6 +173,7 @@ export default function Dashboard({}) {
       isApproved,
       verdict, // always if approved, otherwise none
       modComment, // only potentially if rejected
+      suggestingUserId: action.user.userId,
     };
 
     setLatestSubmittedId(action.id);

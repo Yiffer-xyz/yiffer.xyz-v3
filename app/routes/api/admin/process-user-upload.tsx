@@ -11,6 +11,7 @@ import {
   logError,
   wrapApiError,
 } from '~/utils/request-helpers';
+import { addContributionPoints } from '../funcs/add-contribution-points';
 import { getArtistByComicId } from '../funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from './manage-artist';
 
@@ -26,11 +27,14 @@ export async function action(args: ActionArgs) {
   if (!formVerdict) return create400Json('Missing verdict');
   const formComicName = formDataBody.get('comicName');
   if (!formComicName) return create400Json('Missing comicName');
+  const formUploaderId = formDataBody.get('uploaderId');
+  if (!formUploaderId) return create400Json('Missing uploaderId');
 
   const verdict: ComicUploadVerdict = formVerdict.toString() as ComicUploadVerdict;
   const formModComment = formDataBody.get('modComment');
   const modComment = formModComment ? formModComment.toString() : undefined;
   const comicId = parseInt(formComicId.toString());
+  const uploaderId = parseInt(formUploaderId.toString());
 
   const err = await processUserUpload(
     user.userId,
@@ -38,7 +42,8 @@ export async function action(args: ActionArgs) {
     comicId,
     formComicName.toString(),
     verdict,
-    modComment
+    modComment,
+    uploaderId
   );
 
   if (err) {
@@ -58,7 +63,8 @@ export async function processUserUpload(
   comicId: number,
   comicName: string,
   frontendVerdict: ComicUploadVerdict,
-  modComment?: string
+  modComment: string | undefined,
+  uploaderId?: number
 ): Promise<ApiError | undefined> {
   let publishStatus: ComicPublishStatus = 'pending';
   let metadataVerdict: ComicUploadVerdict =
@@ -77,7 +83,8 @@ export async function processUserUpload(
     modComment,
     publishStatus,
     frontendVerdict,
-    metadataVerdict
+    metadataVerdict,
+    uploaderId
   );
 
   if (err) {
@@ -93,7 +100,8 @@ export async function processAnyUpload(
   modComment: string | undefined,
   publishStatus: ComicPublishStatus,
   frontendVerdict: ComicUploadVerdict,
-  metadataVerdict: ComicUploadVerdict | undefined
+  metadataVerdict: ComicUploadVerdict | undefined,
+  userUploadId?: number
 ): Promise<ApiError | undefined> {
   let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
   let comicQueryParams: any[] = [publishStatus, comicId];
@@ -211,6 +219,21 @@ export async function processAnyUpload(
           originalArtistIfRejected = ?
         WHERE comicId = ?`;
       metadataQueryParams = [modId, artist.name, comicId];
+    }
+  }
+
+  if (
+    userUploadId &&
+    frontendVerdict !== 'rejected' &&
+    frontendVerdict !== 'rejected-list'
+  ) {
+    const err = await addContributionPoints(
+      urlBase,
+      userUploadId,
+      `comicUpload${frontendVerdict.replace('-', '')}`
+    );
+    if (err) {
+      return wrapApiError(err, `Error adding contribution points`);
     }
   }
 

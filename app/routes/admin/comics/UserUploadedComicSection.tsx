@@ -43,6 +43,7 @@ export default function UserUploadSection({
       comicId: comicData.id.toString(),
       comicName: comicData.name,
       verdict,
+      uploaderId: comicData.metadata?.uploadUserId,
     };
     if (modComment) body.modComment = modComment;
 

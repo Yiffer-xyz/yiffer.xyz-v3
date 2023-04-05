@@ -2,6 +2,7 @@ import { ActionArgs } from '@remix-run/cloudflare';
 import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import { createSuccessJson } from '~/utils/request-helpers';
+import { addContributionPoints } from '../funcs/add-contribution-points';
 
 export type ProcessTagSuggestionBody = {
   isApproved: boolean;
@@ -9,6 +10,7 @@ export type ProcessTagSuggestionBody = {
   isAdding: boolean;
   comicId: number;
   tagId: number;
+  suggestingUserId?: number;
 };
 
 export async function action(args: ActionArgs) {
@@ -26,7 +28,8 @@ export async function action(args: ActionArgs) {
     fields.actionId,
     fields.isAdding,
     fields.comicId,
-    fields.tagId
+    fields.tagId,
+    fields.suggestingUserId
   );
 
   return createSuccessJson();
@@ -39,7 +42,8 @@ async function processTagSuggestion(
   actionId: number,
   isAdding: boolean,
   comicId: number,
-  tagId: number
+  tagId: number,
+  suggestingUserId?: number
 ) {
   const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
@@ -60,4 +64,8 @@ async function processTagSuggestion(
   }
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
+
+  if (suggestingUserId && isApproved) {
+    await addContributionPoints(urlBase, suggestingUserId, `tagSuggestion`);
+  }
 }

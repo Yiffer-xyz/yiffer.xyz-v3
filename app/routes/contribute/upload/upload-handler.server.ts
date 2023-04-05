@@ -1,4 +1,5 @@
 import { TypedResponse } from '@remix-run/cloudflare';
+import { addContributionPoints } from '~/routes/api/funcs/add-contribution-points';
 import { UserSession } from '~/types/types';
 import { DBResponse, queryDb, queryDbDirect } from '~/utils/database-facade';
 import { ApiError, wrapApiError } from '~/utils/request-helpers';
@@ -145,6 +146,13 @@ async function createComicMetadata(
       )}`,
       clientMessage: 'Error creating comic metadata',
     };
+  }
+
+  if (skipApproval) {
+    const err = await addContributionPoints(urlBase, userId!, `comicUpload.excellent`);
+    if (err) {
+      return wrapApiError(err, 'Error adding contribution points for direct mod upload');
+    }
   }
 }
 

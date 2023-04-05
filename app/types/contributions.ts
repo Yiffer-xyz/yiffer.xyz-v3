@@ -1,4 +1,10 @@
 export const CONTRIBUTION_POINTS = {
+  tagSuggestion: {
+    points: 5,
+  },
+  comicProblem: {
+    points: 10,
+  },
   comicSuggestion: {
     good: {
       points: 30,

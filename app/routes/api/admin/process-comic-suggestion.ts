@@ -3,12 +3,14 @@ import { ComicSuggestionVerdict } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import { createSuccessJson } from '~/utils/request-helpers';
+import { addContributionPoints } from '../funcs/add-contribution-points';
 
 export type ProcessComicSuggestionBody = {
   actionId: number;
   isApproved: boolean;
   verdict?: ComicSuggestionVerdict;
   modComment?: string;
+  suggestingUserId?: number;
 };
 
 export async function action(args: ActionArgs) {
@@ -23,7 +25,8 @@ export async function action(args: ActionArgs) {
     fields.isApproved,
     user!.userId,
     fields.verdict,
-    fields.modComment
+    fields.modComment,
+    fields.suggestingUserId
   );
 
   return createSuccessJson();
@@ -35,7 +38,8 @@ async function processComicSuggestion(
   isApproved: boolean,
   modId: number,
   verdict?: ComicSuggestionVerdict, // always if approved, otherwise none
-  modComment?: string // only potentially if rejected
+  modComment?: string, // only potentially if rejected
+  suggestingUserId?: number // only if non-anon suggestion
 ) {
   const updateQuery = `UPDATE comicsuggestion
     SET status = ?, modId = ?
@@ -52,4 +56,8 @@ async function processComicSuggestion(
   ];
 
   await queryDbDirect(urlBase, updateQuery, updateQueryParams);
+
+  if (isApproved && verdict && suggestingUserId) {
+    await addContributionPoints(urlBase, suggestingUserId, `comicSuggestion${verdict}`);
+  }
 }
