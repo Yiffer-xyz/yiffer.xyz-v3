@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { ContributionPointsEntry } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { ApiError } from '~/utils/request-helpers';
 
@@ -10,11 +9,11 @@ export async function addContributionPoints(
 ): Promise<ApiError | undefined> {
   const yearMonth = format(new Date(), 'yyyy-MM');
   const getExistingPointsForMonthQuery = `
-    SELECT * FROM contributionpoints
+    SELECT yearMonth FROM contributionpoints
     WHERE userId = ? AND (yearMonth = ? OR yearMonth = 'all-time')
   `;
   const getExistingPointsForMonthQueryParams = [userId, yearMonth];
-  const existingDbRes = await queryDb<ContributionPointsEntry[]>(
+  const existingDbRes = await queryDb<{ yearMonth: string }[]>(
     urlBase,
     getExistingPointsForMonthQuery,
     getExistingPointsForMonthQueryParams
@@ -39,7 +38,7 @@ export async function addContributionPoints(
         VALUES (?, ?, 1)
       `;
       const insertPointsQueryParams = [userId, timeVal];
-      const insertDbRes = await queryDb<ContributionPointsEntry>(
+      const insertDbRes = await queryDb(
         urlBase,
         insertPointsQuery,
         insertPointsQueryParams
@@ -58,7 +57,7 @@ export async function addContributionPoints(
         WHERE userId = ? AND yearMonth = ?
       `;
       const updatePointsQueryParams = [userId, timeVal];
-      const updateDbRes = await queryDb<ContributionPointsEntry>(
+      const updateDbRes = await queryDb(
         urlBase,
         updatePointsQuery,
         updatePointsQueryParams

@@ -3,7 +3,7 @@ import type { User } from '~/types/types';
 import { UserType } from '~/types/types';
 
 type UsernameProps = {
-  user: User;
+  user: Omit<User, 'email'>;
   className?: string;
 };
 

@@ -1,7 +1,6 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
-import { useFetcher } from '@remix-run/react';
-import { add, format, isEqual, set, sub } from 'date-fns';
+import type { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
+import { useFetcher, useLoaderData } from '@remix-run/react';
+import { add, format, sub } from 'date-fns';
 import { Fragment, useEffect, useState } from 'react';
 import {
   MdArrowBack,
@@ -11,77 +10,103 @@ import {
   MdHome,
 } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
+import Checkbox from '~/components/Checkbox/Checkbox';
+import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
 import Username from '~/components/Username';
-import { alltimequery, defaultquery } from '~/mock-data/top-contributions';
 import BackToContribute from '~/routes/contribute/BackToContribute';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
+import { ContributionPointsEntry, UserType } from '~/types/types';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError, logError } from '~/utils/request-helpers';
 
-export const action: ActionFunction = async function ({ request }) {
-  const reqBody = await request.formData();
-  const { type, month, year } = Object.fromEntries(reqBody);
-
-  const response = type === 'alltime' ? alltimequery() : defaultquery(+month, +year);
-
-  return json(response);
+type CachedPoints = {
+  yearMonth: string;
+  excludeMods: boolean;
+  points: TopContributionPointsRow[];
 };
 
-const enabledClass = `
-    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-primary to-theme2-primary
-  `;
-const disabledClass = `
-    dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
-    text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
-  `;
-const arrowButtonClasses =
-  'dark:bg-transparent dark:hover:bg-transparent bg-transparent hover:bg-transparent';
-
-const now = () =>
-  set(new Date(), {
-    date: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    milliseconds: 0,
-  });
-
 export default function Scoreboard() {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
+  const allTimePoints = useLoaderData<typeof loader>();
+
   const [showPointInfo, setShowPointInfo] = useState(false);
   const [showAllTime, setShowAllTime] = useState(false);
-  const [date, setDate] = useState(now());
+  const [excludeMods, setExcludeMods] = useState(false);
+  const [date, setDate] = useState(new Date());
 
-  const canIncrementMonth = () => {
-    return !isEqual(date, now());
-  };
+  const [points, setPoints] = useState<TopContributionPointsRow[]>(
+    allTimePoints.topScores || []
+  );
 
-  const incrementMonth = () => {
-    if (!canIncrementMonth()) return;
-    setDate(prev => add(prev, { months: 1 }));
-  };
-
-  const canDecrementMonth = () => {
-    // TODO: Change this to the first month of the first contribution
-    return !(date.getMonth() === 0 && date.getFullYear() === 2016);
-  };
-
-  const decrementMonth = () => {
-    if (!canDecrementMonth()) return;
-    setDate(prev => sub(prev, { months: 1 }));
-  };
+  const [cachedPoints, setCachedPoints] = useState<CachedPoints[]>([
+    {
+      yearMonth: 'all-time',
+      excludeMods: false,
+      points: allTimePoints.topScores || [],
+    },
+  ]);
 
   useEffect(() => {
+    if (fetcher.data && fetcher.data.topScores) {
+      setPoints(fetcher.data.topScores || []);
+      setCachedPoints(prev => [
+        ...prev,
+        {
+          yearMonth: showAllTime ? 'all-time' : format(date, 'yyyy-MM'),
+          excludeMods,
+          points: fetcher.data!.topScores!,
+        },
+      ]);
+    }
+  }, [fetcher.data]);
+
+  function changeDisplayInterval(
+    incrementBy: 1 | -1 | undefined,
+    setAllTime: boolean | undefined,
+    newExcludeMods: boolean | undefined
+  ) {
+    let newDate = new Date();
+    if (incrementBy === 1) {
+      newDate = add(date, { months: 1 });
+      setDate(newDate);
+    }
+    if (incrementBy === -1) {
+      newDate = sub(date, { months: 1 });
+      setDate(newDate);
+    }
+
+    if (setAllTime !== undefined) {
+      setShowAllTime(setAllTime);
+    }
+    if (newExcludeMods !== undefined) {
+      setExcludeMods(newExcludeMods);
+    }
+
+    const yearMonth = setAllTime ? 'all-time' : format(newDate, 'yyyy-MM');
+
+    const foundCachedPoints = cachedPoints.find(
+      cp =>
+        cp.yearMonth === yearMonth && cp.excludeMods === (newExcludeMods || excludeMods)
+    );
+
+    if (foundCachedPoints) {
+      setPoints(foundCachedPoints.points);
+      return;
+    }
+
     fetcher.submit(
-      {
-        type: showAllTime ? 'alltime' : 'default',
-        month: date.getMonth() + '',
-        year: date.getFullYear() + '',
-      },
+      { yearMonth, excludeMods: (newExcludeMods || excludeMods).toString() },
       { method: 'post' }
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAllTime, date]);
+  }
+
+  const canIncrementMonth =
+    !(
+      date.getMonth() === new Date().getMonth() &&
+      date.getFullYear() === new Date().getFullYear()
+    ) && fetcher.state !== 'submitting';
 
   return (
     <div className="container mx-auto justify-items-center">
@@ -119,34 +144,43 @@ export default function Scoreboard() {
       {showPointInfo && <PointInfo />}
 
       <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
-        <div className="flex mb-6">
-          <Button
-            text="Monthly"
-            variant="contained"
-            color="primary"
-            className={
-              'rounded-r-none' + disabledClass + (showAllTime ? '' : enabledClass)
-            }
-            onClick={() => setShowAllTime(false)}
-          />
-          <Button
-            text="All time"
-            variant="contained"
-            color="primary"
-            className={
-              'rounded-l-none' + disabledClass + (showAllTime ? enabledClass : '')
-            }
-            onClick={() => setShowAllTime(true)}
+        <div className="flex flex-row flex-wrap items-center gap-x-8 gap-y-4 justify-center mb-2">
+          <div className="flex">
+            <Button
+              text="Monthly"
+              variant="contained"
+              color="primary"
+              className={
+                'rounded-r-none' + disabledClass + (showAllTime ? '' : enabledClass)
+              }
+              onClick={() => changeDisplayInterval(undefined, false, undefined)}
+            />
+            <Button
+              text="All time"
+              variant="contained"
+              color="primary"
+              className={
+                'rounded-l-none' + disabledClass + (showAllTime ? enabledClass : '')
+              }
+              onClick={() => changeDisplayInterval(undefined, true, undefined)}
+            />
+          </div>
+
+          <Checkbox
+            label="Include mods"
+            checked={!excludeMods}
+            onChange={() => changeDisplayInterval(undefined, undefined, !excludeMods)}
           />
         </div>
+
         {!showAllTime && (
-          <div className="flex justify-between w-full mb-2 text-lg">
+          <div className="flex justify-between w-fit mb-2 text-lg">
             <Button
               startIcon={MdArrowBack}
               // @ts-expect-error - haven't gotten around to making an IconButton component
               color="none"
-              onClick={decrementMonth}
-              disabled={!canDecrementMonth()}
+              onClick={() => changeDisplayInterval(-1, false, undefined)}
+              disabled={fetcher.state === 'submitting'}
               className={arrowButtonClasses}
             />
             {format(date, 'MMM y')}
@@ -154,34 +188,156 @@ export default function Scoreboard() {
               endIcon={MdArrowForward}
               // @ts-expect-error - haven't gotten around to making an IconButton component
               color="none"
-              onClick={incrementMonth}
-              disabled={!canIncrementMonth()}
+              onClick={() => changeDisplayInterval(1, false, undefined)}
+              disabled={!canIncrementMonth}
               className={arrowButtonClasses}
             />
           </div>
         )}
-        {fetcher.data && (
+
+        {fetcher.data?.err && (
+          <InfoBox
+            variant="error"
+            showIcon
+            text={fetcher.data.err.clientMessage}
+            className="mt-2 mb-2"
+          />
+        )}
+
+        {!fetcher.data?.err && points.length === 0 && (
+          <p>There are contributions for this month.</p>
+        )}
+
+        {!fetcher.data?.err && points.length > 0 && (
           <Table className="mb-6">
             <TableHeadRow isTableMaxHeight>
-              <TableCell>Username</TableCell>
+              <TableCell>User</TableCell>
               <TableCell>Score</TableCell>
             </TableHeadRow>
             <TableBody>
-              {fetcher.data instanceof Array &&
-                fetcher.data.map((entry, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Username user={entry.user} />
-                    </TableCell>
-                    <TableCell>{entry.points}</TableCell>
-                  </TableRow>
-                ))}
+              {points.map((point, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Username
+                      user={{
+                        username: point.username,
+                        id: point.userId,
+                        userType: point.userType,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>{point.points}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
       </div>
     </div>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  const scoresRes = await getTopScores(
+    args.context.DB_API_URL_BASE as string,
+    'all-time',
+    false
+  );
+  if (scoresRes.err) {
+    logError('Error in loader of /contribute/scoreboard', scoresRes.err);
+  }
+  return scoresRes;
+}
+
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
+  const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
+  const res = await getTopScores(
+    args.context.DB_API_URL_BASE as string,
+    yearMonth.toString(),
+    excludeMods === 'true'
+  );
+  if (res.err) {
+    logError('Error in action of /contribute/scoreboard', res.err);
+  }
+  return res;
+}
+
+type TopContributionPointsRow = {
+  userId: number;
+  username: string;
+  userType: UserType;
+  points: number;
+};
+
+async function getTopScores(
+  urlBase: 'all-time' | string,
+  yearMonth: string,
+  excludeMods: boolean
+): Promise<{ topScores?: TopContributionPointsRow[]; err?: ApiError }> {
+  const query = `
+    SELECT 
+      user.id AS userId, 
+      user.username,
+      user.userType,
+      tagSuggestion,
+      comicProblem,
+      comicSuggestiongood,
+      comicSuggestionbad,
+      comicUploadexcellent,
+      comicUploadminorissues,
+      comicUploadmajorissues,
+      comicUploadpageissues,
+      comicUploadterrible
+    FROM contributionpoints
+    WHERE yearMonth = ?
+    ${excludeMods ? `AND userType != 'moderator' AND userType != 'admin'` : ''}
+  `;
+
+  const dbRes = await queryDb<ContributionPointsEntry[]>(urlBase, query, [yearMonth]);
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting top score list',
+        logMessage: `Error getting top score list. yearMonth: ${yearMonth}, excludeMods: ${excludeMods}`,
+        error: dbRes,
+      },
+    };
+  }
+
+  return {
+    topScores: topScoreEntriesToPointList(dbRes.result!),
+  };
+}
+
+function topScoreEntriesToPointList(
+  entries: ContributionPointsEntry[]
+): TopContributionPointsRow[] {
+  let topScoreRows: TopContributionPointsRow[] = entries.map(userContrib => {
+    const points =
+      userContrib.tagSuggestion * CONTRIBUTION_POINTS.tagSuggestion.points +
+      userContrib.comicProblem * CONTRIBUTION_POINTS.comicProblem.points +
+      userContrib.comicSuggestiongood * CONTRIBUTION_POINTS.comicSuggestion.good.points +
+      userContrib.comicSuggestionbad * CONTRIBUTION_POINTS.comicSuggestion.bad.points +
+      userContrib.comicUploadexcellent *
+        CONTRIBUTION_POINTS.comicUpload.excellent.points +
+      userContrib.comicUploadminorissues *
+        CONTRIBUTION_POINTS.comicUpload['minor-issues'].points +
+      userContrib.comicUploadmajorissues *
+        CONTRIBUTION_POINTS.comicUpload['major-issues'].points +
+      userContrib.comicUploadpageissues *
+        CONTRIBUTION_POINTS.comicUpload['page-issues'].points +
+      userContrib.comicUploadterrible * CONTRIBUTION_POINTS.comicUpload.terrible.points;
+
+    return {
+      userId: userContrib.userId,
+      username: userContrib.username,
+      userType: userContrib.userType,
+      points,
+    };
+  });
+
+  return topScoreRows;
 }
 
 const pInfoColors = {
@@ -198,6 +354,16 @@ const pInfoColors = {
     yellow: 'dark:text-yellow-200 text-yellow-500',
   },
 };
+
+const enabledClass = `
+    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-primary to-theme2-primary
+  `;
+const disabledClass = `
+    dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
+    text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
+  `;
+const arrowButtonClasses =
+  'dark:bg-transparent dark:hover:bg-transparent bg-transparent hover:bg-transparent';
 
 const nonRejectedUploads = Object.entries(CONTRIBUTION_POINTS.comicUpload)
   .filter(([verdict]) => verdict !== 'rejected' && verdict !== 'rejected-list')
