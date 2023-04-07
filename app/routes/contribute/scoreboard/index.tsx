@@ -42,7 +42,7 @@ export default function Scoreboard() {
 
   const [cachedPoints, setCachedPoints] = useState<CachedPoints[]>([
     {
-      yearMonth: 'all-time',
+      yearMonth: format(new Date(), 'yyyy-MM'),
       excludeMods: false,
       points: allTimePoints.topScores || [],
     },
@@ -84,11 +84,15 @@ export default function Scoreboard() {
       setExcludeMods(newExcludeMods);
     }
 
-    const yearMonth = setAllTime ? 'all-time' : format(newDate, 'yyyy-MM');
+    const excludeMonthsValForQuery =
+      newExcludeMods === undefined ? excludeMods : newExcludeMods;
+
+    let yearMonth = format(date, 'yyyy-MM');
+    if (setAllTime) yearMonth = 'all-time';
+    if (incrementBy !== undefined) yearMonth = format(newDate, 'yyyy-MM');
 
     const foundCachedPoints = cachedPoints.find(
-      cp =>
-        cp.yearMonth === yearMonth && cp.excludeMods === (newExcludeMods || excludeMods)
+      cp => cp.yearMonth === yearMonth && cp.excludeMods === excludeMonthsValForQuery
     );
 
     if (foundCachedPoints) {
@@ -97,7 +101,7 @@ export default function Scoreboard() {
     }
 
     fetcher.submit(
-      { yearMonth, excludeMods: (newExcludeMods || excludeMods).toString() },
+      { yearMonth, excludeMods: excludeMonthsValForQuery.toString() },
       { method: 'post' }
     );
   }
@@ -144,32 +148,31 @@ export default function Scoreboard() {
       {showPointInfo && <PointInfo />}
 
       <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
-        <div className="flex flex-row flex-wrap items-center gap-x-8 gap-y-4 justify-center mb-2">
-          <div className="flex">
-            <Button
-              text="Monthly"
-              variant="contained"
-              color="primary"
-              className={
-                'rounded-r-none' + disabledClass + (showAllTime ? '' : enabledClass)
-              }
-              onClick={() => changeDisplayInterval(undefined, false, undefined)}
-            />
-            <Button
-              text="All time"
-              variant="contained"
-              color="primary"
-              className={
-                'rounded-l-none' + disabledClass + (showAllTime ? enabledClass : '')
-              }
-              onClick={() => changeDisplayInterval(undefined, true, undefined)}
-            />
-          </div>
+        <Checkbox
+          label="Include mods"
+          checked={!excludeMods}
+          onChange={() => changeDisplayInterval(undefined, undefined, !excludeMods)}
+          className="mb-4"
+        />
 
-          <Checkbox
-            label="Include mods"
-            checked={!excludeMods}
-            onChange={() => changeDisplayInterval(undefined, undefined, !excludeMods)}
+        <div className="flex mb-4">
+          <Button
+            text="Monthly"
+            variant="contained"
+            color="primary"
+            className={
+              'rounded-r-none' + disabledClass + (showAllTime ? '' : enabledClass)
+            }
+            onClick={() => changeDisplayInterval(undefined, false, undefined)}
+          />
+          <Button
+            text="All time"
+            variant="contained"
+            color="primary"
+            className={
+              'rounded-l-none' + disabledClass + (showAllTime ? enabledClass : '')
+            }
+            onClick={() => changeDisplayInterval(undefined, true, undefined)}
           />
         </div>
 

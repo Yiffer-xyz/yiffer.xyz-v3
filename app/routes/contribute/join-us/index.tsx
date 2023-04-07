@@ -15,14 +15,11 @@ export default function JoinUs() {
       </p>
 
       <p className="mb-4">
-        Yiffer.xyz would not be what it is without our wonderful mods. Being a mod is
-        voluntary work - in addition to getting the feeling of helping our comic-loving
-        community, a reward is the ability to <u>download any comic</u> at the click of a
-        button; it&apos;s the least we could do.
+        Yiffer.xyz would not be what it is without our wonderful mods.
       </p>
       <p className="mb-4">
-        If we feel satisfied with the amount of mods we currently have, you may be put on
-        a waiting list. While it might be the case that more is better, we believe it wise
+        If we are satisfied with the amount of mods we currently have, you may be put on a
+        waiting list. While it might be the case that more is better, we believe it wise
         to keep the number from being too high.
       </p>
       <ApplyLink />
@@ -37,33 +34,24 @@ export default function JoinUs() {
       </p>
       <ul className="pl-4 mb-4">
         <li className="mt-3">
-          - Processing comic suggestions from others (rejecting them, or uploading the
-          comic with pages, information, and tags)
+          Processing comic suggestions from others (rejecting them, or uploading the comic
+          with pages, information, and tags)
         </li>
         <li className="mt-3">
-          - Adding pages to existing comics as they are updated. Additionally swap,
-          replace, insert pages, and update thumbnails as needed
+          Adding pages to existing comics as they are updated. Additionally swap, replace,
+          insert pages, and update thumbnails as needed
         </li>
         <li className="mt-3">
-          - Processing tag suggestions from other users (suggestions of adding/removing
-          tags to a comic)
+          Processing tag suggestions from other users (suggestions of adding/removing tags
+          to a comic)
         </li>
-        <li className="mt-3">- Adding tags to comics where needed</li>
-        <li className="mt-3">- Keeping artist information up to date</li>
+        <li className="mt-3">Adding tags to comics where needed</li>
+        <li className="mt-3">Keeping artist information up to date</li>
         <li className="mt-3">
-          - You&apos;ll be able to see visitor statistics (numbers per day, and per route
-          and comic) if you&apos;re interested
-        </li>
-        <li className="mt-3">
-          - If we decide to re-implement comments at some point, moderating these will
-          also be a mod&apos;s job
+          When we implement comments at some point, moderating these will also be a
+          mod&apos;s job
         </li>
       </ul>
-      <p className="mb-6">
-        There are some tasks that only the admin(s) of Yiffer.xyz do: Giving final
-        approval of comics added by mods, dealing with ads, and writing &quot;blog&quot;
-        posts.
-      </p>
 
       <h3 className="font-bold">How much do I have to &quot;work&quot;?</h3>
       <p className="mb-4">

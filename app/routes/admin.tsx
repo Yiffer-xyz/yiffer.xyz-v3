@@ -15,6 +15,8 @@ export type GlobalAdminContext = {
   tags: Tag[];
 };
 
+export { ErrorBoundary } from './error';
+
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
   await redirectIfNotMod(args);

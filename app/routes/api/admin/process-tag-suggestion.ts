@@ -1,7 +1,13 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import { createSuccessJson } from '~/utils/request-helpers';
+import {
+  ApiError,
+  create500Json,
+  createSuccessJson,
+  logError,
+  wrapApiError,
+} from '~/utils/request-helpers';
 import { addContributionPoints } from '../funcs/add-contribution-points';
 
 export type ProcessTagSuggestionBody = {
@@ -21,7 +27,7 @@ export async function action(args: ActionArgs) {
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  await processTagSuggestion(
+  const err = await processTagSuggestion(
     urlBase,
     user?.userId as number,
     fields.isApproved,
@@ -32,6 +38,10 @@ export async function action(args: ActionArgs) {
     fields.suggestingUserId
   );
 
+  if (err) {
+    logError('Error in /process-tag-suggestion', err);
+    return create500Json(err.clientMessage);
+  }
   return createSuccessJson();
 }
 
@@ -44,7 +54,7 @@ async function processTagSuggestion(
   comicId: number,
   tagId: number,
   suggestingUserId?: number
-) {
+): Promise<ApiError | undefined> {
   const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
@@ -60,11 +70,33 @@ async function processTagSuggestion(
       updateTagQueryParams = [comicId, tagId];
     }
 
-    await queryDbDirect(urlBase, updateTagQuery, updateTagQueryParams);
+    const dbRes = await queryDb(urlBase, updateTagQuery, updateTagQueryParams);
+    if (dbRes.errorMessage) {
+      if (!(dbRes.errorCode && dbRes.errorCode === 'ER_DUP_ENTRY')) {
+        return {
+          error: dbRes,
+          clientMessage: 'Error updating tag',
+          logMessage: `Error approving tag. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}`,
+        };
+      }
+    }
   }
 
-  await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
+  const actionres = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
+  if (actionres.errorMessage) {
+    return {
+      error: actionres,
+      clientMessage: 'Error updating mod panel action',
+      logMessage: `Error updating mod panel for tag suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`,
+    };
+  }
 
   const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
-  await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  if (err) {
+    return wrapApiError(
+      err,
+      `Error adding contribution points in process-tag-suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`
+    );
+  }
 }
