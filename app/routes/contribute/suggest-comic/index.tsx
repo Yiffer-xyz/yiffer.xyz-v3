@@ -112,14 +112,11 @@ export default function Upload() {
     let isLegal = false;
 
     if (similarArtists) {
-      const isExactMatch =
-        similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist;
-      const isAnyKindOfSimilarArtist =
-        similarArtists.similarArtists.length > 0 ||
-        similarArtists.similarBannedArtists.length > 0;
+      const isExactMatch = similarArtists.exactMatchBannedArtist;
+      const isSimilar = similarArtists.similarBannedArtists.length > 0;
 
       if (!isExactMatch && artistName.length > 2) {
-        isLegal = !isAnyKindOfSimilarArtist || hasConfirmedNewArtist;
+        isLegal = !isSimilar || hasConfirmedNewArtist;
       }
     }
 
@@ -204,15 +201,11 @@ export default function Upload() {
     (similarComics.similarComics.length > 0 ||
       similarComics.similarRejectedComics.length > 0);
 
-  const isExactArtistMatch =
-    similarArtists &&
-    (similarArtists.exactMatchArtist || similarArtists.exactMatchBannedArtist);
-
-  const isAnySimilarArtists =
+  const isExactArtistMatch = similarArtists?.exactMatchBannedArtist;
+  const similarOrExactBannedArtist =
     !isExactArtistMatch &&
     similarArtists &&
-    (similarArtists.similarArtists.length > 0 ||
-      similarArtists.similarBannedArtists.length > 0);
+    similarArtists.similarBannedArtists.length > 0;
 
   return (
     <section className="container mx-auto justify-items-center">
@@ -357,7 +350,7 @@ export default function Upload() {
                 />
               )}
 
-              {isAnySimilarArtists && (
+              {similarOrExactBannedArtist && (
                 <>
                   {!hasConfirmedNewArtist && (
                     <InfoBox
@@ -366,19 +359,6 @@ export default function Upload() {
                       boldText={false}
                       disableElevation
                     >
-                      {similarArtists.similarArtists.length > 0 && (
-                        <>
-                          <p>
-                            The following existing artist names are somewhat similar to
-                            the one you entered:
-                          </p>
-                          <ul>
-                            {similarArtists.similarArtists.map(name => (
-                              <li key={name}>{name}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
                       {similarArtists.similarBannedArtists.length > 0 && (
                         <>
                           <p>
