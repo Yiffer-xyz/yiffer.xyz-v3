@@ -149,7 +149,7 @@ async function createComicMetadata(
   }
 
   if (skipApproval) {
-    const err = await addContributionPoints(urlBase, userId!, `comicUpload.excellent`);
+    const err = await addContributionPoints(urlBase, userId!, `comicUploadexcellent`);
     if (err) {
       return wrapApiError(err, 'Error adding contribution points for direct mod upload');
     }

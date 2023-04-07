@@ -222,19 +222,13 @@ export async function processAnyUpload(
     }
   }
 
-  if (
-    userUploadId &&
-    frontendVerdict !== 'rejected' &&
-    frontendVerdict !== 'rejected-list'
-  ) {
-    const err = await addContributionPoints(
-      urlBase,
-      userUploadId,
-      `comicUpload${frontendVerdict.replace('-', '')}`
-    );
-    if (err) {
-      return wrapApiError(err, `Error adding contribution points`);
-    }
+  const dbTableName =
+    frontendVerdict === 'rejected' || frontendVerdict === 'rejected-list'
+      ? 'comicUploadRejected'
+      : `comicUpload${frontendVerdict.replace('-', '')}`;
+  const err = await addContributionPoints(urlBase, userUploadId ?? null, dbTableName);
+  if (err) {
+    return wrapApiError(err, `Error adding contribution points`);
   }
 
   if (!metadataQuery) return;

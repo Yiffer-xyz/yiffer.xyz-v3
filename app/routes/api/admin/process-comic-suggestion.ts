@@ -57,7 +57,6 @@ async function processComicSuggestion(
 
   await queryDbDirect(urlBase, updateQuery, updateQueryParams);
 
-  if (isApproved && verdict && suggestingUserId) {
-    await addContributionPoints(urlBase, suggestingUserId, `comicSuggestion${verdict}`);
-  }
+  const tableName = isApproved ? `comicSuggestion${verdict}` : 'comicSuggestionRejected';
+  await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
 }

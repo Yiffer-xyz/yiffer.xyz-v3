@@ -65,7 +65,6 @@ async function processTagSuggestion(
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
 
-  if (suggestingUserId && isApproved) {
-    await addContributionPoints(urlBase, suggestingUserId, `tagSuggestion`);
-  }
+  const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
+  await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
 }

@@ -290,6 +290,7 @@ async function getTopScores(
       comicUploadpageissues,
       comicUploadterrible
     FROM contributionpoints
+    INNER JOIN user ON (user.id = contributionpoints.userId)
     WHERE yearMonth = ?
     ${excludeMods ? `AND userType != 'moderator' AND userType != 'admin'` : ''}
   `;

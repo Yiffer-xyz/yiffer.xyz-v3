@@ -4,7 +4,7 @@ import { ApiError } from '~/utils/request-helpers';
 
 export async function addContributionPoints(
   urlBase: string,
-  userId: number,
+  userId: number | null,
   pointColumn: string
 ): Promise<ApiError | undefined> {
   const yearMonth = format(new Date(), 'yyyy-MM');

@@ -40,7 +40,9 @@ async function processComicProblem(
 
   await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
 
-  if (reportingUserId && isApproved) {
-    await addContributionPoints(urlBase, reportingUserId, `comicProblem`);
-  }
+  await addContributionPoints(
+    urlBase,
+    reportingUserId ?? null,
+    isApproved ? 'comicProblem' : 'comicProblemRejected'
+  );
 }

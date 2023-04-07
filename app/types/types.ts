@@ -159,14 +159,20 @@ export type ModApplication = {
 export type ContributionPointsEntry = {
   id: number;
   userId: number;
+  username: string;
+  userType: UserType;
   yearMonth: 'all-time' | string; // string will be YYYY-MM
   tagSuggestion: number;
+  tagSuggestionRejected: number;
   comicProblem: number;
+  comicProblemRejected: number;
   comicSuggestiongood: number;
   comicSuggestionbad: number;
+  comicSuggestionRejected: number;
   comicUploadexcellent: number;
   comicUploadminorissues: number;
   comicUploadmajorissues: number;
   comicUploadpageissues: number;
   comicUploadterrible: number;
+  comicUploadRejected: number;
 };
