@@ -36,32 +36,32 @@ export type DashboardAction = {
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  try {
-    const [tagSuggestions, problems, uploads, comicSuggestions, pendingComicProblems] =
-      await Promise.all([
-        getTagSuggestions(urlBase),
-        getProblems(urlBase),
-        getComicUploads(urlBase),
-        getComicSuggestions(urlBase),
-        getPendingComicProblems(urlBase),
-      ]);
-    const allSuggestions = [
-      ...tagSuggestions,
-      ...problems,
-      ...uploads,
-      ...comicSuggestions,
-      ...pendingComicProblems,
-    ];
+  const dataResponses: { err?: ApiError; data?: DashboardAction[] }[] = await Promise.all(
+    [
+      getTagSuggestions(urlBase),
+      getProblems(urlBase),
+      getComicUploads(urlBase),
+      getComicSuggestions(urlBase),
+      getPendingComicProblems(urlBase),
+    ]
+  );
 
-    allSuggestions.sort((a, b) => {
-      return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
-    });
-
-    return createSuccessJson(allSuggestions);
-  } catch (err) {
-    // TODO: Do this properly.
-    return create500Json('Error getting dashboard data');
+  const allSuggestions: DashboardAction[] = [];
+  for (const response of dataResponses) {
+    if (response.err) {
+      logError('Error when fetching admin dashboard data', response.err);
+      return create500Json(response.err.clientMessage);
+    }
+    if (response.data) {
+      allSuggestions.push(...response.data);
+    }
   }
+
+  allSuggestions.sort((a, b) => {
+    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+  });
+
+  return createSuccessJson(allSuggestions);
 }
 
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
@@ -70,8 +70,13 @@ import {
   ComicSuggestionVerdict,
   ComicUploadVerdict,
 } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
-import { create500Json, createSuccessJson } from '~/utils/request-helpers';
+import { queryDb, queryDbDirect } from '~/utils/database-facade';
+import {
+  ApiError,
+  create500Json,
+  createSuccessJson,
+  logError,
+} from '~/utils/request-helpers';
 
 type DbTagSuggestion = {
   id: number;
@@ -89,7 +94,10 @@ type DbTagSuggestion = {
   modName?: string;
 };
 
-async function getTagSuggestions(urlBase: string): Promise<DashboardAction[]> {
+async function getTagSuggestions(urlBase: string): Promise<{
+  data?: DashboardAction[];
+  err?: ApiError;
+}> {
   const query = `SELECT Q1.*, user.username AS modName 
       FROM (
         SELECT
@@ -113,9 +121,18 @@ async function getTagSuggestions(urlBase: string): Promise<DashboardAction[]> {
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
 
-  const result = await queryDbDirect<DbTagSuggestion[]>(urlBase, query);
+  const dbRes = await queryDb<DbTagSuggestion[]>(urlBase, query);
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting tag suggestions',
+        logMessage: 'Error getting tag suggestions',
+        error: dbRes,
+      },
+    };
+  }
 
-  const mappedResults: DashboardAction[] = result.map(dbTagSugg => {
+  const mappedResults: DashboardAction[] = dbRes.result!.map(dbTagSugg => {
     return {
       type: 'tagSuggestion',
       id: dbTagSugg.id,
@@ -144,7 +161,9 @@ async function getTagSuggestions(urlBase: string): Promise<DashboardAction[]> {
     };
   });
 
-  return mappedResults;
+  return {
+    data: mappedResults,
+  };
 }
 
 type DbComicProblem = {
@@ -162,7 +181,10 @@ type DbComicProblem = {
   modName?: string;
 };
 
-async function getProblems(urlBase: string): Promise<DashboardAction[]> {
+async function getProblems(urlBase: string): Promise<{
+  data?: DashboardAction[];
+  err?: ApiError;
+}> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -185,9 +207,19 @@ async function getProblems(urlBase: string): Promise<DashboardAction[]> {
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
 
-  const result = await queryDbDirect<DbComicProblem[]>(urlBase, query);
+  const dbRes = await queryDb<DbComicProblem[]>(urlBase, query);
 
-  const mappedResults: DashboardAction[] = result.map(dbComicProblem => {
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting comic problems',
+        logMessage: 'Error getting comic problems',
+        error: dbRes,
+      },
+    };
+  }
+
+  const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicProblem => {
     return {
       type: 'comicProblem',
       id: dbComicProblem.id,
@@ -213,7 +245,9 @@ async function getProblems(urlBase: string): Promise<DashboardAction[]> {
     };
   });
 
-  return mappedResults;
+  return {
+    data: mappedResults,
+  };
 }
 
 type DbComicSuggestion = {
@@ -232,7 +266,10 @@ type DbComicSuggestion = {
   verdict?: ComicSuggestionVerdict;
 };
 
-async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> {
+async function getComicSuggestions(urlBase: string): Promise<{
+  data?: DashboardAction[];
+  err?: ApiError;
+}> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -254,9 +291,19 @@ async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> 
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
 
-  const result = await queryDbDirect<DbComicSuggestion[]>(urlBase, query);
+  const dbRes = await queryDb<DbComicSuggestion[]>(urlBase, query);
 
-  const mappedResults: DashboardAction[] = result.map(dbComicSugg => {
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting comic suggestions',
+        logMessage: 'Error getting comic suggestions',
+        error: dbRes,
+      },
+    };
+  }
+
+  const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicSugg => {
     let verdictText = undefined;
     if (dbComicSugg.status === 'approved' || dbComicSugg.status === 'rejected') {
       verdictText = dbComicSugg.status === 'approved' ? 'Approved' : 'Rejected';
@@ -289,7 +336,9 @@ async function getComicSuggestions(urlBase: string): Promise<DashboardAction[]> 
     };
   });
 
-  return mappedResults;
+  return {
+    data: mappedResults,
+  };
 }
 
 type DbComicUpload = {
@@ -309,7 +358,10 @@ type DbComicUpload = {
   modComment?: string;
 };
 
-async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
+async function getComicUploads(urlBase: string): Promise<{
+  data?: DashboardAction[];
+  err?: ApiError;
+}> {
   const query = `
       SELECT Q1.*, user.username AS modName
       FROM (
@@ -335,12 +387,22 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
     LEFT JOIN user ON (Q1.modId = user.id)
   `;
 
-  const result = await queryDbDirect<DbComicUpload[]>(urlBase, query);
+  const dbRes = await queryDb<DbComicUpload[]>(urlBase, query);
+
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting comic uploads',
+        logMessage: 'Error getting comic uploads',
+        error: dbRes,
+      },
+    };
+  }
 
   // If a mod uploads, it skips the verification and goes straight to pending
   // In these cases, don't show in the dashboard. This is the only case where it
   // will be not uploaded but lack a modId.
-  const notModUploads = result.filter(
+  const notModUploads = dbRes.result!.filter(
     dbComicUpload => !(dbComicUpload.publishStatus !== 'uploaded' && !dbComicUpload.modId)
   );
 
@@ -397,7 +459,9 @@ async function getComicUploads(urlBase: string): Promise<DashboardAction[]> {
     };
   });
 
-  return mappedResults;
+  return {
+    data: mappedResults,
+  };
 }
 
 type DbPendingComicSimple = {
@@ -413,9 +477,10 @@ type DbPendingComicSimple = {
   errorText?: string;
 };
 
-export async function getPendingComicProblems(
-  urlBase: string
-): Promise<DashboardAction[]> {
+export async function getPendingComicProblems(urlBase: string): Promise<{
+  data?: DashboardAction[];
+  err?: ApiError;
+}> {
   const query = `
     SELECT Q1.*, user.username AS pendingProblemModName
     FROM (
@@ -439,9 +504,19 @@ export async function getPendingComicProblems(
     LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
   `;
 
-  const result = await queryDbDirect<DbPendingComicSimple[]>(urlBase, query);
+  const dbRes = await queryDb<DbPendingComicSimple[]>(urlBase, query);
 
-  const mappedResults: DashboardAction[] = result.map(dbPending => {
+  if (dbRes.errorMessage) {
+    return {
+      err: {
+        clientMessage: 'Error getting pending comics',
+        logMessage: 'Error getting pending comics',
+        error: dbRes,
+      },
+    };
+  }
+
+  const mappedResults: DashboardAction[] = dbRes.result!.map(dbPending => {
     return {
       type: 'pendingComicProblem',
       id: dbPending.comicId,
@@ -467,5 +542,7 @@ export async function getPendingComicProblems(
     };
   });
 
-  return mappedResults;
+  return {
+    data: mappedResults,
+  };
 }

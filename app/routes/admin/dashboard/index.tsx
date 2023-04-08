@@ -18,6 +18,7 @@ import Button from '~/components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import InfoBox from '~/components/InfoBox';
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
@@ -220,7 +221,7 @@ export default function Dashboard({}) {
         </div>
       </div>
 
-      {allDashboardItems.length === 0 && (
+      {allDashboardItems.length === 0 && !dashboardDataFetcher.hasFetchedOnce && (
         <>
           {Array(6)
             .fill(0)
@@ -231,6 +232,14 @@ export default function Dashboard({}) {
               />
             ))}
         </>
+      )}
+
+      {dashboardDataFetcher.error && (
+        <InfoBox
+          variant="error"
+          text={`Error: ${dashboardDataFetcher.error}`}
+          className="mt-4"
+        />
       )}
 
       {filteredDashboardItems.map(action => {

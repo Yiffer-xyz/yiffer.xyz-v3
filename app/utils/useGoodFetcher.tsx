@@ -1,5 +1,5 @@
 import { FormMethod, useFetcher } from '@remix-run/react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ApiResponse } from './request-helpers';
 
@@ -37,28 +37,30 @@ export function useGoodFetcher<T = void>({
   toastError = false,
   fetchGetOnLoad = false,
 }: ToastFetcherArgs) {
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
   const hasSubmitFinishedRef = useRef<boolean | undefined>(undefined);
 
   useEffect(() => {
-    if (fetcher.state === 'loading') {
+    const stateToCheck = method === 'get' ? 'idle' : 'loading';
+
+    if (fetcher.state === stateToCheck && hasSubmitFinishedRef.current === false) {
       hasSubmitFinishedRef.current = true;
+      setHasFetchedOnce(true);
     }
-    if (fetcher.state === 'loading' && fetcher.data) {
+
+    if (fetcher.state === stateToCheck && fetcher.data) {
       if (toastSuccessMessage && fetcher.data.success) {
         showSuccessToast(toastSuccessMessage);
       } else if (toastError && fetcher.data.error) {
         showErrorToast(fetcher.data.error);
       }
     }
-  }, [fetcher, toastSuccessMessage]);
+  }, [fetcher.state, toastSuccessMessage]);
 
   useEffect(() => {
     if (fetchGetOnLoad && method === 'get') {
-      fetcher.submit(null, {
-        method: method,
-        action: url,
-      });
+      submit();
     }
   }, [method, url, fetchGetOnLoad]);
 
@@ -96,6 +98,7 @@ export function useGoodFetcher<T = void>({
     state: fetcher.state,
     data: returnData,
     error: fetcher.data?.error,
+    hasFetchedOnce: hasFetchedOnce,
     submit: submit,
     awaitSubmit: awaitSubmit,
   };
