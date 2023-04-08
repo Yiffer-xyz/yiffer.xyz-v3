@@ -36,28 +36,32 @@ export type DashboardAction = {
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  const [tagSuggestions, problems, uploads, comicSuggestions, pendingComicProblems] =
-    await Promise.all([
-      getTagSuggestions(urlBase),
-      getProblems(urlBase),
-      getComicUploads(urlBase),
-      getComicSuggestions(urlBase),
-      getPendingComicProblems(urlBase),
-    ]);
+  try {
+    const [tagSuggestions, problems, uploads, comicSuggestions, pendingComicProblems] =
+      await Promise.all([
+        getTagSuggestions(urlBase),
+        getProblems(urlBase),
+        getComicUploads(urlBase),
+        getComicSuggestions(urlBase),
+        getPendingComicProblems(urlBase),
+      ]);
+    const allSuggestions = [
+      ...tagSuggestions,
+      ...problems,
+      ...uploads,
+      ...comicSuggestions,
+      ...pendingComicProblems,
+    ];
 
-  const allSuggestions = [
-    ...tagSuggestions,
-    ...problems,
-    ...uploads,
-    ...comicSuggestions,
-    ...pendingComicProblems,
-  ];
+    allSuggestions.sort((a, b) => {
+      return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+    });
 
-  allSuggestions.sort((a, b) => {
-    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
-  });
-
-  return allSuggestions;
+    return createSuccessJson(allSuggestions);
+  } catch (err) {
+    // TODO: Do this properly.
+    return create500Json('Error getting dashboard data');
+  }
 }
 
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
@@ -67,6 +71,7 @@ import {
   ComicUploadVerdict,
 } from '~/types/types';
 import { queryDbDirect } from '~/utils/database-facade';
+import { create500Json, createSuccessJson } from '~/utils/request-helpers';
 
 type DbTagSuggestion = {
   id: number;

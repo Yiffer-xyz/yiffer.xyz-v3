@@ -1,9 +1,10 @@
 import { json, TypedResponse } from '@remix-run/cloudflare';
 import { DBResponse } from './database-facade';
 
-export type ApiResponse = {
+export type ApiResponse<T = void> = {
   success: boolean;
   error: string | null;
+  data?: T;
 };
 
 export type ApiError = {
@@ -43,11 +44,12 @@ export function create400Json(message: string): TypedResponse<ApiResponse> {
 // This exists because it returns the correct response type,
 // allowing us to infer a single type with useActionData<typeof action>()
 // in the actual component.
-export function createSuccessJson(): TypedResponse<ApiResponse> {
+export function createSuccessJson(data?: any): TypedResponse<ApiResponse> {
   return json(
     {
       success: true,
       error: null,
+      data: data,
     },
     { status: 200 }
   );

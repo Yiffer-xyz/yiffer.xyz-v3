@@ -1,4 +1,4 @@
-import { LoaderArgs, redirect } from '@remix-run/cloudflare';
+import { LinksFunction, LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
@@ -8,6 +8,8 @@ import useWindowSize from '~/utils/useWindowSize';
 import { getAllArtists } from './api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from './api/funcs/get-comics';
 import { getAllTags } from './api/funcs/get-tags';
+import { ToastContainer } from 'react-toastify';
+import toastCss from 'react-toastify/dist/ReactToastify.css';
 
 export type GlobalAdminContext = {
   comics: ComicTiny[];
@@ -16,6 +18,8 @@ export type GlobalAdminContext = {
 };
 
 export { ErrorBoundary } from './error';
+
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: toastCss }];
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
@@ -56,6 +60,7 @@ export default function Admin({}) {
   return (
     <>
       <Sidebar alwaysShow={isLgUp} delay={!width} />
+      <ToastContainer />
       <div
         className="pb-4 px-6 lg:px-8"
         style={{ marginLeft: isLgUp ? navWidth : mobileClosedBarW }}

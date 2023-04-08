@@ -82,10 +82,10 @@ async function processTagSuggestion(
     }
   }
 
-  const actionres = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (actionres.errorMessage) {
+  const actionRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
+  if (actionRes.errorMessage) {
     return {
-      error: actionres,
+      error: actionRes,
       clientMessage: 'Error updating mod panel action',
       logMessage: `Error updating mod panel for tag suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`,
     };

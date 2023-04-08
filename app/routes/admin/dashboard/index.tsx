@@ -1,8 +1,8 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { ProcessTagSuggestionBody } from '~/routes/api/admin/process-tag-suggestion';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AssignActionBody } from '~/routes/api/admin/assign-action';
 import { UnAssignActionBody } from '~/routes/api/admin/unassign-action';
 import { ProcessComicProblemBody } from '~/routes/api/admin/process-comic-problem';
@@ -17,10 +17,10 @@ import Checkbox from '~/components/Checkbox/Checkbox';
 import Button from '~/components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
-
   return { user };
 }
 
@@ -49,7 +49,6 @@ export default function Dashboard({}) {
   // actually pressed (like, approve or reject for example)
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
-  const [allDashboardItems, setAllDashboardItems] = useState<DashboardAction[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const [showOthersTasks, setShowOthersTasks] = useState(false);
@@ -58,12 +57,40 @@ export default function Dashboard({}) {
     ...allActionTypes,
   ]);
 
-  const dashboardDataFetcher = useFetcher<DashboardAction[]>();
-  const processTagFetcher = useFetcher();
-  const assignModFetcher = useFetcher();
-  const unassignModFetcher = useFetcher();
-  const problemFetcher = useFetcher();
-  const comicSuggestionFetcher = useFetcher();
+  const dashboardDataFetcher = useGoodFetcher<DashboardAction[]>({
+    url: '/api/admin/dashboard-data',
+    fetchGetOnLoad: true,
+  });
+  const processTagFetcher = useGoodFetcher({
+    url: '/api/admin/process-tag-suggestion',
+    method: 'post',
+    toastSuccessMessage: 'Tag suggestion processed',
+    toastError: true,
+  });
+  const assignModFetcher = useGoodFetcher({
+    url: '/api/admin/assign-action',
+    method: 'post',
+    toastError: true,
+  });
+  const unassignModFetcher = useGoodFetcher({
+    url: '/api/admin/unassign-action',
+    method: 'post',
+    toastError: true,
+  });
+  const problemFetcher = useGoodFetcher({
+    url: '/api/admin/process-comic-problem',
+    method: 'post',
+    toastSuccessMessage: 'Problem processed',
+    toastError: true,
+  });
+  const comicSuggestionFetcher = useGoodFetcher({
+    url: '/api/admin/process-comic-suggestion',
+    method: 'post',
+    toastSuccessMessage: 'Comic suggestion processed',
+    toastError: true,
+  });
+
+  const allDashboardItems = dashboardDataFetcher.data || [];
 
   const filteredDashboardItems = useMemo(() => {
     return allDashboardItems.filter(action => {
@@ -81,25 +108,7 @@ export default function Dashboard({}) {
     });
   }, [allDashboardItems, showOthersTasks, showCompleted, typeFilter]);
 
-  async function fetchDashboardItems() {
-    setAllDashboardItems([]);
-    dashboardDataFetcher.submit(
-      {},
-      { method: 'get', action: '/api/admin/dashboard-data' }
-    );
-  }
-
-  useEffect(() => {
-    fetchDashboardItems();
-  }, []);
-
-  useEffect(() => {
-    if (dashboardDataFetcher.data) {
-      setAllDashboardItems(dashboardDataFetcher.data);
-    }
-  }, [dashboardDataFetcher.data]);
-
-  function processTagSuggestion(action: TagSuggestionAction, isApproved: boolean) {
+  async function processTagSuggestion(action: TagSuggestionAction, isApproved: boolean) {
     const body: ProcessTagSuggestionBody = {
       isApproved,
       actionId: action.id,
@@ -111,10 +120,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction(isApproved ? 'approve-tag' : 'reject-tag');
-    processTagFetcher.submit(
-      { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/process-tag-suggestion' }
-    );
+    processTagFetcher.submit({ body: JSON.stringify(body) });
   }
 
   function assignActionToMod(action: DashboardAction) {
@@ -126,11 +132,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction('assign');
-
-    assignModFetcher.submit(
-      { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/assign-action' }
-    );
+    assignModFetcher.submit({ body: JSON.stringify(body) });
   }
 
   function unassignActionFromMod(action: DashboardAction) {
@@ -141,10 +143,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction('unassign');
-    unassignModFetcher.submit(
-      { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/unassign-action' }
-    );
+    unassignModFetcher.submit({ body: JSON.stringify(body) });
   }
 
   function processComicProblem(action: DashboardAction, isApproved: boolean) {
@@ -156,10 +155,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction('process-problem');
-    problemFetcher.submit(
-      { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/process-comic-problem' }
-    );
+    problemFetcher.submit({ body: JSON.stringify(body) });
   }
 
   function processComicSuggestion(
@@ -178,10 +174,7 @@ export default function Dashboard({}) {
 
     setLatestSubmittedId(action.id);
     setLatestSubmittedAction('process-upload');
-    comicSuggestionFetcher.submit(
-      { body: JSON.stringify(body) },
-      { method: 'post', action: '/api/admin/process-comic-suggestion' }
-    );
+    comicSuggestionFetcher.submit({ body: JSON.stringify(body) });
   }
 
   return (
