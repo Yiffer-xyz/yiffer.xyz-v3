@@ -76,7 +76,7 @@ async function createComicTags(
       logMessage: `Error creating comic tags. Tag ids: ${JSON.stringify(
         tagIds
       )}. Comic id: ${comicId}`,
-      clientMessage: 'Error adding tags to comic',
+      client400Message: 'Error adding tags to comic',
     };
   }
 }
@@ -110,7 +110,7 @@ async function createComicLinks(
       logMessage: `Error creating comic links. Upload body: ${JSON.stringify(
         uploadBody
       )}`,
-      clientMessage: 'Error creating prev/next comic',
+      client400Message: 'Error creating prev/next comic',
     };
   }
 }
@@ -144,7 +144,7 @@ async function createComicMetadata(
       logMessage: `Error creating comic metadata. Upload body: ${JSON.stringify(
         uploadBody
       )}`,
-      clientMessage: 'Error creating comic metadata',
+      client400Message: 'Error creating comic metadata',
     };
   }
 
@@ -183,7 +183,7 @@ async function createComic(
       err: {
         error: result,
         logMessage: `Error creating comic. Upload body: ${JSON.stringify(uploadBody)}`,
-        clientMessage: 'Error creating comic',
+        client400Message: 'Error creating comic',
       },
     };
   }
@@ -195,7 +195,7 @@ async function createComic(
         logMessage: `Error creating comic, no insert result. Body: ${JSON.stringify(
           uploadBody
         )}`,
-        clientMessage: 'Error creating comic',
+        client400Message: 'Error creating comic',
       },
     };
   }
@@ -228,7 +228,7 @@ async function createArtist(
         logMessage: `Error inserting artist into database. Artist: ${JSON.stringify(
           newArtist
         )}`,
-        clientMessage: 'Error creating artist',
+        client400Message: 'Error creating artist',
         error: dbRes,
       },
     };
@@ -268,7 +268,7 @@ async function createArtistLinks(
       logMessage: `Error creating artist links. New artist ID: ${newArtistId}. Artist ${JSON.stringify(
         newArtist
       )}.`,
-      clientMessage: 'Error creating artist links',
+      client400Message: 'Error creating artist links',
     };
   }
 }

@@ -6,7 +6,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '../funcs/publishing-queue';
 
@@ -29,8 +29,8 @@ export async function action(args: ActionArgs) {
     user.userId
   );
   if (err) {
-    logError(`Erorr in /schedule-comic for comic id ${formComicId}`, err);
-    return create500Json(err.clientMessage);
+    logErrorOLD_DONOTUSE(`Erorr in /schedule-comic for comic id ${formComicId}`, err);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -53,14 +53,14 @@ export async function scheduleComic(
 
   if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error scheduling comic: Could not update comicmetadata table',
+      client400Message: 'Error scheduling comic: Could not update comicmetadata table',
       logMessage: 'Error scheduling: could not update comicmetadata table',
       error: metadataDbRes,
     };
   }
   if (comicDbRes.errorMessage) {
     return {
-      clientMessage: 'Error scheduling comic: Could not update comic table',
+      client400Message: 'Error scheduling comic: Could not update comic table',
       logMessage: 'Error scheduling: could not update comic table',
       error: comicDbRes,
     };

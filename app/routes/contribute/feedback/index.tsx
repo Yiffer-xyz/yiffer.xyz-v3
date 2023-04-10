@@ -9,7 +9,11 @@ import TopGradientBox from '~/components/TopGradientBox';
 import { getUserSession } from '~/utils/auth.server';
 import { queryDb } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import { create400Json, createSuccessJson, logError } from '~/utils/request-helpers';
+import {
+  create400Json,
+  createSuccessJson,
+  logErrorOLD_DONOTUSE,
+} from '~/utils/request-helpers';
 import BackToContribute from '../BackToContribute';
 
 export const action: ActionFunction = async function ({ request, context }) {
@@ -23,7 +27,7 @@ export const action: ActionFunction = async function ({ request, context }) {
 
   const dbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (dbRes.errorMessage) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error inserting feedback. User: ${user?.userId ?? 'null'}, text: ${feedbackText}`,
       dbRes
     );

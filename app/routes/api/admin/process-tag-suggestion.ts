@@ -5,7 +5,7 @@ import {
   ApiError,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '../funcs/add-contribution-points';
@@ -39,8 +39,8 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logError('Error in /process-tag-suggestion', err);
-    return create500Json(err.clientMessage);
+    logErrorOLD_DONOTUSE('Error in /process-tag-suggestion', err);
+    return create500Json(err.client400Message);
   }
   return createSuccessJson();
 }
@@ -75,7 +75,7 @@ async function processTagSuggestion(
       if (!(dbRes.errorCode && dbRes.errorCode === 'ER_DUP_ENTRY')) {
         return {
           error: dbRes,
-          clientMessage: 'Error updating tag',
+          client400Message: 'Error updating tag',
           logMessage: `Error approving tag. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}`,
         };
       }
@@ -86,7 +86,7 @@ async function processTagSuggestion(
   if (actionRes.errorMessage) {
     return {
       error: actionRes,
-      clientMessage: 'Error updating mod panel action',
+      client400Message: 'Error updating mod panel action',
       logMessage: `Error updating mod panel for tag suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`,
     };
   }

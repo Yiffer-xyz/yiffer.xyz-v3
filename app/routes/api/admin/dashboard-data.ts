@@ -49,8 +49,7 @@ export async function loader(args: LoaderArgs) {
   const allSuggestions: DashboardAction[] = [];
   for (const response of dataResponses) {
     if (response.err) {
-      logError('Error when fetching admin dashboard data', response.err);
-      return create500Json(response.err.clientMessage);
+      return processApiError('Error fetching admin dashboard data', response.err);
     }
     if (response.data) {
       allSuggestions.push(...response.data);
@@ -75,7 +74,9 @@ import {
   ApiError,
   create500Json,
   createSuccessJson,
-  logError,
+  dbErrObj,
+  logErrorOLD_DONOTUSE,
+  processApiError,
 } from '~/utils/request-helpers';
 
 type DbTagSuggestion = {
@@ -123,13 +124,7 @@ async function getTagSuggestions(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbTagSuggestion[]>(urlBase, query);
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting tag suggestions',
-        logMessage: 'Error getting tag suggestions',
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting tag suggestions');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbTagSugg => {
@@ -210,13 +205,7 @@ async function getProblems(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicProblem[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting comic problems',
-        logMessage: 'Error getting comic problems',
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting comic problems');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicProblem => {
@@ -294,13 +283,7 @@ async function getComicSuggestions(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicSuggestion[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting comic suggestions',
-        logMessage: 'Error getting comic suggestions',
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting comic suggestions');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicSugg => {
@@ -390,13 +373,7 @@ async function getComicUploads(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicUpload[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting comic uploads',
-        logMessage: 'Error getting comic uploads',
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting comic uploads');
   }
 
   // If a mod uploads, it skips the verification and goes straight to pending
@@ -507,13 +484,7 @@ export async function getPendingComicProblems(urlBase: string): Promise<{
   const dbRes = await queryDb<DbPendingComicSimple[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting pending comics',
-        logMessage: 'Error getting pending comics',
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting pending comics');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbPending => {

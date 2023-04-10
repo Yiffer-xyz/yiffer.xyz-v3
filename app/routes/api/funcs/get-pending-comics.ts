@@ -55,7 +55,7 @@ export async function getPendingComics(
       err: {
         error: result,
         logMessage: 'Error getting pending commics',
-        clientMessage: 'Error getting pending comics',
+        client400Message: 'Error getting pending comics',
       },
     };
   }

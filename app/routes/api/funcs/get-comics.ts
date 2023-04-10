@@ -70,7 +70,7 @@ export async function getComicsByArtistId(
   if (dbRes.errorMessage) {
     return {
       err: {
-        clientMessage: 'Error getting comics by artist',
+        client400Message: 'Error getting comics by artist',
         logMessage: `Error getting comics by artist id. Artist id: ${artistId}. Options: ${options}.`,
         error: dbRes,
       },

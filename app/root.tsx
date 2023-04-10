@@ -18,6 +18,18 @@ import { getUserSession } from './utils/auth.server';
 import { NonFlashOfWrongThemeEls, ThemeProvider, useTheme } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
 
+import * as Sentry from '@sentry/browser';
+Sentry.init({
+  dsn: 'https://74fe377e56b149fa9f1fa9d41d5de90b@o4504978928959488.ingest.sentry.io/4504978941542400',
+  // Alternatively, use `process.env.npm_package_version` for a dynamic release version
+  // if your build tool supports it.
+  integrations: [new Sentry.BrowserTracing()],
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
+
 export const meta: MetaFunction = () => ({
   charset: 'utf-8',
   title: 'New Remix App',

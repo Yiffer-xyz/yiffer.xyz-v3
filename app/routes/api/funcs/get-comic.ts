@@ -221,7 +221,7 @@ async function getDbComicByField(
   if (comicDbRes.errorMessage || !comicDbRes.result) {
     return {
       err: {
-        clientMessage: 'Error getting comic',
+        client400Message: 'Error getting comic',
         logMessage: `Error getting comic by ${fieldName}, value ${fieldValue}`,
         error: comicDbRes,
       },
@@ -253,7 +253,7 @@ async function getLinksByComicId(
   if (linksDbRes.errorMessage || !linksDbRes.result) {
     return {
       err: {
-        clientMessage: 'Error getting prev/next comic',
+        client400Message: 'Error getting prev/next comic',
         logMessage: `Error getting links for comic ${comicId}`,
         error: linksDbRes,
       },
@@ -278,7 +278,7 @@ async function getTagsByComicId(
   if (tagsDbRes.errorMessage || !tagsDbRes.result) {
     return {
       err: {
-        clientMessage: 'Error getting tags',
+        client400Message: 'Error getting tags',
         logMessage: `Error getting tags for comic ${comicId}`,
         error: tagsDbRes,
       },

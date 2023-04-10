@@ -7,7 +7,7 @@ import {
   ApiError,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicById } from '../funcs/get-comic';
@@ -20,8 +20,8 @@ export async function action(args: ActionArgs) {
 
   const err = await updateComicData(urlBase, body);
   if (err) {
-    logError(`Error in /update-comic-data, update body: ${body}`, err);
-    return create500Json(err.clientMessage);
+    logErrorOLD_DONOTUSE(`Error in /update-comic-data, update body: ${body}`, err);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -129,7 +129,7 @@ async function updateTags(
   for (let i = 0; i < dbResponses.length; i++) {
     if (dbResponses[i].errorMessage) {
       return {
-        clientMessage: 'Error updating tags',
+        client400Message: 'Error updating tags',
         logMessage: `Error updating tags: ${logStrings[i]}`,
         error: dbResponses[i],
       };
@@ -167,7 +167,7 @@ async function updateGeneralDetails(
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
   if (dbRes.errorMessage) {
     return {
-      clientMessage: 'Could not update comic details',
+      client400Message: 'Could not update comic details',
       logMessage: `Could not update comic general details. Changes: ${changes}`,
       error: dbRes,
     };
@@ -181,7 +181,7 @@ async function updateComicName(
   newName: string
 ): Promise<ApiError | undefined> {
   return {
-    clientMessage: 'Not implemented yet',
+    client400Message: 'Not implemented yet',
     logMessage: 'Lalala not impl',
   };
 }
@@ -202,7 +202,7 @@ async function updateComicLink(
     const delDbRes = await queryDb(urlBase, deleteQuery, [comicId]);
     if (delDbRes.errorMessage) {
       return {
-        clientMessage: 'Error updating prev/next comic',
+        client400Message: 'Error updating prev/next comic',
         logMessage: 'Error deleting comic link',
         error: delDbRes,
       };
@@ -216,7 +216,7 @@ async function updateComicLink(
     ]);
     if (newDbRes.errorMessage) {
       return {
-        clientMessage: 'Error updating prev/next comic',
+        client400Message: 'Error updating prev/next comic',
         logMessage: 'Error inserting new comic link',
         error: newDbRes,
       };

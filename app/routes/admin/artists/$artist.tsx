@@ -13,7 +13,7 @@ import { NewArtist } from '~/routes/contribute/upload';
 import { Artist, ComicTiny, UserSession } from '~/types/types';
 import { FieldChange } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
-import { create400Json, create500Json, logError } from '~/utils/request-helpers';
+import { processApiError } from '~/utils/request-helpers';
 import useWindowSize from '~/utils/useWindowSize';
 
 export type ArtistDataChanges = {
@@ -41,15 +41,15 @@ export async function loader(args: LoaderArgs) {
   const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
 
   if (artistRes.err) {
-    logError(`Error getting artist for admin>artist. Id ${artistId}`, artistRes.err);
-    throw create500Json('Error getting artist data');
+    return processApiError('Error getting artist for admin>artist', artistRes.err);
   }
   if (comicsRes.err) {
-    logError(`Error getting comic for admin>artist. Id ${artistId}`, comicsRes.err);
-    throw create500Json(`Error getting artist's comics`);
+    return processApiError('Error getting comic for admin>artist', comicsRes.err);
   }
   if (artistRes.notFound || !artistRes.artist) {
-    throw create400Json('Artist not found');
+    throw new Response('Artist not found', {
+      status: 404,
+    });
   }
 
   return {

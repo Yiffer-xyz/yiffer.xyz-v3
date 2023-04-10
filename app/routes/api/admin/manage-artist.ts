@@ -24,7 +24,7 @@ export async function rejectArtistIfEmpty(
   if (dbRes.errorMessage) {
     return {
       err: {
-        clientMessage: 'Error rejecting artist',
+        client400Message: 'Error rejecting artist',
         logMessage: `Error rejecting artist. Name and id: ${artistName}, ${artistId}`,
         error: dbRes,
       },
@@ -42,7 +42,7 @@ export async function setArtistNotPending(
   const dbRes = await queryDb(urlBase, updateQuery, [artistId]);
   if (dbRes.errorMessage) {
     return {
-      clientMessage: 'Error setting artist not pending',
+      client400Message: 'Error setting artist not pending',
       logMessage: `Error setting artist not pending. Artist id: ${artistId}.`,
       error: dbRes,
     };

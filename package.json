@@ -11,9 +11,11 @@
     "start": "concurrently \"npm run tailwindcss\" \"remix build && run-p dev:*\""
   },
   "dependencies": {
+    "@cloudflare/pages-plugin-sentry": "^1.1.1",
     "@remix-run/cloudflare": "^1.14.0",
     "@remix-run/cloudflare-pages": "^1.14.0",
     "@remix-run/react": "^1.14.0",
+    "@sentry/browser": "^7.47.0",
     "@tsndr/cloudflare-worker-jwt": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "clsx": "^1.1.1",

@@ -19,7 +19,7 @@ export async function action(args: ActionArgs) {
 
   const err = await updateArtistData(urlBase, body);
   if (err) {
-    return create500Json(err.clientMessage);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -93,7 +93,7 @@ async function updateLinks(
   for (let i = 0; i < dbResponses.length; i++) {
     if (dbResponses[i].errorMessage) {
       return {
-        clientMessage: 'Error updating artist links',
+        client400Message: 'Error updating artist links',
         logMessage: `Error updating artist links - ${logStrings[i]}`,
         error: dbResponses[i],
       };
@@ -127,7 +127,7 @@ async function updateGeneralDetails(
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
   if (dbRes.errorMessage) {
     return {
-      clientMessage: 'Error updating artist details',
+      client400Message: 'Error updating artist details',
       logMessage: 'Error updating artist details',
     };
   }

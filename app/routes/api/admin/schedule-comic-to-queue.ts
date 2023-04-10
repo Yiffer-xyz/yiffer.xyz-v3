@@ -18,7 +18,7 @@ export async function action(args: ActionArgs) {
   if (!formComicId) return create400Json('Missing comicId');
 
   const err = await scheduleComic(urlBase, parseInt(formComicId.toString()), user.userId);
-  if (err) return create500Json(err.clientMessage);
+  if (err) return create500Json(err.client400Message);
 
   return createSuccessJson();
 }
@@ -38,14 +38,14 @@ export async function scheduleComic(
 
   if (comicDbRes.errorMessage) {
     return {
-      clientMessage: 'Error scheduling comic',
+      client400Message: 'Error scheduling comic',
       logMessage: `Error scheduling comic with id ${comicId}. Could not update comic table.`,
       error: comicDbRes,
     };
   }
   if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error scheduling comic',
+      client400Message: 'Error scheduling comic',
       logMessage: `Error scheduling comic with id ${comicId}. Could not update comicmetadata table.`,
       error: comicDbRes,
     };

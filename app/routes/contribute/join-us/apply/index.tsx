@@ -11,7 +11,11 @@ import TopGradientBox from '~/components/TopGradientBox';
 import { getModApplicationForUser } from '~/routes/api/funcs/get-mod-application';
 import { queryDb } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import { create400Json, createSuccessJson, logError } from '~/utils/request-helpers';
+import {
+  create400Json,
+  createSuccessJson,
+  logErrorOLD_DONOTUSE,
+} from '~/utils/request-helpers';
 
 export async function loader(args: LoaderArgs) {
   const user = await authLoader(args);
@@ -52,7 +56,7 @@ export async function action(args: ActionArgs) {
 
   const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (insertDbRes.errorMessage) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error inserting mod application for user ${user.userId}, body: ${reqBody}`,
       insertDbRes
     );

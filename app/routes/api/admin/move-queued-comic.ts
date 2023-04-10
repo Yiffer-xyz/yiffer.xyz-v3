@@ -4,7 +4,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 import { moveComicInQueue } from '../funcs/publishing-queue';
 
@@ -28,8 +28,8 @@ export async function action(args: ActionArgs) {
     formMoveDirection === 'up' ? -1 : 1
   );
   if (err) {
-    logError('Error moving comic in queue', err);
-    return create500Json(err.clientMessage);
+    logErrorOLD_DONOTUSE('Error moving comic in queue', err);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();

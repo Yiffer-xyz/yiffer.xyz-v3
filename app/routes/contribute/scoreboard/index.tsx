@@ -19,7 +19,7 @@ import BackToContribute from '~/routes/contribute/BackToContribute';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import { ContributionPointsEntry, UserType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError, logError } from '~/utils/request-helpers';
+import { ApiError, logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
 
 type CachedPoints = {
   yearMonth: string;
@@ -202,7 +202,7 @@ export default function Scoreboard() {
           <InfoBox
             variant="error"
             showIcon
-            text={fetcher.data.err.clientMessage}
+            text={fetcher.data.err.client400Message}
             className="mt-2 mb-2"
           />
         )}
@@ -247,7 +247,7 @@ export async function loader(args: LoaderArgs) {
     false
   );
   if (scoresRes.err) {
-    logError('Error in loader of /contribute/scoreboard', scoresRes.err);
+    logErrorOLD_DONOTUSE('Error in loader of /contribute/scoreboard', scoresRes.err);
   }
   return scoresRes;
 }
@@ -261,7 +261,7 @@ export async function action(args: ActionArgs) {
     excludeMods === 'true'
   );
   if (res.err) {
-    logError('Error in action of /contribute/scoreboard', res.err);
+    logErrorOLD_DONOTUSE('Error in action of /contribute/scoreboard', res.err);
   }
   return res;
 }
@@ -302,7 +302,7 @@ async function getTopScores(
   if (dbRes.errorMessage) {
     return {
       err: {
-        clientMessage: 'Error getting top score list',
+        client400Message: 'Error getting top score list',
         logMessage: `Error getting top score list. yearMonth: ${yearMonth}, excludeMods: ${excludeMods}`,
         error: dbRes,
       },

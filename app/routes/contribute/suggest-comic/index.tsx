@@ -21,7 +21,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
@@ -44,8 +44,8 @@ export async function action(args: ActionArgs) {
     comicName as string
   );
   if (errors?.apiErr) {
-    logError(`Error in suggest-comic submit`, errors.apiErr);
-    return create500Json(errors.apiErr.clientMessage);
+    logErrorOLD_DONOTUSE(`Error in suggest-comic submit`, errors.apiErr);
+    return create500Json(errors.apiErr.client400Message);
   } else if (errors?.comicExists) {
     return create400Json('Comic already exists');
   } else if (errors?.suggestionExists) {
@@ -74,7 +74,7 @@ export async function action(args: ActionArgs) {
   );
 
   if (dbRes.errorMessage) {
-    logError('Error creating comic suggestion', dbRes);
+    logErrorOLD_DONOTUSE('Error creating comic suggestion', dbRes);
     return create500Json('Error creating comic suggestion');
   }
 
@@ -450,7 +450,7 @@ async function checkForExistingComicOrSuggestion(
   if (existingSuggestionDbRes.errorMessage) {
     return {
       apiErr: {
-        clientMessage: `Error checking for existing suggestions. Comic: ${comicName}`,
+        client400Message: `Error checking for existing suggestions. Comic: ${comicName}`,
         logMessage: 'Error checking for existing suggestions',
         error: existingSuggestionDbRes,
       },
@@ -463,7 +463,7 @@ async function checkForExistingComicOrSuggestion(
   if (existingComicDbRes.errorMessage) {
     return {
       apiErr: {
-        clientMessage: `Error checking for existing comics. Comic: ${comicName}`,
+        client400Message: `Error checking for existing comics. Comic: ${comicName}`,
         logMessage: 'Error checking for existing comics',
         error: existingComicDbRes,
       },

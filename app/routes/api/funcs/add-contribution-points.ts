@@ -21,7 +21,7 @@ export async function addContributionPoints(
 
   if (existingDbRes.errorMessage) {
     return {
-      clientMessage: 'Error adding contribution points',
+      client400Message: 'Error adding contribution points',
       logMessage: `Error adding contribution points. User id: ${userId}, point column: ${pointColumn}, year-month: ${yearMonth}`,
       error: existingDbRes,
     };

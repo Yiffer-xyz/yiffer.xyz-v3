@@ -1,7 +1,8 @@
 export interface DBResponse<T> {
-  errorMessage?: string;
+  errorMessage: string;
   errorCode?: string;
   result?: T;
+  sql?: string;
   insertId?: number;
 }
 

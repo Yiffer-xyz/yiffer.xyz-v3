@@ -1,6 +1,6 @@
 import { Artist } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError } from '~/utils/request-helpers';
+import { ApiError, dbErrObj } from '~/utils/request-helpers';
 
 type DbArtist = {
   id: number;
@@ -26,14 +26,9 @@ export async function getArtistById(
 
   const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [artistId]);
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        clientMessage: 'Error getting artist',
-        logMessage: `Error getting artist by id: ${artistId}`,
-        error: dbRes,
-      },
-    };
+    return dbErrObj(dbRes, 'Error getting artist', { artistId });
   }
+
   if (!dbRes.result || dbRes.result.length === 0) {
     return { notFound: true };
   }
@@ -66,7 +61,7 @@ export async function getArtistByComicId(
   if (dbRes.errorMessage) {
     return {
       err: {
-        clientMessage: 'Error getting artist',
+        client400Message: 'Error getting artist',
         logMessage: `Error getting artist by comic id. Comic id: ${comicId}`,
         error: dbRes,
       },

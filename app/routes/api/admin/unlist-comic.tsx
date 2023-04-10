@@ -6,7 +6,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
@@ -28,11 +28,11 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error in /unlist-comic for comic id ${formComicId.toString()}, mod comment ${formUnlistComment.toString()}`,
       err
     );
-    return create500Json(err.clientMessage);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -53,14 +53,14 @@ export async function unlistComic(
 
   if (detailsDbRes.errorMessage) {
     return {
-      clientMessage: 'Error unlisting comic',
+      client400Message: 'Error unlisting comic',
       logMessage: 'Error unlisting comic, could not get comic details',
       error: detailsDbRes,
     };
   }
   if (updateDbRes.errorMessage) {
     return {
-      clientMessage: 'Error unlisting comic',
+      client400Message: 'Error unlisting comic',
       logMessage: 'Error unlisting comic, could not set publishStatus',
       error: updateDbRes,
     };
@@ -78,7 +78,7 @@ export async function unlistComic(
 
   if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error unlisting comic',
+      client400Message: 'Error unlisting comic',
       logMessage: `Error unlisting comic, could not insert/update comicmetadata`,
       error: metadataDbRes,
     };

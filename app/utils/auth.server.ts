@@ -2,7 +2,7 @@ import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import { JwtConfig, User, UserSession } from '~/types/types';
 import { queryDb } from './database-facade';
-import { logError } from './request-helpers';
+import { logErrorOLD_DONOTUSE } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 const bcrypt = require('bcryptjs');
 const { hash, compare } = bcrypt;
@@ -45,11 +45,11 @@ export async function signup(
     queryDb<any[]>(urlBase, emailQuery, [email]),
   ]);
   if (usernameResult.errorMessage) {
-    logError(`Signup error looking for username ${username}`, usernameResult);
+    logErrorOLD_DONOTUSE(`Signup error looking for username ${username}`, usernameResult);
     return { errorMessage: 'Server error looking up username' };
   }
   if (emailResult.errorMessage) {
-    logError(`Signup error looking for email ${email}`, emailResult);
+    logErrorOLD_DONOTUSE(`Signup error looking for email ${email}`, emailResult);
     return { errorMessage: 'Server error looking up email' };
   }
   if (usernameResult.result?.length) {
@@ -69,11 +69,14 @@ export async function signup(
     email,
   ]);
   if (insertResult.errorMessage) {
-    logError(`Signup error inserting user ${username} and email ${email}`, insertResult);
+    logErrorOLD_DONOTUSE(
+      `Signup error inserting user ${username} and email ${email}`,
+      insertResult
+    );
     return { errorMessage: 'Server error creating user' };
   }
   if (!insertResult.insertId) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `No insert result after signup for ${username} and email ${email}`,
       insertResult
     );
@@ -105,7 +108,10 @@ async function authenticate(
 
   const result = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
   if (result.errorMessage) {
-    logError(`Login error looking for username/email ${usernameOrEmail}`, result);
+    logErrorOLD_DONOTUSE(
+      `Login error looking for username/email ${usernameOrEmail}`,
+      result
+    );
     return { errorMessage: 'Server error' };
   }
   if (!result.result?.length) {

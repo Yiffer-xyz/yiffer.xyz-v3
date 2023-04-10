@@ -6,7 +6,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 import { processAnyUpload } from './process-user-upload';
 
@@ -50,11 +50,11 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error in /process-anon-upload for comic name/id ${comicName.toString()} / ${formComicId.toString()}, verdict: ${verdict}`,
       err
     );
-    return create500Json(err.clientMessage);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();

@@ -1,5 +1,7 @@
 import { json, TypedResponse } from '@remix-run/cloudflare';
 import { DBResponse } from './database-facade';
+import * as Sentry from '@sentry/browser';
+import { handledErrMsg } from '~/routes/error';
 
 export type ApiResponse<T = void> = {
   success: boolean;
@@ -8,19 +10,92 @@ export type ApiResponse<T = void> = {
 };
 
 export type ApiError = {
-  error?: Error | DBResponse<any>;
+  error?: DBResponse<any>;
   logMessage: string;
-  clientMessage: string;
+  context?: { [key: string]: any };
+  client400Message?: string;
 };
 
-export function wrapApiError(err: ApiError, message: string): ApiError {
+// If clientMessage, return nicely to client.
+// Otherwise, log and fail hard.
+export async function processApiError(
+  prependMessage: string,
+  err: ApiError
+): Promise<never> {
+  console.log(prependMessage);
+  console.log(err);
+  if (err.client400Message) {
+    throw create400Json(err.client400Message);
+  } else {
+    logApiError(prependMessage, err);
+    throw new Error(handledErrMsg);
+  }
+}
+
+function logApiError(prependMessage: string, err: ApiError) {
+  Sentry.captureMessage(prependMessage + ' >> ' + err.logMessage, {
+    extra: {
+      sql: err.error?.sql,
+      sqlErrorCode: err.error?.errorCode,
+      sqlErrorMessage: err.error?.errorMessage,
+      ...(err.context || {}),
+    },
+    level: 'error',
+  });
+}
+
+export function dbErrObj(
+  err: DBResponse<any>,
+  message: string,
+  context?: { [key: string]: any },
+  client400Message?: string
+): { err: ApiError } {
   return {
-    logMessage: message + ' >> ' + err.logMessage,
-    error: err.error,
-    clientMessage: err.clientMessage,
+    err: {
+      error: err,
+      logMessage: message,
+      client400Message,
+      context: context || {},
+    },
   };
 }
 
+export function logErrorBoundaryException(err: Error) {
+  console.log('Error boundary captured and logging exception!');
+  console.log(err);
+  Sentry.captureException(err, {
+    tags: {
+      errorBoundary: 'true',
+    },
+  });
+}
+
+export function wrapApiError(
+  err: ApiError,
+  message: string,
+  additionalContext?: { [key: string]: any }
+): ApiError {
+  const newErr = {
+    ...err,
+    logMessage: message + ' >> ' + err.logMessage,
+  };
+  if (additionalContext) {
+    newErr.context = {
+      ...(err.context || {}),
+      ...additionalContext,
+    };
+  }
+
+  return newErr;
+}
+
+// TODO: remove this.
+export function logErrorOLD_DONOTUSE(
+  prependMessage: string,
+  err?: ApiError | DBResponse<any> | Error
+) {}
+
+// TODO: Phase this out - we're gonna use processApiError instead
 export function create500Json(message?: string): TypedResponse<ApiResponse> {
   return json(
     {
@@ -53,17 +128,6 @@ export function createSuccessJson(data?: any): TypedResponse<ApiResponse> {
     },
     { status: 200 }
   );
-}
-
-// TODO: dont use this
-export function logError(
-  prependMessage: string,
-  err: ApiError | DBResponse<any> | string
-) {
-  // TODO: If ApiError, combine prependMessage with err.logMessage, with ' >> ' in between.
-  // TODO: if DBResponse, and no errorMessage, the result will be undefined.
-  //    this is also an error as this should be handled where it could happen.
-  console.log(prependMessage, err);
 }
 
 export async function noGetRoute() {

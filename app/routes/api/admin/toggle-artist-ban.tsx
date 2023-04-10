@@ -6,7 +6,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicsByArtistId } from '../funcs/get-comics';
@@ -37,11 +37,11 @@ export async function action(args: ActionArgs) {
     user.userId
   );
   if (err) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error in /toggle-artist-ban for artist id ${formArtistId.toString()}, is banned: ${formIsBanned}`,
       err
     );
-    return create500Json(err.clientMessage);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -58,7 +58,7 @@ export async function toggleArtistBan(
   const dbRes = await queryDb(urlBase, query, params);
   if (dbRes.errorMessage) {
     return {
-      clientMessage: 'Error setting artist banned/unbanned',
+      client400Message: 'Error setting artist banned/unbanned',
       logMessage: 'Error banning/unbanning artist',
       error: dbRes,
     };

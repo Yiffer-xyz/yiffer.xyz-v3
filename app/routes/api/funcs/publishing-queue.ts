@@ -20,7 +20,7 @@ export async function moveComicInQueue(
 
   if (positionDbRes.errorMessage || !positionDbRes.result) {
     return {
-      clientMessage: 'Error moving comic in publishing queue',
+      client400Message: 'Error moving comic in publishing queue',
       logMessage: `Error moving comic with id ${comicId} in publishing queue, move by ${moveBy}.`,
       error: positionDbRes,
     };
@@ -43,7 +43,7 @@ export async function moveComicInQueue(
   );
   if (moveOtherDbRes.errorMessage) {
     return {
-      clientMessage: 'Error moving comic in publishing queue',
+      client400Message: 'Error moving comic in publishing queue',
       logMessage: `Error moving comic in publishing queue, first one. Comic id ${comicId}, moving: ${moveBy}`,
       error: moveOtherDbRes,
     };
@@ -52,7 +52,7 @@ export async function moveComicInQueue(
   const moveComicDbRes = await queryDb(urlBase, moveComicQuery, moveComicQueryParams);
   if (moveComicDbRes.errorMessage) {
     return {
-      clientMessage: 'Error moving comic in publishing queue',
+      client400Message: 'Error moving comic in publishing queue',
       logMessage: `Error moving comic in publishing queue, second one. Comic id ${comicId}, moving: ${moveBy}`,
       error: moveComicDbRes,
     };
@@ -74,7 +74,7 @@ export async function recalculatePublishingQueue(
   const queueDbRes = await queryDb<ComicInQueue[]>(urlBase, query);
   if (queueDbRes.errorMessage) {
     return {
-      clientMessage: 'Error getting comics in queue',
+      client400Message: 'Error getting comics in queue',
       logMessage: 'Error getting comics in queue',
       error: queueDbRes,
     };
@@ -129,7 +129,7 @@ export async function recalculatePublishingQueue(
   for (const result of updateDbRes) {
     if (result.errorMessage) {
       return {
-        clientMessage: 'Error updating queue position of pending comic',
+        client400Message: 'Error updating queue position of pending comic',
         logMessage: 'Error updating queue position of pending comic',
         error: queueDbRes,
       };

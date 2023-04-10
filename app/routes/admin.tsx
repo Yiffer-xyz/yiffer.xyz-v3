@@ -17,7 +17,7 @@ export type GlobalAdminContext = {
   tags: Tag[];
 };
 
-export { ErrorBoundary } from './error';
+export { ErrorBoundary, CatchBoundary } from './error';
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: toastCss }];
 

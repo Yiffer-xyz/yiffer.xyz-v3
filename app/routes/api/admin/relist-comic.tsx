@@ -6,7 +6,7 @@ import {
   create400Json,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
   noGetRoute,
 } from '~/utils/request-helpers';
 
@@ -23,8 +23,8 @@ export async function action(args: ActionArgs) {
 
   const err = await relistComic(urlBase, parseInt(formComicId.toString()));
   if (err) {
-    logError('Error relisting comic', err);
-    return create500Json(err.clientMessage);
+    logErrorOLD_DONOTUSE('Error relisting comic', err);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -44,14 +44,14 @@ export async function relistComic(
 
   if (comicDbRes.errorMessage) {
     return {
-      clientMessage: 'Error relisting comic',
+      client400Message: 'Error relisting comic',
       logMessage: `Error relisting comic with id ${comicId}. Could not update comic table.`,
       error: comicDbRes,
     };
   }
   if (metadataDbRes.errorMessage) {
     return {
-      clientMessage: 'Error relisting comic',
+      client400Message: 'Error relisting comic',
       logMessage: `Error relisting comic with id ${comicId}. Could not update comicmetadata table.`,
       error: comicDbRes,
     };

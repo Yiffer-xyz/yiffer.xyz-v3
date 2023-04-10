@@ -5,7 +5,7 @@ import {
   ApiError,
   create500Json,
   createSuccessJson,
-  logError,
+  logErrorOLD_DONOTUSE,
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
@@ -19,11 +19,11 @@ export async function action(args: ActionArgs) {
 
   const err = await publishComic(urlBase, parseInt(formComicId.toString()));
   if (err) {
-    logError(
+    logErrorOLD_DONOTUSE(
       `Error in /publish-comic, failed publishing comic from with id ${formComicId}`,
       err
     );
-    return create500Json(err.clientMessage);
+    return create500Json(err.client400Message);
   }
 
   return createSuccessJson();
@@ -43,7 +43,7 @@ export async function publishComic(
   const dbRes = await queryDb(urlBase, query, [comicId]);
   if (dbRes.errorMessage) {
     return {
-      clientMessage: 'Error publishing comic: Could not update comic table',
+      client400Message: 'Error publishing comic: Could not update comic table',
       logMessage: 'Error publishing comic: could not update comic table',
       error: dbRes,
     };

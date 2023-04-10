@@ -9,7 +9,7 @@ import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import { DbPendingComic } from '~/types/types';
-import { logError } from '~/utils/request-helpers';
+import { logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '../api/funcs/get-pending-comics';
 
@@ -27,8 +27,8 @@ export async function loader(args: LoaderArgs) {
   );
 
   if (err) {
-    logError('Error getting pending comics in mod panel', err);
-    throw new Error(err.clientMessage);
+    logErrorOLD_DONOTUSE('Error getting pending comics in mod panel', err);
+    throw new Error(err.client400Message);
   }
 
   return {
