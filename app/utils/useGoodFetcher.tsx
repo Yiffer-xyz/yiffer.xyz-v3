@@ -43,16 +43,25 @@ export function useGoodFetcher<T = void>({
 }: ToastFetcherArgs<T>) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
-  const hasSubmitFinishedRef = useRef<boolean | undefined>(undefined);
+  const fetchingStateRef = useRef<'is-fetching' | 'not-started'>('not-started');
 
   useEffect(() => {
     const stateToCheck = method === 'get' ? 'idle' : 'loading';
 
+    // This happens when using fetcher.Form, as the submit method is not actively
+    // invoked in that case.
+    const didJustInitiateNativeFormSubmit =
+      fetcher.state === 'submitting' && fetchingStateRef.current === 'not-started';
+    if (didJustInitiateNativeFormSubmit) {
+      fetchingStateRef.current = 'is-fetching';
+      return;
+    }
+
     const didJustFinish =
-      fetcher.state === stateToCheck && hasSubmitFinishedRef.current === false;
+      fetcher.state === stateToCheck && fetchingStateRef.current === 'is-fetching';
 
     if (didJustFinish) {
-      hasSubmitFinishedRef.current = true;
+      fetchingStateRef.current = 'not-started';
       setHasFetchedOnce(true);
       if (onFinish) {
         onFinish();
@@ -83,7 +92,7 @@ export function useGoodFetcher<T = void>({
 
   const submit = useCallback(
     (body?: RemixSubmitTarget) => {
-      hasSubmitFinishedRef.current = false;
+      fetchingStateRef.current = 'is-fetching';
       fetcher.submit(body ?? null, {
         method: method,
         action: url,
@@ -97,7 +106,7 @@ export function useGoodFetcher<T = void>({
   const awaitSubmit = useCallback(
     async (body?: RemixSubmitTarget) => {
       submit(body);
-      while (hasSubmitFinishedRef.current === false) {
+      while (fetchingStateRef.current === 'is-fetching') {
         await new Promise(resolve => setTimeout(resolve, 25));
       }
     },
@@ -111,6 +120,7 @@ export function useGoodFetcher<T = void>({
     hasFetchedOnce: hasFetchedOnce,
     submit: submit,
     awaitSubmit: awaitSubmit,
+    Form: fetcher.Form,
   };
 }
 

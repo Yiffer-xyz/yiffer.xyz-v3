@@ -1,11 +1,10 @@
-import { useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
 import { MdCheck, MdError } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import { Comic } from '~/types/types';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type PendingComicErrorParams = {
   comicData: Comic;
@@ -14,12 +13,11 @@ type PendingComicErrorParams = {
 };
 
 export function SetError({ comicData, onCancel, onFinish }: PendingComicErrorParams) {
-  const fetcher = useFetcher();
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      onFinish();
-    }
-  }, [fetcher]);
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/set-comic-error',
+    method: 'post',
+    onFinish: onFinish,
+  });
 
   return (
     <>
@@ -43,7 +41,10 @@ export function SetError({ comicData, onCancel, onFinish }: PendingComicErrorPar
           <LoadingButton
             text="Save"
             startIcon={IoCheckmark}
-            isLoading={fetcher.state === 'submitting'}
+            isLoading={fetcher.isLoading}
+            onClick={() =>
+              fetcher.submit({ comicId: comicData.id.toString(), errorText: 'test' })
+            }
             isSubmit
           />
         </div>
@@ -58,12 +59,11 @@ type PendingComicHasErrorParams = {
 };
 
 export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
-  const fetcher = useFetcher();
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      onFinish();
-    }
-  }, [fetcher]);
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/set-comic-error',
+    method: 'post',
+    onFinish: onFinish,
+  });
 
   return (
     <>
@@ -85,7 +85,7 @@ export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
         <input type="hidden" name="errorText" value={''} />
         <LoadingButton
           text="Remove error status"
-          isLoading={fetcher.state === 'submitting'}
+          isLoading={fetcher.isLoading}
           isSubmit
         />
       </fetcher.Form>
