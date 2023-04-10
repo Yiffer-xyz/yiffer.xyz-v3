@@ -1,6 +1,6 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useLoaderData } from '@remix-run/react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { MdArrowForward, MdCheck, MdClose, MdOpenInNew, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/components/ArtistEditor';
 import Button from '~/components/Buttons/Button';
@@ -14,6 +14,7 @@ import { Artist, ComicTiny, UserSession } from '~/types/types';
 import { FieldChange } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 
 export type ArtistDataChanges = {
@@ -22,12 +23,6 @@ export type ArtistDataChanges = {
   e621Name?: string;
   patreonName?: string;
   links?: string[];
-};
-
-type LoaderData = {
-  artist: Artist;
-  comics: ComicTiny[];
-  user: UserSession;
 };
 
 export async function loader(args: LoaderArgs) {
@@ -62,8 +57,18 @@ export async function loader(args: LoaderArgs) {
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();
   const { artist, comics, user } = useLoaderData<typeof loader>();
-  const saveChangesFetcher = useFetcher();
-  const banArtistFetcher = useFetcher();
+  const banArtistFetcher = useGoodFetcher({
+    url: '/api/admin/toggle-artist-ban',
+    method: 'post',
+  });
+  const saveChangesFetcher = useGoodFetcher({
+    url: '/api/admin/update-artist-data',
+    method: 'post',
+    onFinish: () => {
+      setNeedsUpdate(true);
+      setIsBanning(false);
+    },
+  });
 
   const [updatedArtistData, setUpdatedArtistData] = useState<NewArtist>();
   const [needsUpdate, setNeedsUpdate] = useState(false);
@@ -79,13 +84,6 @@ export default function ManageArtist() {
       setNeedsUpdate(false);
     }
   }, [artist]);
-
-  useEffect(() => {
-    if (saveChangesFetcher.data?.success && saveChangesFetcher.state === 'loading') {
-      setNeedsUpdate(true);
-      setIsBanning(false);
-    }
-  }, [saveChangesFetcher]);
 
   function setInitialArtistData() {
     const newUpdatedArtistData = setupInitialUpdatedArtist(artist);
@@ -115,13 +113,7 @@ export default function ManageArtist() {
       }
     }
 
-    saveChangesFetcher.submit(
-      { body: JSON.stringify(body) },
-      {
-        method: 'post',
-        action: '/api/admin/update-artist-data',
-      }
-    );
+    saveChangesFetcher.submit({ body: JSON.stringify(body) });
   }
 
   const canSave = useMemo(() => {
@@ -138,13 +130,10 @@ export default function ManageArtist() {
   }, [artistChanges]);
 
   function toggleArtistBan() {
-    banArtistFetcher.submit(
-      { isBanned: artist.isBanned ? 'false' : 'true', artistId: artist.id.toString() },
-      {
-        method: 'post',
-        action: `/api/admin/toggle-artist-ban`,
-      }
-    );
+    banArtistFetcher.submit({
+      isBanned: artist.isBanned ? 'false' : 'true',
+      artistId: artist.id.toString(),
+    });
   }
 
   return (
@@ -169,7 +158,7 @@ export default function ManageArtist() {
               <LoadingButton
                 onClick={toggleArtistBan}
                 className="mt-2"
-                isLoading={banArtistFetcher.state === 'submitting'}
+                isLoading={banArtistFetcher.isLoading}
                 color="error"
                 text="Unban artist"
               />
@@ -213,7 +202,10 @@ export default function ManageArtist() {
       <div className="flex flex-wrap gap-x-3 gap-y-2 mb-6">
         {comics.length ? (
           comics.map(comic => (
-            <div className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3">
+            <div
+              className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3"
+              key={comic.id}
+            >
               <p>{comic.name}</p>
               <div className="flex flex-row gap-3">
                 {comic.publishStatus === 'published' && (
@@ -263,7 +255,7 @@ export default function ManageArtist() {
                 const hasDetails = !!change.newValue;
 
                 return isMobile ? (
-                  <div>
+                  <div key={change.field} className="grid gap-y-2">
                     <p className={hasDetails ? '' : 'col-span-2'}>
                       <b>{change.field}:</b>
                     </p>
@@ -280,7 +272,7 @@ export default function ManageArtist() {
                     )}
                   </div>
                 ) : (
-                  <>
+                  <Fragment key={change.field}>
                     <p className={hasDetails ? '' : 'col-span-2'}>
                       <b>{change.field}</b>
                     </p>
@@ -295,17 +287,17 @@ export default function ManageArtist() {
                         )}
                       </p>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </div>
           </div>
 
-          {(saveChangesFetcher.data?.error || banArtistFetcher.data?.error) && (
+          {(saveChangesFetcher.error || banArtistFetcher.error) && (
             <InfoBox
               variant="error"
               className="mt-4 w-fit"
-              text={saveChangesFetcher.data.error || banArtistFetcher.data.error}
+              text={saveChangesFetcher.error || banArtistFetcher.error || ''}
               showIcon
             />
           )}
@@ -319,7 +311,7 @@ export default function ManageArtist() {
             />
             <LoadingButton
               text="Save changes"
-              isLoading={saveChangesFetcher.state === 'submitting'}
+              isLoading={saveChangesFetcher.isLoading}
               onClick={saveChanges}
               startIcon={MdCheck}
               disabled={!canSave}
@@ -355,7 +347,7 @@ export default function ManageArtist() {
                   startIcon={MdClose}
                 />
                 <LoadingButton
-                  isLoading={banArtistFetcher.state === 'submitting'}
+                  isLoading={banArtistFetcher.isLoading}
                   text="Ban artist"
                   onClick={toggleArtistBan}
                   color="error"

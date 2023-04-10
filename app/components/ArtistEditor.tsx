@@ -265,6 +265,7 @@ export default function ArtistEditor({
               return (
                 <div
                   className={`flex flex-row -mt-1 items-end ${isLastLink ? 'mr-10' : ''}`}
+                  key={i}
                 >
                   <TextInput
                     key={i}

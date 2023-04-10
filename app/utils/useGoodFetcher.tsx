@@ -15,9 +15,10 @@ type RemixSubmitTarget =
     }
   | null;
 
-type ToastFetcherArgs = {
+type ToastFetcherArgs<T = void> = {
   url: string;
   method?: FormMethod;
+  onFinish?: () => void;
   toastSuccessMessage?: string;
   toastError?: boolean;
   fetchGetOnLoad?: boolean;
@@ -30,13 +31,16 @@ type ToastFetcherArgs = {
 // Just to have a bit more control over types.
 // A little gotcha: This MUST be used with stuff returning ApiResponse,
 // but it'll be very evident if it's not, stuff will fail fast.
+
+// The submit function can be awaited, OR an onFinish callback can be passed in.
 export function useGoodFetcher<T = void>({
   url,
   method = 'get',
+  onFinish,
   toastSuccessMessage,
   toastError = false,
   fetchGetOnLoad = false,
-}: ToastFetcherArgs) {
+}: ToastFetcherArgs<T>) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
   const hasSubmitFinishedRef = useRef<boolean | undefined>(undefined);
@@ -44,16 +48,22 @@ export function useGoodFetcher<T = void>({
   useEffect(() => {
     const stateToCheck = method === 'get' ? 'idle' : 'loading';
 
-    if (fetcher.state === stateToCheck && hasSubmitFinishedRef.current === false) {
+    const didJustFinish =
+      fetcher.state === stateToCheck && hasSubmitFinishedRef.current === false;
+
+    if (didJustFinish) {
       hasSubmitFinishedRef.current = true;
       setHasFetchedOnce(true);
-    }
+      if (onFinish) {
+        onFinish();
+      }
 
-    if (fetcher.state === stateToCheck && fetcher.data) {
-      if (toastSuccessMessage && fetcher.data.success) {
-        showSuccessToast(toastSuccessMessage);
-      } else if (toastError && fetcher.data.error) {
-        showErrorToast(fetcher.data.error);
+      if (fetcher.data) {
+        if (toastSuccessMessage && fetcher.data.success) {
+          showSuccessToast(toastSuccessMessage);
+        } else if (toastError && fetcher.data.error) {
+          showErrorToast(fetcher.data.error);
+        }
       }
     }
   }, [fetcher.state, toastSuccessMessage]);
@@ -88,16 +98,16 @@ export function useGoodFetcher<T = void>({
     async (body?: RemixSubmitTarget) => {
       submit(body);
       while (hasSubmitFinishedRef.current === false) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 25));
       }
     },
     [submit]
   );
 
   return {
-    state: fetcher.state,
     data: returnData,
     error: fetcher.data?.error,
+    isLoading: fetcher.state === 'submitting',
     hasFetchedOnce: hasFetchedOnce,
     submit: submit,
     awaitSubmit: awaitSubmit,

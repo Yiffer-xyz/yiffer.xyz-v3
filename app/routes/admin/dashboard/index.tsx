@@ -275,10 +275,7 @@ export default function Dashboard({}) {
                 action={action as TagSuggestionAction}
                 onProcessSuggestion={processTagSuggestion}
                 loadingAction={latestSubmittedAction}
-                isLoading={
-                  latestSubmittedId === action.id &&
-                  processTagFetcher.state === 'submitting'
-                }
+                isLoading={latestSubmittedId === action.id && processTagFetcher.isLoading}
                 innerContainerClassName={innerContainerClassName}
               />
             )}
@@ -290,8 +287,7 @@ export default function Dashboard({}) {
                 onUnassignMe={unassignActionFromMod}
                 isLoading={
                   latestSubmittedId === action.id &&
-                  (assignModFetcher.state === 'submitting' ||
-                    unassignModFetcher.state === 'submitting')
+                  (assignModFetcher.isLoading || unassignModFetcher.isLoading)
                 }
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}
@@ -308,9 +304,9 @@ export default function Dashboard({}) {
                 onProcessed={processComicSuggestion}
                 isLoading={
                   latestSubmittedId === action.id &&
-                  (assignModFetcher.state === 'submitting' ||
-                    unassignModFetcher.state === 'submitting' ||
-                    comicSuggestionFetcher.state === 'submitting')
+                  (assignModFetcher.isLoading ||
+                    unassignModFetcher.isLoading ||
+                    comicSuggestionFetcher.isLoading)
                 }
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}
@@ -327,9 +323,9 @@ export default function Dashboard({}) {
                 onProcessed={processComicProblem}
                 isLoading={
                   latestSubmittedId === action.id &&
-                  (assignModFetcher.state === 'submitting' ||
-                    unassignModFetcher.state === 'submitting' ||
-                    problemFetcher.state === 'submitting')
+                  (assignModFetcher.isLoading ||
+                    unassignModFetcher.isLoading ||
+                    problemFetcher.isLoading)
                 }
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}
@@ -345,8 +341,7 @@ export default function Dashboard({}) {
                 onUnassignMe={unassignActionFromMod}
                 isLoading={
                   latestSubmittedId === action.id &&
-                  (assignModFetcher.state === 'submitting' ||
-                    unassignModFetcher.state === 'submitting')
+                  (assignModFetcher.isLoading || unassignModFetcher.isLoading)
                 }
                 loadingAction={latestSubmittedAction}
                 isAssignedToOther={isAssignedToOther}
