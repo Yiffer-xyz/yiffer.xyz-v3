@@ -8,8 +8,7 @@ import useWindowSize from '~/utils/useWindowSize';
 import { getAllArtists } from './api/funcs/get-artists';
 import { getAllComicNamesAndIDs } from './api/funcs/get-comics';
 import { getAllTags } from './api/funcs/get-tags';
-import { ToastContainer } from 'react-toastify';
-import toastCss from 'react-toastify/dist/ReactToastify.css';
+import { processApiError } from '~/utils/request-helpers';
 
 export type GlobalAdminContext = {
   comics: ComicTiny[];
@@ -18,8 +17,6 @@ export type GlobalAdminContext = {
 };
 
 export { ErrorBoundary, CatchBoundary } from './error';
-
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: toastCss }];
 
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
@@ -30,7 +27,7 @@ export async function loader(args: LoaderArgs) {
     return redirect('/admin/dashboard');
   }
 
-  const [comics, artists, tags] = await Promise.all([
+  const [comicsRes, artistsRes, tagsRes] = await Promise.all([
     getAllComicNamesAndIDs(urlBase, {
       modifyNameIncludeType: true,
       includeUnlisted: true,
@@ -44,7 +41,30 @@ export async function loader(args: LoaderArgs) {
     getAllTags(urlBase),
   ]);
 
-  const globalContext: GlobalAdminContext = { comics, artists, tags };
+  if (comicsRes.err || !comicsRes.comics) {
+    return processApiError(
+      'Error getting comics in mod panel',
+      comicsRes.err || { logMessage: 'Comics returned as null' }
+    );
+  }
+  if (artistsRes.err || !artistsRes.artists) {
+    return processApiError(
+      'Error getting artists in mod panel',
+      artistsRes.err || { logMessage: 'Artists returned as null' }
+    );
+  }
+  if (tagsRes.err || !tagsRes.tags) {
+    return processApiError(
+      'Error getting tags in mod panel',
+      tagsRes.err || { logMessage: 'Tags returned as null' }
+    );
+  }
+
+  const globalContext: GlobalAdminContext = {
+    comics: comicsRes.comics,
+    artists: artistsRes.artists,
+    tags: tagsRes.tags,
+  };
 
   return globalContext;
 }
@@ -60,7 +80,6 @@ export default function Admin({}) {
   return (
     <>
       <Sidebar alwaysShow={isLgUp} delay={!width} />
-      <ToastContainer />
       <div
         className="pb-4 px-6 lg:px-8"
         style={{ marginLeft: isLgUp ? navWidth : mobileClosedBarW }}

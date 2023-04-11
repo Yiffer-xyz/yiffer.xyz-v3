@@ -1,5 +1,5 @@
-import { ActionArgs, LoaderArgs, redirect } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
+import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -10,23 +10,29 @@ import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled'
 import TopGradientBox from '~/components/TopGradientBox';
 import { getModApplicationForUser } from '~/routes/api/funcs/get-mod-application';
 import { queryDb } from '~/utils/database-facade';
-import { authLoader } from '~/utils/loaders';
+import { authLoader, redirectIfNotLoggedIn } from '~/utils/loaders';
 import {
   create400Json,
+  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  logApiError,
+  processApiError,
 } from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export async function loader(args: LoaderArgs) {
-  const user = await authLoader(args);
-  if (!user) throw redirect('/');
+  const user = await redirectIfNotLoggedIn(args);
 
-  const existingApplication = await getModApplicationForUser(
+  const existingApplicationRes = await getModApplicationForUser(
     args.context.DB_API_URL_BASE as string,
     user.userId
   );
 
-  return { hasExistingApplication: existingApplication !== null };
+  if (existingApplicationRes.err) {
+    return processApiError('Error in join us - apply', existingApplicationRes.err);
+  }
+
+  return { hasExistingApplication: existingApplicationRes.application !== null };
 }
 
 const validateTelegramUsername = (username: string) =>
@@ -44,8 +50,13 @@ export async function action(args: ActionArgs) {
   const user = await authLoader(args);
   if (!user) return create400Json('Not logged in');
 
-  const existingApplication = await getModApplicationForUser(urlBase, user.userId);
-  if (existingApplication) {
+  const existingApplicationRes = await getModApplicationForUser(urlBase, user.userId);
+  if (existingApplicationRes.err) {
+    logApiError('Error creating mod application', existingApplicationRes.err);
+    return create500Json();
+  }
+
+  if (existingApplicationRes.application) {
     return create400Json('You already have an existing application');
   }
 
@@ -56,18 +67,23 @@ export async function action(args: ActionArgs) {
 
   const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (insertDbRes.errorMessage) {
-    logErrorOLD_DONOTUSE(
-      `Error inserting mod application for user ${user.userId}, body: ${reqBody}`,
-      insertDbRes
-    );
-    return create400Json('Error creating mod application');
+    logApiError(undefined, {
+      logMessage: 'Error creating mod application',
+      error: insertDbRes,
+      context: { userId: user.userId, notes, telegram },
+    });
+    return create500Json();
   }
-
   return createSuccessJson();
 }
 
 export default function Apply() {
-  const fetcher = useFetcher();
+  const fetcher = useGoodFetcher({
+    method: 'post',
+    toastError: false,
+    toastSuccessMessage: 'Application submitted!',
+    preventToastClose: true,
+  });
   const { hasExistingApplication } = useLoaderData<typeof loader>();
   const [notesIsValid, setNotesIsValid] = useState(false);
   const [telegramIsValid, setTelegramIsValid] = useState(false);
@@ -96,55 +112,45 @@ export default function Apply() {
 
       {!hasExistingApplication && (
         <TopGradientBox containerClassName="w-fit mx-auto my-4" innerClassName="p-8 pb-4">
-          <fetcher.Form method="post" className="w-fit mx-auto flex flex-col">
-            {fetcher.data?.success ? (
+          <fetcher.Form className="w-fit mx-auto flex flex-col">
+            <TextareaUncontrolled
+              name="notes"
+              label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
+              className="mb-12"
+              validatorFunc={v => v.length > 0}
+              onErrorChange={hasError => setNotesIsValid(!hasError)}
+            />
+
+            <TextInputUncontrolled
+              name="telegram"
+              label="Telegram username (don't include the @ symbol):"
+              type="text"
+              className="mb-4"
+              validatorFunc={validateTelegramUsername}
+              onErrorChange={hasError => setTelegramIsValid(!hasError)}
+            />
+
+            {fetcher.error && !fetcher.isLoading && (
               <InfoBox
-                variant="success"
-                text="Success! We will contact you if we decide to take you in. You can see the status of your application on your Account page. Thank you!"
+                variant="error"
+                text={fetcher.error}
+                showIcon
+                closable
                 className="my-4"
               />
-            ) : (
-              <>
-                <TextareaUncontrolled
-                  name="notes"
-                  label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
-                  className="mb-12"
-                  validatorFunc={v => v.length > 0}
-                  onErrorChange={hasError => setNotesIsValid(!hasError)}
-                />
-
-                <TextInputUncontrolled
-                  name="telegram"
-                  label="Telegram username (don't include the @ symbol):"
-                  type="text"
-                  className="mb-4"
-                  validatorFunc={validateTelegramUsername}
-                  onErrorChange={hasError => setTelegramIsValid(!hasError)}
-                />
-
-                {fetcher.data?.error && fetcher.state === 'idle' && (
-                  <InfoBox
-                    variant="error"
-                    text={fetcher.data.error}
-                    showIcon
-                    closable
-                    className="my-4"
-                  />
-                )}
-
-                <div className="flex">
-                  <LoadingButton
-                    text="Submit application"
-                    color="primary"
-                    variant="contained"
-                    className="my-4 mx-auto"
-                    disabled={!notesIsValid || !telegramIsValid}
-                    isLoading={fetcher.state !== 'idle'}
-                    onClick={() => {}}
-                  />
-                </div>
-              </>
             )}
+
+            <div className="flex">
+              <LoadingButton
+                text="Submit application"
+                color="primary"
+                variant="contained"
+                className="my-4 mx-auto"
+                disabled={!notesIsValid || !telegramIsValid}
+                isLoading={fetcher.isLoading}
+                isSubmit
+              />
+            </div>
           </fetcher.Form>
         </TopGradientBox>
       )}

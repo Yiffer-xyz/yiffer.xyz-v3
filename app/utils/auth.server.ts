@@ -184,15 +184,6 @@ export async function getUserSession(
 //   return userFromDb;
 // }
 
-// Place in the loader of routes requiring a logged in user
-export async function requireUser(request: Request, jwtConfigStr: string) {
-  const userSession = await getUserSession(request, jwtConfigStr);
-  if (!userSession) {
-    throw redirect(`/`);
-  }
-  return userSession.userId;
-}
-
 export async function logout(jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 

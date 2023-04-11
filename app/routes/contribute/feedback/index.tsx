@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderArgs } from '@remix-run/cloudflare';
+import type { ActionArgs } from '@remix-run/cloudflare';
 import { Form, useActionData, useLoaderData, useTransition } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -9,33 +9,29 @@ import TopGradientBox from '~/components/TopGradientBox';
 import { getUserSession } from '~/utils/auth.server';
 import { queryDb } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import {
-  create400Json,
-  createSuccessJson,
-  logErrorOLD_DONOTUSE,
-} from '~/utils/request-helpers';
+import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import BackToContribute from '../BackToContribute';
 
-export const action: ActionFunction = async function ({ request, context }) {
-  const reqBody = await request.formData();
-  const urlBase = context.DB_API_URL_BASE as string;
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
+  const urlBase = args.context.DB_API_URL_BASE as string;
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
-  const user = await getUserSession(request, context.JWT_CONFIG_STR as string);
+  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR as string);
 
   let insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
   const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
 
   const dbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (dbRes.errorMessage) {
-    logErrorOLD_DONOTUSE(
-      `Error inserting feedback. User: ${user?.userId ?? 'null'}, text: ${feedbackText}`,
-      dbRes
-    );
-    return create400Json('Error saving feedback');
+    logApiError(undefined, {
+      logMessage: 'Error saving user feedback',
+      error: dbRes,
+      context: { feedbackText, feedbackType, user: user?.userId },
+    });
+    return create500Json();
   }
-
   return createSuccessJson();
-};
+}
 
 export { authLoader as loader };
 
@@ -126,7 +122,11 @@ export default function Feedback() {
               />
 
               {actionData?.error && (
-                <InfoBox variant="error" text={actionData.error} className="my-4" />
+                <InfoBox
+                  variant="error"
+                  text="An error occurred when saving your feedback. Please try again!"
+                  className="my-4"
+                />
               )}
 
               <LoadingButton

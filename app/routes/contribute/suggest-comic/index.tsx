@@ -1,11 +1,5 @@
 import type { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-  useTransition,
-} from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useTransition } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { clearTimeout } from 'timers';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -19,13 +13,14 @@ import { queryDb } from '~/utils/database-facade';
 import {
   ApiError,
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  makeDbErrObj,
+  processApiError,
 } from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '../BackToContribute';
 import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export async function loader(args: LoaderArgs) {
   return await authLoader(args);
@@ -33,7 +28,8 @@ export async function loader(args: LoaderArgs) {
 
 export async function action(args: ActionArgs) {
   const reqBody = await args.request.formData();
-  const { comicName, artist, linksComments } = Object.fromEntries(reqBody);
+  const logCtx = Object.fromEntries(reqBody);
+  const { comicName, artist, linksComments } = logCtx;
 
   if (!comicName || !artist || !linksComments) {
     return create400Json('Some field is missing');
@@ -43,9 +39,8 @@ export async function action(args: ActionArgs) {
     args.context.DB_API_URL_BASE as string,
     comicName as string
   );
-  if (errors?.apiErr) {
-    logErrorOLD_DONOTUSE(`Error in suggest-comic submit`, errors.apiErr);
-    return create500Json(errors.apiErr.client400Message);
+  if (errors?.err) {
+    return processApiError('Error in post of /suggest-comic', errors.err, logCtx);
   } else if (errors?.comicExists) {
     return create400Json('Comic already exists');
   } else if (errors?.suggestionExists) {
@@ -74,8 +69,11 @@ export async function action(args: ActionArgs) {
   );
 
   if (dbRes.errorMessage) {
-    logErrorOLD_DONOTUSE('Error creating comic suggestion', dbRes);
-    return create500Json('Error creating comic suggestion');
+    return processApiError(undefined, {
+      logMessage: 'Db error in post of /suggest-comic',
+      error: dbRes,
+      context: logCtx,
+    });
   }
 
   return createSuccessJson();
@@ -83,8 +81,18 @@ export async function action(args: ActionArgs) {
 
 export default function Upload() {
   const actionData = useActionData<typeof action>();
-  const similarComicsFetcher = useFetcher();
-  const similarArtistsFetcher = useFetcher();
+  const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
+    url: '/api/search-similarly-named-comic',
+    method: 'post',
+  });
+  const similarArtistsFetcher = useGoodFetcher({
+    url: '/api/search-similar-artist',
+    method: 'post',
+    onFinish: () => {
+      if (!similarArtistsFetcher.data) return;
+      setSimilarArtists(similarArtistsFetcher.data);
+    },
+  });
   const [comicName, setComicName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [comments, setComments] = useState('');
@@ -101,12 +109,6 @@ export default function Upload() {
   const debounceTimeoutArtistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeoutComicRef = useRef<NodeJS.Timeout | null>(null);
   const transition = useTransition();
-
-  useEffect(() => {
-    if (similarArtistsFetcher.data) {
-      setSimilarArtists(similarArtistsFetcher.data);
-    }
-  }, [similarArtistsFetcher.data]);
 
   useEffect(() => {
     let isLegal = false;
@@ -134,20 +136,19 @@ export default function Upload() {
     if (comicName.length < 3) return;
 
     debounceTimeoutComicRef.current = setTimeout(() => {
-      similarComicsFetcher.submit(
-        { comicName },
-        { method: 'post', action: '/api/search-similarly-named-comic' }
-      );
+      similarComicsFetcher.submit({ comicName });
     }, 1500);
   }
 
   useEffect(() => {
     if (!similarComicsFetcher.data) return;
 
-    const similarComics = similarComicsFetcher.data as SimilarComicResponse;
+    const similarComics = similarComicsFetcher.data;
 
     const isExactMatch =
       similarComics.exactMatchComic || similarComics.exactMatchRejectedComic;
+
+    console.log(similarComics);
 
     const isAnySimilar =
       similarComics.similarComics.length > 0 ||
@@ -172,10 +173,7 @@ export default function Upload() {
     if (!artistName || artistName.length < 3) return;
 
     debounceTimeoutArtistRef.current = setTimeout(() => {
-      similarArtistsFetcher.submit(
-        { artistName },
-        { method: 'post', action: '/api/search-similar-artist' }
-      );
+      similarArtistsFetcher.submit({ artistName });
     }, 1500);
   }
 
@@ -429,7 +427,7 @@ async function checkForExistingComicOrSuggestion(
   dbUrlBase: string,
   comicName: string
 ): Promise<
-  { apiErr?: ApiError; suggestionExists?: boolean; comicExists?: boolean } | undefined
+  { err?: ApiError; suggestionExists?: boolean; comicExists?: boolean } | undefined
 > {
   let existingSuggestionQueryPromise = queryDb<{ count: number }[]>(
     dbUrlBase,
@@ -448,26 +446,20 @@ async function checkForExistingComicOrSuggestion(
   ]);
 
   if (existingSuggestionDbRes.errorMessage) {
-    return {
-      apiErr: {
-        client400Message: `Error checking for existing suggestions. Comic: ${comicName}`,
-        logMessage: 'Error checking for existing suggestions',
-        error: existingSuggestionDbRes,
-      },
-    };
+    return makeDbErrObj(
+      existingSuggestionDbRes,
+      'Error checking for existing suggestions',
+      { comicName }
+    );
   }
   if (existingSuggestionDbRes.result && existingSuggestionDbRes.result[0].count > 0) {
     return { suggestionExists: true };
   }
 
   if (existingComicDbRes.errorMessage) {
-    return {
-      apiErr: {
-        client400Message: `Error checking for existing comics. Comic: ${comicName}`,
-        logMessage: 'Error checking for existing comics',
-        error: existingComicDbRes,
-      },
-    };
+    return makeDbErrObj(existingComicDbRes, 'Error checking for existing comics', {
+      comicName,
+    });
   }
   if (existingComicDbRes.result && existingComicDbRes.result[0].count > 0) {
     return { comicExists: true };

@@ -18,6 +18,9 @@ import { getUserSession } from './utils/auth.server';
 import { NonFlashOfWrongThemeEls, ThemeProvider, useTheme } from './utils/theme-provider';
 import { getThemeSession } from './utils/theme.server';
 
+import { ToastContainer } from 'react-toastify';
+import toastCss from 'react-toastify/dist/ReactToastify.css';
+
 import * as Sentry from '@sentry/browser';
 Sentry.init({
   dsn: 'https://74fe377e56b149fa9f1fa9d41d5de90b@o4504978928959488.ingest.sentry.io/4504978941542400',
@@ -39,7 +42,6 @@ export const meta: MetaFunction = () => ({
 // TODO: How to do preconnect
 /* <link rel="preconnect" href="https://fonts.googleapis.com"> */
 /* <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  */
-
 export function links() {
   return [
     { rel: 'stylesheet', href: styles },
@@ -52,6 +54,7 @@ export function links() {
       rel: 'stylesheet',
       href: 'https://fonts.googleapis.com/css2?family=Shrikhand&text=Yiffer.xyz&display=swap',
     },
+    { rel: 'stylesheet', href: toastCss },
   ];
 }
 
@@ -87,6 +90,7 @@ export function App() {
           {/* </UserContext.Provider> */}
         </Layout>
         <ScrollRestoration />
+        <ToastContainer />
         <Scripts />
         <LiveReload />
         <script

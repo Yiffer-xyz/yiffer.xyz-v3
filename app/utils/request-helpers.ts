@@ -13,34 +13,35 @@ export type ApiError = {
   error?: DBResponse<any>;
   logMessage: string;
   context?: { [key: string]: any };
-  client400Message?: string;
 };
 
-// If clientMessage, return nicely to client.
-// Otherwise, log and fail hard.
 export async function processApiError(
-  prependMessage: string,
+  prependMessage: string | undefined,
   err: ApiError,
   context?: { [key: string]: any }
 ): Promise<never> {
-  console.log(prependMessage);
-  console.log(err);
-  if (err.client400Message) {
-    throw create400Json(err.client400Message);
-  } else {
-    logApiError(prependMessage, {
-      ...err,
-      context: {
-        ...(err.context || {}),
-        ...(context || {}),
-      },
-    });
-    throw new Error(handledErrMsg);
-  }
+  logApiError(prependMessage, {
+    ...err,
+    context: {
+      ...(err.context || {}),
+      ...(context || {}),
+    },
+  });
+
+  throw new Error(handledErrMsg);
 }
 
-function logApiError(prependMessage: string, err: ApiError) {
-  Sentry.captureMessage(prependMessage + ' >> ' + err.logMessage, {
+// Use this when not wanting to throw an error (when you want
+// to show a nice error message to the user), but still need to log it.
+export function logApiError(prependMessage: string | undefined, err: ApiError) {
+  const fullErrMsg = prependMessage
+    ? prependMessage + ' >> ' + err.logMessage
+    : err.logMessage;
+
+  console.log('ERROR, message: ', fullErrMsg);
+  console.log(err);
+
+  Sentry.captureMessage(fullErrMsg, {
     extra: {
       sql: err.error?.sql,
       sqlErrorCode: err.error?.errorCode,
@@ -63,14 +64,12 @@ export function logApiErrorMessage(message: string, context?: { [key: string]: a
 export function makeDbErrObj(
   err: DBResponse<any>,
   message: string,
-  context?: { [key: string]: any },
-  client400Message?: string
+  context?: { [key: string]: any }
 ): { err: ApiError } {
   return {
     err: {
       error: err,
       logMessage: message,
-      client400Message,
       context: context || {},
     },
   };
@@ -79,13 +78,11 @@ export function makeDbErrObj(
 export function makeDbErr(
   err: DBResponse<any>,
   message: string,
-  context?: { [key: string]: any },
-  client400Message?: string
+  context?: { [key: string]: any }
 ): ApiError {
   return {
     error: err,
     logMessage: message,
-    client400Message,
     context: context || {},
   };
 }

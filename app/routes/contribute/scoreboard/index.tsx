@@ -1,7 +1,7 @@
 import type { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { add, format, sub } from 'date-fns';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import {
   MdArrowBack,
   MdArrowDropDown,
@@ -10,16 +10,23 @@ import {
   MdHome,
 } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
+import IconButton from '~/components/Buttons/IconButton';
 import Checkbox from '~/components/Checkbox/Checkbox';
-import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
+import Spinner from '~/components/Spinner';
 import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
 import Username from '~/components/Username';
 import BackToContribute from '~/routes/contribute/BackToContribute';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import { ContributionPointsEntry, UserType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError, logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
+import {
+  ApiError,
+  ApiResponse,
+  makeDbErrObj,
+  processApiError,
+} from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type CachedPoints = {
   yearMonth: string;
@@ -28,7 +35,20 @@ type CachedPoints = {
 };
 
 export default function Scoreboard() {
-  const fetcher = useFetcher<typeof action>();
+  const fetcher = useGoodFetcher<TopContributionPointsRow[]>({
+    method: 'post',
+    onFinish: () => {
+      setPoints(fetcher.data || []);
+      setCachedPoints(prev => [
+        ...prev,
+        {
+          yearMonth: showAllTime ? 'all-time' : format(date, 'yyyy-MM'),
+          excludeMods,
+          points: fetcher.data || [],
+        },
+      ]);
+    },
+  });
   const allTimePoints = useLoaderData<typeof loader>();
 
   const [showPointInfo, setShowPointInfo] = useState(false);
@@ -47,20 +67,6 @@ export default function Scoreboard() {
       points: allTimePoints.topScores || [],
     },
   ]);
-
-  useEffect(() => {
-    if (fetcher.data && fetcher.data.topScores) {
-      setPoints(fetcher.data.topScores || []);
-      setCachedPoints(prev => [
-        ...prev,
-        {
-          yearMonth: showAllTime ? 'all-time' : format(date, 'yyyy-MM'),
-          excludeMods,
-          points: fetcher.data!.topScores!,
-        },
-      ]);
-    }
-  }, [fetcher.data]);
 
   function changeDisplayInterval(
     incrementBy: 1 | -1 | undefined,
@@ -100,17 +106,14 @@ export default function Scoreboard() {
       return;
     }
 
-    fetcher.submit(
-      { yearMonth, excludeMods: excludeMonthsValForQuery.toString() },
-      { method: 'post' }
-    );
+    fetcher.submit({ yearMonth, excludeMods: excludeMonthsValForQuery.toString() });
   }
 
   const canIncrementMonth =
     !(
       date.getMonth() === new Date().getMonth() &&
       date.getFullYear() === new Date().getFullYear()
-    ) && fetcher.state !== 'submitting';
+    ) && !fetcher.isLoading;
 
   return (
     <div className="container mx-auto justify-items-center">
@@ -177,41 +180,32 @@ export default function Scoreboard() {
         </div>
 
         {!showAllTime && (
-          <div className="flex justify-between w-fit mb-2 text-lg">
-            <Button
-              startIcon={MdArrowBack}
-              // @ts-expect-error - haven't gotten around to making an IconButton component
-              color="none"
+          <div className="flex justify-between items-center w-fit mb-2 text-lg">
+            <IconButton
+              icon={MdArrowBack}
               onClick={() => changeDisplayInterval(-1, false, undefined)}
-              disabled={fetcher.state === 'submitting'}
-              className={arrowButtonClasses}
+              disabled={fetcher.isLoading}
+              variant="naked"
             />
+
             {format(date, 'MMM y')}
-            <Button
-              endIcon={MdArrowForward}
-              // @ts-expect-error - haven't gotten around to making an IconButton component
-              color="none"
+
+            <IconButton
+              icon={MdArrowForward}
               onClick={() => changeDisplayInterval(1, false, undefined)}
               disabled={!canIncrementMonth}
-              className={arrowButtonClasses}
+              variant="naked"
             />
           </div>
         )}
 
-        {fetcher.data?.err && (
-          <InfoBox
-            variant="error"
-            showIcon
-            text={fetcher.data.err.client400Message}
-            className="mt-2 mb-2"
-          />
-        )}
+        {fetcher.isLoading && <Spinner />}
 
-        {!fetcher.data?.err && points.length === 0 && (
+        {points.length === 0 && !fetcher.isLoading && (
           <p>There are contributions for this month.</p>
         )}
 
-        {!fetcher.data?.err && points.length > 0 && (
+        {points.length > 0 && !fetcher.isLoading && (
           <Table className="mb-6">
             <TableHeadRow isTableMaxHeight>
               <TableCell>User</TableCell>
@@ -247,12 +241,14 @@ export async function loader(args: LoaderArgs) {
     false
   );
   if (scoresRes.err) {
-    logErrorOLD_DONOTUSE('Error in loader of /contribute/scoreboard', scoresRes.err);
+    return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
   return scoresRes;
 }
 
-export async function action(args: ActionArgs) {
+export async function action(
+  args: ActionArgs
+): Promise<ApiResponse<TopContributionPointsRow[]>> {
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const res = await getTopScores(
@@ -261,9 +257,13 @@ export async function action(args: ActionArgs) {
     excludeMods === 'true'
   );
   if (res.err) {
-    logErrorOLD_DONOTUSE('Error in action of /contribute/scoreboard', res.err);
+    return processApiError('Error in action of contribution scoreboard', res.err);
   }
-  return res;
+  return {
+    success: true,
+    data: res.topScores,
+    error: null,
+  };
 }
 
 type TopContributionPointsRow = {
@@ -300,15 +300,11 @@ async function getTopScores(
 
   const dbRes = await queryDb<ContributionPointsEntry[]>(urlBase, query, [yearMonth]);
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        client400Message: 'Error getting top score list',
-        logMessage: `Error getting top score list. yearMonth: ${yearMonth}, excludeMods: ${excludeMods}`,
-        error: dbRes,
-      },
-    };
+    return makeDbErrObj(dbRes, 'Error getting top score list', {
+      yearMonth,
+      excludeMods,
+    });
   }
-
   return {
     topScores: topScoreEntriesToPointList(dbRes.result!),
   };
@@ -366,8 +362,6 @@ const disabledClass = `
     dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
     text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
   `;
-const arrowButtonClasses =
-  'dark:bg-transparent dark:hover:bg-transparent bg-transparent hover:bg-transparent';
 
 const nonRejectedUploads = Object.entries(CONTRIBUTION_POINTS.comicUpload)
   .filter(([verdict]) => verdict !== 'rejected' && verdict !== 'rejected-list')

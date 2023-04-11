@@ -67,7 +67,7 @@ export async function action(args: ActionArgs) {
   );
   if (err) {
     logErrorOLD_DONOTUSE('Error in upload comic submit', err);
-    return create500Json(err.client400Message);
+    return create500Json(err.avoidThrow);
   }
 
   return createSuccessJson();

@@ -1,4 +1,4 @@
-import { FormMethod, useFetcher } from '@remix-run/react';
+import { FormMethod, SubmitOptions, useFetcher } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ApiResponse } from './request-helpers';
@@ -16,10 +16,11 @@ type RemixSubmitTarget =
   | null;
 
 type ToastFetcherArgs<T = void> = {
-  url: string;
+  url?: string;
   method?: FormMethod;
   onFinish?: () => void;
   toastSuccessMessage?: string;
+  preventToastClose?: boolean;
   toastError?: boolean;
   fetchGetOnLoad?: boolean;
 };
@@ -38,7 +39,8 @@ export function useGoodFetcher<T = void>({
   method = 'get',
   onFinish,
   toastSuccessMessage,
-  toastError = true,
+  preventToastClose = false,
+  toastError = true, // TODO: Probably flip this
   fetchGetOnLoad = false,
 }: ToastFetcherArgs<T>) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
@@ -71,7 +73,7 @@ export function useGoodFetcher<T = void>({
 
       if (fetcher.data) {
         if (toastSuccessMessage && fetcher.data.success) {
-          showSuccessToast(toastSuccessMessage);
+          showSuccessToast(toastSuccessMessage, preventToastClose);
         } else if (toastError && fetcher.data.error) {
           showErrorToast(fetcher.data.error);
         }
@@ -92,7 +94,7 @@ export function useGoodFetcher<T = void>({
     // unmounting it.
     return () => {
       if (fetchingStateRef.current === 'is-fetching' && toastSuccessMessage) {
-        showSuccessToast(toastSuccessMessage);
+        showSuccessToast(toastSuccessMessage, preventToastClose);
       }
     };
   }, [toastSuccessMessage]);
@@ -113,10 +115,13 @@ export function useGoodFetcher<T = void>({
   const submit = useCallback(
     (body?: RemixSubmitTarget) => {
       fetchingStateRef.current = 'is-fetching';
-      fetcher.submit(body ?? null, {
+      const submitOptions: SubmitOptions = {
         method: method,
-        action: url,
-      });
+      };
+      if (url) {
+        submitOptions.action = url;
+      }
+      fetcher.submit(body ?? null, submitOptions);
     },
     [fetcher, method]
   );
@@ -136,17 +141,21 @@ export function useGoodFetcher<T = void>({
 
   // Allows for using fetcher.Form for uncontrolled forms, but without
   // having to supply url and action, since we already have that from fetcher init.
-  const form = useCallback(({ children }: { children: React.ReactNode }) => {
-    return (
-      <fetcher.Form action={url} method={method}>
-        {children}
-      </fetcher.Form>
-    );
-  }, []);
+  const form = useCallback(
+    ({ children, className }: { children: React.ReactNode; className?: string }) => {
+      return (
+        <fetcher.Form action={url} method={method} className={className}>
+          {children}
+        </fetcher.Form>
+      );
+    },
+    []
+  );
 
   return {
     data: returnData,
     error: fetcher.data?.error,
+    success: fetcher.data?.success,
     isLoading: fetcher.state !== 'idle',
     hasFetchedOnce: hasFetchedOnce,
     submit: submit,
@@ -155,10 +164,10 @@ export function useGoodFetcher<T = void>({
   };
 }
 
-export function showSuccessToast(message: string) {
+export function showSuccessToast(message: string, preventClose: boolean) {
   toast.success(message, {
     position: toast.POSITION.TOP_RIGHT,
-    autoClose: 3000,
+    autoClose: preventClose ? false : 3000,
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
