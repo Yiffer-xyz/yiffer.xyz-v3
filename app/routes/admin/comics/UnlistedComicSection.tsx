@@ -1,9 +1,6 @@
-import { useEffect } from 'react';
 import { Comic, UserSession } from '~/types/types';
-import { useFetcher } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
-import { ApiResponse } from '~/utils/request-helpers';
-import InfoBox from '~/components/InfoBox';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type UnlistedComicSectionProps = {
   comicData: Comic;
@@ -16,13 +13,12 @@ export default function UnlistedComicSection({
   user,
   updateComic,
 }: UnlistedComicSectionProps) {
-  const fetcher = useFetcher<ApiResponse | undefined>();
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      updateComic();
-    }
-  }, [fetcher]);
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/relist-comic',
+    method: 'post',
+    toastSuccessMessage: 'Comic re-listed',
+    onFinish: updateComic,
+  });
 
   return (
     <>
@@ -35,15 +31,11 @@ export default function UnlistedComicSection({
         <b>Reason for unlisting</b>: {comicData.metadata?.unlistComment}
       </p>
 
-      {fetcher.data?.error && (
-        <InfoBox variant="error" text={fetcher.data.error} showIcon className="mt-2" />
-      )}
-
       {user.userType === 'admin' && (
-        <fetcher.Form action="/api/admin/relist-comic" method="post">
+        <fetcher.Form>
           <LoadingButton
             text="Re-list comic"
-            isLoading={fetcher.state === 'submitting'}
+            isLoading={fetcher.isLoading}
             isSubmit
             className="mt-2"
           />

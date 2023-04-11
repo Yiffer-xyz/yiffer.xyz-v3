@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Comic } from '~/types/types';
-import { useFetcher } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { format } from 'date-fns';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import InfoBox from '~/components/InfoBox';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type AnonUploadSectionProps = {
   comicData: Comic;
@@ -17,14 +17,13 @@ export default function AnonUploadSection({
   comicData,
   updateComic,
 }: AnonUploadSectionProps) {
-  const fetcher = useFetcher();
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/process-anon-upload',
+    method: 'post',
+    toastSuccessMessage: 'Comic processed',
+    onFinish: updateComic,
+  });
   const [verdict, setVerdict] = useState<AllowedAnonComicVerdict | undefined>();
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      updateComic();
-    }
-  }, [fetcher]);
 
   function processComic() {
     if (!verdict) return;
@@ -34,8 +33,7 @@ export default function AnonUploadSection({
       comicName: comicData.name,
       verdict: verdict,
     };
-
-    fetcher.submit(body, { method: 'post', action: '/api/admin/process-anon-upload' });
+    fetcher.submit(body);
   }
 
   return (
@@ -94,14 +92,10 @@ export default function AnonUploadSection({
         </InfoBox>
       )}
 
-      {fetcher.data?.error && (
-        <InfoBox variant="error" text={fetcher.data.error} showIcon className="mt-4" />
-      )}
-
       <LoadingButton
         text="Submit"
         className="mt-4"
-        isLoading={fetcher.state === 'submitting'}
+        isLoading={fetcher.isLoading}
         disabled={!verdict}
         onClick={processComic}
       />

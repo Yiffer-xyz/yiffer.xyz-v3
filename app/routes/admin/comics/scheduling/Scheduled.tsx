@@ -1,13 +1,10 @@
-import { useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
-import { RxUpdate } from 'react-icons/rx';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { Comic } from '~/types/types';
 import 'react-calendar/dist/Calendar.css';
 import { format } from 'date-fns';
-import InfoBox from '~/components/InfoBox';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type ScheduledComicParams = {
   comicData: Comic;
@@ -20,15 +17,14 @@ export function ScheduledComic({
   onReschedule,
   onUnscheduleFinished,
 }: ScheduledComicParams) {
-  const fetcher = useFetcher();
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/unschedule-comic',
+    method: 'post',
+    toastSuccessMessage: 'Comic unscheduled',
+    onFinish: onUnscheduleFinished,
+  });
 
   const hasDate = comicData.metadata?.publishDate;
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      onUnscheduleFinished();
-    }
-  }, [fetcher]);
 
   return (
     <>
@@ -44,11 +40,7 @@ export function ScheduledComic({
         </p>
       )}
 
-      {fetcher.data?.error && (
-        <InfoBox variant="error" text={fetcher.data.error} showIcon className="mt-2" />
-      )}
-
-      <fetcher.Form action={'/api/admin/unschedule-comic'} method="post">
+      <fetcher.Form>
         <div className="flex flex-row gap-4">
           <input type="hidden" name="comicId" value={comicData.id} />
           <div className="flex flex-row gap-4">
@@ -57,7 +49,7 @@ export function ScheduledComic({
                 hasDate ? 'Unschedule (set pending)' : 'Remove from queue (set pending)'
               }
               startIcon={IoClose}
-              isLoading={fetcher.state === 'submitting'}
+              isLoading={fetcher.isLoading}
               color="error"
               isSubmit
             />

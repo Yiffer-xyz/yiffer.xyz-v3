@@ -1,19 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IoCheckmark } from 'react-icons/io5';
 import { Comic } from '~/types/types';
-import { useFetcher } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { format } from 'date-fns';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import TextInput from '~/components/TextInput/TextInput';
-import { ApiResponse } from '~/utils/request-helpers';
 import InfoBox from '~/components/InfoBox';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
-
-type UserUploadSectionProps = {
-  comicData: Comic;
-  updateComic: () => void;
-};
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
   ([verdict, value]) => ({
@@ -22,19 +16,23 @@ const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
   })
 );
 
+type UserUploadSectionProps = {
+  comicData: Comic;
+  updateComic: () => void;
+};
+
 export default function UserUploadSection({
   comicData,
   updateComic,
 }: UserUploadSectionProps) {
-  const fetcher = useFetcher<ApiResponse | undefined>();
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/process-user-upload',
+    method: 'post',
+    toastSuccessMessage: 'Comic processed',
+    onFinish: updateComic,
+  });
   const [verdict, setVerdict] = useState<string | null>();
   const [modComment, setModComment] = useState<string>('');
-
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      updateComic();
-    }
-  }, [fetcher]);
 
   function submitReview() {
     if (!verdict) return;
@@ -47,10 +45,7 @@ export default function UserUploadSection({
     };
     if (modComment) body.modComment = modComment;
 
-    fetcher.submit(body, {
-      action: '/api/admin/process-user-upload',
-      method: 'post',
-    });
+    fetcher.submit(body);
   }
 
   return (
@@ -117,14 +112,10 @@ export default function UserUploadSection({
         onChange={setModComment}
       />
 
-      {fetcher.data?.error && (
-        <InfoBox variant="error" text={fetcher.data.error} showIcon className="mt-4" />
-      )}
-
       <fetcher.Form>
         <LoadingButton
           text="Save review and process comic"
-          isLoading={fetcher.state === 'submitting'}
+          isLoading={fetcher.isLoading}
           onClick={submitReview}
           startIcon={IoCheckmark}
           className="mt-6"

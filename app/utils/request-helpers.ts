@@ -20,14 +20,21 @@ export type ApiError = {
 // Otherwise, log and fail hard.
 export async function processApiError(
   prependMessage: string,
-  err: ApiError
+  err: ApiError,
+  context?: { [key: string]: any }
 ): Promise<never> {
   console.log(prependMessage);
   console.log(err);
   if (err.client400Message) {
     throw create400Json(err.client400Message);
   } else {
-    logApiError(prependMessage, err);
+    logApiError(prependMessage, {
+      ...err,
+      context: {
+        ...(err.context || {}),
+        ...(context || {}),
+      },
+    });
     throw new Error(handledErrMsg);
   }
 }

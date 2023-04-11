@@ -1,21 +1,19 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { MdArrowForward, MdCheck, MdReplay } from 'react-icons/md';
-import { useFetcher } from 'react-router-dom';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import ComicDataEditor from '~/components/ComicManager/ComicData';
 import TagsEditor from '~/components/ComicManager/Tags';
-import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { NewArtist, NewComicData } from '~/routes/contribute/upload';
 import { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
 import { FieldChange } from '~/utils/general';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 
 type LiveComicProps = {
   comic: Comic;
   user: UserSession;
-  updateComic: () => void;
   allComics: ComicTiny[];
   allArtists: ArtistTiny[];
   allTags: Tag[];
@@ -43,13 +41,22 @@ export type ComicDataChanges = {
 export default function LiveComic({
   comic,
   user,
-  updateComic,
   allComics,
   allArtists,
   allTags,
 }: LiveComicProps) {
-  const unlistFetcher = useFetcher();
-  const saveChangesFetcher = useFetcher();
+  const unlistFetcher = useGoodFetcher({
+    url: '/api/admin/unlist-comic',
+    method: 'post',
+    toastSuccessMessage: 'Comic unlisted',
+    onFinish: cancelUnlisting,
+  });
+  const saveChangesFetcher = useGoodFetcher({
+    url: '/api/admin/update-comic-data',
+    method: 'post',
+    toastSuccessMessage: 'Changes saved',
+    onFinish: () => setNeedsUpdate(true),
+  });
   const { isMobile } = useWindowSize();
 
   const [isUnlisting, setIsUnlisting] = useState(false);
@@ -57,18 +64,6 @@ export default function LiveComic({
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
   const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
-
-  useEffect(() => {
-    if (saveChangesFetcher.data?.success && saveChangesFetcher.state === 'loading') {
-      setNeedsUpdate(true);
-    }
-  }, [saveChangesFetcher]);
-
-  useEffect(() => {
-    if (unlistFetcher.data?.success && unlistFetcher.state === 'loading') {
-      cancelUnlisting();
-    }
-  }, [unlistFetcher]);
 
   useEffect(() => {
     setComicDataChanges(
@@ -118,20 +113,11 @@ export default function LiveComic({
       }
     }
 
-    saveChangesFetcher.submit(
-      { body: JSON.stringify(body) },
-      {
-        method: 'post',
-        action: '/api/admin/update-comic-data',
-      }
-    );
+    saveChangesFetcher.submit({ body: JSON.stringify(body) });
   }
 
   function unlistComic() {
-    unlistFetcher.submit(
-      { comicId: comic.id.toString(), unlistComment: unlistComment },
-      { method: 'post', action: '/api/admin/unlist-comic' }
-    );
+    unlistFetcher.submit({ comicId: comic.id.toString(), unlistComment: unlistComment });
   }
 
   function cancelUnlisting() {
@@ -186,7 +172,7 @@ export default function LiveComic({
                   const hasDetails = !!change.newValue;
 
                   return isMobile ? (
-                    <div>
+                    <div key={change.field}>
                       <p className={hasDetails ? '' : 'col-span-2'}>
                         <b>{change.field}:</b>
                       </p>
@@ -203,7 +189,7 @@ export default function LiveComic({
                       )}
                     </div>
                   ) : (
-                    <>
+                    <Fragment key={change.field}>
                       <p className={hasDetails ? '' : 'col-span-2'}>
                         <b>{change.field}</b>
                       </p>
@@ -218,20 +204,11 @@ export default function LiveComic({
                           )}
                         </p>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </div>
             </div>
-
-            {saveChangesFetcher.data?.error && (
-              <InfoBox
-                variant="error"
-                className="mt-4 w-fit"
-                text={saveChangesFetcher.data.error}
-                showIcon
-              />
-            )}
 
             <div className="flex flex-row gap-2 mt-4">
               <Button
@@ -242,7 +219,7 @@ export default function LiveComic({
               />
               <LoadingButton
                 text="Save changes"
-                isLoading={saveChangesFetcher.state === 'submitting'}
+                isLoading={saveChangesFetcher.isLoading}
                 onClick={saveComicDataChanges}
                 startIcon={MdCheck}
                 disabled={!canSave}
@@ -255,15 +232,6 @@ export default function LiveComic({
       {user.userType === 'admin' && comic.publishStatus !== 'unlisted' && (
         <div className="mt-8">
           <h3>Admin tools</h3>
-
-          {unlistFetcher.data?.error && (
-            <InfoBox
-              variant="error"
-              className="mt-2 w-fit"
-              text={unlistFetcher.data.error}
-              showIcon
-            />
-          )}
 
           {!isUnlisting && (
             <Button
@@ -288,7 +256,7 @@ export default function LiveComic({
                 <Button text="Cancel" onClick={cancelUnlisting} variant="outlined" />
                 <LoadingButton
                   text="Confirm unlisting"
-                  isLoading={unlistFetcher.state === 'submitting'}
+                  isLoading={unlistFetcher.isLoading}
                   onClick={unlistComic}
                   color="error"
                 />

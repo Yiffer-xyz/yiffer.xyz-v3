@@ -18,7 +18,6 @@ import Button from '~/components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import InfoBox from '~/components/InfoBox';
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
@@ -47,7 +46,7 @@ export default function Dashboard({}) {
   const { user } = useLoaderData<typeof loader>();
   // TODO: The two below are for showing loading states on the buttons.
   // The first to check the element and the 2nd to check which button was
-  // actually pressed (like, approve or reject for example)
+  // actually pressed (approve or reject for example)
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -66,29 +65,24 @@ export default function Dashboard({}) {
     url: '/api/admin/process-tag-suggestion',
     method: 'post',
     toastSuccessMessage: 'Tag suggestion processed',
-    toastError: true,
   });
   const assignModFetcher = useGoodFetcher({
     url: '/api/admin/assign-action',
     method: 'post',
-    toastError: true,
   });
   const unassignModFetcher = useGoodFetcher({
     url: '/api/admin/unassign-action',
     method: 'post',
-    toastError: true,
   });
   const problemFetcher = useGoodFetcher({
     url: '/api/admin/process-comic-problem',
     method: 'post',
     toastSuccessMessage: 'Problem processed',
-    toastError: true,
   });
   const comicSuggestionFetcher = useGoodFetcher({
     url: '/api/admin/process-comic-suggestion',
     method: 'post',
     toastSuccessMessage: 'Comic suggestion processed',
-    toastError: true,
   });
 
   const allDashboardItems = dashboardDataFetcher.data || [];
@@ -232,14 +226,6 @@ export default function Dashboard({}) {
               />
             ))}
         </>
-      )}
-
-      {dashboardDataFetcher.error && (
-        <InfoBox
-          variant="error"
-          text={`Error: ${dashboardDataFetcher.error}`}
-          className="mt-4"
-        />
       )}
 
       {filteredDashboardItems.map(action => {

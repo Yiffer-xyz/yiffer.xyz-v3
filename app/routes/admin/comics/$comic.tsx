@@ -7,7 +7,7 @@ import { GlobalAdminContext } from '~/routes/admin';
 import { getComicById } from '~/routes/api/funcs/get-comic';
 import { Comic } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
-import { create500Json, logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
+import { processApiError } from '~/utils/request-helpers';
 import AnonUploadSection from './AnonUploadedComicSection';
 import LiveComic from './LiveComic';
 import PendingComicSection from './PendingComicSection';
@@ -23,10 +23,8 @@ export async function loader(args: LoaderArgs) {
 
   const { comic, err } = await getComicById(urlBase, comicId);
   if (err) {
-    logErrorOLD_DONOTUSE(`Error getting comic in admin>comic`, err);
-    throw create500Json(err.client400Message);
+    return processApiError('Error getting comic in admin>comic', err);
   }
-
   return { comic, user };
 }
 
@@ -134,7 +132,6 @@ export default function ManageComicInner() {
       <LiveComic
         comic={comic}
         user={user}
-        updateComic={updateComic}
         allComics={globalContext.comics}
         allArtists={globalContext.artists}
         allTags={globalContext.tags}

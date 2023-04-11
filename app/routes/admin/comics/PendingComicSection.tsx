@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Button from '~/components/Buttons/Button';
 import { Comic, ComicMetadata } from '~/types/types';
-import { useFetcher, useNavigate } from '@remix-run/react';
+import { useNavigate } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { HasError, SetError } from './pending/Error';
 import { Reject } from './pending/Reject';
 import { Schedule } from './scheduling/Schedule';
 import { ScheduledComic } from './scheduling/Scheduled';
-import InfoBox from '~/components/InfoBox';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
+
+type ActionState = 'none' | 'set-error' | 'scheduling' | 'rejecting';
 
 type PendingComicSectionProps = {
   comicData: Comic;
   updateComic: () => void;
 };
-
-type ActionState = 'none' | 'set-error' | 'scheduling' | 'rejecting';
 
 export default function PendingComicSection({
   comicData,
@@ -23,8 +23,18 @@ export default function PendingComicSection({
   const navigate = useNavigate();
   const metadata = comicData.metadata as ComicMetadata;
   const [actionState, setActionState] = useState<ActionState>('none');
-  const publishNowFetcher = useFetcher();
-  const addToPublishingQueueFetcher = useFetcher();
+  const publishNowFetcher = useGoodFetcher({
+    url: '/api/admin/publish-comic',
+    method: 'post',
+    toastSuccessMessage: 'Comic published',
+    onFinish: updateComic,
+  });
+  const addToQueueFetcher = useGoodFetcher({
+    url: '/api/admin/schedule-comic-to-queue',
+    method: 'post',
+    toastSuccessMessage: 'Added to publishing queue',
+    onFinish: updateComic,
+  });
 
   const comicState = useMemo(() => {
     if (comicData.publishStatus === 'rejected') return 'rejected';
@@ -32,26 +42,6 @@ export default function PendingComicSection({
     if (metadata.errorText) return 'has-error';
     return 'initial';
   }, [comicData]);
-
-  useEffect(() => {
-    if (publishNowFetcher.data?.success || addToPublishingQueueFetcher.data?.success) {
-      updateComic();
-    }
-  }, [publishNowFetcher]);
-
-  function publishNow() {
-    publishNowFetcher.submit(
-      { comicId: comicData.id.toString() },
-      { method: 'post', action: '/api/admin/publish-comic' }
-    );
-  }
-
-  function addToPublishingQueue() {
-    addToPublishingQueueFetcher.submit(
-      { comicId: comicData.id.toString() },
-      { method: 'post', action: '/api/admin/schedule-comic-to-queue' }
-    );
-  }
 
   if (actionState === 'set-error') {
     return (
@@ -124,29 +114,12 @@ export default function PendingComicSection({
         )}
       </div>
 
-      {publishNowFetcher.data?.error && (
-        <InfoBox
-          variant="error"
-          text={publishNowFetcher.data.error}
-          showIcon
-          className="mt-4"
-        />
-      )}
-      {addToPublishingQueueFetcher.data?.error && (
-        <InfoBox
-          variant="error"
-          text={addToPublishingQueueFetcher.data.error}
-          showIcon
-          className="mt-4"
-        />
-      )}
-
       <div className="flex flex-col gap-4">
         <div className="flex flex-row gap-4 flex-wrap">
           <LoadingButton
             text="Add to publishing queue"
-            onClick={addToPublishingQueue}
-            isLoading={addToPublishingQueueFetcher.state === 'submitting'}
+            onClick={() => addToQueueFetcher.submit({ comicId: comicData.id.toString() })}
+            isLoading={addToQueueFetcher.isLoading}
             className="min-w-40"
           />
           <Button
@@ -156,8 +129,8 @@ export default function PendingComicSection({
           />
           <LoadingButton
             text="Publish now"
-            onClick={publishNow}
-            isLoading={publishNowFetcher.state === 'submitting'}
+            onClick={() => publishNowFetcher.submit({ comicId: comicData.id.toString() })}
+            isLoading={publishNowFetcher.isLoading}
             className="min-w-40"
           />
         </div>

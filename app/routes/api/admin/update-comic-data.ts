@@ -5,9 +5,8 @@ import { DBResponse, queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicById } from '../funcs/get-comic';
@@ -20,10 +19,8 @@ export async function action(args: ActionArgs) {
 
   const err = await updateComicData(urlBase, body);
   if (err) {
-    logErrorOLD_DONOTUSE(`Error in /update-comic-data, update body: ${body}`, err);
-    return create500Json(err.client400Message);
+    return processApiError(`Error in /update-comic-data`, err, body);
   }
-
   return createSuccessJson();
 }
 
@@ -181,8 +178,7 @@ async function updateComicName(
   newName: string
 ): Promise<ApiError | undefined> {
   return {
-    client400Message: 'Not implemented yet',
-    logMessage: 'Lalala not impl',
+    logMessage: 'Not implemented!',
   };
 }
 

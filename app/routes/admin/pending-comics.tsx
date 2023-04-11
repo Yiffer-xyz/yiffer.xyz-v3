@@ -1,15 +1,15 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { useFetcher, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { MdArrowDownward, MdArrowUpward, MdCheck, MdError } from 'react-icons/md';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import LoadingIconButton from '~/components/Buttons/LoadingIconButton';
-import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import { DbPendingComic } from '~/types/types';
-import { logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
+import { processApiError } from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '../api/funcs/get-pending-comics';
 
@@ -27,8 +27,7 @@ export async function loader(args: LoaderArgs) {
   );
 
   if (err) {
-    logErrorOLD_DONOTUSE('Error getting pending comics in mod panel', err);
-    throw new Error(err.client400Message);
+    return processApiError('Error getting pending comics in mod panel', err);
   }
 
   return {
@@ -39,27 +38,22 @@ export async function loader(args: LoaderArgs) {
   };
 }
 
-function getBgColor(pendingComic: DbPendingComic) {
-  if (pendingComic.publishStatus === 'scheduled') {
-    return 'bg-theme1-primaryMoreTrans dark:bg-theme1-primaryTrans';
-  }
-  if (pendingComic.errorText || pendingComic.numberOfTags === 0) {
-    return 'bg-red-moreTrans dark:bg-red-trans';
-  }
-
-  return 'bg-white dark:bg-gray-300';
-}
-
-function isProblematic(pendingComic: DbPendingComic): boolean {
-  return !!pendingComic.errorText || pendingComic.numberOfTags === 0;
-}
-
-export default function PendingComics({}) {
+export default function PendingComics() {
   const { pendingComics, dailySchedulePublishCount } = useLoaderData<typeof loader>();
   const { isMobile } = useWindowSize();
-  const moveUpFetcher = useFetcher();
-  const moveDownFetcher = useFetcher();
-  const recalculateFetcher = useFetcher();
+  const moveUpFetcher = useGoodFetcher({
+    url: '/api/admin/move-queued-comic',
+    method: 'post',
+  });
+  const moveDownFetcher = useGoodFetcher({
+    url: '/api/admin/move-queued-comic',
+    method: 'post',
+  });
+  const recalculateFetcher = useGoodFetcher({
+    url: '/api/admin/recalculate-publishing-queue',
+    method: 'post',
+    toastSuccessMessage: 'Successfully recalculated queue',
+  });
 
   const [filter, setFilter] = useState<PendingComicsFilter>('all');
 
@@ -70,24 +64,11 @@ export default function PendingComics({}) {
 
   function moveComic(comicId: number, direction: 'up' | 'down') {
     if (direction === 'up') {
-      moveUpFetcher.submit(
-        { comicId: comicId.toString(), direction: 'up' },
-        { method: 'post', action: '/api/admin/move-queued-comic' }
-      );
+      moveUpFetcher.submit({ comicId: comicId.toString(), direction: 'up' });
     }
     if (direction === 'down') {
-      moveDownFetcher.submit(
-        { comicId: comicId.toString(), direction: 'down' },
-        { method: 'post', action: '/api/admin/move-queued-comic' }
-      );
+      moveDownFetcher.submit({ comicId: comicId.toString(), direction: 'down' });
     }
-  }
-
-  function recalculatePublishingQueuePositions() {
-    recalculateFetcher.submit(
-      {},
-      { method: 'post', action: '/api/admin/recalculate-publishing-queue' }
-    );
   }
 
   const filteredComics = useMemo(() => {
@@ -126,11 +107,6 @@ export default function PendingComics({}) {
     return pendingComics;
   }, [filter, pendingComics]);
 
-  const error =
-    moveUpFetcher.data?.error ||
-    moveDownFetcher.data?.error ||
-    recalculateFetcher.data?.error;
-
   return (
     <>
       <h1>Pending comics</h1>
@@ -161,8 +137,8 @@ export default function PendingComics({}) {
       {filter === 'scheduled' && (
         <>
           <LoadingButton
-            isLoading={recalculateFetcher.state === 'submitting'}
-            onClick={recalculatePublishingQueuePositions}
+            isLoading={recalculateFetcher.isLoading}
+            onClick={() => recalculateFetcher.submit()}
             text="Recalculate publishing queue positions"
           />
           <p className="text-sm mb-4">
@@ -170,8 +146,6 @@ export default function PendingComics({}) {
           </p>
         </>
       )}
-
-      {error && <InfoBox variant="error" text={error} showIcon className="w-fit my-4" />}
 
       <div className={`flex flex-col gap-2 ${isMobile ? 'w-full' : 'w-fit'}`}>
         {filteredComics.map(comic => {
@@ -198,7 +172,7 @@ export default function PendingComics({}) {
                 <LoadingIconButton
                   icon={MdArrowDownward}
                   variant="naked"
-                  isLoading={moveDownFetcher.state === 'submitting'}
+                  isLoading={moveDownFetcher.isLoading}
                   onClick={() => moveComic(comic.comicId, 'down')}
                   disabled={comic.publishingQueuePos === totalPublishingQueueLength}
                   className="ml-2"
@@ -206,7 +180,7 @@ export default function PendingComics({}) {
                 <LoadingIconButton
                   icon={MdArrowUpward}
                   variant="naked"
-                  isLoading={moveUpFetcher.state === 'submitting'}
+                  isLoading={moveUpFetcher.isLoading}
                   disabled={comic.publishingQueuePos === 1}
                   onClick={() => moveComic(comic.comicId, 'up')}
                 />
@@ -281,4 +255,19 @@ export default function PendingComics({}) {
       </div>
     </>
   );
+}
+
+function getBgColor(pendingComic: DbPendingComic) {
+  if (pendingComic.publishStatus === 'scheduled') {
+    return 'bg-theme1-primaryMoreTrans dark:bg-theme1-primaryTrans';
+  }
+  if (pendingComic.errorText || pendingComic.numberOfTags === 0) {
+    return 'bg-red-moreTrans dark:bg-red-trans';
+  }
+
+  return 'bg-white dark:bg-gray-300';
+}
+
+function isProblematic(pendingComic: DbPendingComic): boolean {
+  return !!pendingComic.errorText || pendingComic.numberOfTags === 0;
 }
