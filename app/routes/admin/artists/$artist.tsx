@@ -10,7 +10,7 @@ import Link from '~/components/Link';
 import { getArtistById } from '~/routes/api/funcs/get-artist';
 import { getComicsByArtistId } from '~/routes/api/funcs/get-comics';
 import { NewArtist } from '~/routes/contribute/upload';
-import { Artist, ComicTiny, UserSession } from '~/types/types';
+import { Artist, ComicTiny } from '~/types/types';
 import { FieldChange } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
@@ -60,10 +60,12 @@ export default function ManageArtist() {
   const banArtistFetcher = useGoodFetcher({
     url: '/api/admin/toggle-artist-ban',
     method: 'post',
+    toastSuccessMessage: 'Artist ban status updated',
   });
   const saveChangesFetcher = useGoodFetcher({
     url: '/api/admin/update-artist-data',
     method: 'post',
+    toastSuccessMessage: 'Artist updated',
     onFinish: () => {
       setNeedsUpdate(true);
       setIsBanning(false);

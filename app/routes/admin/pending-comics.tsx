@@ -243,6 +243,7 @@ export default function PendingComics({}) {
               className={`flex flex-row shadow rounded-sm justify-between gap-x-6 px-3 py-2 ${getBgColor(
                 comic
               )}`}
+              key={comic.comicId}
             >
               {isMobile ? (
                 <div>

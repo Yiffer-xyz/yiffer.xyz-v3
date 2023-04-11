@@ -1,5 +1,4 @@
-import { useFetcher } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
@@ -7,6 +6,7 @@ import { Comic } from '~/types/types';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { format } from 'date-fns';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type ScheduleParams = {
   comicData: Comic;
@@ -21,19 +21,19 @@ export function Schedule({ comicData, onCancel, onFinish }: ScheduleParams) {
       : new Date()
   );
 
-  const fetcher = useFetcher();
-  const dateString = publishDate ? format(publishDate, 'yyyy-MM-dd') : '';
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/schedule-comic',
+    method: 'post',
+    onFinish: onFinish,
+    toastSuccessMessage: 'Comic scheduled',
+  });
 
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      onFinish();
-    }
-  }, [fetcher]);
+  const dateString = publishDate ? format(publishDate, 'yyyy-MM-dd') : '';
 
   return (
     <>
       <h4 className="mb-2">Schedule comic</h4>
-      <fetcher.Form action="/api/admin/schedule-comic" method="post">
+      <fetcher.Form>
         <input type="hidden" name="comicId" value={comicData.id} />
         <input type="hidden" name="publishDate" value={dateString} />
 
@@ -60,7 +60,7 @@ export function Schedule({ comicData, onCancel, onFinish }: ScheduleParams) {
           <LoadingButton
             text="Schedule comic"
             startIcon={IoCheckmark}
-            isLoading={fetcher.state === 'submitting'}
+            isLoading={fetcher.isLoading}
             isSubmit
             disabled={!dateString}
           />

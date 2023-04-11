@@ -17,12 +17,13 @@ export function SetError({ comicData, onCancel, onFinish }: PendingComicErrorPar
     url: '/api/admin/set-comic-error',
     method: 'post',
     onFinish: onFinish,
+    toastSuccessMessage: 'Error set',
   });
 
   return (
     <>
       <h4>Set error</h4>
-      <fetcher.Form action="/api/admin/set-comic-error" method="post">
+      <fetcher.Form>
         <input type="hidden" name="comicId" value={comicData.id} />
 
         <TextInputUncontrolled
@@ -42,9 +43,6 @@ export function SetError({ comicData, onCancel, onFinish }: PendingComicErrorPar
             text="Save"
             startIcon={IoCheckmark}
             isLoading={fetcher.isLoading}
-            onClick={() =>
-              fetcher.submit({ comicId: comicData.id.toString(), errorText: 'test' })
-            }
             isSubmit
           />
         </div>
@@ -63,6 +61,7 @@ export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
     url: '/api/admin/set-comic-error',
     method: 'post',
     onFinish: onFinish,
+    toastSuccessMessage: 'Error removed',
   });
 
   return (
@@ -80,7 +79,7 @@ export function HasError({ comicData, onFinish }: PendingComicHasErrorParams) {
         )}
       </div>
 
-      <fetcher.Form action="/api/admin/set-comic-error" method="post">
+      <fetcher.Form>
         <input type="hidden" name="comicId" value={comicData.id} />
         <input type="hidden" name="errorText" value={''} />
         <LoadingButton

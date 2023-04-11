@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Button, { ButtonProps } from './Button';
 
 type LoadingButtonProps = {
@@ -13,10 +14,13 @@ export default function LoadingButton({
 }: LoadingButtonProps) {
   const className = (isLoading ? 'opacity-70 ' : '') + props.className;
 
+  // Memoize to avoid resetting the spinner spinny on every render
+  const Spinner = useMemo(() => getSpinner(variant, color), [variant, color]);
+
   return (
     <Button
       {...props}
-      startIcon={isLoading ? Spinner(variant, color) : props.startIcon}
+      startIcon={isLoading ? Spinner : props.startIcon}
       variant={variant}
       color={color}
       className={className}
@@ -25,7 +29,7 @@ export default function LoadingButton({
   );
 }
 
-const Spinner = (
+const getSpinner = (
   variant: 'contained' | 'outlined' | 'naked',
   color: 'primary' | 'error'
 ) => {

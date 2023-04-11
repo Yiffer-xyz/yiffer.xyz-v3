@@ -46,7 +46,9 @@ export function useGoodFetcher<T = void>({
   const fetchingStateRef = useRef<'is-fetching' | 'not-started'>('not-started');
 
   useEffect(() => {
-    const stateToCheck = method === 'get' ? 'idle' : 'loading';
+    // Technically if it's a POST, the fetch itself is done at 'loading',
+    // but waiting until 'idle' is better UX, to avoid a flicker.
+    const stateToCheck = 'idle';
 
     // This happens when using fetcher.Form, as the submit method is not actively
     // invoked in that case.
@@ -75,7 +77,25 @@ export function useGoodFetcher<T = void>({
         }
       }
     }
-  }, [fetcher.state, toastSuccessMessage]);
+  }, [fetcher.state]);
+
+  useEffect(() => {
+    // The component can unmount before the state has gone 'idle'
+    // (which can happen when revalidation automatically happens after)
+    // a post, during which it'll be 'loading' and then whichever component
+    // using useGoodFetcher unmounts because of changes.
+    // If this happens and we should've toasted, do so!
+    // 🚨Weakness! If the component (intentionally) unmounts this way but
+    // the fetch result is an ERROR, this will still toast success.
+    // This, however, seems to be a bad situation. On errors, either crash
+    // and let an error boundary catch, or keep whatever form it is open without
+    // unmounting it.
+    return () => {
+      if (fetchingStateRef.current === 'is-fetching' && toastSuccessMessage) {
+        showSuccessToast(toastSuccessMessage);
+      }
+    };
+  }, [toastSuccessMessage]);
 
   useEffect(() => {
     if (fetchGetOnLoad && method === 'get') {
@@ -103,6 +123,7 @@ export function useGoodFetcher<T = void>({
 
   // Because Remix FORCES you to use useEffect to respond to fetches,
   // which is just terrible. With this, you can await a fetch.
+  // Preferable alternative to this: use the onFinish callback.
   const awaitSubmit = useCallback(
     async (body?: RemixSubmitTarget) => {
       submit(body);
@@ -113,14 +134,24 @@ export function useGoodFetcher<T = void>({
     [submit]
   );
 
+  // Allows for using fetcher.Form for uncontrolled forms, but without
+  // having to supply url and action, since we already have that from fetcher init.
+  const form = useCallback(({ children }: { children: React.ReactNode }) => {
+    return (
+      <fetcher.Form action={url} method={method}>
+        {children}
+      </fetcher.Form>
+    );
+  }, []);
+
   return {
     data: returnData,
     error: fetcher.data?.error,
-    isLoading: fetcher.state === 'submitting',
+    isLoading: fetcher.state !== 'idle',
     hasFetchedOnce: hasFetchedOnce,
     submit: submit,
     awaitSubmit: awaitSubmit,
-    Form: fetcher.Form,
+    Form: form,
   };
 }
 

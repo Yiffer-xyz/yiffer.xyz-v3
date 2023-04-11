@@ -1,9 +1,8 @@
-import { useFetcher } from '@remix-run/react';
-import { useEffect } from 'react';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import { Comic } from '~/types/types';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type RejectParams = {
   comicData: Comic;
@@ -12,17 +11,17 @@ type RejectParams = {
 };
 
 export function Reject({ comicData, onCancel, onFinish }: RejectParams) {
-  const fetcher = useFetcher();
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      onFinish();
-    }
-  }, [fetcher]);
+  const fetcher = useGoodFetcher({
+    url: '/api/admin/reject-pending-comic',
+    method: 'post',
+    onFinish: onFinish,
+    toastSuccessMessage: 'Comic rejected',
+  });
 
   return (
     <>
       <h4 className="mb-2">Reject comic</h4>
-      <fetcher.Form action="/api/admin/reject-pending-comic" method="post">
+      <fetcher.Form>
         <input type="hidden" name="comicId" value={comicData.id} />
 
         <div className="flex flex-row gap-4">
@@ -36,7 +35,7 @@ export function Reject({ comicData, onCancel, onFinish }: RejectParams) {
             text="Reject comic"
             startIcon={IoCheckmark}
             color="error"
-            isLoading={fetcher.state === 'submitting'}
+            isLoading={fetcher.isLoading}
             isSubmit
           />
         </div>
