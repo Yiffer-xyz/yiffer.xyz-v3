@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError } from '~/utils/request-helpers';
+import { ApiError, makeDbErr } from '~/utils/request-helpers';
 
 export async function addContributionPoints(
   urlBase: string,
@@ -8,6 +8,8 @@ export async function addContributionPoints(
   pointColumn: string
 ): Promise<ApiError | undefined> {
   const yearMonth = format(new Date(), 'yyyy-MM');
+  const logCtx = { userId, pointColumn, yearMonth };
+
   const getExistingPointsForMonthQuery = `
     SELECT yearMonth FROM contributionpoints
     WHERE userId = ? AND (yearMonth = ? OR yearMonth = 'all-time')
@@ -20,11 +22,7 @@ export async function addContributionPoints(
   );
 
   if (existingDbRes.errorMessage) {
-    return {
-      client400Message: 'Error adding contribution points',
-      logMessage: `Error adding contribution points. User id: ${userId}, point column: ${pointColumn}, year-month: ${yearMonth}`,
-      error: existingDbRes,
-    };
+    return makeDbErr(existingDbRes, 'Error adding contribution points', logCtx);
   }
 
   ['all-time', yearMonth].forEach(async timeVal => {
@@ -44,11 +42,7 @@ export async function addContributionPoints(
         insertPointsQueryParams
       );
       if (insertDbRes.errorMessage) {
-        return {
-          clientMessage: 'Error adding contribution points',
-          logMessage: `Error adding contribution points. User id: ${userId}, point column: ${pointColumn}, year-month: ${yearMonth}`,
-          error: insertDbRes,
-        };
+        return makeDbErr(insertDbRes, 'Error adding contribution points', logCtx);
       }
     } else {
       const updatePointsQuery = `
@@ -63,11 +57,7 @@ export async function addContributionPoints(
         updatePointsQueryParams
       );
       if (updateDbRes.errorMessage) {
-        return {
-          clientMessage: 'Error adding contribution points',
-          logMessage: `Error adding contribution points. User id: ${userId}, point column: ${pointColumn}, year-month: ${yearMonth}`,
-          error: updateDbRes,
-        };
+        return makeDbErr(updateDbRes, 'Error updating contribution points', logCtx);
       }
     }
   });

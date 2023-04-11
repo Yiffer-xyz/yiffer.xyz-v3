@@ -6,9 +6,9 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '../funcs/add-contribution-points';
@@ -47,13 +47,8 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logErrorOLD_DONOTUSE(
-      `Error in /process-user-upload for comic name/id ${formComicName.toString()} / ${comicId}, verdict: ${verdict}`,
-      err
-    );
-    create500Json(err.client400Message);
+    return processApiError('Error in /process-user-upload', err);
   }
-
   return createSuccessJson();
 }
 
@@ -88,7 +83,12 @@ export async function processUserUpload(
   );
 
   if (err) {
-    return wrapApiError(err, 'Error processing logged-in-user upload');
+    return wrapApiError(err, 'Error processing logged-in-user upload', {
+      comicId,
+      frontendVerdict,
+      metadataVerdict,
+      modComment,
+    });
   }
 }
 
@@ -120,20 +120,13 @@ export async function processAnyUpload(
   ]);
 
   if (updateComicDbRes.errorMessage) {
-    return {
-      client400Message: 'Error processing upload',
-      logMessage: `Error updating comic in db (processUserUpload)`,
-      error: updateComicDbRes,
-    };
+    return makeDbErr(updateComicDbRes, 'Error updating comic in db');
   }
   if (artistRes.notFound) {
-    return {
-      client400Message: 'Artist not found',
-      logMessage: `Error getting artist (processUserUpload)`,
-    };
+    return { logMessage: 'Artist not found' };
   }
   if (artistRes.err) {
-    return wrapApiError(artistRes.err, `Error getting artist (processUserUpload)`);
+    return wrapApiError(artistRes.err, `Error getting artist`);
   }
   const artist = artistRes.artist!;
 
@@ -235,10 +228,6 @@ export async function processAnyUpload(
 
   const metadataDbRes = await queryDb(urlBase, metadataQuery, metadataQueryParams);
   if (metadataDbRes.errorMessage) {
-    return {
-      client400Message: 'Error updating comic metadata',
-      logMessage: `Error updating comicmetadata`,
-      error: metadataDbRes,
-    };
+    return makeDbErr(metadataDbRes, 'Error updating comic metadata in db');
   }
 }

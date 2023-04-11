@@ -6,6 +6,8 @@ import {
   create500Json,
   createSuccessJson,
   logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '../funcs/add-contribution-points';
@@ -39,8 +41,9 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logErrorOLD_DONOTUSE('Error in /process-tag-suggestion', err);
-    return create500Json(err.client400Message);
+    return processApiError('Error in /process-tag-suggestion', err, {
+      ...fields,
+    });
   }
   return createSuccessJson();
 }
@@ -72,31 +75,20 @@ async function processTagSuggestion(
 
     const dbRes = await queryDb(urlBase, updateTagQuery, updateTagQueryParams);
     if (dbRes.errorMessage) {
-      if (!(dbRes.errorCode && dbRes.errorCode === 'ER_DUP_ENTRY')) {
-        return {
-          error: dbRes,
-          client400Message: 'Error updating tag',
-          logMessage: `Error approving tag. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}`,
-        };
+      if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
+        return makeDbErr(dbRes, 'Error updating comickeyword');
       }
     }
   }
 
   const actionRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
   if (actionRes.errorMessage) {
-    return {
-      error: actionRes,
-      client400Message: 'Error updating mod panel action',
-      logMessage: `Error updating mod panel for tag suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`,
-    };
+    return makeDbErr(actionRes, 'Error updating mod panel action');
   }
 
   const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
   const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
   if (err) {
-    return wrapApiError(
-      err,
-      `Error adding contribution points in process-tag-suggestion. ComicId: ${comicId}, TagId: ${tagId}, IsAdding: ${isAdding}, ActionId: ${actionId}, IsApproved: ${isApproved}`
-    );
+    return wrapApiError(err, `Error adding contribution points`);
   }
 }

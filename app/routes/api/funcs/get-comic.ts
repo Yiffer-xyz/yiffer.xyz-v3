@@ -1,6 +1,6 @@
 import { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError, wrapApiError } from '~/utils/request-helpers';
+import { ApiError, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 
 type DbComic = {
   id: number;
@@ -47,6 +47,7 @@ export async function getComicById(
   comicId: number,
   excludeMetadata: boolean = false
 ): Promise<{ comic?: Comic; err?: ApiError }> {
+  const logCtx = { comicId, excludeMetadata };
   const [comicRes, linksRes, tagsRes] = await Promise.all([
     getDbComicByField(urlBase, 'id', comicId),
     getLinksByComicId(urlBase, comicId),
@@ -55,59 +56,22 @@ export async function getComicById(
 
   if (comicRes.err) {
     return {
-      err: wrapApiError(comicRes.err, `Error getting comic by id: ${comicId}`),
+      err: wrapApiError(comicRes.err, 'Error getting comic by id', logCtx),
     };
   }
   if (linksRes.err) {
     return {
-      err: wrapApiError(linksRes.err, `Error getting comic by id: ${comicId}`),
+      err: wrapApiError(linksRes.err, 'Error getting comic by id', logCtx),
     };
   }
   if (tagsRes.err) {
     return {
-      err: wrapApiError(tagsRes.err, `Error getting comic by id: ${comicId}`),
+      err: wrapApiError(tagsRes.err, 'Error getting comic by id', logCtx),
     };
   }
 
   const finalComic = mergeDbFieldsToComic(
     comicRes.comic!,
-    linksRes.links!,
-    tagsRes.tags!,
-    excludeMetadata
-  );
-
-  return { comic: finalComic };
-}
-
-export async function getComicByName(
-  urlBase: string,
-  comicName: string,
-  excludeMetadata: boolean = false
-): Promise<{ comic?: Comic; err?: ApiError }> {
-  let { comic, err } = await getDbComicByField(urlBase, 'name', comicName);
-  if (err) {
-    return {
-      err: wrapApiError(err, `Error getting comic by name: ${comicName}`),
-    };
-  }
-
-  const [linksRes, tagsRes] = await Promise.all([
-    getLinksByComicId(urlBase, comic!.id),
-    getTagsByComicId(urlBase, comic!.id),
-  ]);
-  if (linksRes.err) {
-    return {
-      err: wrapApiError(linksRes.err, `Error getting comic by name: ${comicName}`),
-    };
-  }
-  if (tagsRes.err) {
-    return {
-      err: wrapApiError(tagsRes.err, `Error getting comic by name: ${comicName}`),
-    };
-  }
-
-  const finalComic = mergeDbFieldsToComic(
-    comic!,
     linksRes.links!,
     tagsRes.tags!,
     excludeMetadata
@@ -219,15 +183,8 @@ async function getDbComicByField(
 
   const comicDbRes = await queryDb<DbComic[]>(urlBase, comicQuery, [fieldValue]);
   if (comicDbRes.errorMessage || !comicDbRes.result) {
-    return {
-      err: {
-        client400Message: 'Error getting comic',
-        logMessage: `Error getting comic by ${fieldName}, value ${fieldValue}`,
-        error: comicDbRes,
-      },
-    };
+    return makeDbErrObj(comicDbRes, 'Error getting comic', { fieldName, fieldValue });
   }
-
   return { comic: comicDbRes.result[0] };
 }
 
@@ -251,15 +208,8 @@ async function getLinksByComicId(
   const params = [comicId, comicId];
   const linksDbRes = await queryDb<DbComicLink[]>(urlBase, linksQuery, params);
   if (linksDbRes.errorMessage || !linksDbRes.result) {
-    return {
-      err: {
-        client400Message: 'Error getting prev/next comic',
-        logMessage: `Error getting links for comic ${comicId}`,
-        error: linksDbRes,
-      },
-    };
+    return makeDbErrObj(linksDbRes, 'Error getting comic links', { comicId });
   }
-
   return { links: linksDbRes.result };
 }
 
@@ -276,14 +226,7 @@ async function getTagsByComicId(
 
   const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicId]);
   if (tagsDbRes.errorMessage || !tagsDbRes.result) {
-    return {
-      err: {
-        client400Message: 'Error getting tags',
-        logMessage: `Error getting tags for comic ${comicId}`,
-        error: tagsDbRes,
-      },
-    };
+    return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicId });
   }
-
   return { tags: tagsDbRes.result };
 }

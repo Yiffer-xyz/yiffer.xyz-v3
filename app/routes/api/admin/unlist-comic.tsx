@@ -4,9 +4,9 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
@@ -28,13 +28,8 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logErrorOLD_DONOTUSE(
-      `Error in /unlist-comic for comic id ${formComicId.toString()}, mod comment ${formUnlistComment.toString()}`,
-      err
-    );
-    return create500Json(err.client400Message);
+    return processApiError('Error in /unlist-comic', err);
   }
-
   return createSuccessJson();
 }
 
@@ -43,6 +38,7 @@ export async function unlistComic(
   comicId: number,
   unlistComment: string
 ): Promise<ApiError | undefined> {
+  const logCtx = { comicId, unlistComment };
   const getDetailsQuery = 'SELECT comicId FROM comicmetadata WHERE comicId = ?';
   const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
@@ -52,18 +48,10 @@ export async function unlistComic(
   ]);
 
   if (detailsDbRes.errorMessage) {
-    return {
-      client400Message: 'Error unlisting comic',
-      logMessage: 'Error unlisting comic, could not get comic details',
-      error: detailsDbRes,
-    };
+    return makeDbErr(detailsDbRes, 'Could not get metadata', logCtx);
   }
   if (updateDbRes.errorMessage) {
-    return {
-      client400Message: 'Error unlisting comic',
-      logMessage: 'Error unlisting comic, could not set publishStatus',
-      error: updateDbRes,
-    };
+    return makeDbErr(updateDbRes, 'Could not update publishStatus', logCtx);
   }
 
   let metadataDbRes: DBResponse<any>;
@@ -77,10 +65,6 @@ export async function unlistComic(
   }
 
   if (metadataDbRes.errorMessage) {
-    return {
-      client400Message: 'Error unlisting comic',
-      logMessage: `Error unlisting comic, could not insert/update comicmetadata`,
-      error: metadataDbRes,
-    };
+    return makeDbErr(metadataDbRes, 'Could not insert/update comicmetadata', logCtx);
   }
 }

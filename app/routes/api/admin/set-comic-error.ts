@@ -1,6 +1,12 @@
-import { ActionArgs, json } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { ActionArgs } from '@remix-run/cloudflare';
+import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
+import {
+  ApiError,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
@@ -15,27 +21,34 @@ export async function action(args: ActionArgs) {
   let errorText = formErrorText ? formErrorText.toString() : null;
   if (errorText === '') errorText = null;
 
-  await setComicError(urlBase, parseInt(formComicId.toString()), errorText);
-
-  return json({ success: true });
+  const err = await setComicError(urlBase, parseInt(formComicId.toString()), errorText);
+  if (err) {
+    return processApiError('Error in /set-comic-error', err);
+  }
+  return createSuccessJson();
 }
 
 export async function setComicError(
   urlBase: string,
   comicId: number,
   errorText: string | null
-) {
+): Promise<ApiError | undefined> {
   const updateActionQuery = `UPDATE comicmetadata SET errorText = ? WHERE comicId = ?`;
   const updateActionQueryParams = [errorText, comicId];
 
-  await queryDbDirect(urlBase, updateActionQuery, updateActionQueryParams);
+  let dbRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
+  if (dbRes.errorMessage) {
+    return makeDbErr(dbRes, 'Error updating comicmetadata', { comicId, errorText });
+  }
 
   if (!errorText) {
     const removeModQuery =
       'UPDATE comicmetadata SET pendingProblemModId = NULL WHERE comicId = ?';
     const removeModQueryParams = [comicId];
-    await queryDbDirect(urlBase, removeModQuery, removeModQueryParams);
-  }
 
-  return;
+    dbRes = await queryDb(urlBase, removeModQuery, removeModQueryParams);
+    if (dbRes.errorMessage) {
+      return makeDbErr(dbRes, 'Error removing mod id', { comicId, errorText });
+    }
+  }
 }

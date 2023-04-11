@@ -3,9 +3,10 @@ import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
-  create500Json,
+  create400Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
@@ -15,17 +16,14 @@ export async function action(args: ActionArgs) {
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
-  if (!formComicId) return new Response('Missing comicId', { status: 400 });
+  if (!formComicId) return create400Json('Missing comicId');
 
   const err = await publishComic(urlBase, parseInt(formComicId.toString()));
   if (err) {
-    logErrorOLD_DONOTUSE(
-      `Error in /publish-comic, failed publishing comic from with id ${formComicId}`,
-      err
-    );
-    return create500Json(err.client400Message);
+    return processApiError('Error in /publish-comic', err, {
+      comicId: formComicId,
+    });
   }
-
   return createSuccessJson();
 }
 
@@ -42,10 +40,6 @@ export async function publishComic(
   `;
   const dbRes = await queryDb(urlBase, query, [comicId]);
   if (dbRes.errorMessage) {
-    return {
-      client400Message: 'Error publishing comic: Could not update comic table',
-      logMessage: 'Error publishing comic: could not update comic table',
-      error: dbRes,
-    };
+    return makeDbErr(dbRes, 'Error publishing comic', { comicId });
   }
 }

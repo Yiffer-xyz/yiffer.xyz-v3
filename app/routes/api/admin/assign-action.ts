@@ -1,6 +1,7 @@
 import { ActionArgs } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
+import { ApiError, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { DashboardActionType } from './dashboard-data';
 
 export type AssignActionBody = {
@@ -14,9 +15,13 @@ export async function action(args: ActionArgs) {
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  await assignActionToMod(urlBase, fields.actionId, fields.actionType, fields.modId);
-
-  return new Response('OK', { status: 200 });
+  const err = await assignActionToMod(
+    urlBase,
+    fields.actionId,
+    fields.actionType,
+    fields.modId
+  );
+  if (err) return processApiError('Error in /assign-action', err);
 }
 
 async function assignActionToMod(
@@ -24,7 +29,7 @@ async function assignActionToMod(
   actionId: number,
   actionType: DashboardActionType,
   modId: number
-) {
+): Promise<ApiError | undefined> {
   let table = '';
   let identifyingColumn = 'id';
   let modIdColumn = 'modId';
@@ -48,6 +53,12 @@ async function assignActionToMod(
   const query = `UPDATE ${table} SET ${modIdColumn} = ? WHERE ${identifyingColumn} = ?`;
   const queryParams = [modId, actionId];
 
-  await queryDbDirect(urlBase, query, queryParams);
-  return;
+  const dbRes = await queryDb(urlBase, query, queryParams);
+  if (dbRes.errorMessage) {
+    return makeDbErr(dbRes, 'Error assigning action to mod', {
+      actionId,
+      actionType,
+      modId,
+    });
+  }
 }

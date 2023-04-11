@@ -5,8 +5,9 @@ import { DBResponse, queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
-  create500Json,
   createSuccessJson,
+  makeDbErr,
+  processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getArtistById } from '../funcs/get-artist';
@@ -19,9 +20,8 @@ export async function action(args: ActionArgs) {
 
   const err = await updateArtistData(urlBase, body);
   if (err) {
-    return create500Json(err.client400Message);
+    return processApiError('Errir in /update-artist-data', err);
   }
-
   return createSuccessJson();
 }
 
@@ -41,7 +41,7 @@ export async function updateArtistData(
   if (changes.links) {
     const { artist, err: artistErr } = await getArtistById(urlBase, changes.artistId);
     if (artistErr) {
-      return wrapApiError(artistErr, `Error updating artist, changes: ${changes}`);
+      return wrapApiError(artistErr, 'Error updating artist', changes);
     }
     promises.push(
       updateLinks(urlBase, changes.artistId, changes.links, artist as Artist)
@@ -51,7 +51,7 @@ export async function updateArtistData(
   const maybeErrors = await Promise.all(promises);
   for (const err of maybeErrors) {
     if (err) {
-      return wrapApiError(err, `Error updating artist data, changes: ${changes}`);
+      return wrapApiError(err, 'Error updating artist', changes);
     }
   }
 }
@@ -64,9 +64,7 @@ async function updateLinks(
 ): Promise<ApiError | undefined> {
   const newLinks = links.filter(l => !existingArtist.links.includes(l));
   const deletedLinks = existingArtist.links.filter(l => !links.includes(l));
-
   const dbPromises: Promise<DBResponse<any>>[] = [];
-  const logStrings: string[] = [];
 
   if (newLinks.length > 0) {
     const addLinksQuery = `INSERT INTO artistlink (artistId, linkUrl) VALUES ${newLinks
@@ -79,24 +77,22 @@ async function updateLinks(
         newLinks.flatMap(l => [artistId, l])
       )
     );
-    logStrings.push(`insert links: ${newLinks}`);
   }
   if (deletedLinks.length > 0) {
     const deleteLinksQuery = `DELETE FROM artistlink WHERE artistId = ? AND linkUrl IN (${deletedLinks
       .map(() => '?')
       .join(', ')})`;
     dbPromises.push(queryDb<any>(urlBase, deleteLinksQuery, [artistId, ...deletedLinks]));
-    logStrings.push(`delete links: ${deletedLinks}`);
   }
 
   const dbResponses = await Promise.all(dbPromises);
-  for (let i = 0; i < dbResponses.length; i++) {
-    if (dbResponses[i].errorMessage) {
-      return {
-        client400Message: 'Error updating artist links',
-        logMessage: `Error updating artist links - ${logStrings[i]}`,
-        error: dbResponses[i],
-      };
+  for (let dbRes of dbResponses) {
+    if (dbRes.errorMessage) {
+      return makeDbErr(dbRes, 'Error updating artist links', {
+        artistId,
+        links,
+        existingArtist,
+      });
     }
   }
 }
@@ -126,9 +122,6 @@ async function updateGeneralDetails(
   const updateQuery = `UPDATE artist SET ${updateFieldStr} WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
   if (dbRes.errorMessage) {
-    return {
-      client400Message: 'Error updating artist details',
-      logMessage: 'Error updating artist details',
-    };
+    return makeDbErr(dbRes, 'Error updating artist details', { changes });
   }
 }

@@ -1,5 +1,4 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { redirectIfNotMod } from '~/utils/loaders';
 
 type UserOrIP = {
   username?: string;
@@ -69,13 +68,11 @@ import {
   ComicSuggestionVerdict,
   ComicUploadVerdict,
 } from '~/types/types';
-import { queryDb, queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import {
   ApiError,
-  create500Json,
   createSuccessJson,
-  dbErrObj,
-  logErrorOLD_DONOTUSE,
+  makeDbErrObj,
   processApiError,
 } from '~/utils/request-helpers';
 
@@ -124,7 +121,7 @@ async function getTagSuggestions(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbTagSuggestion[]>(urlBase, query);
   if (dbRes.errorMessage) {
-    return dbErrObj(dbRes, 'Error getting tag suggestions');
+    return makeDbErrObj(dbRes, 'Error getting tag suggestions');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbTagSugg => {
@@ -205,7 +202,7 @@ async function getProblems(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicProblem[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return dbErrObj(dbRes, 'Error getting comic problems');
+    return makeDbErrObj(dbRes, 'Error getting comic problems');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicProblem => {
@@ -283,7 +280,7 @@ async function getComicSuggestions(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicSuggestion[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return dbErrObj(dbRes, 'Error getting comic suggestions');
+    return makeDbErrObj(dbRes, 'Error getting comic suggestions');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicSugg => {
@@ -373,7 +370,7 @@ async function getComicUploads(urlBase: string): Promise<{
   const dbRes = await queryDb<DbComicUpload[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return dbErrObj(dbRes, 'Error getting comic uploads');
+    return makeDbErrObj(dbRes, 'Error getting comic uploads');
   }
 
   // If a mod uploads, it skips the verification and goes straight to pending
@@ -484,7 +481,7 @@ export async function getPendingComicProblems(urlBase: string): Promise<{
   const dbRes = await queryDb<DbPendingComicSimple[]>(urlBase, query);
 
   if (dbRes.errorMessage) {
-    return dbErrObj(dbRes, 'Error getting pending comics');
+    return makeDbErrObj(dbRes, 'Error getting pending comics');
   }
 
   const mappedResults: DashboardAction[] = dbRes.result!.map(dbPending => {

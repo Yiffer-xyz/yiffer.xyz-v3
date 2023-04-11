@@ -6,6 +6,7 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
   createSuccessJson,
+  makeDbErr,
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
@@ -30,7 +31,7 @@ export async function updateComicData(
 ): Promise<ApiError | undefined> {
   let { comic: existingComic, err } = await getComicById(urlBase, changes.comicId);
   if (err) {
-    return wrapApiError(err, `Could not update comic data`);
+    return wrapApiError(err, `Could not update comic data`, changes);
   }
   existingComic = existingComic as Comic;
 
@@ -42,7 +43,7 @@ export async function updateComicData(
       changes.name
     );
     if (err) {
-      return wrapApiError(err, 'Could not update comic name');
+      return wrapApiError(err, 'Could not update comic name', changes);
     }
   }
   if (changes.nextComicId) {
@@ -54,7 +55,7 @@ export async function updateComicData(
       'next'
     );
     if (err) {
-      return wrapApiError(err, 'Error updating comic links (next)');
+      return wrapApiError(err, 'Error updating comic links (next)', changes);
     }
   }
   if (changes.previousComicId) {
@@ -66,7 +67,7 @@ export async function updateComicData(
       'prev'
     );
     if (err) {
-      return wrapApiError(err, 'Error updating comic links (prev)');
+      return wrapApiError(err, 'Error updating comic links (prev)', changes);
     }
   }
   if (changes.tagIds) {
@@ -77,13 +78,13 @@ export async function updateComicData(
       changes.tagIds
     );
     if (err) {
-      return wrapApiError(err, 'Error updating comic tags');
+      return wrapApiError(err, 'Error updating comic tags', changes);
     }
   }
   if (changes.category || changes.classification || changes.artistId || changes.state) {
     err = await updateGeneralDetails(urlBase, changes);
     if (err) {
-      return wrapApiError(err, 'Error updating general comic details');
+      return wrapApiError(err, 'Error updating general comic details', changes);
     }
   }
 }
@@ -94,11 +95,11 @@ async function updateTags(
   oldTagIds: number[],
   tagIds: number[]
 ): Promise<ApiError | undefined> {
+  const logCtx = { comicId, oldTagIds, tagIds };
   const newTagIds = tagIds.filter(id => !oldTagIds.includes(id));
   const deletedTagIds = oldTagIds.filter(id => !tagIds.includes(id));
 
   const dbPromises: Promise<DBResponse<any>>[] = [];
-  const logStrings: string[] = [];
 
   if (newTagIds.length > 0) {
     const newTagsQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES ${newTagIds
@@ -111,25 +112,19 @@ async function updateTags(
         newTagIds.flatMap(id => [comicId, id])
       )
     );
-    logStrings.push(`insert, tag ids: ${newTagIds}`);
   }
   if (deletedTagIds.length > 0) {
     const deletedTagsQuery = `DELETE FROM comickeyword WHERE comicId = ? AND keywordId IN (${deletedTagIds
       .map(() => '?')
       .join(', ')})`;
     dbPromises.push(queryDb(urlBase, deletedTagsQuery, [comicId, ...deletedTagIds]));
-    logStrings.push(`delete, tag ids: ${deletedTagIds}`);
   }
 
   const dbResponses = await Promise.all(dbPromises);
 
-  for (let i = 0; i < dbResponses.length; i++) {
-    if (dbResponses[i].errorMessage) {
-      return {
-        client400Message: 'Error updating tags',
-        logMessage: `Error updating tags: ${logStrings[i]}`,
-        error: dbResponses[i],
-      };
+  for (let dbRes of dbResponses) {
+    if (dbRes.errorMessage) {
+      return makeDbErr(dbRes, 'Error updating tags', logCtx);
     }
   }
 }
@@ -163,11 +158,7 @@ async function updateGeneralDetails(
   const updateQuery = `UPDATE comic SET ${updateFieldStr} WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
   if (dbRes.errorMessage) {
-    return {
-      client400Message: 'Could not update comic details',
-      logMessage: `Could not update comic general details. Changes: ${changes}`,
-      error: dbRes,
-    };
+    return makeDbErr(dbRes, 'Error updating comic details', changes);
   }
 }
 
@@ -190,6 +181,7 @@ async function updateComicLink(
   type: 'next' | 'prev'
 ): Promise<ApiError | undefined> {
   if (oldLinkedId === newLinkedComicId) return;
+  const logCtx = { comicId, oldLinkedId, newLinkedComicId, type };
 
   if (oldLinkedId) {
     const deleteQuery = `DELETE FROM comiclink WHERE ${
@@ -197,11 +189,7 @@ async function updateComicLink(
     }Comic = ?`;
     const delDbRes = await queryDb(urlBase, deleteQuery, [comicId]);
     if (delDbRes.errorMessage) {
-      return {
-        client400Message: 'Error updating prev/next comic',
-        logMessage: 'Error deleting comic link',
-        error: delDbRes,
-      };
+      return makeDbErr(delDbRes, 'Error deleting comic link', logCtx);
     }
   }
   if (newLinkedComicId) {
@@ -211,11 +199,7 @@ async function updateComicLink(
       type === 'next' ? newLinkedComicId : comicId,
     ]);
     if (newDbRes.errorMessage) {
-      return {
-        client400Message: 'Error updating prev/next comic',
-        logMessage: 'Error inserting new comic link',
-        error: newDbRes,
-      };
+      return makeDbErr(newDbRes, 'Error inserting new comic link', logCtx);
     }
   }
 }

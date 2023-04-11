@@ -6,6 +6,8 @@ import {
   create500Json,
   createSuccessJson,
   logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
 } from '~/utils/request-helpers';
 
 export async function action(args: ActionArgs) {
@@ -20,13 +22,8 @@ export async function action(args: ActionArgs) {
   const err = await rejectComic(urlBase, parseInt(formComicId.toString()));
 
   if (err) {
-    logErrorOLD_DONOTUSE(
-      `Error in /reject-pending-comic for comic id ${formComicId.toString()}`,
-      err
-    );
-    return create500Json(err.client400Message);
+    return processApiError('Error in /reject-pending-comic', err);
   }
-
   return createSuccessJson();
 }
 
@@ -37,10 +34,10 @@ export async function rejectComic(
   const updateActionQuery = `UPDATE comic SET publishStatus = 'rejected' WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateActionQuery, [comicId]);
   if (dbRes.errorMessage) {
-    return {
-      client400Message: 'Error rejecting comic',
-      logMessage: 'Error rejecting comic, could not set publishStatus rejected',
-      error: dbRes,
-    };
+    return makeDbErr(
+      dbRes,
+      'Error rejecting comic, could not set publishStatus rejected',
+      { comicId }
+    );
   }
 }

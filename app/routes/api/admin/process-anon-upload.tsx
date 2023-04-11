@@ -4,9 +4,8 @@ import { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  processApiError,
 } from '~/utils/request-helpers';
 import { processAnyUpload } from './process-user-upload';
 
@@ -50,11 +49,10 @@ export async function action(args: ActionArgs) {
   );
 
   if (err) {
-    logErrorOLD_DONOTUSE(
-      `Error in /process-anon-upload for comic name/id ${comicName.toString()} / ${formComicId.toString()}, verdict: ${verdict}`,
-      err
-    );
-    return create500Json(err.client400Message);
+    processApiError('Error in /process-anon-upload', err, {
+      comicId: formComicId.toString(),
+      verdict,
+    });
   }
 
   return createSuccessJson();

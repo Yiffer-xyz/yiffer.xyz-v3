@@ -1,5 +1,6 @@
 import { ArtistTiny } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError, makeDbErrObj } from '~/utils/request-helpers';
 
 export async function getAllArtists(
   urlBase: string,
@@ -8,7 +9,7 @@ export async function getAllArtists(
     includePending?: boolean;
     includeBanned?: boolean;
   }
-): Promise<ArtistTiny[]> {
+): Promise<{ err?: ApiError; artists?: ArtistTiny[] }> {
   let query = `SELECT
       id,
       name,
@@ -26,14 +27,18 @@ export async function getAllArtists(
     query += ' AND IsBanned = 0';
   }
 
-  const artists = await queryDbDirect<ArtistTiny[]>(urlBase, query);
-  const boolArtists = artists.map(artist => {
+  const artistsRes = await queryDb<ArtistTiny[]>(urlBase, query);
+  if (artistsRes.errorMessage) {
+    return makeDbErrObj(artistsRes, 'Error getting artists from db', options);
+  }
+
+  const boolArtists = artistsRes.result!.map(artist => {
     artist.isPending = !!artist.isPending;
     artist.isBanned = !!artist.isBanned;
     return artist;
   });
 
-  if (!options.modifyNameIncludeType) return boolArtists;
+  if (!options.modifyNameIncludeType) return { artists: boolArtists };
 
   const mappedArtists = boolArtists.map(artist => {
     if (artist.isPending) {
@@ -45,5 +50,5 @@ export async function getAllArtists(
     return artist;
   });
 
-  return mappedArtists;
+  return { artists: mappedArtists };
 }

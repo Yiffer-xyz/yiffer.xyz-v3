@@ -1,8 +1,13 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { ComicSuggestionVerdict } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import { createSuccessJson } from '~/utils/request-helpers';
+import {
+  ApiError,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
 import { addContributionPoints } from '../funcs/add-contribution-points';
 
 export type ProcessComicSuggestionBody = {
@@ -19,7 +24,7 @@ export async function action(args: ActionArgs) {
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
   const urlBase = args.context.DB_API_URL_BASE as string;
 
-  await processComicSuggestion(
+  const err = await processComicSuggestion(
     urlBase,
     fields.actionId,
     fields.isApproved,
@@ -29,6 +34,11 @@ export async function action(args: ActionArgs) {
     fields.suggestingUserId
   );
 
+  if (err) {
+    return processApiError('Error in /process-comic-suggestion', err, {
+      ...fields,
+    });
+  }
   return createSuccessJson();
 }
 
@@ -40,7 +50,7 @@ async function processComicSuggestion(
   verdict?: ComicSuggestionVerdict, // always if approved, otherwise none
   modComment?: string, // only potentially if rejected
   suggestingUserId?: number // only if non-anon suggestion
-) {
+): Promise<ApiError | undefined> {
   const updateQuery = `UPDATE comicsuggestion
     SET status = ?, modId = ?
     ${verdict ? ', verdict = ?' : ''}
@@ -55,8 +65,12 @@ async function processComicSuggestion(
     actionId,
   ];
 
-  await queryDbDirect(urlBase, updateQuery, updateQueryParams);
+  const dbRes = await queryDb(urlBase, updateQuery, updateQueryParams);
+  if (dbRes.errorMessage) {
+    return makeDbErr(dbRes, 'Error updating comic suggestion');
+  }
 
   const tableName = isApproved ? `comicSuggestion${verdict}` : 'comicSuggestionRejected';
-  await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  if (err) return err;
 }

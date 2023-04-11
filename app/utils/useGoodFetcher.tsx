@@ -38,7 +38,7 @@ export function useGoodFetcher<T = void>({
   method = 'get',
   onFinish,
   toastSuccessMessage,
-  toastError = false,
+  toastError = true,
   fetchGetOnLoad = false,
 }: ToastFetcherArgs<T>) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);

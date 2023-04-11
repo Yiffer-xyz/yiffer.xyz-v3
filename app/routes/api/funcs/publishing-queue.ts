@@ -1,5 +1,5 @@
 import { queryDb } from '~/utils/database-facade';
-import { ApiError } from '~/utils/request-helpers';
+import { ApiError, makeDbErr } from '~/utils/request-helpers';
 
 type ComicInQueue = {
   publishingQueuePos: number;
@@ -11,6 +11,7 @@ export async function moveComicInQueue(
   comicId: number,
   moveBy: 1 | -1
 ): Promise<ApiError | undefined> {
+  const logCtx = { comicId, moveBy };
   const getPosQuery = 'SELECT publishingQueuePos FROM comicmetadata WHERE comicId = ?';
   const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(
     urlBase,
@@ -19,11 +20,7 @@ export async function moveComicInQueue(
   );
 
   if (positionDbRes.errorMessage || !positionDbRes.result) {
-    return {
-      client400Message: 'Error moving comic in publishing queue',
-      logMessage: `Error moving comic with id ${comicId} in publishing queue, move by ${moveBy}.`,
-      error: positionDbRes,
-    };
+    return makeDbErr(positionDbRes, 'Error moving comic in publishing queue', logCtx);
   }
 
   const oldPos = positionDbRes.result[0].publishingQueuePos;
@@ -42,20 +39,20 @@ export async function moveComicInQueue(
     moveOtherComicQueryParams
   );
   if (moveOtherDbRes.errorMessage) {
-    return {
-      client400Message: 'Error moving comic in publishing queue',
-      logMessage: `Error moving comic in publishing queue, first one. Comic id ${comicId}, moving: ${moveBy}`,
-      error: moveOtherDbRes,
-    };
+    return makeDbErr(
+      moveOtherDbRes,
+      'Error moving other comic in publishing queue',
+      logCtx
+    );
   }
 
   const moveComicDbRes = await queryDb(urlBase, moveComicQuery, moveComicQueryParams);
   if (moveComicDbRes.errorMessage) {
-    return {
-      client400Message: 'Error moving comic in publishing queue',
-      logMessage: `Error moving comic in publishing queue, second one. Comic id ${comicId}, moving: ${moveBy}`,
-      error: moveComicDbRes,
-    };
+    return makeDbErr(
+      moveComicDbRes,
+      'Error moving this comic in publishing queue',
+      logCtx
+    );
   }
 }
 
@@ -73,11 +70,7 @@ export async function recalculatePublishingQueue(
 
   const queueDbRes = await queryDb<ComicInQueue[]>(urlBase, query);
   if (queueDbRes.errorMessage) {
-    return {
-      client400Message: 'Error getting comics in queue',
-      logMessage: 'Error getting comics in queue',
-      error: queueDbRes,
-    };
+    return makeDbErr(queueDbRes, 'Error getting comics in queue');
   }
 
   let queue = queueDbRes.result as ComicInQueue[];
@@ -128,11 +121,7 @@ export async function recalculatePublishingQueue(
   const updateDbRes = await Promise.all(updatePromises);
   for (const result of updateDbRes) {
     if (result.errorMessage) {
-      return {
-        client400Message: 'Error updating queue position of pending comic',
-        logMessage: 'Error updating queue position of pending comic',
-        error: queueDbRes,
-      };
+      return makeDbErr(result, 'Error updating queue position of pending comic');
     }
   }
 }

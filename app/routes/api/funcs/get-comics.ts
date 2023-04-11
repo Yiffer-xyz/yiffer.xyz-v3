@@ -1,6 +1,6 @@
 import { ComicPublishStatus, ComicTiny } from '~/types/types';
-import { queryDb, queryDbDirect } from '~/utils/database-facade';
-import { ApiError } from '~/utils/request-helpers';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError, makeDbErrObj } from '~/utils/request-helpers';
 
 type DbComicTiny = {
   name: string;
@@ -18,7 +18,7 @@ export async function getAllComicNamesAndIDs(
     includeUnlisted?: boolean;
     includeThumbnailStatus?: boolean; // TODO: Remove once all thumbnails are fixed
   }
-): Promise<ComicTiny[]> {
+): Promise<{ err?: ApiError; comics?: ComicTiny[] }> {
   const thumbnailQuery = options?.includeThumbnailStatus
     ? ', hasHighresThumbnail, published'
     : '';
@@ -35,9 +35,12 @@ export async function getAllComicNamesAndIDs(
     query += ' AND publishStatus != "unlisted" ';
   }
 
-  const response = await queryDbDirect<DbComicTiny[]>(urlBase, query);
+  const response = await queryDb<DbComicTiny[]>(urlBase, query);
+  if (response.errorMessage || !response.result) {
+    return makeDbErrObj(response, 'Error  getting comics', options);
+  }
 
-  const comics: ComicTiny[] = response.map(comic => ({
+  const comics: ComicTiny[] = response.result.map(comic => ({
     name: comic.name,
     id: comic.id,
     publishStatus: comic.publishStatus,
@@ -45,10 +48,10 @@ export async function getAllComicNamesAndIDs(
     temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
   }));
 
-  if (!options?.modifyNameIncludeType) return comics;
+  if (!options?.modifyNameIncludeType) return { comics };
 
   const mappedComics = addStateToComicNames(comics);
-  return mappedComics;
+  return { comics: mappedComics };
 }
 
 export async function getComicsByArtistId(
@@ -68,19 +71,11 @@ export async function getComicsByArtistId(
 
   const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        client400Message: 'Error getting comics by artist',
-        logMessage: `Error getting comics by artist id. Artist id: ${artistId}. Options: ${options}.`,
-        error: dbRes,
-      },
-    };
+    return makeDbErrObj(dbRes, 'Error getting comics by artist', { artistId, options });
   }
 
   const mappedComics = addStateToComicNames(dbRes.result as ComicTiny[]);
-  return {
-    comics: mappedComics,
-  };
+  return { comics: mappedComics };
 }
 
 function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {

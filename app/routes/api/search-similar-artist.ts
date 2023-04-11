@@ -1,5 +1,11 @@
-import { ActionFunction, json } from '@remix-run/cloudflare';
-import { queryDbDirect } from '~/utils/database-facade';
+import { ActionFunction } from '@remix-run/cloudflare';
+import { queryDb } from '~/utils/database-facade';
+import {
+  ApiError,
+  createSuccessJson,
+  makeDbErrObj,
+  processApiError,
+} from '~/utils/request-helpers';
 import stringDistance from '~/utils/string-distance';
 
 export type SimilarArtistResponse = {
@@ -9,35 +15,37 @@ export type SimilarArtistResponse = {
   exactMatchBannedArtist: string;
 };
 
-// This deals with handling logic only. The reusable parts go in a separate function.
 export const action: ActionFunction = async function ({ request, context }) {
   const urlBase = context.DB_API_URL_BASE as string;
   const body = await request.formData();
   const artistName = body.get('artistName') as string;
   const excludeName = body.get('excludeName');
 
-  const data = await getSimilarArtists(
+  const { artists, err } = await getSimilarArtists(
     urlBase,
     artistName,
     excludeName ? excludeName.toString() : undefined
   );
-
-  return json(data);
+  if (err) {
+    return processApiError('Error in /search-similar-artist', err);
+  }
+  return createSuccessJson(artists);
 };
 
 export async function getSimilarArtists(
   urlBase: string,
   newArtistName: string,
   excludeName?: string
-): Promise<SimilarArtistResponse> {
-  let response: SimilarArtistResponse = {
+): Promise<{ err?: ApiError; artists?: SimilarArtistResponse }> {
+  const logCtx = { newArtistName, excludeName };
+  let similar: SimilarArtistResponse = {
     similarArtists: [],
     exactMatchArtist: '',
     similarBannedArtists: [],
     exactMatchBannedArtist: '',
   };
   if (newArtistName.length < 2) {
-    return response;
+    return { artists: similar };
   }
 
   let distanceThreshold = 4;
@@ -49,29 +57,32 @@ export async function getSimilarArtists(
   }
 
   let allArtistsQuery = 'SELECT name, isBanned FROM artist';
-  const allArtists = await queryDbDirect<{ name: string; isBanned: boolean }[]>(
+  const allArtistsRes = await queryDb<{ name: string; isBanned: boolean }[]>(
     urlBase,
     allArtistsQuery
   );
+  if (allArtistsRes.errorMessage) {
+    return makeDbErrObj(allArtistsRes, 'Error getting all artists from db', logCtx);
+  }
 
-  for (let artist of allArtists) {
+  for (let artist of allArtistsRes.result!) {
     if (artist.name === excludeName) continue;
 
     let distance = stringDistance(artist.name, newArtistName);
     if (distance === 0) {
       if (artist.isBanned) {
-        response.exactMatchBannedArtist = artist.name;
+        similar.exactMatchBannedArtist = artist.name;
       } else {
-        response.exactMatchArtist = artist.name;
+        similar.exactMatchArtist = artist.name;
       }
     } else if (distance <= distanceThreshold) {
       if (artist.isBanned) {
-        response.similarBannedArtists.push(artist.name);
+        similar.similarBannedArtists.push(artist.name);
       } else {
-        response.similarArtists.push(artist.name);
+        similar.similarArtists.push(artist.name);
       }
     }
   }
 
-  return response;
+  return { artists: similar };
 }

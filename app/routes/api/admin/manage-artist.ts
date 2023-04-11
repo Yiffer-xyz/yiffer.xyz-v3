@@ -1,7 +1,7 @@
 import { ComicTiny } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
-import { ApiError, wrapApiError } from '~/utils/request-helpers';
+import { ApiError, makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import { getComicsByArtistId } from '../funcs/get-comics';
 
 export async function rejectArtistIfEmpty(
@@ -11,7 +11,7 @@ export async function rejectArtistIfEmpty(
 ): Promise<{ isEmpty?: boolean; err?: ApiError }> {
   let { comics, err } = await getComicsByArtistId(urlBase, artistId);
   if (err) {
-    return { err: wrapApiError(err, 'Error rejecting artist') };
+    return { err: wrapApiError(err, 'Error rejecting artist', { artistId }) };
   }
   comics = comics as ComicTiny[];
   if (comics.length > 0) return { isEmpty: false };
@@ -22,13 +22,11 @@ export async function rejectArtistIfEmpty(
   const rejectQuery = `UPDATE artist SET name = ?, isRejected = 1 WHERE id = ?`;
   const dbRes = await queryDb(urlBase, rejectQuery, [newArtistName, artistId]);
   if (dbRes.errorMessage) {
-    return {
-      err: {
-        client400Message: 'Error rejecting artist',
-        logMessage: `Error rejecting artist. Name and id: ${artistName}, ${artistId}`,
-        error: dbRes,
-      },
-    };
+    return makeDbErrObj(dbRes, 'Error rejecting artist', {
+      artistId,
+      artistName,
+      newArtistName,
+    });
   }
 
   return { isEmpty: true };
@@ -41,10 +39,6 @@ export async function setArtistNotPending(
   const updateQuery = `UPDATE artist SET isPending = 0 WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, [artistId]);
   if (dbRes.errorMessage) {
-    return {
-      client400Message: 'Error setting artist not pending',
-      logMessage: `Error setting artist not pending. Artist id: ${artistId}.`,
-      error: dbRes,
-    };
+    return makeDbErr(dbRes, 'Error setting artist not pending', { artistId });
   }
 }

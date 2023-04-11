@@ -4,9 +4,9 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  makeDbErr,
+  processApiError,
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '../funcs/publishing-queue';
 
@@ -21,10 +21,8 @@ export async function action(args: ActionArgs) {
 
   const err = await unScheduleComic(urlBase, parseInt(formComicId.toString()));
   if (err) {
-    logErrorOLD_DONOTUSE(`Erorr in /unschedule-comic for comic id ${formComicId}`, err);
-    return create500Json(err.client400Message);
+    return processApiError('Error in /unschedule-comic', err);
   }
-
   return createSuccessJson();
 }
 
@@ -42,18 +40,10 @@ export async function unScheduleComic(
   ]);
 
   if (metadataDbRes.errorMessage) {
-    return {
-      client400Message: 'Error un-scheduling comic: Could not update comicmetadata table',
-      logMessage: 'Error un-scheduling: could not update comicmetadata table',
-      error: metadataDbRes,
-    };
+    return makeDbErr(metadataDbRes, 'Could not update comicmetadata', { comicId });
   }
   if (comicDbRes.errorMessage) {
-    return {
-      client400Message: 'Error un-scheduling comic: Could not update comic table',
-      logMessage: 'Error un-scheduling: could not update comic table',
-      error: comicDbRes,
-    };
+    return makeDbErr(comicDbRes, 'Could not update comic table', { comicId });
   }
 
   recalculatePublishingQueue(urlBase); // Can run in background

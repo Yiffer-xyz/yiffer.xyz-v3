@@ -1,6 +1,6 @@
 import { DbPendingComic } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import { ApiError } from '~/utils/request-helpers';
+import { ApiError, makeDbErrObj } from '~/utils/request-helpers';
 
 export async function getPendingComics(
   urlBase: string,
@@ -48,17 +48,13 @@ export async function getPendingComics(
     ${topAmount ? `LIMIT ${topAmount}` : ''}
   `;
 
-  const result = await queryDb<DbPendingComic[]>(urlBase, pendingComicsQuery);
+  const dbRes = await queryDb<DbPendingComic[]>(urlBase, pendingComicsQuery);
 
-  if (result.errorMessage) {
-    return {
-      err: {
-        error: result,
-        logMessage: 'Error getting pending commics',
-        client400Message: 'Error getting pending comics',
-      },
-    };
+  if (dbRes.errorMessage) {
+    return makeDbErrObj(dbRes, 'Error getting pending comics', {
+      scheduledOnly,
+      topAmount,
+    });
   }
-
-  return { pendingComics: result.result };
+  return { pendingComics: dbRes.result };
 }

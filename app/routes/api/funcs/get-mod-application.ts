@@ -1,7 +1,14 @@
 import { ModApplication } from '~/types/types';
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError, makeDbErrObj } from '~/utils/request-helpers';
 
-export async function getModApplicationForUser(urlBase: string, userId: number) {
+export async function getModApplicationForUser(
+  urlBase: string,
+  userId: number
+): Promise<{
+  err?: ApiError;
+  application?: ModApplication | null;
+}> {
   let query = `SELECT
       modapplication.id,
       userId,
@@ -13,11 +20,10 @@ export async function getModApplicationForUser(urlBase: string, userId: number) 
     WHERE UserId = ?`;
 
   let queryParams = [userId];
-  const modApplicaiton = await queryDbDirect<ModApplication[]>(
-    urlBase,
-    query,
-    queryParams
-  );
+  const dbRes = await queryDb<ModApplication[]>(urlBase, query, queryParams);
+  if (dbRes.errorMessage || !dbRes.result) {
+    return makeDbErrObj(dbRes, 'Error getting mod applications for user', { userId });
+  }
 
-  return modApplicaiton.length > 0 ? modApplicaiton[0] : null;
+  return { application: dbRes.result.length > 0 ? dbRes.result[0] : null };
 }

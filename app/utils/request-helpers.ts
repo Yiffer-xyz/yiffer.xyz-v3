@@ -51,7 +51,16 @@ function logApiError(prependMessage: string, err: ApiError) {
   });
 }
 
-export function dbErrObj(
+export function logApiErrorMessage(message: string, context?: { [key: string]: any }) {
+  Sentry.captureMessage(message, {
+    extra: {
+      ...(context || {}),
+    },
+    level: 'error',
+  });
+}
+
+export function makeDbErrObj(
   err: DBResponse<any>,
   message: string,
   context?: { [key: string]: any },
@@ -64,6 +73,20 @@ export function dbErrObj(
       client400Message,
       context: context || {},
     },
+  };
+}
+
+export function makeDbErr(
+  err: DBResponse<any>,
+  message: string,
+  context?: { [key: string]: any },
+  client400Message?: string
+): ApiError {
+  return {
+    error: err,
+    logMessage: message,
+    client400Message,
+    context: context || {},
   };
 }
 

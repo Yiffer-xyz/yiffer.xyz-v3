@@ -2,9 +2,8 @@ import { ActionArgs } from '@remix-run/cloudflare';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  processApiError,
 } from '~/utils/request-helpers';
 import { moveComicInQueue } from '../funcs/publishing-queue';
 
@@ -28,8 +27,10 @@ export async function action(args: ActionArgs) {
     formMoveDirection === 'up' ? -1 : 1
   );
   if (err) {
-    logErrorOLD_DONOTUSE('Error moving comic in queue', err);
-    return create500Json(err.client400Message);
+    return processApiError('Error in /move-queued-comic', err, {
+      comicId: formComicId,
+      direction: formMoveDirection,
+    });
   }
 
   return createSuccessJson();

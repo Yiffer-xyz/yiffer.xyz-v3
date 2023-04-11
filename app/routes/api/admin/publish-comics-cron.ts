@@ -1,5 +1,9 @@
 import { LoaderArgs } from '@remix-run/cloudflare';
-import { create400Json, logErrorOLD_DONOTUSE } from '~/utils/request-helpers';
+import {
+  create400Json,
+  logApiErrorMessage,
+  processApiError,
+} from '~/utils/request-helpers';
 import { getPendingComics } from '../funcs/get-pending-comics';
 import { publishComic } from './publish-comic';
 
@@ -12,10 +16,9 @@ export async function loader(args: LoaderArgs) {
   const schedulePerDay = parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string);
 
   if (cronKey !== requestApiKeyHeader) {
-    logErrorOLD_DONOTUSE(
-      `Invalid x-yiffer-api-key header in /publish-comics-cron: ${requestApiKeyHeader}`,
-      ''
-    );
+    logApiErrorMessage('Invalid x-yiffer-api-key header in /publish-comics-cron', {
+      requestApiKeyHeader,
+    });
     return create400Json(
       `Invalid x-yiffer-api-key header in /publish-comics-cron: ${requestApiKeyHeader}`
     );
@@ -23,18 +26,13 @@ export async function loader(args: LoaderArgs) {
 
   const { err, pendingComics } = await getPendingComics(urlBase, true, schedulePerDay);
   if (err) {
-    logErrorOLD_DONOTUSE('Error getting pending comics from cron job', err);
-    return new Response('Error getting pending comics', { status: 500 });
+    return processApiError('Error in /publish-comics-cron', err);
   }
 
   for (const comic of pendingComics!) {
     const err = await publishComic(urlBase, comic.comicId);
     if (err) {
-      logErrorOLD_DONOTUSE(
-        `Error in /publish-comics-cron, failed publishing comic ${comic.comicId}`,
-        err
-      );
-      return new Response('Error publishing pending comic', { status: 500 });
+      return processApiError(`Error in /publish-comics-cron, failed publishing`, err);
     }
   }
 
