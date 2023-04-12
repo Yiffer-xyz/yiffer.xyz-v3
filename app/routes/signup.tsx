@@ -1,89 +1,25 @@
 import { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
-import { Form, useActionData, useTransition } from '@remix-run/react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
 import { signup } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
-
-function getSignupValidationError(
-  username: string,
-  email: string,
-  password: string,
-  password2: string
-): string | undefined {
-  if (!username) {
-    return 'Missing username';
-  }
-  if (username.length < 2 || username.length > 25) {
-    return 'Username must be between 2 and 25 characters';
-  }
-  if (!password || !password2) {
-    return 'Missing password';
-  }
-  if (password !== password2) {
-    return 'Passwords do not match';
-  }
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters';
-  }
-  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-    return 'Invalid email';
-  }
-
-  return;
-}
-
-export async function loader(args: LoaderArgs) {
-  await redirectIfLoggedIn(args);
-  return null;
-}
-
-export async function action(args: ActionArgs) {
-  const reqBody = await args.request.formData();
-  const {
-    username: formUsername,
-    email: formEmail,
-    password: formPassword,
-    password2: formPassword2,
-  } = Object.fromEntries(reqBody);
-
-  if (!formUsername || !formEmail || !formPassword || !formPassword2) {
-    return json({ error: 'Missing fields' }, { status: 400 });
-  }
-
-  const username = formUsername.toString().trim();
-  const email = formEmail.toString().trim();
-  const password = formPassword.toString().trim();
-  const password2 = formPassword2.toString().trim();
-
-  const validationErr = getSignupValidationError(username, email, password, password2);
-  if (validationErr) {
-    return json({ error: validationErr }, { status: 400 });
-  }
-  const { redirect, errorMessage } = await signup(
-    username,
-    email,
-    password,
-    args.context.DB_API_URL_BASE as string,
-    args.context.JWT_CONFIG_STR as string,
-    args.context.POSTMARK_TOKEN as string
-  );
-
-  if (errorMessage) {
-    return json({ error: errorMessage }, { status: 401 });
-  }
-  throw redirect;
-}
+import {
+  create400Json,
+  createAnyErrorCodeJson,
+  processApiError,
+} from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export default function Signup() {
-  const actionData = useActionData<typeof action>();
-  const transition = useTransition();
+  const fetcher = useGoodFetcher({
+    method: 'post',
+    toastError: false,
+  });
 
   return (
-    <Form method="post" className="max-w-xs mx-auto">
+    <fetcher.Form className="max-w-xs mx-auto">
       <h1 className="text-3xl">Sign up</h1>
 
       <div className="mt-4 flex flex-col gap-6">
@@ -120,8 +56,8 @@ export default function Signup() {
         />
       </div>
 
-      {actionData?.error && (
-        <InfoBox variant="error" text={actionData.error} className="my-2" />
+      {fetcher?.isError && (
+        <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
       )}
 
       <div className="flex">
@@ -131,7 +67,7 @@ export default function Signup() {
           variant="contained"
           className="mt-2 mb-6"
           fullWidth
-          isLoading={transition.state === 'submitting'}
+          isLoading={fetcher.isLoading}
           isSubmit
         />
       </div>
@@ -139,6 +75,79 @@ export default function Signup() {
       <Link href="/login" text="Log in instead" />
       <br />
       <Link href="/forgotten-password" text="Forgotten password?" />
-    </Form>
+    </fetcher.Form>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  await redirectIfLoggedIn(args);
+  return null;
+}
+
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
+  const {
+    username: formUsername,
+    email: formEmail,
+    password: formPassword,
+    password2: formPassword2,
+  } = Object.fromEntries(reqBody);
+
+  if (!formUsername || !formEmail || !formPassword || !formPassword2) {
+    return create400Json('Missing fields');
+  }
+
+  const username = formUsername.toString().trim();
+  const email = formEmail.toString().trim();
+  const password = formPassword.toString().trim();
+  const password2 = formPassword2.toString().trim();
+
+  const validationErr = getSignupValidationError(username, email, password, password2);
+  if (validationErr) {
+    return create400Json(validationErr);
+  }
+  const { err, redirect, errorMessage } = await signup(
+    username,
+    email,
+    password,
+    args.context.DB_API_URL_BASE as string,
+    args.context.JWT_CONFIG_STR as string,
+    args.context.POSTMARK_TOKEN as string
+  );
+
+  if (err) {
+    return processApiError('Error in /signup', err, { username, email });
+  }
+  if (errorMessage) {
+    return createAnyErrorCodeJson(401, errorMessage);
+  }
+  throw redirect;
+}
+
+function getSignupValidationError(
+  username: string,
+  email: string,
+  password: string,
+  password2: string
+): string | undefined {
+  if (!username) {
+    return 'Missing username';
+  }
+  if (username.length < 2 || username.length > 25) {
+    return 'Username must be between 2 and 25 characters';
+  }
+  if (!password || !password2) {
+    return 'Missing password';
+  }
+  if (password !== password2) {
+    return 'Passwords do not match';
+  }
+  if (password.length < 6) {
+    return 'Password must be at least 6 characters';
+  }
+  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    return 'Invalid email';
+  }
+
+  return;
 }

@@ -3,9 +3,7 @@ import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import {
   ApiError,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
   makeDbErr,
   processApiError,
   wrapApiError,

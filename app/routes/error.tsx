@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { logErrorBoundaryException } from '~/utils/request-helpers';
 import { useCatch } from '@remix-run/react';
 
-export const handledErrMsg = 'HANDLED server error';
+export const HANDLED_ERR_MSG = 'HANDLED server error';
 
 export function CatchBoundary() {
   const caught = useCatch();
@@ -29,7 +29,7 @@ export function ErrorBoundary({ error }: { error: any }) {
     // If the message is handledErrMsg, then it's an api error that
     // has already been logged to Sentry. Otherwise, it's a front-end
     // crash that should be logged.
-    if (error && error.message !== handledErrMsg) {
+    if (error && error.message !== HANDLED_ERR_MSG) {
       logErrorBoundaryException(error);
     }
   }, [error]);

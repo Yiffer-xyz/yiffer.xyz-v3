@@ -105,7 +105,7 @@ export default function Upload() {
     onFinish: () => {
       setIsSubmitting(false);
       if (submitFetcher.success) setStep('success');
-      if (submitFetcher.error) setError(submitFetcher.error);
+      if (submitFetcher.isError) setError(submitFetcher.errorMessage);
     },
   });
 

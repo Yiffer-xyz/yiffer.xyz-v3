@@ -2,12 +2,13 @@ import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import { JwtConfig, User, UserSession } from '~/types/types';
 import { queryDb } from './database-facade';
-import { logErrorOLD_DONOTUSE } from './request-helpers';
+import { ApiError, makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 const bcrypt = require('bcryptjs');
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {
+  err?: ApiError;
   redirect?: Response;
   errorMessage?: string;
 };
@@ -20,7 +21,10 @@ export async function login(
   urlBase: string,
   jwtConfigStr: string
 ): Promise<AuthResponse> {
-  const { errorMessage, user } = await authenticate(urlBase, username, password);
+  const { err, errorMessage, user } = await authenticate(urlBase, username, password);
+  if (err) {
+    return { err: wrapApiError(err, 'Error in login func', { username, password }) };
+  }
   if (errorMessage) {
     return { errorMessage };
   }
@@ -45,12 +49,10 @@ export async function signup(
     queryDb<any[]>(urlBase, emailQuery, [email]),
   ]);
   if (usernameResult.errorMessage) {
-    logErrorOLD_DONOTUSE(`Signup error looking for username ${username}`, usernameResult);
-    return { errorMessage: 'Server error looking up username' };
+    return makeDbErrObj(usernameResult, 'Signup error fetching username');
   }
   if (emailResult.errorMessage) {
-    logErrorOLD_DONOTUSE(`Signup error looking for email ${email}`, emailResult);
-    return { errorMessage: 'Server error looking up email' };
+    return makeDbErrObj(emailResult, 'Signup error fetching email');
   }
   if (usernameResult.result?.length) {
     return { errorMessage: 'Username already exists' };
@@ -69,18 +71,10 @@ export async function signup(
     email,
   ]);
   if (insertResult.errorMessage) {
-    logErrorOLD_DONOTUSE(
-      `Signup error inserting user ${username} and email ${email}`,
-      insertResult
-    );
-    return { errorMessage: 'Server error creating user' };
+    return makeDbErrObj(insertResult, 'Error inserting user');
   }
   if (!insertResult.insertId) {
-    logErrorOLD_DONOTUSE(
-      `No insert result after signup for ${username} and email ${email}`,
-      insertResult
-    );
-    return { errorMessage: 'Server error creating user' };
+    return makeDbErrObj(insertResult, 'Error inserting user - no insertId');
   }
 
   const user: User = {
@@ -101,24 +95,20 @@ async function authenticate(
   urlBase: string,
   usernameOrEmail: string,
   password: string
-): Promise<{ errorMessage?: string; user?: User }> {
+): Promise<{ err?: ApiError; errorMessage?: string; user?: User }> {
   const query =
     'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
-  const result = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
-  if (result.errorMessage) {
-    logErrorOLD_DONOTUSE(
-      `Login error looking for username/email ${usernameOrEmail}`,
-      result
-    );
-    return { errorMessage: 'Server error' };
+  const fetchDbRes = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
+  if (fetchDbRes.errorMessage) {
+    return makeDbErrObj(fetchDbRes, 'Login error fetching username/email');
   }
-  if (!result.result?.length) {
+  if (!fetchDbRes.result?.length) {
     return { errorMessage: 'Username does not exist or wrong password' };
   }
 
-  const user = result.result[0];
+  const user = fetchDbRes.result[0];
   const isPasswordValid = await compare(password, user.password);
   if (!isPasswordValid) {
     return { errorMessage: 'Username does not exist or wrong password' };

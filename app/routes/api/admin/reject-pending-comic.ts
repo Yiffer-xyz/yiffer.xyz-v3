@@ -3,9 +3,7 @@ import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
-  create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';

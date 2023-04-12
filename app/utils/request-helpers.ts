@@ -1,7 +1,7 @@
 import { json, TypedResponse } from '@remix-run/cloudflare';
 import { DBResponse } from './database-facade';
+import { HANDLED_ERR_MSG } from '~/routes/error';
 import * as Sentry from '@sentry/browser';
-import { handledErrMsg } from '~/routes/error';
 
 export type ApiResponse<T = void> = {
   success: boolean;
@@ -15,6 +15,7 @@ export type ApiError = {
   context?: { [key: string]: any };
 };
 
+// Logs and throws an error to be caught by error boundary. Use for server errors.
 export async function processApiError(
   prependMessage: string | undefined,
   err: ApiError,
@@ -28,7 +29,7 @@ export async function processApiError(
     },
   });
 
-  throw new Error(handledErrMsg);
+  throw new Error(HANDLED_ERR_MSG);
 }
 
 // Use this when not wanting to throw an error (when you want
@@ -59,6 +60,7 @@ export function logApiError(
   });
 }
 
+// Log a message when something fails drastically but there's no error object
 export function logApiErrorMessage(message: string, context?: { [key: string]: any }) {
   Sentry.captureMessage(message, {
     extra: {
@@ -68,6 +70,20 @@ export function logApiErrorMessage(message: string, context?: { [key: string]: a
   });
 }
 
+// Quality of life, save some lines of code
+export function makeDbErr(
+  err: DBResponse<any>,
+  message: string,
+  context?: { [key: string]: any }
+): ApiError {
+  return {
+    error: err,
+    logMessage: message,
+    context: context || {},
+  };
+}
+
+// Quality of life, save some lines of code. Same as above but wrapped in {err}
 export function makeDbErrObj(
   err: DBResponse<any>,
   message: string,
@@ -82,18 +98,9 @@ export function makeDbErrObj(
   };
 }
 
-export function makeDbErr(
-  err: DBResponse<any>,
-  message: string,
-  context?: { [key: string]: any }
-): ApiError {
-  return {
-    error: err,
-    logMessage: message,
-    context: context || {},
-  };
-}
-
+// This is for front-end errors that are thrown and thus not handled by
+// the API's error handling. Not to be called from anything other than
+// an error boundary.
 export function logErrorBoundaryException(err: Error) {
   console.log('Error boundary captured and logging exception!');
   console.log(err);
@@ -104,6 +111,7 @@ export function logErrorBoundaryException(err: Error) {
   });
 }
 
+// Wraps an api error with an additional level of message, plus optional context fields
 export function wrapApiError(
   err: ApiError,
   message: string,
@@ -123,13 +131,11 @@ export function wrapApiError(
   return newErr;
 }
 
-// TODO: remove this.
-export function logErrorOLD_DONOTUSE(
-  prependMessage: string,
-  err?: ApiError | DBResponse<any> | Error
-) {}
-
-// TODO: Phase this out - we're gonna use processApiError instead
+// Use when we want to not throw "ugly" to an error boundary, but rather display
+// this generic error message typically in an infobox instead. Use this in submit
+// routes where we don't want the user to lose all their "work" if something fails.
+// Eg. comic upload, mod applications form, and other places where they've spent
+// time filling out a form and don't want to just lose all their work.
 export function create500Json(message?: string): TypedResponse<ApiResponse> {
   return json(
     {
@@ -142,6 +148,8 @@ export function create500Json(message?: string): TypedResponse<ApiResponse> {
   );
 }
 
+// Use when the user has made an error, meaning it's not a server error. Message
+// should typically always be shown in an infobox.
 export function create400Json(message: string): TypedResponse<ApiResponse> {
   return json(
     {
@@ -149,6 +157,20 @@ export function create400Json(message: string): TypedResponse<ApiResponse> {
       success: false,
     },
     { status: 400 }
+  );
+}
+
+// Same as create400Json, but with any status code. For example, 401 for failed auth.
+export function createAnyErrorCodeJson(
+  code: number,
+  message: string
+): TypedResponse<ApiResponse> {
+  return json(
+    {
+      error: message,
+      success: false,
+    },
+    { status: code }
   );
 }
 
@@ -166,6 +188,9 @@ export function createSuccessJson(data?: any): TypedResponse<ApiResponse> {
   );
 }
 
+// Put this in all api routes that don't support GET requests, otherwise
+// we'll get an exception for "not exporting a get route".
+// Like this: export { noGetRoute } as loader
 export async function noGetRoute() {
   return new Response('Cannot GET this route', { status: 405 });
 }

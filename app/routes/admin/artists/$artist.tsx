@@ -295,11 +295,13 @@ export default function ManageArtist() {
             </div>
           </div>
 
-          {(saveChangesFetcher.error || banArtistFetcher.error) && (
+          {(saveChangesFetcher.isError || banArtistFetcher.isError) && (
             <InfoBox
               variant="error"
               className="mt-4 w-fit"
-              text={saveChangesFetcher.error || banArtistFetcher.error || ''}
+              text={
+                saveChangesFetcher.errorMessage || banArtistFetcher.errorMessage || ''
+              }
               showIcon
             />
           )}

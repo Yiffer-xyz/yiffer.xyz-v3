@@ -130,10 +130,10 @@ export default function Apply() {
               onErrorChange={hasError => setTelegramIsValid(!hasError)}
             />
 
-            {fetcher.error && !fetcher.isLoading && (
+            {fetcher.isError && !fetcher.isLoading && (
               <InfoBox
                 variant="error"
-                text={fetcher.error}
+                text={fetcher.errorMessage}
                 showIcon
                 closable
                 className="my-4"

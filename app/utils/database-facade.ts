@@ -6,28 +6,6 @@ export interface DBResponse<T> {
   insertId?: number;
 }
 
-// This one throws if there's an error instead of returning DBResponse
-export async function queryDbDirect<T>(
-  urlBase: string,
-  query: string,
-  params: any[] = []
-): Promise<T> {
-  const result = await queryDb<T>(urlBase, query, params);
-  if (result.errorCode && result.errorMessage) {
-    throw new Error(
-      `Error querying database: ${result.errorCode} - ${result.errorMessage}`
-    );
-  }
-  if (result.errorMessage) {
-    throw new Error(`Error querying database: ${result.errorMessage}`);
-  }
-  if (result.result === undefined) {
-    throw new Error('Error querying database: Undefined result');
-  }
-
-  return result.result;
-}
-
 export async function queryDb<T>(
   urlBase: string,
   query: string,

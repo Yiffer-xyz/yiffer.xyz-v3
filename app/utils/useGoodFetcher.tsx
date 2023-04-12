@@ -155,7 +155,8 @@ export function useGoodFetcher<T = void>({
 
   return {
     data: returnData,
-    error: fetcher.data?.error,
+    isError: !!fetcher.data?.error && fetcher.state === 'idle',
+    errorMessage: fetcher.data?.error || '',
     success: fetcher.data?.success,
     isLoading: fetcher.state !== 'idle',
     hasFetchedOnce: hasFetchedOnce,
