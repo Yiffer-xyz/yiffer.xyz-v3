@@ -1,4 +1,4 @@
-import { LinksFunction, LoaderArgs, redirect } from '@remix-run/cloudflare';
+import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';

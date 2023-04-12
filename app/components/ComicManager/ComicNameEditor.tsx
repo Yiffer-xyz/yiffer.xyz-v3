@@ -1,9 +1,9 @@
-import { useFetcher } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { Comic } from '~/types/types';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { SimilarComicResponse } from '../../routes/api/search-similarly-named-comic';
 
 type ComicNameEditor = {
@@ -19,18 +19,18 @@ export default function ComicNameEditor({
   onUpdate,
   existingComic,
 }: ComicNameEditor) {
-  const similarComicsFetcher = useFetcher();
+  const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
+    url: '/api/search-similarly-named-comic',
+    method: 'post',
+    onFinish: () => {
+      setSimilarComics(similarComicsFetcher.data);
+    },
+  });
   const [similarComics, setSimilarComics] = useState<SimilarComicResponse>();
   const [hasConfirmedNewComic, setHasConfirmedNewComic] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(onComicNameChange, [comicName]);
-
-  useEffect(() => {
-    if (similarComicsFetcher.data) {
-      setSimilarComics(similarComicsFetcher.data);
-    }
-  }, [similarComicsFetcher.data]);
 
   // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
   useEffect(() => {
@@ -73,10 +73,7 @@ export default function ComicNameEditor({
     debounceTimeoutRef.current = setTimeout(() => {
       const body: any = { comicName };
       if (existingComic) body.excludeName = existingComic.name;
-      similarComicsFetcher.submit(body, {
-        method: 'post',
-        action: '/api/search-similarly-named-comic',
-      });
+      similarComicsFetcher.submit(body);
     }, 1000);
   }
 

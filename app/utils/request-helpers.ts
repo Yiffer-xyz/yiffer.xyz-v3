@@ -33,7 +33,11 @@ export async function processApiError(
 
 // Use this when not wanting to throw an error (when you want
 // to show a nice error message to the user), but still need to log it.
-export function logApiError(prependMessage: string | undefined, err: ApiError) {
+export function logApiError(
+  prependMessage: string | undefined,
+  err: ApiError,
+  context?: { [key: string]: any }
+) {
   const fullErrMsg = prependMessage
     ? prependMessage + ' >> ' + err.logMessage
     : err.logMessage;
@@ -41,13 +45,16 @@ export function logApiError(prependMessage: string | undefined, err: ApiError) {
   console.log('ERROR, message: ', fullErrMsg);
   console.log(err);
 
+  const extra: any = {
+    ...(err.context || {}),
+    ...(context || {}),
+  };
+  if (err.error) {
+    extra.dbResponse = err.error;
+  }
+
   Sentry.captureMessage(fullErrMsg, {
-    extra: {
-      sql: err.error?.sql,
-      sqlErrorCode: err.error?.errorCode,
-      sqlErrorMessage: err.error?.errorMessage,
-      ...(err.context || {}),
-    },
+    extra,
     level: 'error',
   });
 }
@@ -126,7 +133,9 @@ export function logErrorOLD_DONOTUSE(
 export function create500Json(message?: string): TypedResponse<ApiResponse> {
   return json(
     {
-      error: message || 'Unknown error',
+      error:
+        message ||
+        'Server error. Site admins have been notified of and will look into it.',
       success: false,
     },
     { status: 500 }

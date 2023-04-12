@@ -1,4 +1,3 @@
-import { useFetcher } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { MdDelete } from 'react-icons/md';
 import Checkbox from '~/components/Checkbox/Checkbox';
@@ -6,6 +5,7 @@ import InfoBox from '~/components/InfoBox';
 import TextInput from '~/components/TextInput/TextInput';
 import { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
 import { Artist } from '~/types/types';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { NewArtist } from '../routes/contribute/upload';
 import IconButton from './Buttons/IconButton';
 
@@ -24,18 +24,18 @@ export default function ArtistEditor({
   hideBorderTitle = false,
   className = '',
 }: NewArtistProps) {
-  const similarArtistsFetcher = useFetcher();
+  const similarArtistsFetcher = useGoodFetcher<SimilarArtistResponse>({
+    url: '/api/search-similar-artist',
+    method: 'post',
+    onFinish: () => {
+      setSimilarArtists(similarArtistsFetcher.data);
+    },
+  });
 
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (similarArtistsFetcher.data) {
-      setSimilarArtists(similarArtistsFetcher.data);
-    }
-  }, [similarArtistsFetcher.data]);
 
   function updateArtist(newArtist: NewArtist) {
     onUpdate(newArtist);
@@ -62,10 +62,7 @@ export default function ArtistEditor({
         body.excludeName = existingArtist.name;
       }
 
-      similarArtistsFetcher.submit(body, {
-        method: 'post',
-        action: '/api/search-similar-artist',
-      });
+      similarArtistsFetcher.submit(body);
     }, 1000);
   }, [newArtistData.artistName, existingArtist?.name]);
 

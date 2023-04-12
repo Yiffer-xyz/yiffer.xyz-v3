@@ -1,10 +1,11 @@
-import { LoaderArgs, redirect } from '@remix-run/cloudflare';
+import { LoaderArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
 import { Table, TableBody, TableCell, TableHeadRow, TableRow } from '~/components/Table';
 import { capitalizeString } from '~/utils/general';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
+import { processApiError } from '~/utils/request-helpers';
 import BackToContribute from '../BackToContribute';
 import { PointInfo } from '../scoreboard';
 import {
@@ -61,25 +62,30 @@ export async function loader(args: LoaderArgs) {
   const comicProblemsPromise = getYourComicProblems(urlBase, user.userId);
   const comicSuggestionsPromise = getYourComicSuggestions(urlBase, user.userId);
 
-  const [uploadedComicsRes, tagSuggestionsRes, comicProblemsRes, comicSuggestionsRes] =
-    await Promise.all([
-      uploadedComicsPromise,
-      tagSuggestionsPromise,
-      comicProblemsPromise,
-      comicSuggestionsPromise,
-    ]);
+  const resolvedPromises = await Promise.all([
+    uploadedComicsPromise,
+    tagSuggestionsPromise,
+    comicProblemsPromise,
+    comicSuggestionsPromise,
+  ]);
 
-  const uploadedComics = uploadedComicsRes;
-  const tagSuggestions = tagSuggestionsRes;
-  const comicProblems = comicProblemsRes;
-  const comicSuggestions = comicSuggestionsRes;
+  for (const promise of resolvedPromises) {
+    if (promise.err || !promise.contributions) {
+      return processApiError(
+        'Error getting your contributions',
+        promise.err || { logMessage: 'Contributions returned as null' },
+        {
+          userId: user.userId,
+        }
+      );
+    }
+  }
 
-  const contributions = [
-    ...uploadedComics,
-    ...tagSuggestions,
-    ...comicProblems,
-    ...comicSuggestions,
-  ].sort((a, b) => {
+  let contributions = resolvedPromises
+    .map(res => res.contributions)
+    .flat() as Contribution[];
+
+  contributions = contributions.sort((a, b) => {
     return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
   });
 

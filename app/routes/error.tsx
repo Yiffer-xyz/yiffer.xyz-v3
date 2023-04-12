@@ -1,5 +1,4 @@
 import InfoBox from '~/components/InfoBox';
-
 import { useEffect } from 'react';
 import { logErrorBoundaryException } from '~/utils/request-helpers';
 import { useCatch } from '@remix-run/react';

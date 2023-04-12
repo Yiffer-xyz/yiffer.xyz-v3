@@ -1,8 +1,9 @@
-import { queryDbDirect } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { ComicProblem, ComicSuggestion, ContributedComic, TagSuggestion } from '.';
 import type { ContributionStatus } from '.';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
+import { ApiError, makeDbErrObj } from '~/utils/request-helpers';
 
 type DbContributedComic = {
   name: string;
@@ -34,7 +35,7 @@ function publishStatusToContributionStatus(
 export async function getYourContributedComics(
   urlBase: string,
   userId: number
-): Promise<ContributedComic[]> {
+): Promise<{ err?: ApiError; contributions?: ContributedComic[] }> {
   const query = `SELECT 
       comic.name,
       timestamp,
@@ -53,9 +54,12 @@ export async function getYourContributedComics(
     WHERE comicmetadata.uploadUserId = ?
     GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
 
-  const dbComics = await queryDbDirect<DbContributedComic[]>(urlBase, query, [userId]);
+  const dbComicsRes = await queryDb<DbContributedComic[]>(urlBase, query, [userId]);
+  if (dbComicsRes.errorMessage || !dbComicsRes.result) {
+    return makeDbErrObj(dbComicsRes, 'Error getting your contributed comics', { userId });
+  }
 
-  const comics: ContributedComic[] = dbComics.map(dbComic => {
+  const comics: ContributedComic[] = dbComicsRes.result.map(dbComic => {
     const { points, description } = dbComic.verdict
       ? CONTRIBUTION_POINTS.comicUpload[dbComic.verdict]
       : { points: 0, description: undefined };
@@ -85,7 +89,7 @@ export async function getYourContributedComics(
     };
   });
 
-  return comics;
+  return { contributions: comics };
 }
 
 type DbTagSuggestion = {
@@ -99,7 +103,7 @@ type DbTagSuggestion = {
 export async function getYourTagSuggestions(
   urlBase: string,
   userId: number
-): Promise<TagSuggestion[]> {
+): Promise<{ err?: ApiError; contributions?: TagSuggestion[] }> {
   const query = `SELECT 
       comic.Name AS comicName,
       status,
@@ -112,11 +116,13 @@ export async function getYourTagSuggestions(
     WHERE userId = ?;
   `;
 
-  const dbTagSuggestions = await queryDbDirect<DbTagSuggestion[]>(urlBase, query, [
-    userId,
-  ]);
+  const dbTagSuggRes = await queryDb<DbTagSuggestion[]>(urlBase, query, [userId]);
 
-  const tagSuggestions: TagSuggestion[] = dbTagSuggestions.map(dbTagSuggestion => ({
+  if (dbTagSuggRes.errorMessage || !dbTagSuggRes.result) {
+    return makeDbErrObj(dbTagSuggRes, 'Error getting your tag suggestions', { userId });
+  }
+
+  const tagSuggestions: TagSuggestion[] = dbTagSuggRes.result.map(dbTagSuggestion => ({
     comicName: dbTagSuggestion.comicName,
     status: dbTagSuggestion.status,
     timestamp: dbTagSuggestion.timestamp,
@@ -129,10 +135,7 @@ export async function getYourTagSuggestions(
     type: 'TagSuggestion',
   }));
 
-  return tagSuggestions.map(tagSuggestion => ({
-    ...tagSuggestion,
-    type: 'TagSuggestion',
-  })) as TagSuggestion[];
+  return { contributions: tagSuggestions };
 }
 
 type DbComicProblem = {
@@ -145,7 +148,7 @@ type DbComicProblem = {
 export async function getYourComicProblems(
   urlBase: string,
   userId: number
-): Promise<ComicProblem[]> {
+): Promise<{ err?: ApiError; contributions?: ComicProblem[] }> {
   const query = `SELECT
       comic.Name AS comicName,
       Status AS status,
@@ -157,9 +160,13 @@ export async function getYourComicProblems(
     WHERE UserId = ?;
   `;
 
-  const dbComicProblems = await queryDbDirect<DbComicProblem[]>(urlBase, query, [userId]);
+  const dbProblemsRes = await queryDb<DbComicProblem[]>(urlBase, query, [userId]);
 
-  const comicProblems: ComicProblem[] = dbComicProblems.map(dbComicProblem => ({
+  if (dbProblemsRes.errorMessage || !dbProblemsRes.result) {
+    return makeDbErrObj(dbProblemsRes, 'Error getting your comic problems', { userId });
+  }
+
+  const comicProblems: ComicProblem[] = dbProblemsRes.result.map(dbComicProblem => ({
     comicName: dbComicProblem.comicName,
     status: dbComicProblem.status,
     timestamp: dbComicProblem.timestamp,
@@ -170,7 +177,7 @@ export async function getYourComicProblems(
     problemCategory: dbComicProblem.problemCategory,
   }));
 
-  return comicProblems;
+  return { contributions: comicProblems };
 }
 
 type DbComicSuggestion = {
@@ -184,7 +191,7 @@ type DbComicSuggestion = {
 export async function getYourComicSuggestions(
   urlBase: string,
   userId: number
-): Promise<ComicSuggestion[]> {
+): Promise<{ err?: ApiError; contributions?: ComicSuggestion[] }> {
   const query = `SELECT
       Name AS comicName,
       timestamp,
@@ -195,11 +202,15 @@ export async function getYourComicSuggestions(
     WHERE UserId = ?;
   `;
 
-  const dbComicSuggestions = await queryDbDirect<DbComicSuggestion[]>(urlBase, query, [
-    userId,
-  ]);
+  const dbSuggestionsRes = await queryDb<DbComicSuggestion[]>(urlBase, query, [userId]);
 
-  const comicSuggestions: ComicSuggestion[] = dbComicSuggestions.map(
+  if (dbSuggestionsRes.errorMessage || !dbSuggestionsRes.result) {
+    return makeDbErrObj(dbSuggestionsRes, 'Error getting your comic suggestions', {
+      userId,
+    });
+  }
+
+  const comicSuggestions: ComicSuggestion[] = dbSuggestionsRes.result.map(
     dbComicSuggestion => ({
       comicName: dbComicSuggestion.comicName,
       status: dbComicSuggestion.status,
@@ -215,5 +226,5 @@ export async function getYourComicSuggestions(
     })
   );
 
-  return comicSuggestions;
+  return { contributions: comicSuggestions };
 }

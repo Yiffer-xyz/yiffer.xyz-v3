@@ -1,8 +1,7 @@
-import { TypedResponse } from '@remix-run/cloudflare';
 import { addContributionPoints } from '~/routes/api/funcs/add-contribution-points';
 import { UserSession } from '~/types/types';
-import { DBResponse, queryDb, queryDbDirect } from '~/utils/database-facade';
-import { ApiError, wrapApiError } from '~/utils/request-helpers';
+import { queryDb } from '~/utils/database-facade';
+import { ApiError, makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import { NewArtist, UploadBody } from '.';
 
 export async function processUpload(
@@ -19,33 +18,31 @@ export async function processUpload(
       uploadBody.newArtist,
       skipApproval
     );
-    if (err) {
-      return err;
-    }
+    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
     uploadBody.artistId = artistId;
   }
 
   let { err, comicId } = await createComic(urlBase, uploadBody, skipApproval);
-  if (err) return err;
+  if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
 
   err = await createComicMetadata(
     urlBase,
-    comicId,
+    comicId!,
     uploadBody,
     skipApproval,
     user?.userId,
     userIP
   );
-  if (err) return err;
+  if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
-    const err = await createComicLinks(urlBase, uploadBody, comicId);
-    if (err) return err;
+    const err = await createComicLinks(urlBase, uploadBody, comicId!);
+    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
   }
 
   if (uploadBody.tagIds) {
-    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId);
-    if (err) return err;
+    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId!);
+    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
   }
 }
 
@@ -71,13 +68,7 @@ async function createComicTags(
 
   const dbRes = await queryDb(urlBase, query, params);
   if (dbRes.errorMessage) {
-    return {
-      error: dbRes,
-      logMessage: `Error creating comic tags. Tag ids: ${JSON.stringify(
-        tagIds
-      )}. Comic id: ${comicId}`,
-      avoidThrow: 'Error adding tags to comic',
-    };
+    return makeDbErr(dbRes, 'Error creating comic tags');
   }
 }
 
@@ -105,13 +96,7 @@ async function createComicLinks(
 
   const dbRes = await queryDb(urlBase, query, queryParams);
   if (dbRes.errorMessage) {
-    return {
-      error: dbRes,
-      logMessage: `Error creating comic links. Upload body: ${JSON.stringify(
-        uploadBody
-      )}`,
-      avoidThrow: 'Error creating prev/next comic',
-    };
+    return makeDbErr(dbRes, 'Error creating comic links');
   }
 }
 
@@ -139,13 +124,7 @@ async function createComicMetadata(
 
   const dbRes = await queryDb(urlBase, query, values);
   if (dbRes.errorMessage) {
-    return {
-      error: dbRes,
-      logMessage: `Error creating comic metadata. Upload body: ${JSON.stringify(
-        uploadBody
-      )}`,
-      avoidThrow: 'Error creating comic metadata',
-    };
+    return makeDbErr(dbRes, 'Error creating comic metadata');
   }
 
   if (skipApproval) {
@@ -160,7 +139,7 @@ async function createComic(
   urlBase: string,
   uploadBody: UploadBody,
   skipApproval: boolean
-): Promise<{ comicId: number; err?: ApiError }> {
+): Promise<{ comicId?: number; err?: ApiError }> {
   const query = `
     INSERT INTO comic
     (name, cat, tag, state, numberOfPages, artist, publishStatus)
@@ -178,26 +157,10 @@ async function createComic(
 
   const result = await queryDb(urlBase, query, values);
   if (result.errorMessage) {
-    return {
-      comicId: -1,
-      err: {
-        error: result,
-        logMessage: `Error creating comic. Upload body: ${JSON.stringify(uploadBody)}`,
-        avoidThrow: 'Error creating comic',
-      },
-    };
+    return makeDbErrObj(result, 'Error inserting comic');
   }
   if (!result.insertId) {
-    return {
-      comicId: -1,
-      err: {
-        error: result,
-        logMessage: `Error creating comic, no insert result. Body: ${JSON.stringify(
-          uploadBody
-        )}`,
-        avoidThrow: 'Error creating comic',
-      },
-    };
+    return makeDbErrObj(result, 'Error inserting comic: no insert ID');
   }
   return { comicId: result.insertId };
 }
@@ -206,7 +169,7 @@ async function createArtist(
   urlBase: string,
   newArtist: NewArtist,
   skipApproval: boolean
-): Promise<{ artistId: number; err?: ApiError | undefined }> {
+): Promise<{ artistId?: number; err?: ApiError | undefined }> {
   const insertQuery = `
     INSERT INTO artist (name, e621name, patreonName, isPending)
     VALUES (?, ?, ?, ?)
@@ -221,23 +184,13 @@ async function createArtist(
   const artistId = dbRes.insertId;
 
   if (dbRes.errorMessage || !artistId) {
-    dbRes.errorMessage = dbRes.errorMessage || 'Could not create artist';
-    return {
-      artistId: -1,
-      err: {
-        logMessage: `Error inserting artist into database. Artist: ${JSON.stringify(
-          newArtist
-        )}`,
-        avoidThrow: 'Error creating artist',
-        error: dbRes,
-      },
-    };
+    return makeDbErrObj(dbRes, 'Error inserting artist');
   }
 
   if (newArtist.links && newArtist.links.length > 0) {
     const err = await createArtistLinks(urlBase, newArtist, artistId);
     if (err) {
-      return { artistId: -1, err: wrapApiError(err, 'Error creating artist links') };
+      return { err: wrapApiError(err, 'Error creating artist links') };
     }
   }
 
@@ -263,46 +216,6 @@ async function createArtistLinks(
 
   const dbRes = await queryDb(urlBase, linkInsertQuery, linkInsertValues);
   if (dbRes.errorMessage) {
-    return {
-      error: dbRes,
-      logMessage: `Error creating artist links. New artist ID: ${newArtistId}. Artist ${JSON.stringify(
-        newArtist
-      )}.`,
-      avoidThrow: 'Error creating artist links',
-    };
+    return makeDbErr(dbRes, 'Error inserting artist links');
   }
-}
-
-const linkWebsites = [
-  'twitter',
-  'patreon',
-  'e621',
-  'furaffinity',
-  'deviantart',
-  'tumblr',
-  'pixiv',
-];
-
-type LinkWithType = {
-  linkUrl: string;
-  linkType: string;
-};
-
-function extractLinkTypeFromLinkUrl(link: string): LinkWithType {
-  let linkType = 'website';
-  let linkUrl = link.trim();
-  if (linkUrl.endsWith('/')) {
-    linkUrl = linkUrl.slice(0, -1);
-  }
-  if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
-    linkUrl = 'https://' + linkUrl;
-  }
-
-  linkWebsites.forEach(linkTypeCandidate => {
-    if (link.includes(linkTypeCandidate)) {
-      linkType = linkTypeCandidate;
-    }
-  });
-
-  return { linkUrl, linkType };
 }

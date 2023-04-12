@@ -1,6 +1,6 @@
-import { ActionArgs, json, LoaderArgs } from '@remix-run/cloudflare';
-import { useActionData, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
+import { useLoaderData } from '@remix-run/react';
+import { useState } from 'react';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import InfoBox from '~/components/InfoBox';
 import { getAllArtists } from '~/routes/api/funcs/get-artists';
@@ -17,10 +17,13 @@ import TagsEditor from '../../../components/ComicManager/Tags';
 import SuccessMessage from './success';
 import { processUpload } from './upload-handler.server';
 import {
+  create400Json,
   create500Json,
   createSuccessJson,
-  logErrorOLD_DONOTUSE,
+  logApiError,
+  processApiError,
 } from '~/utils/request-helpers';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
@@ -34,17 +37,35 @@ export async function loader(args: LoaderArgs) {
   const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
   const tagsPromise = getAllTags(urlBase);
   const userPromise = authLoader(args);
-  const [artists, comics, tags, user] = await Promise.all([
+  const [artistsRes, comicsRes, tagsRes, user] = await Promise.all([
     allArtistsPromise,
     comicsPromise,
     tagsPromise,
     userPromise,
   ]);
+  if (artistsRes.err || !artistsRes.artists) {
+    return processApiError(
+      'Error getting artists in upload',
+      artistsRes.err || { logMessage: 'Artists returned as undefined' }
+    );
+  }
+  if (comicsRes.err || !comicsRes.comics) {
+    return processApiError(
+      'Error getting comics in upload',
+      comicsRes.err || { logMessage: 'Comics returned as undefined' }
+    );
+  }
+  if (tagsRes.err || !tagsRes.tags) {
+    return processApiError(
+      'Error getting tags in upload',
+      tagsRes.err || { logMessage: 'Tags returned as undefined' }
+    );
+  }
 
   return {
-    artists,
-    comics,
-    tags,
+    artists: artistsRes.artists,
+    comics: comicsRes.comics,
+    tags: tagsRes.tags,
     user,
     uploadUrlBase: args.context.DB_API_URL_BASE as string,
   };
@@ -55,9 +76,7 @@ export async function action(args: ActionArgs) {
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
   const { error } = validateUploadForm(body);
-  if (error) {
-    return json({ error }, { status: 400 });
-  }
+  if (error) return create400Json(error);
 
   const err = await processUpload(
     args.context.DB_API_URL_BASE as string,
@@ -66,49 +85,29 @@ export async function action(args: ActionArgs) {
     args.request.headers.get('CF-Connecting-IP') || 'unknown'
   );
   if (err) {
-    logErrorOLD_DONOTUSE('Error in upload comic submit', err);
-    return create500Json(err.avoidThrow);
+    logApiError('Error in upload comic submit', err, body);
+    return create500Json();
   }
-
   return createSuccessJson();
 }
 
-type ApiResponse = {
-  error?: string;
-  success?: boolean;
-};
-
 export default function Upload() {
-  const submitter = useSubmit();
-  const actionData = useActionData();
-  const transition = useTransition();
-
   const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
-  const [step, setStep] = useState<number | string>(2);
+  const [step, setStep] = useState<number | string>(1);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentResponse, setCurrentResponse] = useState<ApiResponse>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // This is silly, but I see no way to clear the actionData after one submit.
-  // This is needed because otherwise, if 1st submit errors, upon the next submit,
-  // the error in the actionData will still be there.
-  useEffect(() => {
-    // If we already have a response and now started submitting, clear the response
-    if (transition.state === 'submitting') {
-      setCurrentResponse({});
-      return;
-    }
-
-    // Otherwise, react to the actionData (response)
-    setIsSubmitting(false);
-    setCurrentResponse(actionData);
-    if (actionData?.success) {
-      setStep('success');
-    } else if (actionData?.error) {
-      setError(actionData.error);
-    }
-  }, [actionData, transition.state]);
+  const submitFetcher = useGoodFetcher({
+    method: 'post',
+    encType: 'multipart/form-data',
+    toastError: false,
+    onFinish: () => {
+      setIsSubmitting(false);
+      if (submitFetcher.success) setStep('success');
+      if (submitFetcher.error) setError(submitFetcher.error);
+    },
+  });
 
   async function submit() {
     const randomId = generateRandomId();
@@ -121,7 +120,7 @@ export default function Upload() {
     }
 
     if (comicData.newArtist.artistName) {
-      const isNameIllegal = !comicData.newArtist.isValidName;
+      const isNameIllegal = !comicData.artistId && !comicData.newArtist.isValidName;
       const isE621Illegal =
         !comicData.newArtist.e621Name && !comicData.newArtist.hasConfirmedNoE621Name;
       const isPatreonIllegal =
@@ -192,8 +191,7 @@ export default function Upload() {
       return;
     }
 
-    // Then, submit the rest of the data
-    submitter(formData, { encType: 'multipart/form-data', method: 'post' });
+    submitFetcher.submit(formData);
   }
 
   return (
@@ -240,11 +238,7 @@ export default function Upload() {
 
           {isSubmitting && (
             <InfoBox variant="info" boldText={false} className="mt-2 mb-4">
-              <p>Uploading comic - this could take up to a minute.</p>
-              <p className="mt-4">
-                Have a cup of coffee while you wait. We'd buy you one as thanks for the
-                help if we could!
-              </p>
+              <p>Uploading comic - this could take a little while, please be patient!</p>
             </InfoBox>
           )}
 

@@ -1,4 +1,4 @@
-import { FormMethod, SubmitOptions, useFetcher } from '@remix-run/react';
+import { FormEncType, FormMethod, SubmitOptions, useFetcher } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ApiResponse } from './request-helpers';
@@ -23,6 +23,7 @@ type ToastFetcherArgs<T = void> = {
   preventToastClose?: boolean;
   toastError?: boolean;
   fetchGetOnLoad?: boolean;
+  encType?: FormEncType;
 };
 
 // Not a huge fan of the way Remix' fetchers are called.
@@ -42,6 +43,7 @@ export function useGoodFetcher<T = void>({
   preventToastClose = false,
   toastError = true, // TODO: Probably flip this
   fetchGetOnLoad = false,
+  encType,
 }: ToastFetcherArgs<T>) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
@@ -118,9 +120,8 @@ export function useGoodFetcher<T = void>({
       const submitOptions: SubmitOptions = {
         method: method,
       };
-      if (url) {
-        submitOptions.action = url;
-      }
+      if (url) submitOptions.action = url;
+      if (encType) submitOptions.encType = encType;
       fetcher.submit(body ?? null, submitOptions);
     },
     [fetcher, method]
