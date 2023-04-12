@@ -2,6 +2,7 @@ import { FormEncType, FormMethod, SubmitOptions, useFetcher } from '@remix-run/r
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ApiResponse } from './request-helpers';
+import { useTheme } from './theme-provider';
 
 // For some reason, Remix doesn't export SubmitTarget, so redeclare it...
 type RemixSubmitTarget =
@@ -48,6 +49,7 @@ export function useGoodFetcher<T = void>({
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
   const fetchingStateRef = useRef<'is-fetching' | 'not-started'>('not-started');
+  const [theme] = useTheme();
 
   useEffect(() => {
     // Technically if it's a POST, the fetch itself is done at 'loading',
@@ -75,9 +77,9 @@ export function useGoodFetcher<T = void>({
 
       if (fetcher.data) {
         if (toastSuccessMessage && fetcher.data.success) {
-          showSuccessToast(toastSuccessMessage, preventToastClose);
+          showSuccessToast(toastSuccessMessage, preventToastClose, theme);
         } else if (toastError && fetcher.data.error) {
-          showErrorToast(fetcher.data.error);
+          showErrorToast(fetcher.data.error, theme);
         }
       }
     }
@@ -96,10 +98,10 @@ export function useGoodFetcher<T = void>({
     // unmounting it.
     return () => {
       if (fetchingStateRef.current === 'is-fetching' && toastSuccessMessage) {
-        showSuccessToast(toastSuccessMessage, preventToastClose);
+        showSuccessToast(toastSuccessMessage, preventToastClose, theme);
       }
     };
-  }, [toastSuccessMessage]);
+  }, [toastSuccessMessage, theme]);
 
   useEffect(() => {
     if (fetchGetOnLoad && method === 'get') {
@@ -166,9 +168,18 @@ export function useGoodFetcher<T = void>({
   };
 }
 
-export function showSuccessToast(message: string, preventClose: boolean) {
+export function showSuccessToast(
+  message: string,
+  preventClose: boolean,
+  theme: string | null
+) {
   toast.success(message, {
     position: toast.POSITION.TOP_RIGHT,
+    theme: theme === 'dark' ? 'dark' : 'light',
+    className(context?) {
+      return context?.defaultClassName + ' dark:bg-gray-300';
+    },
+    style: { width: 'fit-content', minHeight: 'auto' },
     autoClose: preventClose ? false : 3000,
     hideProgressBar: true,
     closeOnClick: true,
@@ -178,9 +189,14 @@ export function showSuccessToast(message: string, preventClose: boolean) {
   });
 }
 
-export function showErrorToast(message: string) {
+export function showErrorToast(message: string, theme: string | null) {
   toast.error(message, {
     position: toast.POSITION.TOP_RIGHT,
+    theme: theme === 'dark' ? 'dark' : 'light',
+    className(context?) {
+      return context?.defaultClassName + ' dark:bg-gray-300';
+    },
+    style: { width: 'fit-content', minHeight: 'auto' },
     autoClose: false,
     hideProgressBar: true,
     closeOnClick: true,

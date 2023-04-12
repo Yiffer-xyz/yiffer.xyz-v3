@@ -1,7 +1,12 @@
 import { ActionArgs } from '@remix-run/cloudflare';
 import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import { ApiError, makeDbErr, processApiError } from '~/utils/request-helpers';
+import {
+  ApiError,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
 import { DashboardActionType } from './dashboard-data';
 
 export type AssignActionBody = {
@@ -22,6 +27,7 @@ export async function action(args: ActionArgs) {
     fields.modId
   );
   if (err) return processApiError('Error in /assign-action', err);
+  return createSuccessJson();
 }
 
 async function assignActionToMod(
