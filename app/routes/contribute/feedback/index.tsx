@@ -12,27 +12,6 @@ import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import BackToContribute from '../BackToContribute';
 
-export async function action(args: ActionArgs) {
-  const reqBody = await args.request.formData();
-  const urlBase = args.context.DB_API_URL_BASE as string;
-  const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
-  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR as string);
-
-  let insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
-  const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
-
-  const dbRes = await queryDb(urlBase, insertQuery, insertParams);
-  if (dbRes.errorMessage) {
-    logApiError(undefined, {
-      logMessage: 'Error saving user feedback',
-      error: dbRes,
-      context: { feedbackText, feedbackType, user: user?.userId },
-    });
-    return create500Json();
-  }
-  return createSuccessJson();
-}
-
 export { authLoader as loader };
 
 type FeedbackType = 'bug' | 'general' | 'support';
@@ -144,4 +123,25 @@ export default function Feedback() {
       </TopGradientBox>
     </section>
   );
+}
+
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
+  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR as string);
+
+  let insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
+  const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
+
+  const dbRes = await queryDb(urlBase, insertQuery, insertParams);
+  if (dbRes.errorMessage) {
+    logApiError(undefined, {
+      logMessage: 'Error saving user feedback',
+      error: dbRes,
+      context: { feedbackText, feedbackType, user: user?.userId },
+    });
+    return create500Json();
+  }
+  return createSuccessJson();
 }

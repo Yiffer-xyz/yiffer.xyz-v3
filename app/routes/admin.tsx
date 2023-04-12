@@ -18,6 +18,27 @@ export type GlobalAdminContext = {
 
 export { ErrorBoundary, CatchBoundary } from './error';
 
+const navWidth = 200;
+const mobileClosedBarW = 24;
+const mobileClosedBarTailwindUnits = mobileClosedBarW / 4;
+
+export default function Admin({}) {
+  const { isLgUp, width } = useWindowSize();
+  const globalContext = useLoaderData<typeof loader>();
+
+  return (
+    <>
+      <Sidebar alwaysShow={isLgUp} delay={!width} />
+      <div
+        className="pb-4 px-6 lg:px-8"
+        style={{ marginLeft: isLgUp ? navWidth : mobileClosedBarW }}
+      >
+        <Outlet context={globalContext} />
+      </div>
+    </>
+  );
+}
+
 export async function loader(args: LoaderArgs) {
   const urlBase = args.context.DB_API_URL_BASE as string;
   await redirectIfNotMod(args);
@@ -67,27 +88,6 @@ export async function loader(args: LoaderArgs) {
   };
 
   return globalContext;
-}
-
-const navWidth = 200;
-const mobileClosedBarW = 24;
-const mobileClosedBarTailwindUnits = mobileClosedBarW / 4;
-
-export default function Admin({}) {
-  const { isLgUp, width } = useWindowSize();
-  const globalContext = useLoaderData<typeof loader>();
-
-  return (
-    <>
-      <Sidebar alwaysShow={isLgUp} delay={!width} />
-      <div
-        className="pb-4 px-6 lg:px-8"
-        style={{ marginLeft: isLgUp ? navWidth : mobileClosedBarW }}
-      >
-        <Outlet context={globalContext} />
-      </div>
-    </>
-  );
 }
 
 function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean }) {

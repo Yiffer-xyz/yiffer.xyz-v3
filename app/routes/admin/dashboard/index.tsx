@@ -19,11 +19,6 @@ import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
-export async function loader(args: LoaderArgs) {
-  const user = await redirectIfNotMod(args);
-  return { user };
-}
-
 export { ErrorBoundary } from '../../error';
 
 const allActionTypes: DashboardActionType[] = [
@@ -41,6 +36,11 @@ const actionTypeToLabel: Record<DashboardActionType, string> = {
   comicProblem: 'Comic problems',
   pendingComicProblem: 'Pending problems',
 };
+
+export async function loader(args: LoaderArgs) {
+  const user = await redirectIfNotMod(args);
+  return { user };
+}
 
 export default function Dashboard({}) {
   const { user } = useLoaderData<typeof loader>();

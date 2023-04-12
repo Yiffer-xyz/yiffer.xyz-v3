@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import MultiSelect from '~/components/MultiSelect/MultiSelect';
 import { Tag } from '~/types/types';
 import { NewComicData } from '../../routes/contribute/upload';

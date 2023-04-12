@@ -26,59 +26,6 @@ export async function loader(args: LoaderArgs) {
   return await authLoader(args);
 }
 
-export async function action(args: ActionArgs) {
-  const reqBody = await args.request.formData();
-  const logCtx = Object.fromEntries(reqBody);
-  const { comicName, artist, linksComments } = logCtx;
-
-  if (!comicName || !artist || !linksComments) {
-    return create400Json('Some field is missing');
-  }
-
-  const errors = await checkForExistingComicOrSuggestion(
-    args.context.DB_API_URL_BASE as string,
-    comicName as string
-  );
-  if (errors?.err) {
-    return processApiError('Error in post of /suggest-comic', errors.err, logCtx);
-  } else if (errors?.comicExists) {
-    return create400Json('Comic already exists');
-  } else if (errors?.suggestionExists) {
-    return create400Json('A suggestion for this comic already exists');
-  }
-
-  const user = await authLoader(args);
-  let userIp = null;
-  let userId = null;
-  if (user) {
-    userId = user.userId;
-  } else {
-    userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
-  }
-
-  let insertQuery = `
-    INSERT INTO comicsuggestion 
-      (Name, ArtistName, Description, UserId, UserIp)
-    VALUES (?, ?, ?, ?, ?)`;
-  let insertParams = [comicName, artist, linksComments, userId, userIp];
-
-  const dbRes = await queryDb(
-    args.context.DB_API_URL_BASE as string,
-    insertQuery,
-    insertParams
-  );
-
-  if (dbRes.errorMessage) {
-    return processApiError(undefined, {
-      logMessage: 'Db error in post of /suggest-comic',
-      error: dbRes,
-      context: logCtx,
-    });
-  }
-
-  return createSuccessJson();
-}
-
 export default function Upload() {
   const actionData = useActionData<typeof action>();
   const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
@@ -421,6 +368,59 @@ export default function Upload() {
       )}
     </section>
   );
+}
+
+export async function action(args: ActionArgs) {
+  const reqBody = await args.request.formData();
+  const logCtx = Object.fromEntries(reqBody);
+  const { comicName, artist, linksComments } = logCtx;
+
+  if (!comicName || !artist || !linksComments) {
+    return create400Json('Some field is missing');
+  }
+
+  const errors = await checkForExistingComicOrSuggestion(
+    args.context.DB_API_URL_BASE as string,
+    comicName as string
+  );
+  if (errors?.err) {
+    return processApiError('Error in post of /suggest-comic', errors.err, logCtx);
+  } else if (errors?.comicExists) {
+    return create400Json('Comic already exists');
+  } else if (errors?.suggestionExists) {
+    return create400Json('A suggestion for this comic already exists');
+  }
+
+  const user = await authLoader(args);
+  let userIp = null;
+  let userId = null;
+  if (user) {
+    userId = user.userId;
+  } else {
+    userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
+  }
+
+  let insertQuery = `
+    INSERT INTO comicsuggestion 
+      (Name, ArtistName, Description, UserId, UserIp)
+    VALUES (?, ?, ?, ?, ?)`;
+  let insertParams = [comicName, artist, linksComments, userId, userIp];
+
+  const dbRes = await queryDb(
+    args.context.DB_API_URL_BASE as string,
+    insertQuery,
+    insertParams
+  );
+
+  if (dbRes.errorMessage) {
+    return processApiError(undefined, {
+      logMessage: 'Db error in post of /suggest-comic',
+      error: dbRes,
+      context: logCtx,
+    });
+  }
+
+  return createSuccessJson();
 }
 
 async function checkForExistingComicOrSuggestion(

@@ -14,20 +14,6 @@ import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 
-export async function loader(args: LoaderArgs) {
-  const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE as string;
-  const comicParam = args.params.comic as string;
-
-  const comicId = parseInt(comicParam);
-
-  const { comic, err } = await getComicById(urlBase, comicId);
-  if (err) {
-    return processApiError('Error getting comic in admin>comic', err);
-  }
-  return { comic, user };
-}
-
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
   const globalContext: GlobalAdminContext = useOutletContext();
@@ -138,4 +124,18 @@ export default function ManageComicInner() {
       />
     </>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  const user = await redirectIfNotMod(args);
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const comicParam = args.params.comic as string;
+
+  const comicId = parseInt(comicParam);
+
+  const { comic, err } = await getComicById(urlBase, comicId);
+  if (err) {
+    return processApiError('Error getting comic in admin>comic', err);
+  }
+  return { comic, user };
 }

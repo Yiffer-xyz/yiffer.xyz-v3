@@ -6,12 +6,12 @@ import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import InfoBox from '~/components/InfoBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
+export type AllowedAnonComicVerdict = 'approved' | 'rejected' | 'rejected-list';
+
 type AnonUploadSectionProps = {
   comicData: Comic;
   updateComic: () => void;
 };
-
-export type AllowedAnonComicVerdict = 'approved' | 'rejected' | 'rejected-list';
 
 export default function AnonUploadSection({
   comicData,

@@ -53,6 +53,89 @@ export type Contribution =
   | TagSuggestion
   | ComicProblem;
 
+export default function YourContributions() {
+  const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
+  const [showPointInfo, setShowPointInfo] = useState(false);
+
+  return (
+    <section className="flex-col">
+      <h1 className="text-center mb-2">Your contributions</h1>
+      <p className="text-center mb-4">
+        <BackToContribute />
+      </p>
+
+      <p className="text-center">
+        <button
+          onClick={() => setShowPointInfo(!showPointInfo)}
+          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
+          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
+          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
+          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
+          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
+        >
+          {showPointInfo ? 'Hide' : 'Show'} point info{' '}
+          {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
+        </button>
+      </p>
+
+      {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
+
+      {contributions.length > 0 && (
+        <Table horizontalScroll={true} className="mx-auto mt-8">
+          <TableHeadRow isTableMaxHeight={false}>
+            <TableCell>Contribution</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell>Points</TableCell>
+            <TableCell>Mod comment</TableCell>
+            <TableCell>Contribution Details</TableCell>
+          </TableHeadRow>
+          <TableBody>
+            {contributions.map((contribution, index) => (
+              <TableRow
+                key={contribution.comicName + index}
+                className="border-b border-gray-800 dark:border-gray-500"
+              >
+                <TableCell>
+                  <p className="font-extralight">{getContributionName(contribution)}</p>
+                </TableCell>
+                <TableCell>
+                  <p
+                    className={`${getContributionStatusColor(
+                      contribution.status
+                    )} font-extralight`}
+                  >
+                    {capitalizeString(contribution.status)}
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">{getDate(contribution.timestamp)}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-semibold">{contribution.points || '-'}</p>
+                  <p className="font-extralight">{contribution.pointsDescription}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">{contribution.modComment || '-'}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-extralight">
+                    {getContributionDetails(contribution)}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {contributions.length === 0 && (
+        <p className="text-center mt-8">You have no contributions yet.</p>
+      )}
+    </section>
+  );
+}
+
 export async function loader(args: LoaderArgs) {
   const urlBase: string = args.context.DB_API_URL_BASE as string;
   const user = await redirectIfNotLoggedIn(args);
@@ -164,87 +247,4 @@ function getDate(timestamp: string): string {
   const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
 
   return `${mo} ${da}`;
-}
-
-export default function YourContributions() {
-  const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
-  const [showPointInfo, setShowPointInfo] = useState(false);
-
-  return (
-    <section className="flex-col">
-      <h1 className="text-center mb-2">Your contributions</h1>
-      <p className="text-center mb-4">
-        <BackToContribute />
-      </p>
-
-      <p className="text-center">
-        <button
-          onClick={() => setShowPointInfo(!showPointInfo)}
-          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
-          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
-          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
-          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
-          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
-        >
-          {showPointInfo ? 'Hide' : 'Show'} point info{' '}
-          {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
-        </button>
-      </p>
-
-      {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
-
-      {contributions.length > 0 && (
-        <Table horizontalScroll={true} className="mx-auto mt-8">
-          <TableHeadRow isTableMaxHeight={false}>
-            <TableCell>Contribution</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Points</TableCell>
-            <TableCell>Mod comment</TableCell>
-            <TableCell>Contribution Details</TableCell>
-          </TableHeadRow>
-          <TableBody>
-            {contributions.map((contribution, index) => (
-              <TableRow
-                key={contribution.comicName + index}
-                className="border-b border-gray-800 dark:border-gray-500"
-              >
-                <TableCell>
-                  <p className="font-extralight">{getContributionName(contribution)}</p>
-                </TableCell>
-                <TableCell>
-                  <p
-                    className={`${getContributionStatusColor(
-                      contribution.status
-                    )} font-extralight`}
-                  >
-                    {capitalizeString(contribution.status)}
-                  </p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-extralight">{getDate(contribution.timestamp)}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-semibold">{contribution.points || '-'}</p>
-                  <p className="font-extralight">{contribution.pointsDescription}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-extralight">{contribution.modComment || '-'}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-extralight">
-                    {getContributionDetails(contribution)}
-                  </p>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-
-      {contributions.length === 0 && (
-        <p className="text-center mt-8">You have no contributions yet.</p>
-      )}
-    </section>
-  );
 }

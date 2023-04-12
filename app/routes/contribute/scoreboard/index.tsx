@@ -49,6 +49,7 @@ export default function Scoreboard() {
       ]);
     },
   });
+
   const allTimePoints = useLoaderData<typeof loader>();
 
   const [showPointInfo, setShowPointInfo] = useState(false);

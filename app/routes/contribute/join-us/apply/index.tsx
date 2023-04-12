@@ -20,63 +20,6 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
-export async function loader(args: LoaderArgs) {
-  const user = await redirectIfNotLoggedIn(args);
-
-  const existingApplicationRes = await getModApplicationForUser(
-    args.context.DB_API_URL_BASE as string,
-    user.userId
-  );
-
-  if (existingApplicationRes.err) {
-    return processApiError('Error in join us - apply', existingApplicationRes.err);
-  }
-
-  return { hasExistingApplication: existingApplicationRes.application !== null };
-}
-
-const validateTelegramUsername = (username: string) =>
-  /^([a-zA-Z0-9_]){5,32}$/.test(username);
-
-export async function action(args: ActionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
-  const reqBody = await args.request.formData();
-  const { notes, telegram } = Object.fromEntries(reqBody);
-
-  if (!notes || !telegram) return create400Json('Missing fields');
-  if (!validateTelegramUsername(telegram as string))
-    return create400Json('Invalid telegram username');
-
-  const user = await authLoader(args);
-  if (!user) return create400Json('Not logged in');
-
-  const existingApplicationRes = await getModApplicationForUser(urlBase, user.userId);
-  if (existingApplicationRes.err) {
-    logApiError('Error creating mod application', existingApplicationRes.err);
-    return create500Json();
-  }
-
-  if (existingApplicationRes.application) {
-    return create400Json('You already have an existing application');
-  }
-
-  const insertQuery = `
-    INSERT INTO modapplication (userId, telegramUsername, notes)
-    VALUES (?, ?, ?)`;
-  const insertParams = [user.userId, telegram, notes];
-
-  const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
-  if (insertDbRes.errorMessage) {
-    logApiError(undefined, {
-      logMessage: 'Error creating mod application',
-      error: insertDbRes,
-      context: { userId: user.userId, notes, telegram },
-    });
-    return create500Json();
-  }
-  return createSuccessJson();
-}
-
 export default function Apply() {
   const fetcher = useGoodFetcher({
     method: 'post',
@@ -156,4 +99,61 @@ export default function Apply() {
       )}
     </div>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  const user = await redirectIfNotLoggedIn(args);
+
+  const existingApplicationRes = await getModApplicationForUser(
+    args.context.DB_API_URL_BASE as string,
+    user.userId
+  );
+
+  if (existingApplicationRes.err) {
+    return processApiError('Error in join us - apply', existingApplicationRes.err);
+  }
+
+  return { hasExistingApplication: existingApplicationRes.application !== null };
+}
+
+const validateTelegramUsername = (username: string) =>
+  /^([a-zA-Z0-9_]){5,32}$/.test(username);
+
+export async function action(args: ActionArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const reqBody = await args.request.formData();
+  const { notes, telegram } = Object.fromEntries(reqBody);
+
+  if (!notes || !telegram) return create400Json('Missing fields');
+  if (!validateTelegramUsername(telegram as string))
+    return create400Json('Invalid telegram username');
+
+  const user = await authLoader(args);
+  if (!user) return create400Json('Not logged in');
+
+  const existingApplicationRes = await getModApplicationForUser(urlBase, user.userId);
+  if (existingApplicationRes.err) {
+    logApiError('Error creating mod application', existingApplicationRes.err);
+    return create500Json();
+  }
+
+  if (existingApplicationRes.application) {
+    return create400Json('You already have an existing application');
+  }
+
+  const insertQuery = `
+    INSERT INTO modapplication (userId, telegramUsername, notes)
+    VALUES (?, ?, ?)`;
+  const insertParams = [user.userId, telegram, notes];
+
+  const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
+  if (insertDbRes.errorMessage) {
+    logApiError(undefined, {
+      logMessage: 'Error creating mod application',
+      error: insertDbRes,
+      context: { userId: user.userId, notes, telegram },
+    });
+    return create500Json();
+  }
+  return createSuccessJson();
 }

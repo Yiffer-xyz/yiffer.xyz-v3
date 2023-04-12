@@ -19,25 +19,6 @@ type LiveComicProps = {
   allTags: Tag[];
 };
 
-const emptyUnusedNewArtist: NewArtist = {
-  artistName: '',
-  e621Name: '',
-  patreonName: '',
-  links: [],
-};
-
-export type ComicDataChanges = {
-  comicId: number;
-  name?: string;
-  artistId?: number;
-  tagIds?: number[];
-  category?: string;
-  classification?: string;
-  state?: string;
-  previousComicId?: number;
-  nextComicId?: number;
-};
-
 export default function LiveComic({
   comic,
   user,
@@ -268,6 +249,25 @@ export default function LiveComic({
     </>
   );
 }
+
+const emptyUnusedNewArtist: NewArtist = {
+  artistName: '',
+  e621Name: '',
+  patreonName: '',
+  links: [],
+};
+
+export type ComicDataChanges = {
+  comicId: number;
+  name?: string;
+  artistId?: number;
+  tagIds?: number[];
+  category?: string;
+  classification?: string;
+  state?: string;
+  previousComicId?: number;
+  nextComicId?: number;
+};
 
 function setupInitialUpdatedComic(comic: Comic): NewComicData {
   const newComicData: NewComicData = {

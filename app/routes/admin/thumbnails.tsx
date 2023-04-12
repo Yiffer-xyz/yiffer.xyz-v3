@@ -4,19 +4,6 @@ import { MdArrowForward } from 'react-icons/md';
 import Link from '~/components/Link';
 import { GlobalAdminContext } from '../admin';
 
-function getTimeSincePublishString(daysSincePublished: number) {
-  if (daysSincePublished < 32) {
-    return `${daysSincePublished} days`;
-  } else if (daysSincePublished < 365) {
-    const months = Math.floor(daysSincePublished / 30);
-    return `${months} month${months > 1 ? 's' : ''}`;
-  } else {
-    const years = Math.floor(daysSincePublished / 365);
-    const months = Math.floor((daysSincePublished % 365) / 30);
-    return `${years}y` + (months > 0 ? ` ${months}m` : '');
-  }
-}
-
 export default function UpdateThumbnails({}) {
   const globalContext: GlobalAdminContext = useOutletContext();
   const numTotalComics = globalContext.comics.length;
@@ -71,4 +58,17 @@ export default function UpdateThumbnails({}) {
       </div>
     </>
   );
+}
+
+function getTimeSincePublishString(daysSincePublished: number) {
+  if (daysSincePublished < 32) {
+    return `${daysSincePublished} days`;
+  } else if (daysSincePublished < 365) {
+    const months = Math.floor(daysSincePublished / 30);
+    return `${months} month${months > 1 ? 's' : ''}`;
+  } else {
+    const years = Math.floor(daysSincePublished / 365);
+    const months = Math.floor((daysSincePublished % 365) / 30);
+    return `${years}y` + (months > 0 ? ` ${months}m` : '');
+  }
 }

@@ -27,70 +27,6 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 
-export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
-
-  const allArtistsPromise = getAllArtists(urlBase, {
-    includePending: true,
-    modifyNameIncludeType: true,
-  });
-  const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
-  const tagsPromise = getAllTags(urlBase);
-  const userPromise = authLoader(args);
-  const [artistsRes, comicsRes, tagsRes, user] = await Promise.all([
-    allArtistsPromise,
-    comicsPromise,
-    tagsPromise,
-    userPromise,
-  ]);
-  if (artistsRes.err || !artistsRes.artists) {
-    return processApiError(
-      'Error getting artists in upload',
-      artistsRes.err || { logMessage: 'Artists returned as undefined' }
-    );
-  }
-  if (comicsRes.err || !comicsRes.comics) {
-    return processApiError(
-      'Error getting comics in upload',
-      comicsRes.err || { logMessage: 'Comics returned as undefined' }
-    );
-  }
-  if (tagsRes.err || !tagsRes.tags) {
-    return processApiError(
-      'Error getting tags in upload',
-      tagsRes.err || { logMessage: 'Tags returned as undefined' }
-    );
-  }
-
-  return {
-    artists: artistsRes.artists,
-    comics: comicsRes.comics,
-    tags: tagsRes.tags,
-    user,
-    uploadUrlBase: args.context.DB_API_URL_BASE as string,
-  };
-}
-
-export async function action(args: ActionArgs) {
-  const user = await authLoader(args);
-  const formData = await args.request.formData();
-  const body = JSON.parse(formData.get('body') as string) as UploadBody;
-  const { error } = validateUploadForm(body);
-  if (error) return create400Json(error);
-
-  const err = await processUpload(
-    args.context.DB_API_URL_BASE as string,
-    body,
-    user,
-    args.request.headers.get('CF-Connecting-IP') || 'unknown'
-  );
-  if (err) {
-    logApiError('Error in upload comic submit', err, body);
-    return create500Json();
-  }
-  return createSuccessJson();
-}
-
 export default function Upload() {
   const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
   const [step, setStep] = useState<number | string>(1);
@@ -253,6 +189,70 @@ export default function Upload() {
       )}
     </div>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  const urlBase = args.context.DB_API_URL_BASE as string;
+
+  const allArtistsPromise = getAllArtists(urlBase, {
+    includePending: true,
+    modifyNameIncludeType: true,
+  });
+  const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
+  const tagsPromise = getAllTags(urlBase);
+  const userPromise = authLoader(args);
+  const [artistsRes, comicsRes, tagsRes, user] = await Promise.all([
+    allArtistsPromise,
+    comicsPromise,
+    tagsPromise,
+    userPromise,
+  ]);
+  if (artistsRes.err || !artistsRes.artists) {
+    return processApiError(
+      'Error getting artists in upload',
+      artistsRes.err || { logMessage: 'Artists returned as undefined' }
+    );
+  }
+  if (comicsRes.err || !comicsRes.comics) {
+    return processApiError(
+      'Error getting comics in upload',
+      comicsRes.err || { logMessage: 'Comics returned as undefined' }
+    );
+  }
+  if (tagsRes.err || !tagsRes.tags) {
+    return processApiError(
+      'Error getting tags in upload',
+      tagsRes.err || { logMessage: 'Tags returned as undefined' }
+    );
+  }
+
+  return {
+    artists: artistsRes.artists,
+    comics: comicsRes.comics,
+    tags: tagsRes.tags,
+    user,
+    uploadUrlBase: args.context.DB_API_URL_BASE as string,
+  };
+}
+
+export async function action(args: ActionArgs) {
+  const user = await authLoader(args);
+  const formData = await args.request.formData();
+  const body = JSON.parse(formData.get('body') as string) as UploadBody;
+  const { error } = validateUploadForm(body);
+  if (error) return create400Json(error);
+
+  const err = await processUpload(
+    args.context.DB_API_URL_BASE as string,
+    body,
+    user,
+    args.request.headers.get('CF-Connecting-IP') || 'unknown'
+  );
+  if (err) {
+    logApiError('Error in upload comic submit', err, body);
+    return create500Json();
+  }
+  return createSuccessJson();
 }
 
 function pageNumberToPageName(pageNum: number, filename: string): string {

@@ -6,17 +6,17 @@ import { DashboardAction } from '~/routes/api/admin/dashboard-data';
 import { useTheme } from '~/utils/theme-provider';
 import { getTimeAgo } from '.';
 
+export type TagSuggestionAction = DashboardAction & {
+  isAdding: boolean;
+  tagId: number;
+};
+
 type TagSuggestionProps = {
   action: TagSuggestionAction;
   onProcessSuggestion: (action: TagSuggestionAction, isApproved: boolean) => void;
   isLoading: boolean;
   loadingAction?: string;
   innerContainerClassName: string;
-};
-
-export type TagSuggestionAction = DashboardAction & {
-  isAdding: boolean;
-  tagId: number;
 };
 
 export function TagSuggestion({

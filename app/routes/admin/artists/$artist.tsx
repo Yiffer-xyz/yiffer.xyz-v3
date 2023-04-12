@@ -17,43 +17,6 @@ import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 
-export type ArtistDataChanges = {
-  artistId: number;
-  name?: string;
-  e621Name?: string;
-  patreonName?: string;
-  links?: string[];
-};
-
-export async function loader(args: LoaderArgs) {
-  const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE as string;
-  const artistParam = args.params.artist as string;
-  const artistId = parseInt(artistParam);
-
-  const artistPromise = getArtistById(urlBase, artistId);
-  const comicsPromise = getComicsByArtistId(urlBase, artistId, { includeUnlisted: true });
-  const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
-
-  if (artistRes.err) {
-    return processApiError('Error getting artist for admin>artist', artistRes.err);
-  }
-  if (comicsRes.err) {
-    return processApiError('Error getting comic for admin>artist', comicsRes.err);
-  }
-  if (artistRes.notFound || !artistRes.artist) {
-    throw new Response('Artist not found', {
-      status: 404,
-    });
-  }
-
-  return {
-    artist: artistRes.artist,
-    comics: comicsRes.comics as ComicTiny[],
-    user,
-  };
-}
-
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();
   const { artist, comics, user } = useLoaderData<typeof loader>();
@@ -364,6 +327,43 @@ export default function ManageArtist() {
       )}
     </>
   );
+}
+
+export type ArtistDataChanges = {
+  artistId: number;
+  name?: string;
+  e621Name?: string;
+  patreonName?: string;
+  links?: string[];
+};
+
+export async function loader(args: LoaderArgs) {
+  const user = await redirectIfNotMod(args);
+  const urlBase = args.context.DB_API_URL_BASE as string;
+  const artistParam = args.params.artist as string;
+  const artistId = parseInt(artistParam);
+
+  const artistPromise = getArtistById(urlBase, artistId);
+  const comicsPromise = getComicsByArtistId(urlBase, artistId, { includeUnlisted: true });
+  const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
+
+  if (artistRes.err) {
+    return processApiError('Error getting artist for admin>artist', artistRes.err);
+  }
+  if (comicsRes.err) {
+    return processApiError('Error getting comic for admin>artist', comicsRes.err);
+  }
+  if (artistRes.notFound || !artistRes.artist) {
+    throw new Response('Artist not found', {
+      status: 404,
+    });
+  }
+
+  return {
+    artist: artistRes.artist,
+    comics: comicsRes.comics as ComicTiny[],
+    user,
+  };
 }
 
 function getChanges(initialArtist: Artist, updatedArtist: NewArtist): FieldChange[] {

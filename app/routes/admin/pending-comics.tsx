@@ -14,29 +14,13 @@ import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '../api/funcs/get-pending-comics';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
+
 const filterOptions: { value: PendingComicsFilter; text: string }[] = [
   { value: 'all', text: 'All' },
   { value: 'scheduled', text: 'Publishing queue' },
   { value: 'unscheduled', text: 'Unscheduled only' },
   { value: 'problematic', text: 'Problematic only' },
 ];
-
-export async function loader(args: LoaderArgs) {
-  const { err, pendingComics } = await getPendingComics(
-    args.context.DB_API_URL_BASE as string
-  );
-
-  if (err) {
-    return processApiError('Error getting pending comics in mod panel', err);
-  }
-
-  return {
-    pendingComics: pendingComics || [],
-    dailySchedulePublishCount: parseInt(
-      args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string
-    ),
-  };
-}
 
 export default function PendingComics() {
   const { pendingComics, dailySchedulePublishCount } = useLoaderData<typeof loader>();
@@ -255,6 +239,23 @@ export default function PendingComics() {
       </div>
     </>
   );
+}
+
+export async function loader(args: LoaderArgs) {
+  const { err, pendingComics } = await getPendingComics(
+    args.context.DB_API_URL_BASE as string
+  );
+
+  if (err) {
+    return processApiError('Error getting pending comics in mod panel', err);
+  }
+
+  return {
+    pendingComics: pendingComics || [],
+    dailySchedulePublishCount: parseInt(
+      args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string
+    ),
+  };
 }
 
 function getBgColor(pendingComic: DbPendingComic) {
