@@ -1,6 +1,9 @@
 import { LoaderArgs, redirect } from '@remix-run/cloudflare';
 import { getUserSession } from './auth.server';
 
+// A way to get the user session. Can be awaited as a normal func,
+// but can also be exported directly if a route needs no other loader.
+// Like this: export { authLoader as loader }
 export async function authLoader(args: LoaderArgs) {
   const userSession = await getUserSession(
     args.request,

@@ -163,17 +163,6 @@ export async function getUserSession(
   };
 }
 
-// export async function getUser(request: Request, jwtConfigStr: string) {
-//   const userSession = await getUserSession(request, jwtConfigStr);
-//   if (userSession === null) {
-//     return null;
-//   }
-
-//   // TODO: lookup full user in db/old api here
-//   const userFromDb = { id: 1, username: 'Melon' }; // remove this, obv
-//   return userFromDb;
-// }
-
 export async function logout(jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 

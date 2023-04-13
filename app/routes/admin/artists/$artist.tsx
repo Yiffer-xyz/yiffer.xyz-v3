@@ -83,7 +83,8 @@ export default function ManageArtist() {
 
   const canSave = useMemo(() => {
     if (!updatedArtistData) return false;
-    if (!updatedArtistData.isValidName) return false;
+    if (updatedArtistData.artistName !== artist.name && !updatedArtistData.isValidName)
+      return false;
     if (!updatedArtistData.e621Name && !updatedArtistData.hasConfirmedNoE621Name) {
       return false;
     }
@@ -92,7 +93,7 @@ export default function ManageArtist() {
     }
 
     return true;
-  }, [artistChanges]);
+  }, [artistChanges, updatedArtistData]);
 
   function toggleArtistBan() {
     banArtistFetcher.submit({
