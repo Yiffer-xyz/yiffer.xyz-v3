@@ -1,46 +1,80 @@
-import { useRef, useState } from 'react';
-import Cropper from 'react-cropper';
+import { useMemo, useRef, useState } from 'react';
+import Cropper, { ReactCropperElement } from 'react-cropper';
 import { MdArrowBack, MdCheck } from 'react-icons/md';
 import useWindowSize from '~/utils/useWindowSize';
 import Button from '../Buttons/Button';
 import InfoBox from '../InfoBox';
 
+export type CroppedThumbnail = {
+  base64: string;
+  file: File;
+};
+
 export interface ThumbnailCropperProps {
   imageSrc: string;
-  onComplete: (croppedImageB64: string) => void;
+  onComplete: (croppedThumbnail: CroppedThumbnail) => void;
   onClose: () => void;
 }
 
-export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: ThumbnailCropperProps) {
-  const cropperRef = useRef<HTMLImageElement>(null);
-  const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(null);
+export default function ThumbnailCropper({
+  onClose,
+  onComplete,
+  imageSrc,
+}: ThumbnailCropperProps) {
+  const cropperRef = useRef<HTMLImageElement | ReactCropperElement | null>(null);
+  const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(
+    null
+  );
   const [isTooSmall, setIsTooSmall] = useState(false);
-  const [cropResult, setCropResult] = useState<string>();
+  const [cropResult, setCropResult] = useState<CroppedThumbnail>();
 
-  const { isMobile } = useWindowSize();
+  const { isMobile, isLgUp, isXlUp, isMdUp } = useWindowSize();
   const [mobileStep, setMobileStep] = useState(1);
+
+  const step1Width = useMemo(() => {
+    if (isXlUp) return 500;
+    if (isLgUp) return 400;
+    return 340;
+  }, [isLgUp, isXlUp]);
+
+  const step2Width = useMemo(() => {
+    if (isLgUp) return 300;
+    if (isMdUp) return 230;
+    return 300;
+  }, [isLgUp, isXlUp]);
+
+  const step1Height = 480;
 
   function onCropAreaChange(e: Cropper.CropEvent) {
     setIsTooSmall(false);
     setCurrentCropEvent(e);
   }
 
-  function onCrop() {
+  async function onCrop() {
     if (!currentCropEvent || !cropperRef?.current) {
       return;
     }
     const width = currentCropEvent.detail.width;
     const height = currentCropEvent.detail.height;
-    if (width < 200 || height < 282) {
+    if (width < 400 || height < 564) {
       setIsTooSmall(true);
       setCropResult(undefined);
       return;
     }
 
     setIsTooSmall(false);
+    // any because the types don't seem to match reality
     const imageElement: any = cropperRef?.current;
     const cropper: any = imageElement?.cropper;
-    setCropResult(cropper.getCroppedCanvas().toDataURL());
+    const base64 = cropper.getCroppedCanvas().toDataURL();
+    const file = await new Promise<File>(resolve => {
+      cropper.getCroppedCanvas().toBlob((blob: Blob | null) => {
+        if (blob) {
+          resolve(new File([blob], 'thumbnail.png', { type: 'image/png' }));
+        }
+      });
+    });
+    setCropResult({ base64, file });
     setMobileStep(2);
   }
 
@@ -48,7 +82,7 @@ export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: Thum
     <>
       <div className="fixed inset-0 z-10 bg-black bg-opacity-50 dark:bg-opacity-80" />
       <div className="fixed inset-0 z-20 flex items-center justify-center mx-4">
-        <div className="bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 max-w-2xl w-full flex flex-col">
+        <div className="bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 w-full lg:max-w-4xl xl:max-w-5xl flex flex-col">
           {!isMobile && <p className="text-xl mb-2 text-center">Crop thumbnail</p>}
           <div className="flex flex-col sm:flex-row">
             {(!isMobile || mobileStep === 1) && (
@@ -56,31 +90,36 @@ export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: Thum
                 <p>Crop image</p>
                 <Cropper
                   src={imageSrc}
-                  style={{ height: 400, width: 284 }}
-                  aspectRatio={200 / 282}
+                  style={{ height: step1Height, width: step1Width }}
+                  aspectRatio={400 / 564}
                   guides={false}
                   ref={cropperRef}
                   background={false}
                   viewMode={1}
-                  minCanvasWidth={200}
+                  minCanvasWidth={400}
                   crop={e => onCropAreaChange(e)}
                 />
                 {isTooSmall && isMobile && (
-                  <InfoBox variant="error" centerText text={`Too small!`} style={{ width: 284 }} />
+                  <InfoBox
+                    variant="error"
+                    centerText
+                    text={`Too small!`}
+                    style={{ width: step1Width }}
+                  />
                 )}
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={onCrop}
                   text="Crop"
-                  style={{ width: 284 }}
+                  style={{ width: step1Width }}
                 />
                 <Button
                   variant={'outlined'}
                   color="primary"
                   onClick={onClose}
                   text="Cancel"
-                  style={{ width: 284 }}
+                  style={{ width: step1Width }}
                 />
               </div>
             )}
@@ -90,7 +129,11 @@ export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: Thum
                 <p>Preview and confirm</p>
                 {cropResult && (
                   <>
-                    <img src={cropResult} alt="cropped image" style={{ width: '200px' }} />
+                    <img
+                      src={cropResult.base64}
+                      alt="cropped image"
+                      style={{ width: step2Width }}
+                    />
                     {isMobile && (
                       <Button
                         variant="outlined"
@@ -98,7 +141,7 @@ export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: Thum
                         onClick={() => setMobileStep(1)}
                         text="Back"
                         startIcon={MdArrowBack}
-                        style={{ width: 200 }}
+                        style={{ width: step2Width }}
                       />
                     )}
                     <Button
@@ -107,14 +150,17 @@ export default function ThumbnailCropper({ onClose, onComplete, imageSrc }: Thum
                       text="Confirm crop"
                       startIcon={MdCheck}
                       onClick={() => onComplete(cropResult)}
-                      style={{ width: '200px' }}
+                      style={{ width: step2Width }}
                     />
                   </>
                 )}
                 {isTooSmall && !isMobile && (
                   <InfoBox variant="error" text={`Too small!`}>
                     {currentCropEvent?.detail && (
-                      <p>minimum 200px, currently {Math.floor(currentCropEvent.detail.width)}px.</p>
+                      <p>
+                        minimum 400px, currently{' '}
+                        {Math.floor(currentCropEvent.detail.width)}px.
+                      </p>
                     )}
                   </InfoBox>
                 )}

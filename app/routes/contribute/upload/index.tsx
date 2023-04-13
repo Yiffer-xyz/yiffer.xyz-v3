@@ -26,10 +26,16 @@ import {
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
+import cropperCss from 'cropperjs/dist/cropper.min.css';
+import { CroppedThumbnail } from '~/components/ThumbnailCropper/ThumbnailCropper';
+
+export function links() {
+  return [{ rel: 'stylesheet', href: cropperCss }];
+}
 
 export default function Upload() {
   const { artists, comics, uploadUrlBase, user, tags } = useLoaderData<typeof loader>();
-  const [step, setStep] = useState<number | string>(1);
+  const [step, setStep] = useState<number | string>(2);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,15 +108,12 @@ export default function Upload() {
     const formData = new FormData();
     formData.append('body', JSON.stringify(uploadBody));
 
-    // TODO: only temporary to make stuff work, until we implement thumbnail thing
-    comicData.thumbnailFile = comicData.files[0];
-
     const { error } = validateUploadForm(uploadBody);
     if (error) {
       setError(error);
       return;
     }
-    if (comicData.files.length < 3 || !comicData.thumbnailFile) {
+    if (comicData.files.length < 3 || !comicData.thumbnail) {
       setError('You need at least 3 pages and a thumbnail');
       return;
     }
@@ -159,7 +162,7 @@ export default function Upload() {
 
           <Step3Pagemanager comicData={comicData} onUpdate={setComicData} />
 
-          <Step4Thumbnail />
+          <Step4Thumbnail comicData={comicData} onUpdate={setComicData} />
 
           <TagsEditor
             allTags={tags}
@@ -295,7 +298,7 @@ async function uploadFiles(
   uploadId: string,
   uploadUrlBase: string
 ): Promise<{ error?: string }> {
-  const thumbnailFile = comicData.thumbnailFile as File;
+  const thumbnailFile = comicData.thumbnail?.file!;
 
   const filesFormDatas = Array<FormData>();
   let currentFormData = new FormData();
@@ -414,5 +417,5 @@ export type NewComicData = {
     isLegalComicName: boolean;
   };
   files: File[];
-  thumbnailFile?: File;
+  thumbnail?: CroppedThumbnail;
 };

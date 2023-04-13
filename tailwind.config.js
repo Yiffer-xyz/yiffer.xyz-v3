@@ -97,6 +97,7 @@ module.exports = {
       },
       maxWidth: {
         '80p': '80%',
+        '90p': '90%',
       },
     },
     fontFamily: {

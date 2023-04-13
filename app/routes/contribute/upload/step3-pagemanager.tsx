@@ -20,7 +20,7 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
   return (
     <>
       <h4 className="mt-8">Pages</h4>
-      <input type="file" onChange={onFileChange} multiple />
+      <input type="file" onChange={onFileChange} multiple accept="image/*" />
     </>
   );
 }
