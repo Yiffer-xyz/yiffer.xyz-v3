@@ -144,7 +144,7 @@ export async function action(args: ActionArgs) {
   const insertQuery = `
     INSERT INTO modapplication (userId, telegramUsername, notes)
     VALUES (?, ?, ?)`;
-  const insertParams = [user.userId, telegram, notes];
+  const insertParams = [user.userId, telegram.toString().trim(), notes];
 
   const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (insertDbRes.isError) {

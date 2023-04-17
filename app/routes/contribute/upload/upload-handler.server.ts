@@ -146,7 +146,7 @@ async function createComic(
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   const values = [
-    uploadBody.comicName,
+    uploadBody.comicName.trim(),
     uploadBody.classification,
     uploadBody.category,
     uploadBody.state,
@@ -175,9 +175,9 @@ async function createArtist(
     VALUES (?, ?, ?, ?)
   `;
   const insertValues = [
-    newArtist.artistName,
-    newArtist.e621Name || null,
-    newArtist.patreonName || null,
+    newArtist.artistName.trim(),
+    newArtist.e621Name ? newArtist.e621Name.trim() : null,
+    newArtist.patreonName ? newArtist.patreonName.trim() : null,
     skipApproval ? 0 : 1,
   ];
   let dbRes = await queryDb(urlBase, insertQuery, insertValues);
@@ -208,7 +208,7 @@ async function createArtistLinks(
 
   for (let i = 0; i < filteredLinks.length; i++) {
     linkInsertQuery += `(?, ?)`;
-    linkInsertValues.push(newArtistId, filteredLinks[i]);
+    linkInsertValues.push(newArtistId, filteredLinks[i].trim());
     if (i < newArtist.links.length - 1) {
       linkInsertQuery += ', ';
     }

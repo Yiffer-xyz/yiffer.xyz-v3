@@ -105,15 +105,15 @@ async function updateGeneralDetails(
   let updateFieldValues: any[] = [];
   if (changes.name) {
     updateFieldStr += 'name = ?, ';
-    updateFieldValues.push(changes.name);
+    updateFieldValues.push(changes.name.trim());
   }
   if (changes.e621Name !== undefined) {
     updateFieldStr += 'e621Name = ?, ';
-    updateFieldValues.push(changes.e621Name);
+    updateFieldValues.push(changes.e621Name.trim());
   }
   if (changes.patreonName !== undefined) {
     updateFieldStr += 'patreonName = ?, ';
-    updateFieldValues.push(changes.patreonName);
+    updateFieldValues.push(changes.patreonName.trim());
   }
 
   updateFieldStr = updateFieldStr.slice(0, -2);

@@ -404,7 +404,7 @@ export async function action(args: ActionArgs) {
     INSERT INTO comicsuggestion 
       (Name, ArtistName, Description, UserId, UserIp)
     VALUES (?, ?, ?, ?, ?)`;
-  let insertParams = [comicName, artist, linksComments, userId, userIp];
+  let insertParams = [comicName.toString().trim(), artist, linksComments, userId, userIp];
 
   const dbRes = await queryDb(
     args.context.DB_API_URL_BASE as string,
