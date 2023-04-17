@@ -27,7 +27,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 import cropperCss from 'cropperjs/dist/cropper.min.css';
-import { ComicImage } from '~/utils/general';
+import { ComicImage, isUsernameUrl } from '~/utils/general';
 
 export function links() {
   return [{ rel: 'stylesheet', href: cropperCss }];
@@ -289,6 +289,17 @@ function validateUploadForm(uploadBody: UploadBody): { error?: string } {
   }
   if (!uploadBody.artistId && !uploadBody.newArtist) {
     return { error: 'Artist is required' };
+  }
+  if (uploadBody.newArtist) {
+    if (uploadBody.newArtist.e621Name && isUsernameUrl(uploadBody.newArtist.e621Name)) {
+      return { error: 'e621 name must be a username, not a URL' };
+    }
+    if (
+      uploadBody.newArtist.patreonName &&
+      isUsernameUrl(uploadBody.newArtist.patreonName)
+    ) {
+      return { error: 'Patreon name must be a username, not a URL' };
+    }
   }
   return {};
 }

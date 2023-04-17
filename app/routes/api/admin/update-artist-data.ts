@@ -2,9 +2,11 @@ import { ActionArgs } from '@remix-run/cloudflare';
 import { ArtistDataChanges } from '~/routes/admin/artists/$artist';
 import { Artist } from '~/types/types';
 import { DBResponse, queryDb } from '~/utils/database-facade';
+import { isUsernameUrl } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   ApiError,
+  create400Json,
   createSuccessJson,
   makeDbErr,
   processApiError,
@@ -17,6 +19,13 @@ export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;
+
+  if (body.e621Name && isUsernameUrl(body.e621Name)) {
+    return create400Json('e621Name cannot be a URL');
+  }
+  if (body.patreonName && isUsernameUrl(body.patreonName)) {
+    return create400Json('patreonName cannot be a URL');
+  }
 
   const err = await updateArtistData(urlBase, body);
   if (err) {

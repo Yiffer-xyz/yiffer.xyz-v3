@@ -51,3 +51,14 @@ export async function getFileWithBase64(file: File): Promise<ComicImage> {
     reader.readAsDataURL(file);
   });
 }
+
+export function isUsernameUrl(str: string): boolean {
+  if (str.includes('http:') || str.includes('https:') || str.includes('www.')) {
+    return true;
+  }
+  if (str.includes('.com') || str.includes('.net')) {
+    return true;
+  }
+
+  return false;
+}

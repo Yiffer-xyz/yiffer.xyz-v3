@@ -5,7 +5,6 @@ import { MdArrowForward, MdCheck, MdClose, MdOpenInNew, MdReplay } from 'react-i
 import ArtistEditor from '~/components/ArtistEditor';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
-import InfoBox from '~/components/InfoBox';
 import Link from '~/components/Link';
 import { getArtistById } from '~/routes/api/funcs/get-artist';
 import { getComicsByArtistId } from '~/routes/api/funcs/get-comics';
@@ -258,17 +257,6 @@ export default function ManageArtist() {
               })}
             </div>
           </div>
-
-          {(saveChangesFetcher.isError || banArtistFetcher.isError) && (
-            <InfoBox
-              variant="error"
-              className="mt-4 w-fit"
-              text={
-                saveChangesFetcher.errorMessage || banArtistFetcher.errorMessage || ''
-              }
-              showIcon
-            />
-          )}
 
           <div className="flex flex-row gap-2 mt-4">
             <Button
