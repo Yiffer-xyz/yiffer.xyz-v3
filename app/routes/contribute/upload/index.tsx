@@ -27,7 +27,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 import cropperCss from 'cropperjs/dist/cropper.min.css';
-import { CroppedThumbnail } from '~/components/ThumbnailCropper/ThumbnailCropper';
+import { ComicImage } from '~/utils/general';
 
 export function links() {
   return [{ rel: 'stylesheet', href: cropperCss }];
@@ -314,15 +314,19 @@ async function uploadFiles(
   for (let i = 0; i < comicData.files.length; i++) {
     const file = comicData.files[i];
     // Split the request into multiple FormDatas/submissions if size is too big.
-    if (currentFormDataSize + file.size > maxUploadBodySize) {
+    if (currentFormDataSize + file.file!.size > maxUploadBodySize) {
       filesFormDatas.push(currentFormData);
       currentFormData = new FormData();
       currentFormData.append('comicName', comicData.comicName);
       currentFormDataSize = 0;
     }
 
-    currentFormData.append(`files`, file, pageNumberToPageName(i + 1, file.name));
-    currentFormDataSize += file.size;
+    currentFormData.append(
+      `files`,
+      file.file!,
+      pageNumberToPageName(i + 1, file.file!.name)
+    );
+    currentFormDataSize += file.file!.size;
   }
   filesFormDatas.push(currentFormData);
 
@@ -416,6 +420,6 @@ export type NewComicData = {
   validation: {
     isLegalComicName: boolean;
   };
-  files: File[];
-  thumbnail?: CroppedThumbnail;
+  files: ComicImage[];
+  thumbnail?: ComicImage;
 };

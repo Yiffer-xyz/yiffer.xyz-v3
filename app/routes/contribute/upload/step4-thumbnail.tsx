@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { MdArrowForward, MdCheck } from 'react-icons/md';
+import { MdArrowForward } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import Select from '~/components/Select/Select';
-import ThumbnailCropper, {
-  CroppedThumbnail,
-} from '~/components/ThumbnailCropper/ThumbnailCropper';
+import ThumbnailCropper from '~/components/ThumbnailCropper/ThumbnailCropper';
+import { ComicImage, getFileWithBase64 } from '~/utils/general';
 import { NewComicData } from '.';
 
 type Step4Props = {
@@ -14,34 +13,31 @@ type Step4Props = {
 };
 
 export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
-  const [fileAsStr, setFileAsStr] = useState<string | undefined>(undefined);
+  const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>(undefined);
   const [thumbnailMode, setThumbnailMode] = useState<'upload' | 'page-file'>('upload');
   const [pageFileToCropNumber, setPageFileToCropNumber] = useState<number>(1);
-  const [pageFileToCropStr, setPageFileToCropStr] = useState<string | undefined>(
-    undefined
-  );
+  const [pageFileToCrop, setPageFileToCrop] = useState<ComicImage | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function onThumbnailFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (files && files.length) {
-      const fileStr = await fileToString(files[0]);
-      setFileAsStr(fileStr);
+      const fileStr = await getFileWithBase64(files[0]);
+      setFileToCrop(fileStr);
     }
   }
 
   async function onPageFileNumChange(newNum: number) {
     setPageFileToCropNumber(newNum);
     if (!comicData.files) {
-      setPageFileToCropStr(undefined);
+      setPageFileToCrop(undefined);
     } else {
       const file = comicData.files[newNum - 1];
-      const fileStr = await fileToString(file);
-      setPageFileToCropStr(fileStr);
+      setPageFileToCrop(file);
     }
   }
 
-  function onCropFinished(croppedThumb: CroppedThumbnail) {
+  function onCropFinished(croppedThumb: ComicImage) {
     onUpdate({
       ...comicData,
       thumbnail: croppedThumb,
@@ -49,9 +45,9 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
   }
 
   function onCancelCrop() {
-    setFileAsStr(undefined);
+    setFileToCrop(undefined);
     setPageFileToCropNumber(1);
-    setPageFileToCropStr(undefined);
+    setPageFileToCrop(undefined);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -129,11 +125,11 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
                     }))}
                   />
 
-                  {pageFileToCropStr && (
+                  {pageFileToCrop && (
                     <>
-                      <img src={pageFileToCropStr} className="mt-2" width={100} />
+                      <img src={pageFileToCrop.base64} className="mt-2" width={100} />
                       <Button
-                        onClick={() => setFileAsStr(pageFileToCropStr)}
+                        onClick={() => setFileToCrop(pageFileToCrop)}
                         text="Crop"
                         className="mt-1"
                         style={{ width: 100 }}
@@ -148,9 +144,9 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
             </>
           )}
 
-          {fileAsStr && (
+          {fileToCrop && (
             <ThumbnailCropper
-              imageSrc={fileAsStr}
+              image={fileToCrop}
               onComplete={onCropFinished}
               onClose={onCancelCrop}
             />
@@ -159,17 +155,4 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
       )}
     </>
   );
-}
-
-async function fileToString(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result) {
-        resolve(reader.result as string);
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

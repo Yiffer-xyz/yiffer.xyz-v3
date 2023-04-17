@@ -1,32 +1,28 @@
 import { useMemo, useRef, useState } from 'react';
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import { MdArrowBack, MdCheck } from 'react-icons/md';
+import { ComicImage } from '~/utils/general';
 import useWindowSize from '~/utils/useWindowSize';
 import Button from '../Buttons/Button';
 import InfoBox from '../InfoBox';
 
-export type CroppedThumbnail = {
-  base64: string;
-  file: File;
-};
-
 export interface ThumbnailCropperProps {
-  imageSrc: string;
-  onComplete: (croppedThumbnail: CroppedThumbnail) => void;
+  image: ComicImage;
+  onComplete: (croppedThumbnail: ComicImage) => void;
   onClose: () => void;
 }
 
 export default function ThumbnailCropper({
   onClose,
   onComplete,
-  imageSrc,
+  image,
 }: ThumbnailCropperProps) {
   const cropperRef = useRef<HTMLImageElement | ReactCropperElement | null>(null);
   const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(
     null
   );
   const [isTooSmall, setIsTooSmall] = useState(false);
-  const [cropResult, setCropResult] = useState<CroppedThumbnail>();
+  const [cropResult, setCropResult] = useState<ComicImage>();
 
   const { isMobile, isLgUp, isXlUp, isMdUp } = useWindowSize();
   const [mobileStep, setMobileStep] = useState(1);
@@ -89,7 +85,7 @@ export default function ThumbnailCropper({
               <div className="flex flex-col items-center w-full sm:w-1/2 gap-2">
                 <p>Crop image</p>
                 <Cropper
-                  src={imageSrc}
+                  src={image.base64}
                   style={{ height: step1Height, width: step1Width }}
                   aspectRatio={400 / 564}
                   guides={false}

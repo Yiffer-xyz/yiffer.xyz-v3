@@ -25,3 +25,29 @@ export type FieldChange = {
   newValue?: string;
   newDataValue?: any;
 };
+
+export type ComicImage = {
+  base64?: string;
+  url?: string;
+  file?: File;
+};
+
+export async function getFilesWithBase64(files: FileList): Promise<ComicImage[]> {
+  const filePromises = Array.from(files).map(file => getFileWithBase64(file));
+  return Promise.all(filePromises);
+}
+
+export async function getFileWithBase64(file: File): Promise<ComicImage> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        resolve({ base64: reader.result.toString(), file });
+      }
+    };
+    reader.onerror = () => {
+      reject(reader.error);
+    };
+    reader.readAsDataURL(file);
+  });
+}
