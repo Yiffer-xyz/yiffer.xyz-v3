@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MdArrowForward } from 'react-icons/md';
 import Button from '~/components/Buttons/Button';
+import FileInput from '~/components/FileInput';
 import RadioButtonGroup from '~/components/RadioButton/RadioButtonGroup';
 import Select from '~/components/Select/Select';
 import ThumbnailCropper from '~/components/ThumbnailCropper/ThumbnailCropper';
@@ -100,8 +101,7 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
           />
 
           {thumbnailMode === 'upload' && (
-            <input
-              type="file"
+            <FileInput
               onChange={onThumbnailFileUpload}
               ref={fileInputRef}
               accept="image/*"

@@ -5,6 +5,7 @@ import { getFilesWithBase64 } from '~/utils/general';
 import PageManager from '~/components/PageManager/PageManager';
 import Button from '~/components/Buttons/Button';
 import { MdClear } from 'react-icons/md';
+import FileInput from '~/components/FileInput';
 
 type Step3Props = {
   comicData: NewComicData;
@@ -30,7 +31,7 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
       <h4 className="mt-8">Pages</h4>
 
       {comicData.files.length === 0 && (
-        <input type="file" onChange={onFileChange} multiple accept="image/*" />
+        <FileInput onChange={onFileChange} multiple accept="image/*" />
       )}
 
       {(comicData.files.length > 0 || isLoadingFileContents) && (
