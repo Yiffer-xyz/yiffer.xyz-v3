@@ -300,7 +300,7 @@ async function getTopScores(
   `;
 
   const dbRes = await queryDb<ContributionPointsEntry[]>(urlBase, query, [yearMonth]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting top score list', {
       yearMonth,
       excludeMods,

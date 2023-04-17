@@ -39,10 +39,10 @@ export async function unScheduleComic(
     queryDb(urlBase, comicQuery, [comicId]),
   ]);
 
-  if (metadataDbRes.errorMessage) {
+  if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Could not update comicmetadata', { comicId });
   }
-  if (comicDbRes.errorMessage) {
+  if (comicDbRes.isError) {
     return makeDbErr(comicDbRes, 'Could not update comic table', { comicId });
   }
 

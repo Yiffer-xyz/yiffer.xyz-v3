@@ -182,7 +182,7 @@ async function getDbComicByField(
     WHERE comic.${fieldName} = ?`;
 
   const comicDbRes = await queryDb<DbComic[]>(urlBase, comicQuery, [fieldValue]);
-  if (comicDbRes.errorMessage || !comicDbRes.result) {
+  if (comicDbRes.isError || !comicDbRes.result) {
     return makeDbErrObj(comicDbRes, 'Error getting comic', { fieldName, fieldValue });
   }
   return { comic: comicDbRes.result[0] };
@@ -207,7 +207,7 @@ async function getLinksByComicId(
 
   const params = [comicId, comicId];
   const linksDbRes = await queryDb<DbComicLink[]>(urlBase, linksQuery, params);
-  if (linksDbRes.errorMessage || !linksDbRes.result) {
+  if (linksDbRes.isError || !linksDbRes.result) {
     return makeDbErrObj(linksDbRes, 'Error getting comic links', { comicId });
   }
   return { links: linksDbRes.result };
@@ -225,7 +225,7 @@ async function getTagsByComicId(
     WHERE comicId = ?`;
 
   const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicId]);
-  if (tagsDbRes.errorMessage || !tagsDbRes.result) {
+  if (tagsDbRes.isError || !tagsDbRes.result) {
     return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicId });
   }
   return { tags: tagsDbRes.result };

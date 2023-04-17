@@ -21,7 +21,7 @@ export async function rejectArtistIfEmpty(
 
   const rejectQuery = `UPDATE artist SET name = ?, isRejected = 1 WHERE id = ?`;
   const dbRes = await queryDb(urlBase, rejectQuery, [newArtistName, artistId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error rejecting artist', {
       artistId,
       artistName,
@@ -38,7 +38,7 @@ export async function setArtistNotPending(
 ): Promise<ApiError | undefined> {
   const updateQuery = `UPDATE artist SET isPending = 0 WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, [artistId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error setting artist not pending', { artistId });
   }
 }

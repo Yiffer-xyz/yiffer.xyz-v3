@@ -119,7 +119,7 @@ export async function processAnyUpload(
     queryDb(urlBase, comicQuery, comicQueryParams),
   ]);
 
-  if (updateComicDbRes.errorMessage) {
+  if (updateComicDbRes.isError) {
     return makeDbErr(updateComicDbRes, 'Error updating comic in db');
   }
   if (artistRes.notFound) {
@@ -227,7 +227,7 @@ export async function processAnyUpload(
   if (!metadataQuery) return;
 
   const metadataDbRes = await queryDb(urlBase, metadataQuery, metadataQueryParams);
-  if (metadataDbRes.errorMessage) {
+  if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Error updating comic metadata in db');
   }
 }

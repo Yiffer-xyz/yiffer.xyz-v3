@@ -50,7 +50,7 @@ async function processComicProblem(
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
   const dbRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic problem');
   }
 

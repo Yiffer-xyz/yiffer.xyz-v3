@@ -55,7 +55,7 @@ async function unAssignActionToMod(
   const queryParams = [actionId];
 
   const dbRes = await queryDb(urlBase, query, queryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error unassigning mod action', {
       actionId,
       actionType,

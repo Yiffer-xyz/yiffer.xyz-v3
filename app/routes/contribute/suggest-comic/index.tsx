@@ -412,7 +412,7 @@ export async function action(args: ActionArgs) {
     insertParams
   );
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return processApiError(undefined, {
       logMessage: 'Db error in post of /suggest-comic',
       error: dbRes,
@@ -445,7 +445,7 @@ async function checkForExistingComicOrSuggestion(
     existingComicQueryPromise,
   ]);
 
-  if (existingSuggestionDbRes.errorMessage) {
+  if (existingSuggestionDbRes.isError) {
     return makeDbErrObj(
       existingSuggestionDbRes,
       'Error checking for existing suggestions',
@@ -456,7 +456,7 @@ async function checkForExistingComicOrSuggestion(
     return { suggestionExists: true };
   }
 
-  if (existingComicDbRes.errorMessage) {
+  if (existingComicDbRes.isError) {
     return makeDbErrObj(existingComicDbRes, 'Error checking for existing comics', {
       comicName,
     });

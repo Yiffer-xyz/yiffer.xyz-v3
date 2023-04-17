@@ -60,7 +60,7 @@ async function assignActionToMod(
   const queryParams = [modId, actionId];
 
   const dbRes = await queryDb(urlBase, query, queryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error assigning action to mod', {
       actionId,
       actionType,

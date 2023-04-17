@@ -50,10 +50,10 @@ export async function scheduleComic(
   ]);
 
   const logCtx = { comicId, publishDate, modId };
-  if (metadataDbRes.errorMessage) {
+  if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Could not update metadata table', logCtx);
   }
-  if (comicDbRes.errorMessage) {
+  if (comicDbRes.isError) {
     return makeDbErr(comicDbRes, 'Could not update comic table', logCtx);
   }
 

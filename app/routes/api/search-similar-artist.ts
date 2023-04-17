@@ -61,7 +61,7 @@ export async function getSimilarArtists(
     urlBase,
     allArtistsQuery
   );
-  if (allArtistsRes.errorMessage) {
+  if (allArtistsRes.isError) {
     return makeDbErrObj(allArtistsRes, 'Error getting all artists from db', logCtx);
   }
 

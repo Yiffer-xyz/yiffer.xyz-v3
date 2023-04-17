@@ -50,7 +50,7 @@ export async function getPendingComics(
 
   const dbRes = await queryDb<DbPendingComic[]>(urlBase, pendingComicsQuery);
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting pending comics', {
       scheduledOnly,
       topAmount,

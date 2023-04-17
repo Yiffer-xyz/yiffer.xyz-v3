@@ -31,7 +31,7 @@ export async function rejectComic(
 ): Promise<ApiError | undefined> {
   const updateActionQuery = `UPDATE comic SET publishStatus = 'rejected' WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateActionQuery, [comicId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(
       dbRes,
       'Error rejecting comic, could not set publishStatus rejected',

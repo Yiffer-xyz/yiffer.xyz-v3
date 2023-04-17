@@ -126,6 +126,7 @@ export default function ComicDataEditor({
           value={comicData.category}
           onChange={newVal => onUpdate({ ...comicData, category: newVal })}
           options={categoryOptions}
+          minWidth={72}
         />
 
         <Select
@@ -134,6 +135,7 @@ export default function ComicDataEditor({
           value={comicData.classification}
           onChange={newVal => onUpdate({ ...comicData, classification: newVal })}
           options={classificationOptions}
+          minWidth={108}
         />
 
         <Select
@@ -142,6 +144,7 @@ export default function ComicDataEditor({
           value={comicData.state}
           onChange={newVal => onUpdate({ ...comicData, state: newVal })}
           options={stateOptions}
+          minWidth={111}
         />
       </div>
 

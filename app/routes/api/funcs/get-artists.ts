@@ -28,7 +28,7 @@ export async function getAllArtists(
   }
 
   const artistsRes = await queryDb<ArtistTiny[]>(urlBase, query);
-  if (artistsRes.errorMessage) {
+  if (artistsRes.isError) {
     return makeDbErrObj(artistsRes, 'Error getting artists from db', options);
   }
 

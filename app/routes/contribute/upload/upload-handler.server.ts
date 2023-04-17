@@ -67,7 +67,7 @@ async function createComicTags(
   });
 
   const dbRes = await queryDb(urlBase, query, params);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic tags');
   }
 }
@@ -95,7 +95,7 @@ async function createComicLinks(
   }
 
   const dbRes = await queryDb(urlBase, query, queryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic links');
   }
 }
@@ -123,7 +123,7 @@ async function createComicMetadata(
   ];
 
   const dbRes = await queryDb(urlBase, query, values);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic metadata');
   }
 
@@ -156,7 +156,7 @@ async function createComic(
   ];
 
   const result = await queryDb(urlBase, query, values);
-  if (result.errorMessage) {
+  if (result.isError) {
     return makeDbErrObj(result, 'Error inserting comic');
   }
   if (!result.insertId) {
@@ -183,7 +183,7 @@ async function createArtist(
   let dbRes = await queryDb(urlBase, insertQuery, insertValues);
   const artistId = dbRes.insertId;
 
-  if (dbRes.errorMessage || !artistId) {
+  if (dbRes.isError || !artistId) {
     return makeDbErrObj(dbRes, 'Error inserting artist');
   }
 
@@ -215,7 +215,7 @@ async function createArtistLinks(
   }
 
   const dbRes = await queryDb(urlBase, linkInsertQuery, linkInsertValues);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error inserting artist links');
   }
 }

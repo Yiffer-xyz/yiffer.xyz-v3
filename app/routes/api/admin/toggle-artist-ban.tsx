@@ -52,7 +52,7 @@ export async function toggleArtistBan(
   const query = `UPDATE artist SET isBanned = ? WHERE id = ?`;
   const params = [isBanned, artistId];
   const dbRes = await queryDb(urlBase, query, params);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error banning/unbanning artist', logCtx);
   }
 

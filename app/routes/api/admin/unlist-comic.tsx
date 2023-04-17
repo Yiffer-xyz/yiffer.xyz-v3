@@ -47,10 +47,10 @@ export async function unlistComic(
     queryDb(urlBase, comicUpdateQuery, [comicId]),
   ]);
 
-  if (detailsDbRes.errorMessage) {
+  if (detailsDbRes.isError) {
     return makeDbErr(detailsDbRes, 'Could not get metadata', logCtx);
   }
-  if (updateDbRes.errorMessage) {
+  if (updateDbRes.isError) {
     return makeDbErr(updateDbRes, 'Could not update publishStatus', logCtx);
   }
 
@@ -64,7 +64,7 @@ export async function unlistComic(
     metadataDbRes = await queryDb(urlBase, updateQuery, [unlistComment, comicId]);
   }
 
-  if (metadataDbRes.errorMessage) {
+  if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Could not insert/update comicmetadata', logCtx);
   }
 }

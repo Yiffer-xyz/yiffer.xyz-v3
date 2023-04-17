@@ -123,7 +123,7 @@ async function updateTags(
   const dbResponses = await Promise.all(dbPromises);
 
   for (let dbRes of dbResponses) {
-    if (dbRes.errorMessage) {
+    if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error updating tags', logCtx);
     }
   }
@@ -157,7 +157,7 @@ async function updateGeneralDetails(
 
   const updateQuery = `UPDATE comic SET ${updateFieldStr} WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic details', changes);
   }
 }
@@ -188,7 +188,7 @@ async function updateComicLink(
       type === 'next' ? 'first' : 'last'
     }Comic = ?`;
     const delDbRes = await queryDb(urlBase, deleteQuery, [comicId]);
-    if (delDbRes.errorMessage) {
+    if (delDbRes.isError) {
       return makeDbErr(delDbRes, 'Error deleting comic link', logCtx);
     }
   }
@@ -198,7 +198,7 @@ async function updateComicLink(
       type === 'next' ? comicId : newLinkedComicId,
       type === 'next' ? newLinkedComicId : comicId,
     ]);
-    if (newDbRes.errorMessage) {
+    if (newDbRes.isError) {
       return makeDbErr(newDbRes, 'Error inserting new comic link', logCtx);
     }
   }

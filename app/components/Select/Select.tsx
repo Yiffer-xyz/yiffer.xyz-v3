@@ -8,7 +8,6 @@ export type BaseSelectProps<T> = {
   maxWidth?: number;
   minWidth?: number;
   isFullWidth?: boolean;
-  initialWidth?: number;
   name: string;
   className?: string;
 };
@@ -27,13 +26,13 @@ export default function Select<T>({
   maxWidth = 999999,
   minWidth = 0,
   isFullWidth = false,
-  initialWidth = 0, // TODO needed?
   name,
   className = '',
   ...props
 }: FullSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
-  const [computedMinWidth, setComputedMinWidth] = useState(minWidth);
+  const [computedMinWidth, setComputedMinWidth] = useState(0);
+  const [shouldAddRightPadding, setShouldAddRightPadding] = useState(false);
   const [width, setWidth] = useState(0);
   const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
@@ -67,6 +66,9 @@ export default function Select<T>({
       if (computedMinWidth > (maxWidth as number)) {
         setWidth(maxWidth as number);
       } else {
+        if (maxChildWidth > minWidth) {
+          setShouldAddRightPadding(true);
+        }
         setComputedMinWidth(Math.max(maxChildWidth, minWidth));
       }
 
@@ -81,19 +83,20 @@ export default function Select<T>({
       return {};
     }
     if (computedMinWidth) {
-      return { minWidth: `${computedMinWidth + 16}px` };
-    } else if (initialWidth) {
-      return { minWidth: `${initialWidth + 16}px` };
+      return { minWidth: computedMinWidth + (shouldAddRightPadding ? 16 : 0) };
+    }
+    if (minWidth) {
+      return { minWidth: minWidth };
     }
     return {};
-  }, [initialWidth, isFullWidth, computedMinWidth, width]);
+  }, [isFullWidth, computedMinWidth, minWidth, width]);
 
   const widthStyle = useMemo(() => {
     if (isFullWidth) {
       return { width: '100%' };
     }
     if (width) {
-      return { width: `${width}px` };
+      return { width: width };
     }
     return {};
   }, [isFullWidth, width]);

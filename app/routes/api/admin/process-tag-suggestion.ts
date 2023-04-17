@@ -72,7 +72,7 @@ async function processTagSuggestion(
     }
 
     const dbRes = await queryDb(urlBase, updateTagQuery, updateTagQueryParams);
-    if (dbRes.errorMessage) {
+    if (dbRes.isError) {
       if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
         return makeDbErr(dbRes, 'Error updating comickeyword');
       }
@@ -80,7 +80,7 @@ async function processTagSuggestion(
   }
 
   const actionRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (actionRes.errorMessage) {
+  if (actionRes.isError) {
     return makeDbErr(actionRes, 'Error updating mod panel action');
   }
 

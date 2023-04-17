@@ -21,7 +21,7 @@ export async function addContributionPoints(
     getExistingPointsForMonthQueryParams
   );
 
-  if (existingDbRes.errorMessage) {
+  if (existingDbRes.isError) {
     return makeDbErr(existingDbRes, 'Error adding contribution points', logCtx);
   }
 
@@ -41,7 +41,7 @@ export async function addContributionPoints(
         insertPointsQuery,
         insertPointsQueryParams
       );
-      if (insertDbRes.errorMessage) {
+      if (insertDbRes.isError) {
         return makeDbErr(insertDbRes, 'Error adding contribution points', logCtx);
       }
     } else {
@@ -56,7 +56,7 @@ export async function addContributionPoints(
         updatePointsQuery,
         updatePointsQueryParams
       );
-      if (updateDbRes.errorMessage) {
+      if (updateDbRes.isError) {
         return makeDbErr(updateDbRes, 'Error updating contribution points', logCtx);
       }
     }

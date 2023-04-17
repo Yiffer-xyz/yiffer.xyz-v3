@@ -8,7 +8,7 @@ export async function getAllTags(urlBase: string): Promise<{
 }> {
   let keywordsQuery = 'SELECT id, keywordName AS name FROM keyword';
   const dbRes = await queryDb<Tag[]>(urlBase, keywordsQuery);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting all tags');
   }
   return { tags: dbRes.result };

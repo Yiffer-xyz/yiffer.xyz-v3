@@ -37,7 +37,7 @@ export async function setComicError(
   const updateActionQueryParams = [errorText, comicId];
 
   let dbRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comicmetadata', { comicId, errorText });
   }
 
@@ -47,7 +47,7 @@ export async function setComicError(
     const removeModQueryParams = [comicId];
 
     dbRes = await queryDb(urlBase, removeModQuery, removeModQueryParams);
-    if (dbRes.errorMessage) {
+    if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error removing mod id', { comicId, errorText });
     }
   }

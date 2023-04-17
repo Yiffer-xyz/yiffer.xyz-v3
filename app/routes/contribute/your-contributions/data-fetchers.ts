@@ -55,7 +55,7 @@ export async function getYourContributedComics(
     GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
 
   const dbComicsRes = await queryDb<DbContributedComic[]>(urlBase, query, [userId]);
-  if (dbComicsRes.errorMessage || !dbComicsRes.result) {
+  if (dbComicsRes.isError || !dbComicsRes.result) {
     return makeDbErrObj(dbComicsRes, 'Error getting your contributed comics', { userId });
   }
 
@@ -118,7 +118,7 @@ export async function getYourTagSuggestions(
 
   const dbTagSuggRes = await queryDb<DbTagSuggestion[]>(urlBase, query, [userId]);
 
-  if (dbTagSuggRes.errorMessage || !dbTagSuggRes.result) {
+  if (dbTagSuggRes.isError || !dbTagSuggRes.result) {
     return makeDbErrObj(dbTagSuggRes, 'Error getting your tag suggestions', { userId });
   }
 
@@ -162,7 +162,7 @@ export async function getYourComicProblems(
 
   const dbProblemsRes = await queryDb<DbComicProblem[]>(urlBase, query, [userId]);
 
-  if (dbProblemsRes.errorMessage || !dbProblemsRes.result) {
+  if (dbProblemsRes.isError || !dbProblemsRes.result) {
     return makeDbErrObj(dbProblemsRes, 'Error getting your comic problems', { userId });
   }
 
@@ -204,7 +204,7 @@ export async function getYourComicSuggestions(
 
   const dbSuggestionsRes = await queryDb<DbComicSuggestion[]>(urlBase, query, [userId]);
 
-  if (dbSuggestionsRes.errorMessage || !dbSuggestionsRes.result) {
+  if (dbSuggestionsRes.isError || !dbSuggestionsRes.result) {
     return makeDbErrObj(dbSuggestionsRes, 'Error getting your comic suggestions', {
       userId,
     });

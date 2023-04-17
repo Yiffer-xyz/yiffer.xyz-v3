@@ -25,7 +25,7 @@ export async function getArtistById(
     WHERE id = ?`;
 
   const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [artistId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting artist', { artistId });
   }
 
@@ -58,7 +58,7 @@ export async function getArtistByComicId(
     GROUP BY id, name, patreonName, e621Name, isPending, isBanned, isRejected`;
 
   const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [comicId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting artist by comic id', { comicId });
   }
   if (!dbRes.result || dbRes.result.length === 0) {

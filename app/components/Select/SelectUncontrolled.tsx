@@ -8,7 +8,6 @@ export default function SelectUncontrolled<T>({
   error = false,
   maxWidth = 999999,
   isFullWidth = false,
-  initialWidth = 0, // TODO needed?
   name,
   className = '',
   ...props
@@ -24,7 +23,6 @@ export default function SelectUncontrolled<T>({
       error={error}
       maxWidth={maxWidth}
       isFullWidth={isFullWidth}
-      initialWidth={initialWidth}
       name={name}
       className={className}
       {...props}

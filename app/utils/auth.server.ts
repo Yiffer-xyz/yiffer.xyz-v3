@@ -48,10 +48,10 @@ export async function signup(
     queryDb<any[]>(urlBase, usernameQuery, [username]),
     queryDb<any[]>(urlBase, emailQuery, [email]),
   ]);
-  if (usernameResult.errorMessage) {
+  if (usernameResult.isError) {
     return makeDbErrObj(usernameResult, 'Signup error fetching username');
   }
-  if (emailResult.errorMessage) {
+  if (emailResult.isError) {
     return makeDbErrObj(emailResult, 'Signup error fetching email');
   }
   if (usernameResult.result?.length) {
@@ -70,7 +70,7 @@ export async function signup(
     hashedPassword,
     email,
   ]);
-  if (insertResult.errorMessage) {
+  if (insertResult.isError) {
     return makeDbErrObj(insertResult, 'Error inserting user');
   }
   if (!insertResult.insertId) {
@@ -101,7 +101,7 @@ async function authenticate(
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
   const fetchDbRes = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
-  if (fetchDbRes.errorMessage) {
+  if (fetchDbRes.isError) {
     return makeDbErrObj(fetchDbRes, 'Login error fetching username/email');
   }
   if (!fetchDbRes.result?.length) {

@@ -120,7 +120,7 @@ async function getTagSuggestions(urlBase: string): Promise<{
   `;
 
   const dbRes = await queryDb<DbTagSuggestion[]>(urlBase, query);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting tag suggestions');
   }
 
@@ -201,7 +201,7 @@ async function getProblems(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbComicProblem[]>(urlBase, query);
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comic problems');
   }
 
@@ -279,7 +279,7 @@ async function getComicSuggestions(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbComicSuggestion[]>(urlBase, query);
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comic suggestions');
   }
 
@@ -369,7 +369,7 @@ async function getComicUploads(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbComicUpload[]>(urlBase, query);
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comic uploads');
   }
 
@@ -480,7 +480,7 @@ export async function getPendingComicProblems(urlBase: string): Promise<{
 
   const dbRes = await queryDb<DbPendingComicSimple[]>(urlBase, query);
 
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting pending comics');
   }
 

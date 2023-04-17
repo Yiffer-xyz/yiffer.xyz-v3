@@ -135,7 +135,7 @@ export async function action(args: ActionArgs) {
   const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
 
   const dbRes = await queryDb(urlBase, insertQuery, insertParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error saving user feedback',
       error: dbRes,

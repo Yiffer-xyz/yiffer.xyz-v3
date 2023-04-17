@@ -87,7 +87,7 @@ async function updateLinks(
 
   const dbResponses = await Promise.all(dbPromises);
   for (let dbRes of dbResponses) {
-    if (dbRes.errorMessage) {
+    if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error updating artist links', {
         artistId,
         links,
@@ -121,7 +121,7 @@ async function updateGeneralDetails(
 
   const updateQuery = `UPDATE artist SET ${updateFieldStr} WHERE id = ?`;
   const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating artist details', { changes });
   }
 }

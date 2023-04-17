@@ -36,7 +36,7 @@ export async function getAllComicNamesAndIDs(
   }
 
   const response = await queryDb<DbComicTiny[]>(urlBase, query);
-  if (response.errorMessage || !response.result) {
+  if (response.isError || !response.result) {
     return makeDbErrObj(response, 'Error  getting comics', options);
   }
 
@@ -70,7 +70,7 @@ export async function getComicsByArtistId(
       ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
 
   const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comics by artist', { artistId, options });
   }
 

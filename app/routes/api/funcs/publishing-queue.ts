@@ -19,7 +19,7 @@ export async function moveComicInQueue(
     [comicId]
   );
 
-  if (positionDbRes.errorMessage || !positionDbRes.result) {
+  if (positionDbRes.isError || !positionDbRes.result) {
     return makeDbErr(positionDbRes, 'Error moving comic in publishing queue', logCtx);
   }
 
@@ -38,7 +38,7 @@ export async function moveComicInQueue(
     moveOtherComicQuery,
     moveOtherComicQueryParams
   );
-  if (moveOtherDbRes.errorMessage) {
+  if (moveOtherDbRes.isError) {
     return makeDbErr(
       moveOtherDbRes,
       'Error moving other comic in publishing queue',
@@ -47,7 +47,7 @@ export async function moveComicInQueue(
   }
 
   const moveComicDbRes = await queryDb(urlBase, moveComicQuery, moveComicQueryParams);
-  if (moveComicDbRes.errorMessage) {
+  if (moveComicDbRes.isError) {
     return makeDbErr(
       moveComicDbRes,
       'Error moving this comic in publishing queue',
@@ -69,7 +69,7 @@ export async function recalculatePublishingQueue(
   `;
 
   const queueDbRes = await queryDb<ComicInQueue[]>(urlBase, query);
-  if (queueDbRes.errorMessage) {
+  if (queueDbRes.isError) {
     return makeDbErr(queueDbRes, 'Error getting comics in queue');
   }
 
@@ -120,7 +120,7 @@ export async function recalculatePublishingQueue(
 
   const updateDbRes = await Promise.all(updatePromises);
   for (const result of updateDbRes) {
-    if (result.errorMessage) {
+    if (result.isError) {
       return makeDbErr(result, 'Error updating queue position of pending comic');
     }
   }

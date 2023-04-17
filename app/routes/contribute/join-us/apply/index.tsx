@@ -147,7 +147,7 @@ export async function action(args: ActionArgs) {
   const insertParams = [user.userId, telegram, notes];
 
   const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
-  if (insertDbRes.errorMessage) {
+  if (insertDbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error creating mod application',
       error: insertDbRes,

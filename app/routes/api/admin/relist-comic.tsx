@@ -40,12 +40,12 @@ export async function relistComic(
     queryDb(urlBase, metadataQuery, [comicId]),
   ]);
 
-  if (comicDbRes.errorMessage) {
+  if (comicDbRes.isError) {
     return makeDbErr(comicDbRes, 'Could not update comic table', {
       comicId,
     });
   }
-  if (metadataDbRes.errorMessage) {
+  if (metadataDbRes.isError) {
     return makeDbErr(comicDbRes, 'Could not update metadata table', {
       comicId,
     });

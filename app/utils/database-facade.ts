@@ -1,4 +1,5 @@
 export interface DBResponse<T> {
+  isError: boolean;
   errorMessage: string;
   errorCode?: string;
   result?: T;
@@ -25,6 +26,7 @@ export async function queryDb<T>(
   if (!response.ok) {
     console.error('DEV ERROR DB CALL: ', response);
     return {
+      isError: true,
       errorMessage: 'Error connecting to server',
     };
   } else {

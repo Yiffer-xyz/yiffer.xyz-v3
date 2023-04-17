@@ -21,7 +21,7 @@ export async function getModApplicationForUser(
 
   let queryParams = [userId];
   const dbRes = await queryDb<ModApplication[]>(urlBase, query, queryParams);
-  if (dbRes.errorMessage || !dbRes.result) {
+  if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting mod applications for user', { userId });
   }
 

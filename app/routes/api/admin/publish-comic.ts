@@ -39,7 +39,7 @@ export async function publishComic(
     WHERE id = ?
   `;
   const dbRes = await queryDb(urlBase, query, [comicId]);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error publishing comic', { comicId });
   }
 }

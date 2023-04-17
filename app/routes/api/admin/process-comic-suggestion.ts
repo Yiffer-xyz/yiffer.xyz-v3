@@ -66,7 +66,7 @@ async function processComicSuggestion(
   ];
 
   const dbRes = await queryDb(urlBase, updateQuery, updateQueryParams);
-  if (dbRes.errorMessage) {
+  if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic suggestion');
   }
 
