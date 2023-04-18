@@ -171,6 +171,7 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             text="Update thumbnails"
             isSelected={isRoute('thumbnails')}
           />
+          <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
         </div>
       </div>
     </>

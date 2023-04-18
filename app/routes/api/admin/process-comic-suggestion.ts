@@ -70,7 +70,7 @@ async function processComicSuggestion(
     return makeDbErr(dbRes, 'Error updating comic suggestion');
   }
 
-  const tableName = isApproved ? `comicSuggestion${verdict}` : 'comicSuggestionRejected';
-  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  const columnName = isApproved ? `comicSuggestion${verdict}` : 'comicSuggestionRejected';
+  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, columnName);
   if (err) return err;
 }

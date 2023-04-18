@@ -6,6 +6,7 @@ import ArtistEditor from '~/components/ArtistEditor';
 import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import Link from '~/components/Link';
+import { updateArtistData } from '~/routes/api/admin/update-artist-data';
 import { getArtistById } from '~/routes/api/funcs/get-artist';
 import { getComicsByArtistId } from '~/routes/api/funcs/get-comics';
 import { NewArtist } from '~/routes/contribute/upload';
@@ -88,6 +89,9 @@ export default function ManageArtist() {
       return false;
     }
     if (!updatedArtistData.patreonName && !updatedArtistData.hasConfirmedNoPatreonName) {
+      return false;
+    }
+    if (!updatedArtistData.areLinksValid) {
       return false;
     }
 

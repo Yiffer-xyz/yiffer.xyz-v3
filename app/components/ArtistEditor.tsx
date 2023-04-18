@@ -9,7 +9,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { NewArtist } from '../routes/contribute/upload';
 import IconButton from './Buttons/IconButton';
 
-type NewArtistProps = {
+type ArtistEditorProps = {
   newArtistData: NewArtist;
   existingArtist?: Artist;
   onUpdate: (newData: NewArtist) => void;
@@ -23,7 +23,7 @@ export default function ArtistEditor({
   onUpdate,
   hideBorderTitle = false,
   className = '',
-}: NewArtistProps) {
+}: ArtistEditorProps) {
   const similarArtistsFetcher = useGoodFetcher<SimilarArtistResponse>({
     url: '/api/search-similar-artist',
     method: 'post',
@@ -35,6 +35,7 @@ export default function ArtistEditor({
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
+  const [isLinksError, setIsLinksError] = useState(true);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function updateArtist(newArtist: NewArtist) {
@@ -96,8 +97,9 @@ export default function ArtistEditor({
     updateArtist({
       ...newArtistData,
       isValidName: isLegal,
+      areLinksValid: isLinksError,
     });
-  }, [similarArtists, hasConfirmedNewArtist]);
+  }, [similarArtists, hasConfirmedNewArtist, isLinksError]);
 
   const isExactMatch =
     similarArtists &&
@@ -295,6 +297,15 @@ export default function ArtistEditor({
                 </div>
               );
             })}
+
+            {isLinksError && (
+              <InfoBox
+                variant="error"
+                className="mt-2 w-fit"
+                text='Links must include "http://" or "https://"'
+                showIcon
+              />
+            )}
           </>
         )}
 

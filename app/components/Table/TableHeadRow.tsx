@@ -1,5 +1,5 @@
 export type TableHeadProps = {
-  isTableMaxHeight: boolean;
+  isTableMaxHeight?: boolean;
   children: React.ReactNode;
   className?: string;
 };
@@ -7,7 +7,7 @@ export type TableHeadProps = {
 // I did not find a better way to make it sticky than having to use this
 // isTableMaxHeight prop, in addition to specifying the maxHeight prop on the table itself.
 export default function TableHeadRow({
-  isTableMaxHeight,
+  isTableMaxHeight = false,
   children,
   className = '',
 }: TableHeadProps) {
@@ -15,7 +15,11 @@ export default function TableHeadRow({
     border-gray-borderLight font-bold`;
   return (
     <thead>
-      <tr className={`${theadRowClass} ${className} ${isTableMaxHeight ? 'sticky top-0' : ''}`}>
+      <tr
+        className={`${theadRowClass} ${className} ${
+          isTableMaxHeight ? 'sticky top-0' : ''
+        }`}
+      >
         {children}
       </tr>
     </thead>

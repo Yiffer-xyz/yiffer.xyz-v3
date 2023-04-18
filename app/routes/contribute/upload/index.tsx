@@ -69,6 +69,10 @@ export default function Upload() {
         !comicData.newArtist.patreonName &&
         !comicData.newArtist.hasConfirmedNoPatreonName;
 
+      if (!comicData.newArtist.areLinksValid) {
+        setError('Some of the artist links are invalid');
+        return;
+      }
       if (isNameIllegal) {
         setError('There is an error regarding the artist name');
         return;
@@ -380,6 +384,7 @@ function createEmptyUploadData(): NewComicData {
       patreonName: '',
       links: [''],
       isValidName: false,
+      areLinksValid: true,
     },
     // Validation that must be computed from within components, rather than on submit
     validation: {
@@ -398,6 +403,7 @@ export type NewArtist = {
   isValidName?: boolean;
   hasConfirmedNoE621Name?: boolean;
   hasConfirmedNoPatreonName?: boolean;
+  areLinksValid?: boolean;
 };
 
 // The submitted payload
