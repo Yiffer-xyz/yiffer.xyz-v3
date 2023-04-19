@@ -110,9 +110,9 @@ export async function action(args: ActionArgs) {
     username,
     email,
     password,
-    args.context.DB_API_URL_BASE as string,
-    args.context.JWT_CONFIG_STR as string,
-    args.context.POSTMARK_TOKEN as string
+    args.context.DB_API_URL_BASE,
+    args.context.JWT_CONFIG_STR,
+    args.context.POSTMARK_TOKEN
   );
 
   if (err) {

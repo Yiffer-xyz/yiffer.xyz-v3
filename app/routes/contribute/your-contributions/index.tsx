@@ -137,7 +137,7 @@ export default function YourContributions() {
 }
 
 export async function loader(args: LoaderArgs) {
-  const urlBase: string = args.context.DB_API_URL_BASE as string;
+  const urlBase: string = args.context.DB_API_URL_BASE;
   const user = await redirectIfNotLoggedIn(args);
 
   const uploadedComicsPromise = getYourContributedComics(urlBase, user.userId);

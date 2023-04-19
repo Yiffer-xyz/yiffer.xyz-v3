@@ -15,7 +15,7 @@ import {
 import { getArtistById } from '../funcs/get-artist';
 
 export async function action(args: ActionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;

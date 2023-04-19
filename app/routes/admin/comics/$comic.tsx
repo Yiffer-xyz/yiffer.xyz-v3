@@ -128,7 +128,7 @@ export default function ManageComicInner() {
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const comicParam = args.params.comic as string;
 
   const comicId = parseInt(comicParam);

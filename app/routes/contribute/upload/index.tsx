@@ -199,7 +199,7 @@ export default function Upload() {
 }
 
 export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
 
   const allArtistsPromise = getAllArtists(urlBase, {
     includePending: true,
@@ -238,7 +238,7 @@ export async function loader(args: LoaderArgs) {
     comics: comicsRes.comics,
     tags: tagsRes.tags,
     user,
-    uploadUrlBase: args.context.DB_API_URL_BASE as string,
+    uploadUrlBase: args.context.DB_API_URL_BASE,
   };
 }
 
@@ -250,7 +250,7 @@ export async function action(args: ActionArgs) {
   if (error) return create400Json(error);
 
   const err = await processUpload(
-    args.context.DB_API_URL_BASE as string,
+    args.context.DB_API_URL_BASE,
     body,
     user,
     args.request.headers.get('CF-Connecting-IP') || 'unknown'

@@ -380,7 +380,7 @@ export async function action(args: ActionArgs) {
   }
 
   const errors = await checkForExistingComicOrSuggestion(
-    args.context.DB_API_URL_BASE as string,
+    args.context.DB_API_URL_BASE,
     comicName as string
   );
   if (errors?.err) {
@@ -406,11 +406,7 @@ export async function action(args: ActionArgs) {
     VALUES (?, ?, ?, ?, ?)`;
   let insertParams = [comicName.toString().trim(), artist, linksComments, userId, userIp];
 
-  const dbRes = await queryDb(
-    args.context.DB_API_URL_BASE as string,
-    insertQuery,
-    insertParams
-  );
+  const dbRes = await queryDb(args.context.DB_API_URL_BASE, insertQuery, insertParams);
 
   if (dbRes.isError) {
     return processApiError(undefined, {

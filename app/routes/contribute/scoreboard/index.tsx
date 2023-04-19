@@ -236,11 +236,7 @@ export default function Scoreboard() {
 }
 
 export async function loader(args: LoaderArgs) {
-  const scoresRes = await getTopScores(
-    args.context.DB_API_URL_BASE as string,
-    'all-time',
-    false
-  );
+  const scoresRes = await getTopScores(args.context.DB_API_URL_BASE, 'all-time', false);
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
@@ -253,7 +249,7 @@ export async function action(
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const res = await getTopScores(
-    args.context.DB_API_URL_BASE as string,
+    args.context.DB_API_URL_BASE,
     yearMonth.toString(),
     excludeMods === 'true'
   );

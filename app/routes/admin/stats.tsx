@@ -51,7 +51,7 @@ type ContributionData = {
 };
 
 export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const userQuery = { query: 'SELECT COUNT(*) AS count FROM user' };
   const totalComicsQuery = {
     query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'`,

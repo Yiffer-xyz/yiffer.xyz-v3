@@ -127,9 +127,9 @@ export default function Feedback() {
 
 export async function action(args: ActionArgs) {
   const reqBody = await args.request.formData();
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
-  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR as string);
+  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR);
 
   let insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
   const insertParams = [feedbackText, feedbackType, user?.userId ?? null];

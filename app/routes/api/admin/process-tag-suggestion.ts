@@ -25,7 +25,7 @@ export async function action(args: ActionArgs) {
     'mod'
   );
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
 
   const err = await processTagSuggestion(
     urlBase,

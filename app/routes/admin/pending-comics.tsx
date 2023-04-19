@@ -242,9 +242,7 @@ export default function PendingComics() {
 }
 
 export async function loader(args: LoaderArgs) {
-  const { err, pendingComics } = await getPendingComics(
-    args.context.DB_API_URL_BASE as string
-  );
+  const { err, pendingComics } = await getPendingComics(args.context.DB_API_URL_BASE);
 
   if (err) {
     return processApiError('Error getting pending comics in mod panel', err);
@@ -252,9 +250,7 @@ export async function loader(args: LoaderArgs) {
 
   return {
     pendingComics: pendingComics || [],
-    dailySchedulePublishCount: parseInt(
-      args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string
-    ),
+    dailySchedulePublishCount: parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT),
   };
 }
 

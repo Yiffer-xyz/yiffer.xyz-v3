@@ -11,8 +11,8 @@ import { publishComic } from './publish-comic';
 // Authorizes via x-yiffer-api-key header that the worker has as a secret
 export async function loader(args: LoaderArgs) {
   const requestApiKeyHeader = args.request.headers.get('x-yiffer-api-key');
-  const urlBase = args.context.DB_API_URL_BASE as string;
-  const cronKey = args.context.CRON_KEY as string;
+  const urlBase = args.context.DB_API_URL_BASE;
+  const cronKey = args.context.CRON_KEY;
   const schedulePerDay = parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string);
 
   if (cronKey !== requestApiKeyHeader) {

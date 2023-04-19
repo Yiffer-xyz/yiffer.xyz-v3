@@ -4,10 +4,11 @@ import Button from '~/components/Buttons/Button';
 import LoadingButton from '~/components/Buttons/LoadingButton';
 import ComicDataEditor from '~/components/ComicManager/ComicData';
 import TagsEditor from '~/components/ComicManager/Tags';
+import PageManager from '~/components/PageManager/PageManager';
 import TextInput from '~/components/TextInput/TextInput';
 import { NewArtist, NewComicData } from '~/routes/contribute/upload';
 import { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
-import { FieldChange } from '~/utils/general';
+import { ComicImage, FieldChange } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 
@@ -17,6 +18,7 @@ type LiveComicProps = {
   allComics: ComicTiny[];
   allArtists: ArtistTiny[];
   allTags: Tag[];
+  imageUrlBase: string;
 };
 
 export default function LiveComic({
@@ -113,6 +115,8 @@ export default function LiveComic({
   const canSave =
     !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.comicName;
 
+  const comicPages: ComicImage[] = [];
+
   return (
     <>
       <div className="mt-4">
@@ -208,6 +212,21 @@ export default function LiveComic({
             </div>
           </>
         )}
+      </div>
+
+      <div className="mt-8">
+        <h3>Thumbnail</h3>
+      </div>
+
+      <div className="mt-8">
+        <h3>Pages</h3>
+
+        <PageManager
+          files={comicPages}
+          onChange={newFiles => {
+            console.log(newFiles);
+          }}
+        />
       </div>
 
       {user.userType === 'admin' && comic.publishStatus !== 'unlisted' && (

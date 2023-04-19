@@ -40,7 +40,7 @@ export default function Admin({}) {
 }
 
 export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
 
   const url = new URL(args.request.url);

@@ -5,10 +5,7 @@ import { getUserSession } from './auth.server';
 // but can also be exported directly if a route needs no other loader.
 // Like this: export { authLoader as loader }
 export async function authLoader(args: LoaderArgs) {
-  const userSession = await getUserSession(
-    args.request,
-    args.context.JWT_CONFIG_STR as string
-  );
+  const userSession = await getUserSession(args.request, args.context.JWT_CONFIG_STR);
   return userSession;
 }
 

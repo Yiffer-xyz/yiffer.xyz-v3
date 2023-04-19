@@ -60,7 +60,7 @@ export function links() {
 
 export const loader: LoaderFunction = async function ({ request, context }) {
   const themeSession = await getThemeSession(request);
-  const userSession = await getUserSession(request, context.JWT_CONFIG_STR as string);
+  const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
 
   const data = {
     theme: themeSession.getTheme(),

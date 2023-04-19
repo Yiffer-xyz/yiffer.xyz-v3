@@ -17,7 +17,7 @@ export type SimilarComicResponse = {
 };
 
 export async function action(args: ActionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const body = await args.request.formData();
   const comicName = body.get('comicName') as string;
   const excludeName = body.get('excludeName');

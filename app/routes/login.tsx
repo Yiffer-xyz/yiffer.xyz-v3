@@ -82,8 +82,8 @@ export async function action(args: ActionArgs) {
   const { err, redirect, errorMessage } = await login(
     username,
     password,
-    args.context.DB_API_URL_BASE as string,
-    args.context.JWT_CONFIG_STR as string
+    args.context.DB_API_URL_BASE,
+    args.context.JWT_CONFIG_STR
   );
 
   if (err) {

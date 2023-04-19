@@ -332,7 +332,7 @@ export type ArtistDataChanges = {
 
 export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const artistParam = args.params.artist as string;
   const artistId = parseInt(artistParam);
 

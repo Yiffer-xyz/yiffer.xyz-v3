@@ -1,3 +1,19 @@
+// This is a combination of env variables found in .dev.vars and the
+// other bindings such as R2, D1 sql, created locally through runtime
+// arguments (see package.json, --r2=<BUCKET> etc).
+export interface Env {
+  URL_BASE_OLD_DO_NOT_USE: string;
+  DB_API_URL_BASE: string;
+  FRONT_PAGE_URL: string;
+  JWT_CONFIG_STR: string;
+  POSTMARK_TOKEN: string;
+  DAILY_SCHEDULE_PUBLISH_COUNT: string;
+  SENTRY_DSN: string;
+  SENTRY_AUTH_TOKEN: string;
+
+  COMICS_BUCKET: R2Bucket;
+}
+
 export enum UserType {
   Admin = 'admin',
   Mod = 'moderator',

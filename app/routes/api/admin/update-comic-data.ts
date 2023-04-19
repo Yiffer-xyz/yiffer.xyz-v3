@@ -13,7 +13,7 @@ import {
 import { getComicById } from '../funcs/get-comic';
 
 export async function action(args: ActionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ComicDataChanges;

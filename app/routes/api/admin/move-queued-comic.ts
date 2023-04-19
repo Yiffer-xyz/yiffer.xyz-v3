@@ -9,7 +9,7 @@ import { moveComicInQueue } from '../funcs/publishing-queue';
 
 export async function action(args: ActionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 

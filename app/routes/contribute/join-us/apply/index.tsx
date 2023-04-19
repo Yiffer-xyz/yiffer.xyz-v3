@@ -105,7 +105,7 @@ export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const existingApplicationRes = await getModApplicationForUser(
-    args.context.DB_API_URL_BASE as string,
+    args.context.DB_API_URL_BASE,
     user.userId
   );
 
@@ -120,7 +120,7 @@ const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){5,32}$/.test(username);
 
 export async function action(args: ActionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
   const reqBody = await args.request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
 

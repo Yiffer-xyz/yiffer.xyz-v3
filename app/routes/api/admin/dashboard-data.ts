@@ -33,7 +33,7 @@ export type DashboardAction = {
 };
 
 export async function loader(args: LoaderArgs) {
-  const urlBase = args.context.DB_API_URL_BASE as string;
+  const urlBase = args.context.DB_API_URL_BASE;
 
   const dataResponses: { err?: ApiError; data?: DashboardAction[] }[] = await Promise.all(
     [
