@@ -27,7 +27,8 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
 import cropperCss from 'cropperjs/dist/cropper.min.css';
-import { ComicImage, isUsernameUrl } from '~/utils/general';
+import { ComicImage, isUsernameUrl, randomString } from '~/utils/general';
+import Button from '~/components/Buttons/Button';
 
 export function links() {
   return [{ rel: 'stylesheet', href: cropperCss }];
@@ -50,6 +51,60 @@ export default function Upload() {
       if (submitFetcher.isError) setError(submitFetcher.errorMessage);
     },
   });
+
+  async function uploadFiles(
+    comicData: NewComicData,
+    uploadId: string
+  ): Promise<{ error?: string }> {
+    const thumbnailFile = comicData.thumbnail?.file!;
+
+    const filesFormDatas = Array<FormData>();
+    let currentFormData = new FormData();
+    currentFormData.append(
+      'files',
+      thumbnailFile,
+      `thumbnail.${getFileExtension(thumbnailFile.name)}`
+    );
+    currentFormData.append('comicName', comicData.comicName);
+    currentFormData.append('uploadId', uploadId);
+    let currentFormDataSize = 0;
+
+    for (let i = 0; i < comicData.files.length; i++) {
+      const file = comicData.files[i];
+      // Split the request into multiple FormDatas/submissions if size is too big.
+      if (currentFormDataSize + file.file!.size > maxUploadBodySize) {
+        filesFormDatas.push(currentFormData);
+        currentFormData = new FormData();
+        currentFormData.append('comicName', comicData.comicName);
+        currentFormDataSize = 0;
+      }
+
+      currentFormData.append(
+        `files`,
+        file.file!,
+        pageNumberToPageName(i + 1, file.file!.name)
+      );
+      currentFormDataSize += file.file!.size;
+    }
+    filesFormDatas.push(currentFormData);
+
+    const uploadPromises = filesFormDatas.map(uploadFormData =>
+      fetch(`/api/upload-comic-pages`, {
+        method: 'POST',
+        body: uploadFormData,
+      })
+    );
+
+    const responses = await Promise.all(uploadPromises);
+
+    for (const response of responses) {
+      if (!response.ok) {
+        return { error: response.statusText };
+      }
+    }
+
+    return {};
+  }
 
   async function submit() {
     const randomId = generateRandomId();
@@ -104,7 +159,7 @@ export default function Upload() {
       tagIds: comicData.tags.map(tag => tag.id),
       newArtist: newArtist,
       artistId: comicData.artistId,
-      numberOfPages: comicData.files.length - 1,
+      numberOfPages: comicData.files.length,
       previousComic: comicData.previousComic?.id ? comicData.previousComic : undefined,
       nextComic: comicData.nextComic?.id ? comicData.nextComic : undefined,
     };
@@ -137,12 +192,41 @@ export default function Upload() {
     submitFetcher.submit(formData);
   }
 
+  function fillWithStuff() {
+    setComicData({
+      ...comicData,
+      comicName: 'Test ' + randomString(12),
+      category: 'MF',
+      classification: 'Furry',
+      state: 'finished',
+      validation: {
+        isLegalComicName: true,
+      },
+      tags: Array.from(
+        new Set([
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+          tags[Math.floor(Math.random() * tags.length)],
+        ])
+      ),
+      previousComic: comics[Math.floor(Math.random() * comics.length)],
+      nextComic: comics[Math.floor(Math.random() * comics.length)],
+      artistId: artists[Math.floor(Math.random() * artists.length)].id,
+    });
+  }
+
   return (
     <div className="container mx-auto pb-16">
       <h1>Upload a comic</h1>
       <p className="mb-4">
         <BackToContribute />
       </p>
+
+      <Button color="error" text="FILL WITH STUFF" onClick={fillWithStuff} />
 
       {user?.userType === 'moderator' && (
         <InfoBox variant="info" showIcon className="mb-4">
@@ -269,7 +353,7 @@ function pageNumberToPageName(pageNum: number, filename: string): string {
 }
 
 function getFileExtension(filename: string) {
-  return filename.substring(filename.lastIndexOf('.') + 1);
+  return filename.substring(filename.lastIndexOf('.') + 1).replace('jpeg', 'jpg');
 }
 
 function validateUploadForm(uploadBody: UploadBody): { error?: string } {
@@ -305,60 +389,6 @@ function validateUploadForm(uploadBody: UploadBody): { error?: string } {
       return { error: 'Patreon name must be a username, not a URL' };
     }
   }
-  return {};
-}
-
-async function uploadFiles(
-  comicData: NewComicData,
-  uploadId: string,
-  uploadUrlBase: string
-): Promise<{ error?: string }> {
-  const thumbnailFile = comicData.thumbnail?.file!;
-
-  const filesFormDatas = Array<FormData>();
-  let currentFormData = new FormData();
-  currentFormData.append(
-    'files',
-    thumbnailFile,
-    `thumbnail.${getFileExtension(thumbnailFile.name)}`
-  );
-  currentFormData.append('comicName', comicData.comicName);
-  currentFormData.append('uploadId', uploadId);
-  let currentFormDataSize = 0;
-
-  for (let i = 0; i < comicData.files.length; i++) {
-    const file = comicData.files[i];
-    // Split the request into multiple FormDatas/submissions if size is too big.
-    if (currentFormDataSize + file.file!.size > maxUploadBodySize) {
-      filesFormDatas.push(currentFormData);
-      currentFormData = new FormData();
-      currentFormData.append('comicName', comicData.comicName);
-      currentFormDataSize = 0;
-    }
-
-    currentFormData.append(
-      `files`,
-      file.file!,
-      pageNumberToPageName(i + 1, file.file!.name)
-    );
-    currentFormDataSize += file.file!.size;
-  }
-  filesFormDatas.push(currentFormData);
-
-  const uploadPromises = filesFormDatas.map(uploadFormData =>
-    fetch(`${uploadUrlBase}/new-api/upload-pages`, {
-      method: 'POST',
-      body: uploadFormData,
-    })
-  );
-  const responses = await Promise.all(uploadPromises);
-
-  for (const response of responses) {
-    if (!response.ok) {
-      return { error: response.statusText };
-    }
-  }
-
   return {};
 }
 
@@ -426,7 +456,6 @@ export type NewComicData = {
   comicId?: number;
   comicName: string;
   artistId?: number;
-  uploadArtistId?: number;
   newArtist: NewArtist;
   category: string;
   classification: string;

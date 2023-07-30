@@ -18,7 +18,7 @@ type LiveComicProps = {
   allComics: ComicTiny[];
   allArtists: ArtistTiny[];
   allTags: Tag[];
-  imageUrlBase: string;
+  PAGES_PATH: string;
 };
 
 export default function LiveComic({
@@ -27,6 +27,7 @@ export default function LiveComic({
   allComics,
   allArtists,
   allTags,
+  PAGES_PATH,
 }: LiveComicProps) {
   const unlistFetcher = useGoodFetcher({
     url: '/api/admin/unlist-comic',
@@ -116,6 +117,11 @@ export default function LiveComic({
     !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.comicName;
 
   const comicPages: ComicImage[] = [];
+  for (let i = 0; i < comic.numberOfPages; i++) {
+    comicPages.push({
+      url: `${PAGES_PATH}/${comic.name}/00${i + 1}.jpg`,
+    });
+  }
 
   return (
     <>

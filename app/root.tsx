@@ -81,7 +81,8 @@ export function App() {
       <head>
         <Meta />
         <Links />
-        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
+        {/* TODO: Seems this isn't needed? Do more thorough research before deleting though. */}
+        {/* <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} /> */}
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
         <Layout user={data.user} frontPageUrl={data.frontPageUrl}>

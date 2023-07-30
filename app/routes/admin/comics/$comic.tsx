@@ -17,7 +17,7 @@ import UserUploadSection from './UserUploadedComicSection';
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
   const globalContext: GlobalAdminContext = useOutletContext();
-  const { comic: maybeComic, user } = useLoaderData<typeof loader>();
+  const { comic: maybeComic, user, PAGES_PATH } = useLoaderData<typeof loader>();
   if (!maybeComic) {
     return <div>Comic not found</div>;
   }
@@ -121,6 +121,7 @@ export default function ManageComicInner() {
         allComics={globalContext.comics}
         allArtists={globalContext.artists}
         allTags={globalContext.tags}
+        PAGES_PATH={PAGES_PATH}
       />
     </>
   );
@@ -130,12 +131,11 @@ export async function loader(args: LoaderArgs) {
   const user = await redirectIfNotMod(args);
   const urlBase = args.context.DB_API_URL_BASE;
   const comicParam = args.params.comic as string;
-
   const comicId = parseInt(comicParam);
 
   const { comic, err } = await getComicById(urlBase, comicId);
   if (err) {
     return processApiError('Error getting comic in admin>comic', err);
   }
-  return { comic, user };
+  return { comic, user, PAGES_PATH: args.context.PAGES_PATH };
 }

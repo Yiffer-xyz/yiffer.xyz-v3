@@ -12,3 +12,4 @@ app/styles/app.css
 /.fleet
 .DS_Store
 .fleet/
+.wrangler/state
