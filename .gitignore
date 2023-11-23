@@ -5,7 +5,9 @@
 .DS_Store
 /.fleet
 /.idea
-.yarn/*
+/.yarn
+functions/metafile.js.json
+functions/version.txt
 
 node_modules
 
