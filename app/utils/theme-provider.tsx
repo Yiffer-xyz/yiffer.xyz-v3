@@ -1,13 +1,6 @@
 import { useFetcher } from '@remix-run/react';
-import {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const themes = {
   light: 'light',

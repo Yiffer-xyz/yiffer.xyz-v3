@@ -1,13 +1,14 @@
-import { LoaderArgs, redirect } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { redirect } from '@remix-run/cloudflare';
 import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
-import { ArtistTiny, ComicTiny, Tag } from '~/types/types';
+import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
-import { getAllArtists } from './api/funcs/get-artists';
-import { getAllComicNamesAndIDs } from './api/funcs/get-comics';
-import { getAllTags } from './api/funcs/get-tags';
+import { getAllArtists } from '~/route-funcs/get-artists';
+import { getAllComicNamesAndIDs } from '~/route-funcs/get-comics';
+import { getAllTags } from '~/route-funcs/get-tags';
 import { processApiError } from '~/utils/request-helpers';
 
 export type GlobalAdminContext = {
@@ -16,13 +17,13 @@ export type GlobalAdminContext = {
   tags: Tag[];
 };
 
-export { ErrorBoundary, CatchBoundary } from './error';
+export { ErrorBoundary } from '~/utils/error';
 
 const navWidth = 200;
 const mobileClosedBarW = 24;
 const mobileClosedBarTailwindUnits = mobileClosedBarW / 4;
 
-export default function Admin({}) {
+export default function Admin() {
   const { isLgUp, width } = useWindowSize();
   const globalContext = useLoaderData<typeof loader>();
 
@@ -39,7 +40,7 @@ export default function Admin({}) {
   );
 }
 
-export async function loader(args: LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
 
@@ -108,7 +109,7 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
   // Close on navigation - aka a link selected
   useEffect(() => {
     setIsOpen(alwaysShow);
-  }, [lastRoute]);
+  }, [lastRoute, alwaysShow]);
 
   // Prevent initially rendering wrong until the window size has been determined
   if (delay) {

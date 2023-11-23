@@ -1,4 +1,8 @@
-import { LoaderFunction, MetaFunction } from '@remix-run/cloudflare';
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import {
   Links,
   LiveReload,
@@ -8,57 +12,53 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import clsx from 'clsx';
-
+import type { UserSession } from './types/types';
+import { ThemeProvider, useTheme } from './utils/theme-provider';
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
-import { UserSession } from './types/types';
-import { getUserSession } from './utils/auth.server';
-
-import { NonFlashOfWrongThemeEls, ThemeProvider, useTheme } from './utils/theme-provider';
-import { getThemeSession } from './utils/theme.server';
-
-import { ToastContainer } from 'react-toastify';
+import clsx from 'clsx';
 import toastCss from 'react-toastify/dist/ReactToastify.css';
+import { getThemeSession } from './utils/theme.server';
+import { getUserSession } from './utils/auth.server';
+// import * as Sentry from '@sentry/browser';
 
-import * as Sentry from '@sentry/browser';
-Sentry.init({
-  dsn: 'https://74fe377e56b149fa9f1fa9d41d5de90b@o4504978928959488.ingest.sentry.io/4504978941542400',
-  // Alternatively, use `process.env.npm_package_version` for a dynamic release version
-  // if your build tool supports it.
-  integrations: [new Sentry.BrowserTracing()],
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-});
+// Sentry.init({
+//   dsn: 'https://74fe377e56b149fa9f1fa9d41d5de90b@o4504978928959488.ingest.sentry.io/4504978941542400',
+//   integrations: [new Sentry.BrowserTracing()],
+//   // Alternatively, use `process.env.npm_package_version` for a dynamic release version
+//   // if your build tool supports it.
+//   // Set tracesSampleRate to 1.0 to capture 100%
+//   // of transactions for performance monitoring.
+//   // We recommend adjusting this value in production
+//   tracesSampleRate: 1.0,
+// });
 
-export const meta: MetaFunction = () => ({
-  charset: 'utf-8',
-  title: 'New Remix App',
-  viewport: 'width=device-width,initial-scale=1',
-});
+export const links: LinksFunction = () => [
+  {
+    rel: 'icon',
+    href: 'favicon.png',
+    type: 'image/png',
+  },
+  { rel: 'stylesheet', href: styles },
+  { rel: 'stylesheet', href: rootStyles },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;600&display=swap',
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Shrikhand&text=Yiffer.xyz&display=swap',
+  },
+  { rel: 'stylesheet', href: toastCss },
+];
 
-// TODO: How to do preconnect
-/* <link rel="preconnect" href="https://fonts.googleapis.com"> */
-/* <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  */
-export function links() {
-  return [
-    { rel: 'stylesheet', href: styles },
-    { rel: 'stylesheet', href: rootStyles },
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;600&display=swap',
-    },
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Shrikhand&text=Yiffer.xyz&display=swap',
-    },
-    { rel: 'stylesheet', href: toastCss },
-  ];
-}
+export const meta: MetaFunction = () => [
+  { title: 'Remix Starter' },
+  { property: 'og:title', content: 'Remix Starter' },
+  { name: 'description', content: 'This Yiffer yoffer yiffer' },
+];
 
-export const loader: LoaderFunction = async function ({ request, context }) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const themeSession = await getThemeSession(request);
   const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
 
@@ -68,67 +68,45 @@ export const loader: LoaderFunction = async function ({ request, context }) {
     frontPageUrl: context.FRONT_PAGE_URL,
   };
   return data;
-};
-
-// export const UserContext = createContext('user');
-
-export function App() {
-  const [theme] = useTheme();
-  const data = useLoaderData();
-
-  return (
-    <html lang="en" className={clsx(theme)}>
-      <head>
-        <Meta />
-        <Links />
-        {/* TODO: Seems this isn't needed? Do more thorough research before deleting though. */}
-        {/* <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} /> */}
-      </head>
-      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        <Layout user={data.user} frontPageUrl={data.frontPageUrl}>
-          {/* <UserContext.Provider value={data.user}> */}
-          <Outlet />
-          {/* </UserContext.Provider> */}
-        </Layout>
-        <ScrollRestoration />
-        <ToastContainer />
-        <Scripts />
-        <LiveReload />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
-          }}
-        />
-      </body>
-    </html>
-  );
 }
 
-// TODO: Make it work later. Currently causes infinite error loops.
-// export function ErrorBoundary({ error }: { error: Error }) {
-//   return (
-//     <>
-//       <div role="alert">
-//         <p>Something went wrong:(</p>
-//         <p>Nice error message here, hide stack of course.</p>
-//       </div>
-//       <pre>
-//         <code>{error.message}</code>
-//       </pre>
-//       <pre>
-//         <code>{error?.stack}</code>
-//       </pre>
-//     </>
-//   );
-// }
-
 export default function AppWithProviders() {
-  const data = useLoaderData();
+  const data = useLoaderData<typeof loader>();
 
   return (
     <ThemeProvider specifiedTheme={data.theme}>
       <App />
     </ThemeProvider>
+  );
+}
+
+function App() {
+  const [theme] = useTheme();
+  const data = useLoaderData<typeof loader>();
+
+  return (
+    <html lang="en" className={clsx(theme)}>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
+        {/* TODO: props */}
+        <Layout frontPageUrl={data.frontPageUrl} user={data.user}>
+          <Outlet />
+        </Layout>
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+        {/* <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        /> */}
+      </body>
+    </html>
   );
 }
 

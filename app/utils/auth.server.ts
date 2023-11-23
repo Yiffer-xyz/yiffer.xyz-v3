@@ -1,10 +1,11 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import { JwtConfig, User, UserSession } from '~/types/types';
+import type { JwtConfig, User, UserSession } from '~/types/types';
 import { queryDb } from './database-facade';
-import { ApiError, makeDbErrObj, wrapApiError } from './request-helpers';
+import type { ApiError } from './request-helpers';
+import { makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {

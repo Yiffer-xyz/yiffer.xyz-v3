@@ -1,7 +1,8 @@
-import { json, TypedResponse } from '@remix-run/cloudflare';
-import { DBResponse } from './database-facade';
-import { HANDLED_ERR_MSG } from '~/routes/error';
-import * as Sentry from '@sentry/browser';
+import type { TypedResponse } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
+import type { DBResponse } from '~/utils/database-facade';
+import { HANDLED_ERR_MSG } from '~/utils/error';
+// import * as Sentry from '@sentry/browser';
 
 export type ApiResponse<T = void> = {
   success: boolean;
@@ -54,20 +55,20 @@ export function logApiError(
     extra.dbResponse = err.error;
   }
 
-  Sentry.captureMessage(fullErrMsg, {
-    extra,
-    level: 'error',
-  });
+  // Sentry.captureMessage(fullErrMsg, {
+  //   extra,
+  //   level: 'error',
+  // });
 }
 
 // Log a message when something fails drastically but there's no error object
 export function logApiErrorMessage(message: string, context?: { [key: string]: any }) {
-  Sentry.captureMessage(message, {
-    extra: {
-      ...(context || {}),
-    },
-    level: 'error',
-  });
+  // Sentry.captureMessage(message, {
+  //   extra: {
+  //     ...(context || {}),
+  //   },
+  //   level: 'error',
+  // });
 }
 
 // Quality of life, save some lines of code
@@ -103,12 +104,12 @@ export function makeDbErrObj(
 // an error boundary.
 export function logErrorBoundaryException(err: Error) {
   console.log('Error boundary captured and logging exception!');
-  console.log(err);
-  Sentry.captureException(err, {
-    tags: {
-      errorBoundary: 'true',
-    },
-  });
+  // console.log(err);
+  // Sentry.captureException(err, {
+  //   tags: {
+  //     errorBoundary: 'true',
+  //   },
+  // });
 }
 
 // Wraps an api error with an additional level of message, plus optional context fields

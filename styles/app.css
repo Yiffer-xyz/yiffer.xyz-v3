@@ -1,8 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-* {
-  --toastify-toast-min-height: 40px;
-  --toastify-toast-width: fit-content;
-}

@@ -1,8 +1,8 @@
-import { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
-import LoadingButton from '~/components/Buttons/LoadingButton';
-import InfoBox from '~/components/InfoBox';
-import Link from '~/components/Link';
-import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import LoadingButton from '~/ui-components/Buttons/LoadingButton';
+import InfoBox from '~/ui-components/InfoBox';
+import Link from '~/ui-components/Link';
+import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import { signup } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
@@ -79,12 +79,12 @@ export default function Signup() {
   );
 }
 
-export async function loader(args: LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);
   return null;
 }
 
-export async function action(args: ActionArgs) {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const {
     username: formUsername,

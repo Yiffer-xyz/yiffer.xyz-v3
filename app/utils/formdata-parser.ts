@@ -1,5 +1,5 @@
-import { ActionArgs } from '@remix-run/cloudflare';
-import { UserSession } from '~/types/types';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import type { UserSession } from '~/types/types';
 import { authLoader } from './loaders';
 
 export type ParsedFormdataJson<T> = {
@@ -11,7 +11,7 @@ export type ParsedFormdataJson<T> = {
 // This function is used to parse JSON sent as {body: <stringifiedStuff>}
 // in formdata requests. Can also validate user type.
 export async function parseFormJson<T>(
-  args: ActionArgs,
+  args: ActionFunctionArgs,
   validateUser: 'user' | 'mod' | 'admin' | 'none' = 'none'
 ): Promise<ParsedFormdataJson<T>> {
   const user = await authLoader(args);

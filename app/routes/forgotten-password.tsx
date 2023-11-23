@@ -1,9 +1,9 @@
-import { LoaderArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { Form } from '@remix-run/react';
-import Link from '~/components/Link';
+import Link from '~/ui-components/Link';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 
-export async function loader(args: LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);
   return null;
 }

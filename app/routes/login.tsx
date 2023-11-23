@@ -1,8 +1,8 @@
-import { ActionArgs, LoaderArgs } from '@remix-run/cloudflare';
-import LoadingButton from '~/components/Buttons/LoadingButton';
-import InfoBox from '~/components/InfoBox';
-import Link from '~/components/Link';
-import TextInputUncontrolled from '~/components/TextInput/TextInputUncontrolled';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import InfoBox from '~/ui-components/InfoBox';
+import Link from '~/ui-components/Link';
+import LoadingButton from '~/ui-components/Buttons/LoadingButton';
+import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import { login } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
@@ -12,7 +12,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
-export default function Signup() {
+export default function Login() {
   const fetcher = useGoodFetcher({
     method: 'post',
     toastError: false,
@@ -63,12 +63,12 @@ export default function Signup() {
   );
 }
 
-export async function loader(args: LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);
   return null;
 }
 
-export async function action(args: ActionArgs) {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { username: formUsername, password: formPassword } = Object.fromEntries(reqBody);
 

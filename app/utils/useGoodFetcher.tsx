@@ -1,7 +1,8 @@
-import { FormEncType, FormMethod, SubmitOptions, useFetcher } from '@remix-run/react';
+import type { FormEncType, FormMethod, SubmitOptions } from '@remix-run/react';
+import { useFetcher } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { ApiResponse } from './request-helpers';
+import type { ApiResponse } from './request-helpers';
 import { useTheme } from './theme-provider';
 
 // For some reason, Remix doesn't export SubmitTarget, so redeclare it...
@@ -126,7 +127,7 @@ export function useGoodFetcher<T = void>({
       if (encType) submitOptions.encType = encType;
       fetcher.submit(body ?? null, submitOptions);
     },
-    [fetcher, method]
+    [fetcher, method, url, encType]
   );
 
   // Because Remix FORCES you to use useEffect to respond to fetches,
@@ -152,7 +153,7 @@ export function useGoodFetcher<T = void>({
         </fetcher.Form>
       );
     },
-    []
+    [fetcher, method, url]
   );
 
   return {

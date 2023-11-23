@@ -1,5 +1,5 @@
 // Calculates the "distance" between two strings. Written by copilot.
-export default function stringDistance(aCased: string, bCased: string): Number {
+export default function stringDistance(aCased: string, bCased: string): number {
   const a = aCased.toLowerCase();
   const b = bCased.toLowerCase();
 
