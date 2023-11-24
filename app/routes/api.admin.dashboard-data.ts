@@ -123,7 +123,7 @@ async function getTagSuggestions(urlBase: string): Promise<{
     return makeDbErrObj(dbRes, 'Error getting tag suggestions');
   }
 
-  const mappedResults: DashboardAction[] = dbRes.result!.map(dbTagSugg => {
+  const mappedResults: DashboardAction[] = dbRes.result.map(dbTagSugg => {
     return {
       type: 'tagSuggestion',
       id: dbTagSugg.id,
@@ -204,7 +204,7 @@ async function getProblems(urlBase: string): Promise<{
     return makeDbErrObj(dbRes, 'Error getting comic problems');
   }
 
-  const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicProblem => {
+  const mappedResults: DashboardAction[] = dbRes.result.map(dbComicProblem => {
     return {
       type: 'comicProblem',
       id: dbComicProblem.id,
@@ -282,7 +282,7 @@ async function getComicSuggestions(urlBase: string): Promise<{
     return makeDbErrObj(dbRes, 'Error getting comic suggestions');
   }
 
-  const mappedResults: DashboardAction[] = dbRes.result!.map(dbComicSugg => {
+  const mappedResults: DashboardAction[] = dbRes.result.map(dbComicSugg => {
     let verdictText = undefined;
     if (dbComicSugg.status === 'approved' || dbComicSugg.status === 'rejected') {
       verdictText = dbComicSugg.status === 'approved' ? 'Approved' : 'Rejected';
@@ -375,7 +375,7 @@ async function getComicUploads(urlBase: string): Promise<{
   // If a mod uploads, it skips the verification and goes straight to pending
   // In these cases, don't show in the dashboard. This is the only case where it
   // will be not uploaded but lack a modId.
-  const notModUploads = dbRes.result!.filter(
+  const notModUploads = dbRes.result.filter(
     dbComicUpload => !(dbComicUpload.publishStatus !== 'uploaded' && !dbComicUpload.modId)
   );
 
@@ -483,7 +483,7 @@ export async function getPendingComicProblems(urlBase: string): Promise<{
     return makeDbErrObj(dbRes, 'Error getting pending comics');
   }
 
-  const mappedResults: DashboardAction[] = dbRes.result!.map(dbPending => {
+  const mappedResults: DashboardAction[] = dbRes.result.map(dbPending => {
     return {
       type: 'pendingComicProblem',
       id: dbPending.comicId,

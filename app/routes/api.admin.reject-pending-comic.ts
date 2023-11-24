@@ -1,12 +1,8 @@
-import { ActionFunctionArgs } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
-import {
-  ApiError,
-  createSuccessJson,
-  makeDbErr,
-  processApiError,
-} from '~/utils/request-helpers';
+import type { ApiError } from '~/utils/request-helpers';
+import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);

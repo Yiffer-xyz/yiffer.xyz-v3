@@ -33,7 +33,7 @@ export async function getAllArtists(
     return makeDbErrObj(artistsRes, 'Error getting artists from db', options);
   }
 
-  const boolArtists = artistsRes.result!.map(artist => {
+  const boolArtists = artistsRes.result.map(artist => {
     artist.isPending = !!artist.isPending;
     artist.isBanned = !!artist.isBanned;
     return artist;

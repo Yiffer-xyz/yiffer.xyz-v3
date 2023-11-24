@@ -20,7 +20,7 @@ interface IThemeContext {
 
 const ThemeContext = createContext<IThemeContext>({
   theme: null,
-  setTheme: () => {},
+  setTheme: () => undefined,
 });
 
 type ThemeProviderProps = {

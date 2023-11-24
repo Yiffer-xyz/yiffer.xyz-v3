@@ -14,7 +14,9 @@ node_modules
 /.cache
 /functions/\[\[path\]\].js
 /functions/\[\[path\]\].js.map
-/functions/metafile.*
-/functions/version.txt
+functions/metafile.js.json
+functions/metafile.server.json
+functions/version.txt
+functions/metafile.css.json
 /public/build
 .dev.vars

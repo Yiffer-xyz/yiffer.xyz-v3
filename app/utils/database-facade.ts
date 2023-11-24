@@ -1,11 +1,17 @@
-export interface DBResponse<T> {
-  isError: boolean;
-  errorMessage: string;
-  errorCode?: string;
-  result?: T;
-  sql?: string;
-  insertId?: number;
-}
+export type DBResponse<T> =
+  | {
+      isError: true;
+      errorMessage: string;
+      errorCode?: string;
+    }
+  | {
+      isError: false;
+      errorMessage: string;
+      errorCode?: string;
+      result: T;
+      sql: string;
+      insertId?: number;
+    };
 
 // T should be an array with the responses expected in order
 export async function queryDbMultiple<T>(

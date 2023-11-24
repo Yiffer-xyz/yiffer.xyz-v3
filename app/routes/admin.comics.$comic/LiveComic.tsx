@@ -53,6 +53,7 @@ export default function LiveComic({
     setComicDataChanges(
       getComicDataChanges(updatedComicData, comic, allArtists, allComics)
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updatedComicData]);
 
   useEffect(() => {
@@ -64,14 +65,15 @@ export default function LiveComic({
       setInitialComicData();
       setNeedsUpdate(false);
     }
-  }, [comic]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comic, needsUpdate]);
 
   function setInitialComicData() {
     const newUpdatedComicData = setupInitialUpdatedComic(comic);
     setUpdatedComicData(newUpdatedComicData);
   }
 
-  function saveComicDataChanges() {
+  async function saveComicDataChanges() {
     if (!comicDataChanges) return;
 
     const body: ComicDataChanges = {
@@ -97,7 +99,7 @@ export default function LiveComic({
       }
     }
 
-    saveChangesFetcher.submit({ body: JSON.stringify(body) });
+    await saveChangesFetcher.awaitSubmit({ body: JSON.stringify(body) });
   }
 
   function unlistComic() {

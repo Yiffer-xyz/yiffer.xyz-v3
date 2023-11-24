@@ -37,13 +37,13 @@ export default function UserUploadSection({
   function submitReview() {
     if (!verdict) return;
 
-    const body: any = {
+    const body = {
       comicId: comicData.id.toString(),
       comicName: comicData.name,
       verdict,
       uploaderId: comicData.metadata?.uploadUserId,
+      ...(modComment && { modComment }),
     };
-    if (modComment) body.modComment = modComment;
 
     fetcher.submit(body);
   }

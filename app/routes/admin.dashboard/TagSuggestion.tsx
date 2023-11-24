@@ -37,7 +37,7 @@ export function TagSuggestion({
           <div className="flex flex-row gap-x-3">
             <b>{action.primaryField}</b>
             <Link
-              href={`/admin/comics/${action.comicId!}`}
+              href={`/admin/comics/${action.comicId}`}
               text="Admin"
               IconRight={MdOpenInNew}
               newTab

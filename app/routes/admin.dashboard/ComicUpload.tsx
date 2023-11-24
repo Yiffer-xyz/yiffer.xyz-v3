@@ -69,7 +69,7 @@ export function ComicUpload({
           )}
           {isAssignedToOther && (
             <p>
-              <i>Assigned to: {action.assignedMod!.username}</i>
+              <i>Assigned to: {action.assignedMod?.username}</i>
             </p>
           )}
 

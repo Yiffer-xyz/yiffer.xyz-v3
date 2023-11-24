@@ -50,8 +50,9 @@ function ErrorBoundaryInner({ error }: { error: any }) {
         Something went wrong in this beloved admin panel of ours :(
       </InfoBox>
 
-      {['clientMessage', 'message', 'errorCode'].map(errField => {
-        if (error[errField]) {
+      {['clientMessage', 'message', 'errorCode']
+        .filter(errField => error && error[errField])
+        .map(errField => {
           return (
             <p
               className="mt-4 p-4 bg-theme1-primaryTrans max-w-xl mx-auto"
@@ -60,8 +61,7 @@ function ErrorBoundaryInner({ error }: { error: any }) {
               {error[errField]}
             </p>
           );
-        }
-      })}
+        })}
     </div>
   );
 }

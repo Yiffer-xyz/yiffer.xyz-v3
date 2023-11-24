@@ -242,14 +242,14 @@ export default function PendingComics() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const { err, pendingComics } = await getPendingComics(args.context.DB_API_URL_BASE);
+  const dbRes = await getPendingComics(args.context.DB_API_URL_BASE);
 
-  if (err) {
-    return processApiError('Error getting pending comics in mod panel', err);
+  if (dbRes.err) {
+    return processApiError('Error getting pending comics in mod panel', dbRes.err);
   }
 
   return {
-    pendingComics: pendingComics || [],
+    pendingComics: dbRes.pendingComics,
     dailySchedulePublishCount: parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT),
   };
 }

@@ -65,7 +65,8 @@ export default function Upload() {
     comicData: NewComicData,
     uploadId: string
   ): Promise<{ error?: string }> {
-    const thumbnailFile = comicData.thumbnail?.file!;
+    const thumbnailFile = comicData.thumbnail?.file;
+    if (!thumbnailFile) return { error: 'No thumbnail file' };
 
     const filesFormDatas = Array<FormData>();
     let currentFormData = new FormData();
@@ -80,8 +81,10 @@ export default function Upload() {
 
     for (let i = 0; i < comicData.files.length; i++) {
       const file = comicData.files[i];
+      if (!file.file) return { error: `File error for page ${i + 1}` };
+
       // Split the request into multiple FormDatas/submissions if size is too big.
-      if (currentFormDataSize + file.file!.size > maxUploadBodySize) {
+      if (currentFormDataSize + file.file.size > maxUploadBodySize) {
         filesFormDatas.push(currentFormData);
         currentFormData = new FormData();
         currentFormData.append('comicName', comicData.comicName);
@@ -90,10 +93,10 @@ export default function Upload() {
 
       currentFormData.append(
         `files`,
-        file.file!,
-        pageNumberToPageName(i + 1, file.file!.name)
+        file.file,
+        pageNumberToPageName(i + 1, file.file.name)
       );
-      currentFormDataSize += file.file!.size;
+      currentFormDataSize += file.file.size;
     }
     filesFormDatas.push(currentFormData);
 

@@ -14,14 +14,18 @@ export default function UpdateThumbnails() {
   const orderedMissingComics = globalContext.comics
     .filter(comic => !comic.temp_hasHighresThumbnail)
     .sort((a, b) => {
-      return b.temp_published!.localeCompare(a.temp_published!);
+      if (!a.temp_published || !b.temp_published) return 0;
+      return b.temp_published.localeCompare(a.temp_published);
     })
     .map(comic => ({
       id: comic.id,
       name: comic.name,
-      daysSincePublished: Math.floor(
-        (Date.now() - new Date(comic.temp_published!).getTime()) / (1000 * 60 * 60 * 24)
-      ),
+      daysSincePublished: comic.temp_published
+        ? Math.floor(
+            (Date.now() - new Date(comic.temp_published).getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
+        : 0,
     }));
 
   return (

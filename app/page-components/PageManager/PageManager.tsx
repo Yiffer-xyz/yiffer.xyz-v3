@@ -16,7 +16,7 @@ type PageManagerProps = {
 };
 
 export default function PageManager({ files, onChange }: PageManagerProps) {
-  const gridContainerRef = useRef<any>();
+  const gridContainerRef = useRef<HTMLDivElement>(null);
   const { width, isMobile } = useWindowSize();
   const [hoveredPageNum, setHoveredPageNum] = useState<number>();
   const [isHalfSize, setIsHalfSize] = useState(false);
@@ -29,7 +29,7 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
   const PAGE_CONTAINER_HEIGHT = PAGE_IMG_HEIGHT + PAGE_NAME_HEIGHT;
   const PAGE_IMG_WIDTH = PAGE_IMG_HEIGHT * RATIO;
 
-  function onDragEnd(_: any, sourceIndex: number, targetIndex: number) {
+  function onDragEnd(_: string, sourceIndex: number, targetIndex: number) {
     lastDragEndTime.current = Date.now();
     if (sourceIndex === targetIndex) return;
     const newFiles = swap(files, sourceIndex, targetIndex);
@@ -45,7 +45,8 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
     const numberOfRows = Math.ceil(files.length / pagesPerRow);
     const containerHeight = numberOfRows * (PAGE_CONTAINER_HEIGHT + PAGES_SPACING);
     return { pagesPerRow, containerHeight };
-  }, [width, files, PAGE_IMG_HEIGHT]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [PAGE_IMG_WIDTH, files.length, width]);
 
   function deleteImage(imageIndex: number) {
     const newFiles = [...files];

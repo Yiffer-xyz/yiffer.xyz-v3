@@ -86,10 +86,9 @@ export default function Dashboard() {
     toastSuccessMessage: 'Comic suggestion processed',
   });
 
-  const allDashboardItems = dashboardDataFetcher.data || [];
-
   const filteredDashboardItems = useMemo(() => {
-    return allDashboardItems.filter(action => {
+    if (!dashboardDataFetcher.data) return [];
+    return dashboardDataFetcher.data.filter(action => {
       if (
         action.assignedMod &&
         action.assignedMod.userId !== user.userId &&
@@ -102,14 +101,22 @@ export default function Dashboard() {
 
       return true;
     });
-  }, [allDashboardItems, showOthersTasks, showCompleted, typeFilter]);
+  }, [
+    dashboardDataFetcher.data,
+    showOthersTasks,
+    showCompleted,
+    typeFilter,
+    user.userId,
+  ]);
 
   async function processTagSuggestion(action: TagSuggestionAction, isApproved: boolean) {
+    if (!action.comicId) return;
+
     const body: ProcessTagSuggestionBody = {
       isApproved,
       actionId: action.id,
       isAdding: action.isAdding,
-      comicId: action.comicId!,
+      comicId: action.comicId,
       tagId: action.tagId,
       suggestingUserId: action.user.userId,
     };
@@ -216,7 +223,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {allDashboardItems.length === 0 && !dashboardDataFetcher.hasFetchedOnce && (
+      {!dashboardDataFetcher.data && !dashboardDataFetcher.hasFetchedOnce && (
         <>
           {Array(6)
             .fill(0)

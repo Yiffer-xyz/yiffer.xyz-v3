@@ -36,6 +36,7 @@ export default function TextInputUncontrolled({
       setLastErrorUpdate(isError);
     }
     return isError;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, validatorFunc]);
 
   const shouldShowError = error || (hasBeenBlurred && isInternalError);

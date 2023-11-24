@@ -7,10 +7,13 @@ export async function getPendingComics(
   urlBase: string,
   scheduledOnly?: boolean,
   topAmount?: number
-): Promise<{
-  pendingComics?: DbPendingComic[];
-  err?: ApiError;
-}> {
+): Promise<
+  | {
+      pendingComics: DbPendingComic[];
+      err?: undefined;
+    }
+  | { err: ApiError }
+> {
   const pendingComicsQuery = `
     SELECT Q2.*, user.username AS scheduleModName FROM (
       SELECT Q1.*, user.username AS reviewerModName 

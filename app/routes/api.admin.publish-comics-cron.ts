@@ -24,12 +24,12 @@ export async function loader(args: LoaderFunctionArgs) {
     );
   }
 
-  const { err, pendingComics } = await getPendingComics(urlBase, true, schedulePerDay);
-  if (err) {
-    return processApiError('Error in /publish-comics-cron', err);
+  const dbRes = await getPendingComics(urlBase, true, schedulePerDay);
+  if (dbRes.err) {
+    return processApiError('Error in /publish-comics-cron', dbRes.err);
   }
 
-  for (const comic of pendingComics!) {
+  for (const comic of dbRes.pendingComics) {
     const err = await publishComic(urlBase, comic.comicId);
     if (err) {
       return processApiError(`Error in /publish-comics-cron, failed publishing`, err);
@@ -37,7 +37,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return new Response(
-    `Cron published comics finished. Comics published: ${pendingComics?.length}.`,
+    `Cron published comics finished. Comics published: ${dbRes.pendingComics?.length}.`,
     { status: 200 }
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { FormEncType, FormMethod, SubmitOptions } from '@remix-run/react';
 import { useFetcher } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,7 +18,7 @@ type RemixSubmitTarget =
     }
   | null;
 
-type ToastFetcherArgs<T = void> = {
+type ToastFetcherArgs = {
   url?: string;
   method?: FormMethod;
   onFinish?: () => void;
@@ -27,6 +28,23 @@ type ToastFetcherArgs<T = void> = {
   fetchGetOnLoad?: boolean;
   encType?: FormEncType;
 };
+
+type JsonObject = {
+  [Key in string]: JsonValue | undefined;
+} & {
+  [Key in string]?: JsonValue | undefined;
+};
+type JsonArray = JsonValue[] | readonly JsonValue[];
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+type SubmitTarget =
+  | HTMLFormElement
+  | HTMLButtonElement
+  | HTMLInputElement
+  | FormData
+  | URLSearchParams
+  | JsonValue
+  | null;
 
 // Not a huge fan of the way Remix' fetchers are called.
 // Imo, much cleaner to initialize it with a url and method, and
@@ -46,7 +64,7 @@ export function useGoodFetcher<T = void>({
   toastError = true, // TODO: Probably flip this
   fetchGetOnLoad = false,
   encType,
-}: ToastFetcherArgs<T>) {
+}: ToastFetcherArgs) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
   const fetchingStateRef = useRef<'is-fetching' | 'not-started'>('not-started');
@@ -84,6 +102,7 @@ export function useGoodFetcher<T = void>({
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.state]);
 
   useEffect(() => {
@@ -102,12 +121,14 @@ export function useGoodFetcher<T = void>({
         showSuccessToast(toastSuccessMessage, preventToastClose, theme);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toastSuccessMessage, theme]);
 
   useEffect(() => {
     if (fetchGetOnLoad && method === 'get') {
       submit();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [method, url, fetchGetOnLoad]);
 
   let returnData: T | undefined;
@@ -118,14 +139,17 @@ export function useGoodFetcher<T = void>({
   }
 
   const submit = useCallback(
-    (body?: RemixSubmitTarget) => {
+    (body?: SubmitTarget) => {
       fetchingStateRef.current = 'is-fetching';
       const submitOptions: SubmitOptions = {
         method: method,
       };
       if (url) submitOptions.action = url;
       if (encType) submitOptions.encType = encType;
-      fetcher.submit(body ?? null, submitOptions);
+      // TODO: Not sure why this is whining. I extracted `SubmitTarget` by entering
+      // the `fetcher.submit` method and literally copying the types...
+      // @ts-ignore
+      fetcher.submit(body, submitOptions);
     },
     [fetcher, method, url, encType]
   );

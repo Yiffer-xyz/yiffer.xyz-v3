@@ -15,7 +15,9 @@ module.exports = {
   rules: {
     'jsx-a11y/anchor-has-content': 'off',
     'react/no-children-prop': 0,
+    '@typescript-eslint/no-non-null-assertion': 0,
     '@typescript-eslint/ban-ts-comment': 1,
+    '@typescript-eslint/no-explicit-any': 'off',
     'prettier/prettier': [
       'error',
       {

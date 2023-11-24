@@ -39,6 +39,7 @@ export default function Select<T>({
 
   useEffect(() => {
     tryComputeWidth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -89,6 +90,7 @@ export default function Select<T>({
       return { minWidth: minWidth };
     }
     return {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullWidth, computedMinWidth, minWidth, width]);
 
   const widthStyle = useMemo(() => {

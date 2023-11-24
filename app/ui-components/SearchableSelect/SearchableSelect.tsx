@@ -56,6 +56,7 @@ export default function SearchableSelect<T>({
 
   useEffect(() => {
     tryComputeWidth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function SearchableSelect<T>({
       setIsOpen(true);
     }
     setCurrentlyHighlightedIndex(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   async function tryComputeWidth() {
@@ -202,6 +204,7 @@ export default function SearchableSelect<T>({
       return options.find(option => equalValueFunc(option.value, value));
     }
     return options.find(option => option.value === value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options, value]);
 
   const borderStyle =

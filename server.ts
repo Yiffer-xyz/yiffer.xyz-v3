@@ -6,7 +6,7 @@ import type { Env } from '~/types/types';
 type Context = EventContext<Env, string, unknown>;
 
 declare module '@remix-run/server-runtime' {
-  // TODO: can we fix?
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface AppLoadContext extends Env {}
 }
 

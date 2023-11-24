@@ -19,6 +19,7 @@ import useWindowSize from '~/utils/useWindowSize';
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();
   const { artist, comics, user } = useLoaderData<typeof loader>();
+
   const banArtistFetcher = useGoodFetcher({
     url: '/api/admin/toggle-artist-ban',
     method: 'post',
@@ -47,7 +48,8 @@ export default function ManageArtist() {
       setInitialArtistData();
       setNeedsUpdate(false);
     }
-  }, [artist]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artist, needsUpdate]);
 
   function setInitialArtistData() {
     const newUpdatedArtistData = setupInitialUpdatedArtist(artist);
@@ -90,11 +92,12 @@ export default function ManageArtist() {
     if (!updatedArtistData.patreonName && !updatedArtistData.hasConfirmedNoPatreonName) {
       return false;
     }
-    if (!updatedArtistData.areLinksValid) {
+    if (updatedArtistData.areLinksValid === false) {
       return false;
     }
 
     return true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artistChanges, updatedArtistData]);
 
   function toggleArtistBan() {

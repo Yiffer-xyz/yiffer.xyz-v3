@@ -1,7 +1,7 @@
 import { IoClose } from 'react-icons/io5';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
-import { Comic } from '~/types/types';
+import type { Comic } from '~/types/types';
 import 'react-calendar/dist/Calendar.css';
 import { format } from 'date-fns';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';

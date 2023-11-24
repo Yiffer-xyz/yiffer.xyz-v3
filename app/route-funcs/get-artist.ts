@@ -50,7 +50,11 @@ export async function getArtistById(
 export async function getArtistByComicId(
   urlBase: string,
   comicId: number
-): Promise<{ artist?: Artist; notFound?: boolean; err?: ApiError }> {
+): Promise<
+  | { err: ApiError }
+  | { notFound: true; err?: undefined }
+  | { artist: Artist; notFound?: undefined; err?: undefined }
+> {
   const artistQuery = `SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
       GROUP_CONCAT(DISTINCT linkUrl SEPARATOR ',') AS linksString 

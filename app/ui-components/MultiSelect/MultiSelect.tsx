@@ -39,6 +39,7 @@ export default function MultiSelect<T>({
 
   useEffect(() => {
     tryComputeWidth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function MultiSelect<T>({
       setIsOpen(true);
     }
     setCurrentlyHighlightedIndex(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   const availableOptions = useMemo(() => {
@@ -71,6 +73,7 @@ export default function MultiSelect<T>({
 
       return isValidOption;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options, value, searchText]);
 
   async function tryComputeWidth() {

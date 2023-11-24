@@ -23,12 +23,13 @@ export async function processUpload(
     uploadBody.artistId = artistId;
   }
 
-  let { err, comicId } = await createComic(urlBase, uploadBody, skipApproval);
-  if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
+  const dbRes = await createComic(urlBase, uploadBody, skipApproval);
+  if (dbRes.err) return wrapApiError(dbRes.err, 'Error uploading', { uploadBody });
+  const comicId = dbRes.comicId;
 
-  err = await createComicMetadata(
+  const err = await createComicMetadata(
     urlBase,
-    comicId!,
+    comicId,
     uploadBody,
     skipApproval,
     user?.userId,
@@ -37,12 +38,12 @@ export async function processUpload(
   if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
-    const err = await createComicLinks(urlBase, uploadBody, comicId!);
+    const err = await createComicLinks(urlBase, uploadBody, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
   }
 
   if (uploadBody.tagIds) {
-    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId!);
+    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
   }
 }
@@ -129,7 +130,11 @@ async function createComicMetadata(
   }
 
   if (skipApproval) {
-    const err = await addContributionPoints(urlBase, userId!, `comicUploadexcellent`);
+    const err = await addContributionPoints(
+      urlBase,
+      userId ?? null,
+      `comicUploadexcellent`
+    );
     if (err) {
       return wrapApiError(err, 'Error adding contribution points for direct mod upload');
     }
@@ -140,7 +145,7 @@ async function createComic(
   urlBase: string,
   uploadBody: UploadBody,
   skipApproval: boolean
-): Promise<{ comicId?: number; err?: ApiError }> {
+): Promise<{ comicId: number; err?: undefined } | { err: ApiError }> {
   const query = `
     INSERT INTO comic
     (name, cat, tag, state, numberOfPages, artist, publishStatus)
@@ -182,9 +187,11 @@ async function createArtist(
     skipApproval ? 0 : 1,
   ];
   const dbRes = await queryDb(urlBase, insertQuery, insertValues);
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, 'Error inserting artist');
+  }
   const artistId = dbRes.insertId;
-
-  if (dbRes.isError || !artistId) {
+  if (!artistId) {
     return makeDbErrObj(dbRes, 'Error inserting artist');
   }
 

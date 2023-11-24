@@ -69,8 +69,9 @@ export default function Upload() {
     }
 
     setIsArtistNameLegal(isLegal);
-  }, [similarArtists, hasConfirmedNewArtist]);
+  }, [similarArtists, hasConfirmedNewArtist, artistName.length]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(onComicNameChange, [comicName]);
 
   function onComicNameChange() {
@@ -107,6 +108,7 @@ export default function Upload() {
     setIsComicnameLegal(isLegal);
   }, [similarComicsFetcher.data, hasConfirmedDifferentComic, comicName]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(onArtistNameChange, [artistName]);
 
   function onArtistNameChange() {

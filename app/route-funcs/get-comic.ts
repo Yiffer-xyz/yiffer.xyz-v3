@@ -1,7 +1,7 @@
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ApiError } from '~/utils/request-helpers';
-import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
+import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 
 type DbComic = {
   id: number;
@@ -158,7 +158,7 @@ async function getDbComicByField(
   urlBase: string,
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): Promise<{ comic?: DbComic; err?: ApiError }> {
+): Promise<{ comic: DbComic; err?: undefined } | { err: ApiError }> {
   const comicQuery = `SELECT
       comic.id,
       comic.name,
@@ -201,7 +201,7 @@ async function getDbComicByField(
 async function getLinksByComicId(
   urlBase: string,
   comicId: number
-): Promise<{ links?: DbComicLink[]; err?: ApiError }> {
+): Promise<{ links: DbComicLink[]; err?: undefined } | { err: ApiError }> {
   const linksQuery = `SELECT
     Q1.*, comic.name AS lastComicName
     FROM (
@@ -226,7 +226,7 @@ async function getLinksByComicId(
 async function getTagsByComicId(
   urlBase: string,
   comicId: number
-): Promise<{ tags?: DbTag[]; err?: ApiError }> {
+): Promise<{ tags: DbTag[]; err?: undefined } | { err: ApiError }> {
   const tagsQuery = `SELECT
       keyword.id AS tagId,
       keyword.keywordName AS tagName

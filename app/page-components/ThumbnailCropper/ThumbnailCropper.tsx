@@ -18,7 +18,7 @@ export default function ThumbnailCropper({
   onComplete,
   image,
 }: ThumbnailCropperProps) {
-  const cropperRef = useRef<HTMLImageElement | ReactCropperElement | null>(null);
+  const cropperRef = useRef<ReactCropperElement | null>(null);
   const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(
     null
   );
@@ -38,7 +38,7 @@ export default function ThumbnailCropper({
     if (isLgUp) return 300;
     if (isMdUp) return 230;
     return 300;
-  }, [isLgUp, isXlUp]);
+  }, [isLgUp, isMdUp]);
 
   const step1Height = 480;
 
@@ -60,9 +60,7 @@ export default function ThumbnailCropper({
     }
 
     setIsTooSmall(false);
-    // any because the types don't seem to match reality
-    const imageElement: any = cropperRef?.current;
-    const cropper: any = imageElement?.cropper;
+    const cropper = cropperRef?.current?.cropper;
     const base64 = cropper.getCroppedCanvas().toDataURL();
     const file = await new Promise<File>(resolve => {
       cropper.getCroppedCanvas().toBlob((blob: Blob | null) => {
@@ -128,7 +126,7 @@ export default function ThumbnailCropper({
                   <>
                     <img
                       src={cropResult.base64}
-                      alt="cropped image"
+                      alt="cropped"
                       style={{ width: step2Width }}
                     />
                     {isMobile && (

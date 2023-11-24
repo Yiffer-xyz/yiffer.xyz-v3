@@ -122,13 +122,13 @@ export async function processAnyUpload(
   if (updateComicDbRes.isError) {
     return makeDbErr(updateComicDbRes, 'Error updating comic in db');
   }
-  if (artistRes.notFound) {
-    return { logMessage: 'Artist not found' };
-  }
   if (artistRes.err) {
     return wrapApiError(artistRes.err, `Error getting artist`);
   }
-  const artist = artistRes.artist!;
+  if (artistRes.notFound) {
+    return { logMessage: 'Artist not found' };
+  }
+  const artist = artistRes.artist;
 
   if (artist.isPending) {
     let pendingErr: ApiError | undefined;

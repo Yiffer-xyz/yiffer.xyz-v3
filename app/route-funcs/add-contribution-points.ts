@@ -27,7 +27,7 @@ export async function addContributionPoints(
   }
 
   ['all-time', yearMonth].forEach(async timeVal => {
-    const existingPoints = existingDbRes.result!.filter(
+    const existingPoints = existingDbRes.result.filter(
       entry => entry.yearMonth === timeVal
     );
 

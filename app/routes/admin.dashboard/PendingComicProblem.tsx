@@ -57,7 +57,7 @@ export function PendingComicProblem({
 
           {isAssignedToOther && (
             <p>
-              <i>Assigned to: {action.assignedMod!.username}</i>
+              <i>Assigned to: {action.assignedMod?.username}</i>
             </p>
           )}
 

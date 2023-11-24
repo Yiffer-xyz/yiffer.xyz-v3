@@ -35,6 +35,7 @@ export default function TextareaUncontrolled({
       return isError;
     }
     return false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, validatorFunc]);
 
   const shouldShowError = error || (hasBeenBlurred && isInternalError);

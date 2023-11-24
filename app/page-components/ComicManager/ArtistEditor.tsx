@@ -35,13 +35,14 @@ export default function ArtistEditor({
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
-  const [isLinksError, setIsLinksError] = useState(true);
+  const [isLinksError, setIsLinksError] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function updateArtist(newArtist: NewArtist) {
     onUpdate(newArtist);
   }
 
+  // Fetch similar artists
   useEffect(() => {
     setHasConfirmedNewArtist(false);
     setSimilarArtists(undefined);
@@ -58,25 +59,45 @@ export default function ArtistEditor({
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      const body: any = { artistName: newArtistData.artistName };
-      if (existingArtist) {
-        body.excludeName = existingArtist.name;
-      }
+      const body = {
+        artistName: newArtistData.artistName,
+        ...(existingArtist && { excludeName: existingArtist.name }),
+      };
 
       similarArtistsFetcher.submit(body);
     }, 1000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newArtistData.artistName, existingArtist?.name]);
 
-  // Add new empty string link if all are filled
-  useEffect(() => {
-    const links = newArtistData.links;
-    if (links.length > 0 && links.every(l => l.length > 0)) {
-      updateArtist({ ...newArtistData, links: [...links, ''] });
+  function onLinkChanged(linkIndex: number, newVal: string) {
+    const newLinks = [...newArtistData.links];
+    newLinks[linkIndex] = newVal;
+    onLinksChange(newLinks);
+  }
+
+  function onDeleteLink(linkIndex: number) {
+    const newLinks = [...newArtistData.links];
+    newLinks.splice(linkIndex, 1);
+    onLinksChange(newLinks);
+  }
+
+  function onLinksChange(newLinks: string[]) {
+    // Add new empty link if all links are filled
+    if (newLinks.length > 0 && newLinks.every(l => l.length > 0)) {
+      newLinks.push('');
     }
-    if (!links.every(l => l.length === 0)) {
+
+    if (!newLinks.every(l => l.length === 0)) {
       setNoLinks(false);
     }
-  }, [newArtistData.links]);
+
+    const isLinksError = newLinks.some(
+      l => l.length && !l.startsWith('http://') && !l.startsWith('https://')
+    );
+    setIsLinksError(isLinksError);
+
+    updateArtist({ ...newArtistData, links: newLinks, areLinksValid: !isLinksError });
+  }
 
   // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
   useEffect(() => {
@@ -97,9 +118,9 @@ export default function ArtistEditor({
     updateArtist({
       ...newArtistData,
       isValidName: isLegal,
-      areLinksValid: isLinksError,
     });
-  }, [similarArtists, hasConfirmedNewArtist, isLinksError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [similarArtists, hasConfirmedNewArtist]);
 
   const isExactMatch =
     similarArtists &&
@@ -272,11 +293,7 @@ export default function ArtistEditor({
                     name={`otherLink${i}`}
                     value={link}
                     placeholder="e.g. https://twitter.com/braeburned"
-                    onChange={newVal => {
-                      const newLinks = [...newArtistData.links];
-                      newLinks[i] = newVal;
-                      updateArtist({ ...newArtistData, links: newLinks });
-                    }}
+                    onChange={newVal => onLinkChanged(i, newVal)}
                     className="mt-2 grow"
                     disabled={noLinks}
                   />
@@ -287,11 +304,7 @@ export default function ArtistEditor({
                       color="primary"
                       variant="naked"
                       icon={MdDelete}
-                      onClick={() => {
-                        const newLinks = [...newArtistData.links];
-                        newLinks.splice(i, 1);
-                        updateArtist({ ...newArtistData, links: newLinks });
-                      }}
+                      onClick={() => onDeleteLink(i)}
                     />
                   )}
                 </div>

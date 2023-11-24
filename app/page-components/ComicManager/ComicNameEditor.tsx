@@ -30,6 +30,7 @@ export default function ComicNameEditor({
   const [hasConfirmedNewComic, setHasConfirmedNewComic] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(onComicNameChange, [comicName]);
 
   // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
@@ -50,6 +51,7 @@ export default function ComicNameEditor({
     }
 
     setIsLegalComicnameState(isLegal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [similarComics, hasConfirmedNewComic]);
 
   function onComicNameChange() {
@@ -71,8 +73,10 @@ export default function ComicNameEditor({
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      const body: any = { comicName };
-      if (existingComic) body.excludeName = existingComic.name;
+      const body = {
+        comicName,
+        ...(existingComic && { excludeName: existingComic.name }),
+      };
       similarComicsFetcher.submit(body);
     }, 1000);
   }
