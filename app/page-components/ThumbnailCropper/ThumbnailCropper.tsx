@@ -65,7 +65,7 @@ export default function ThumbnailCropper({
     const file = await new Promise<File>(resolve => {
       cropper.getCroppedCanvas().toBlob((blob: Blob | null) => {
         if (blob) {
-          resolve(new File([blob], 'thumbnail.png', { type: 'image/png' }));
+          resolve(new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' }));
         }
       });
     });
