@@ -1,8 +1,7 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
-  logApiErrorMessage,
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
@@ -22,36 +21,28 @@ export async function action(args: ActionFunctionArgs) {
   const comicName = body.get('comicName') as string;
   const excludeName = body.get('excludeName');
 
-  const res = await getSimilarlyNamedComics(
+  const comicsRes = await getSimilarlyNamedComics(
     urlBase,
     comicName,
     excludeName ? excludeName.toString() : undefined
   );
-
-  if (res.err) {
-    return processApiError('Error in /search-similarly-named-comics', res.err, {
+  if (comicsRes.err) {
+    return processApiError('Error in /search-similarly-named-comics', comicsRes.err, {
       comicName,
       excludeName,
     });
   }
-  if (!res.comics) {
-    return logApiErrorMessage('Undefined db res in /search-similarly-named-comics', {
-      comicName,
-      excludeName,
-    });
-  }
-
-  return createSuccessJson(res.comics);
+  return createSuccessJson(comicsRes.result);
 }
 
 export async function getSimilarlyNamedComics(
   urlBase: string,
   comicName: string,
   excludeName?: string
-): Promise<{ err?: ApiError; comics?: SimilarComicResponse }> {
+): ResultOrErrorPromise<SimilarComicResponse> {
   const logCtx = { comicName, excludeName };
   if (comicName.length < 2) {
-    return { comics: { similarComics: [], similarRejectedComics: [] } };
+    return { result: { similarComics: [], similarRejectedComics: [] } };
   }
   const comicNameLower = comicName.toLowerCase();
   let distanceThreshold = 4;
@@ -79,7 +70,7 @@ export async function getSimilarlyNamedComics(
     };
   }
 
-  for (const comic of (allComicsTinyRes.comics || []).filter(
+  for (const comic of allComicsTinyRes.result.filter(
     c =>
       c.name !== excludeName &&
       (c.publishStatus === 'published' ||
@@ -95,7 +86,7 @@ export async function getSimilarlyNamedComics(
     }
   }
 
-  for (const comic of (allComicsTinyRes.comics || []).filter(
+  for (const comic of allComicsTinyRes.result.filter(
     c =>
       c.name !== excludeName &&
       (c.publishStatus === 'uploaded' ||
@@ -118,5 +109,5 @@ export async function getSimilarlyNamedComics(
     }
   }
 
-  return { comics: response };
+  return { result: response };
 }

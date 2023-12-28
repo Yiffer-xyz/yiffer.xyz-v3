@@ -29,7 +29,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return processApiError('Error in /publish-comics-cron', dbRes.err);
   }
 
-  for (const comic of dbRes.pendingComics) {
+  for (const comic of dbRes.result) {
     const err = await publishComic(urlBase, comic.comicId);
     if (err) {
       return processApiError(`Error in /publish-comics-cron, failed publishing`, err);
@@ -37,7 +37,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return new Response(
-    `Cron published comics finished. Comics published: ${dbRes.pendingComics?.length}.`,
+    `Cron published comics finished. Comics published: ${dbRes.result.length}.`,
     { status: 200 }
   );
 }

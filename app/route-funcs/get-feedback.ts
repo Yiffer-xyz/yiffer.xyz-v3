@@ -1,4 +1,5 @@
-import { makeDbErrObj, type ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
+import { makeDbErrObj } from '~/utils/request-helpers';
 import type { FeedbackType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 
@@ -30,9 +31,7 @@ type Feedback = {
   timestamp: string;
 };
 
-export async function getAllFeedback(
-  urlBase: string
-): Promise<{ feedback: Feedback[]; err?: undefined } | { err: ApiError }> {
+export async function getAllFeedback(urlBase: string): ResultOrErrorPromise<Feedback[]> {
   const query = `
     SELECT feedback.id, text, type, username, user.email AS userEmail, userId, userIP, isArchived, feedback.timestamp
       FROM feedback
@@ -61,5 +60,5 @@ export async function getAllFeedback(
     timestamp: fbRow.timestamp,
   }));
 
-  return { feedback };
+  return { result: feedback };
 }

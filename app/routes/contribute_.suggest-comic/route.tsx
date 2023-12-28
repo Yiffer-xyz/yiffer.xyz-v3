@@ -9,7 +9,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import type { SimilarComicResponse } from '../api.search-similarly-named-comic';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
@@ -384,9 +384,9 @@ export async function action(args: ActionFunctionArgs) {
   );
   if (errors?.err) {
     return processApiError('Error in post of /suggest-comic', errors.err, logCtx);
-  } else if (errors?.comicExists) {
+  } else if (errors?.result.comicExists) {
     return create400Json('Comic already exists');
-  } else if (errors?.suggestionExists) {
+  } else if (errors?.result.suggestionExists) {
     return create400Json('A suggestion for this comic already exists');
   }
 
@@ -427,9 +427,7 @@ export async function action(args: ActionFunctionArgs) {
 async function checkForExistingComicOrSuggestion(
   dbUrlBase: string,
   comicName: string
-): Promise<
-  { err?: ApiError; suggestionExists?: boolean; comicExists?: boolean } | undefined
-> {
+): ResultOrErrorPromise<{ comicExists?: boolean; suggestionExists?: boolean }> {
   const existingSuggestionQueryPromise = queryDb<{ count: number }[]>(
     dbUrlBase,
     `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
@@ -454,7 +452,7 @@ async function checkForExistingComicOrSuggestion(
     );
   }
   if (existingSuggestionDbRes.result && existingSuggestionDbRes.result[0].count > 0) {
-    return { suggestionExists: true };
+    return { result: { suggestionExists: true } };
   }
 
   if (existingComicDbRes.isError) {
@@ -463,6 +461,8 @@ async function checkForExistingComicOrSuggestion(
     });
   }
   if (existingComicDbRes.result && existingComicDbRes.result[0].count > 0) {
-    return { comicExists: true };
+    return { result: { comicExists: true } };
   }
+
+  return { result: { comicExists: false, suggestionExists: false } };
 }

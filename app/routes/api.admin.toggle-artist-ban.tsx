@@ -58,15 +58,15 @@ export async function toggleArtistBan(
 
   if (!isBanned) return;
 
-  const { comics, err } = await getComicsByArtistId(urlBase, artistId);
-  if (err) {
-    return wrapApiError(err, 'Error banning/unbanning artist', logCtx);
+  const comicsRes = await getComicsByArtistId(urlBase, artistId);
+  if (comicsRes.err) {
+    return wrapApiError(comicsRes.err, 'Error banning/unbanning artist', logCtx);
   }
-  if (!comics || comics.length === 0) return;
+  if (comicsRes.result.length === 0) return;
 
-  const liveComics = comics.filter(c => c.publishStatus === 'published');
-  const pendingComics = comics.filter(c => c.publishStatus === 'pending');
-  const uploadedComics = comics.filter(c => c.publishStatus === 'uploaded');
+  const liveComics = comicsRes.result.filter(c => c.publishStatus === 'published');
+  const pendingComics = comicsRes.result.filter(c => c.publishStatus === 'pending');
+  const uploadedComics = comicsRes.result.filter(c => c.publishStatus === 'uploaded');
 
   const processComicPromises: Promise<ApiError | undefined>[] = [
     ...liveComics.map(c => unlistComic(urlBase, c.id, 'Artist banned')),

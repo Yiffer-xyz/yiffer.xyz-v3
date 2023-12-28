@@ -137,9 +137,9 @@ export async function loader(args: LoaderFunctionArgs) {
     return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
   }
 
-  const { comic, err } = await getComicById(urlBase, comicId);
-  if (err) {
-    return processApiError('Error getting comic in admin>comic', err);
+  const comicsRes = await getComicById(urlBase, comicId);
+  if (comicsRes.err) {
+    return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }
-  return { comic, user, PAGES_PATH: args.context.PAGES_PATH };
+  return { comic: comicsRes.result, user, PAGES_PATH: args.context.PAGES_PATH };
 }

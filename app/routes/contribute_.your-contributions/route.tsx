@@ -20,44 +20,7 @@ import {
   getYourContributedComics,
   getYourTagSuggestions,
 } from './data-fetchers';
-
-export type ContributionStatus = 'pending' | 'approved' | 'rejected';
-
-export interface ContributionBase {
-  comicName: string;
-  status: ContributionStatus;
-  timestamp: string;
-  points?: number;
-  pointsDescription?: string;
-  modComment?: string;
-}
-
-export interface ComicSuggestion extends ContributionBase {
-  type: 'ComicSuggestion';
-}
-
-export interface ContributedComic extends ContributionBase {
-  type: 'ContributedComic';
-  artistName: string;
-  numberOfPages: number;
-  numberOfKeywords: number;
-}
-
-export interface TagSuggestion extends ContributionBase {
-  type: 'TagSuggestion';
-  suggestion: string;
-}
-
-export interface ComicProblem extends ContributionBase {
-  type: 'ComicProblem';
-  problemCategory: string;
-}
-
-export type Contribution =
-  | ComicSuggestion
-  | ContributedComic
-  | TagSuggestion
-  | ComicProblem;
+import type { Contribution, ContributionStatus } from '~/types/types';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
@@ -159,20 +122,16 @@ export async function loader(args: LoaderFunctionArgs) {
   ]);
 
   for (const promise of resolvedPromises) {
-    if (promise.err || !promise.contributions) {
-      return processApiError(
-        'Error getting your contributions',
-        promise.err || { logMessage: 'Contributions returned as null' },
-        {
-          userId: user.userId,
-        }
-      );
+    if (promise.err) {
+      return processApiError('Error getting your contributions', promise.err, {
+        userId: user.userId,
+      });
     }
   }
 
-  let contributions = resolvedPromises
-    .map(res => res.contributions)
-    .flat() as Contribution[];
+  let contributions = (resolvedPromises as { result: Contribution[] }[])
+    .map(res => res.result)
+    .flat();
 
   contributions = contributions.sort((a, b) => {
     return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;

@@ -249,7 +249,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return {
-    pendingComics: dbRes.pendingComics,
+    pendingComics: dbRes.result,
     dailySchedulePublishCount: parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT),
   };
 }

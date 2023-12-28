@@ -1,6 +1,6 @@
 import type { ActionFunction } from '@remix-run/cloudflare';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
   makeDbErrObj,
@@ -21,22 +21,22 @@ export const action: ActionFunction = async function ({ request, context }) {
   const artistName = body.get('artistName') as string;
   const excludeName = body.get('excludeName');
 
-  const { artists, err } = await getSimilarArtists(
+  const artistsRes = await getSimilarArtists(
     urlBase,
     artistName,
     excludeName ? excludeName.toString() : undefined
   );
-  if (err) {
-    return processApiError('Error in /search-similar-artist', err);
+  if (artistsRes.err) {
+    return processApiError('Error in /search-similar-artist', artistsRes.err);
   }
-  return createSuccessJson(artists);
+  return createSuccessJson(artistsRes.result);
 };
 
 export async function getSimilarArtists(
   urlBase: string,
   newArtistName: string,
   excludeName?: string
-): Promise<{ err?: ApiError; artists?: SimilarArtistResponse }> {
+): ResultOrErrorPromise<SimilarArtistResponse> {
   const logCtx = { newArtistName, excludeName };
   const similar: SimilarArtistResponse = {
     similarArtists: [],
@@ -45,7 +45,7 @@ export async function getSimilarArtists(
     exactMatchBannedArtist: '',
   };
   if (newArtistName.length < 2) {
-    return { artists: similar };
+    return { result: similar };
   }
 
   let distanceThreshold = 4;
@@ -61,11 +61,11 @@ export async function getSimilarArtists(
     urlBase,
     allArtistsQuery
   );
-  if (allArtistsRes.isError) {
+  if (allArtistsRes.isError || !allArtistsRes.result) {
     return makeDbErrObj(allArtistsRes, 'Error getting all artists from db', logCtx);
   }
 
-  for (const artist of allArtistsRes.result!) {
+  for (const artist of allArtistsRes.result) {
     if (artist.name === excludeName) continue;
 
     const distance = stringDistance(artist.name, newArtistName);
@@ -84,5 +84,5 @@ export async function getSimilarArtists(
     }
   }
 
-  return { artists: similar };
+  return { result: similar };
 }

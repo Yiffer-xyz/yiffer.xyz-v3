@@ -1,6 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicDataChanges } from './admin.comics.$comic/LiveComic';
-import type { Comic } from '~/types/types';
 import type { DBResponse } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -30,14 +29,14 @@ export async function updateComicData(
   urlBase: string,
   changes: ComicDataChanges
 ): Promise<ApiError | undefined> {
-  let { comic: existingComic, err } = await getComicById(urlBase, changes.comicId);
-  if (err) {
-    return wrapApiError(err, `Could not update comic data`, changes);
+  const comicRes = await getComicById(urlBase, changes.comicId);
+  if (comicRes.err) {
+    return wrapApiError(comicRes.err, `Could not update comic data`, changes);
   }
-  existingComic = existingComic as Comic;
+  const existingComic = comicRes.result;
 
   if (changes.name) {
-    err = await updateComicName(
+    const err = await updateComicName(
       urlBase,
       changes.comicId,
       existingComic.name,
@@ -48,7 +47,7 @@ export async function updateComicData(
     }
   }
   if (changes.nextComicId) {
-    err = await updateComicLink(
+    const err = await updateComicLink(
       urlBase,
       changes.comicId,
       existingComic.nextComic?.id,
@@ -60,7 +59,7 @@ export async function updateComicData(
     }
   }
   if (changes.previousComicId) {
-    err = await updateComicLink(
+    const err = await updateComicLink(
       urlBase,
       changes.comicId,
       existingComic.previousComic?.id,
@@ -72,7 +71,7 @@ export async function updateComicData(
     }
   }
   if (changes.tagIds) {
-    err = await updateTags(
+    const err = await updateTags(
       urlBase,
       changes.comicId,
       existingComic.tags.map(t => t.id),
@@ -83,7 +82,7 @@ export async function updateComicData(
     }
   }
   if (changes.category || changes.classification || changes.artistId || changes.state) {
-    err = await updateGeneralDetails(urlBase, changes);
+    const err = await updateGeneralDetails(urlBase, changes);
     if (err) {
       return wrapApiError(err, 'Error updating general comic details', changes);
     }

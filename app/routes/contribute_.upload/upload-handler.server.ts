@@ -1,7 +1,7 @@
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { UserSession } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 
@@ -14,18 +14,15 @@ export async function processUpload(
   const skipApproval = !!user && ['moderator', 'admin'].includes(user?.userType);
 
   if (uploadBody.newArtist) {
-    const { artistId, err } = await createArtist(
-      urlBase,
-      uploadBody.newArtist,
-      skipApproval
-    );
-    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
-    uploadBody.artistId = artistId;
+    const createRes = await createArtist(urlBase, uploadBody.newArtist, skipApproval);
+    if (createRes.err)
+      return wrapApiError(createRes.err, 'Error uploading', { uploadBody });
+    uploadBody.artistId = createRes.result.artistId;
   }
 
   const dbRes = await createComic(urlBase, uploadBody, skipApproval);
   if (dbRes.err) return wrapApiError(dbRes.err, 'Error uploading', { uploadBody });
-  const comicId = dbRes.comicId;
+  const comicId = dbRes.result;
 
   const err = await createComicMetadata(
     urlBase,
@@ -145,7 +142,7 @@ async function createComic(
   urlBase: string,
   uploadBody: UploadBody,
   skipApproval: boolean
-): Promise<{ comicId: number; err?: undefined } | { err: ApiError }> {
+): ResultOrErrorPromise<number> {
   const query = `
     INSERT INTO comic
     (name, cat, tag, state, numberOfPages, artist, publishStatus)
@@ -168,14 +165,14 @@ async function createComic(
   if (!result.insertId) {
     return makeDbErrObj(result, 'Error inserting comic: no insert ID');
   }
-  return { comicId: result.insertId };
+  return { result: result.insertId };
 }
 
 async function createArtist(
   urlBase: string,
   newArtist: NewArtist,
   skipApproval: boolean
-): Promise<{ artistId?: number; err?: ApiError | undefined }> {
+): ResultOrErrorPromise<{ artistId: number }> {
   const insertQuery = `
     INSERT INTO artist (name, e621name, patreonName, isPending)
     VALUES (?, ?, ?, ?)
@@ -202,7 +199,7 @@ async function createArtist(
     }
   }
 
-  return { artistId };
+  return { result: { artistId } };
 }
 
 async function createArtistLinks(

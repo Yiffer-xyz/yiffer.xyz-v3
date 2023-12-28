@@ -1,6 +1,6 @@
 import type { ComicPublishStatus, ComicTiny } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 type DbComicTiny = {
@@ -19,7 +19,7 @@ export async function getAllComicNamesAndIDs(
     includeUnlisted?: boolean;
     includeThumbnailStatus?: boolean; // TODO: Remove once all thumbnails are fixed
   }
-): Promise<{ err?: ApiError; comics?: ComicTiny[] }> {
+): ResultOrErrorPromise<ComicTiny[]> {
   const thumbnailQuery = options?.includeThumbnailStatus
     ? ', hasHighresThumbnail, published'
     : '';
@@ -49,10 +49,10 @@ export async function getAllComicNamesAndIDs(
     temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
   }));
 
-  if (!options?.modifyNameIncludeType) return { comics };
+  if (!options?.modifyNameIncludeType) return { result: comics };
 
   const mappedComics = addStateToComicNames(comics);
-  return { comics: mappedComics };
+  return { result: mappedComics };
 }
 
 export async function getComicsByArtistId(
@@ -61,7 +61,7 @@ export async function getComicsByArtistId(
   options?: {
     includeUnlisted: boolean;
   }
-): Promise<{ comics?: ComicTiny[]; err?: ApiError }> {
+): ResultOrErrorPromise<ComicTiny[]> {
   const query = `SELECT
       name, id, publishStatus
     FROM comic
@@ -71,12 +71,12 @@ export async function getComicsByArtistId(
       ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
 
   const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
-  if (dbRes.isError) {
+  if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting comics by artist', { artistId, options });
   }
 
   const mappedComics = addStateToComicNames(dbRes.result as ComicTiny[]);
-  return { comics: mappedComics };
+  return { result: mappedComics };
 }
 
 function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {

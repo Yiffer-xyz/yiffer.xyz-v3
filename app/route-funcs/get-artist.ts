@@ -1,6 +1,6 @@
 import type { Artist } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 type DbArtist = {
@@ -17,7 +17,7 @@ type DbArtist = {
 export async function getArtistById(
   urlBase: string,
   artistId: number
-): Promise<{ artist?: Artist; notFound?: boolean; err?: ApiError }> {
+): ResultOrNotFoundOrErrorPromise<Artist> {
   const artistQuery = `
     SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
@@ -34,7 +34,7 @@ export async function getArtistById(
     return { notFound: true };
   }
   return {
-    artist: {
+    result: {
       id: dbRes.result[0].id,
       name: dbRes.result[0].name,
       patreonName: dbRes.result[0].patreonName,
@@ -50,11 +50,7 @@ export async function getArtistById(
 export async function getArtistByComicId(
   urlBase: string,
   comicId: number
-): Promise<
-  | { err: ApiError }
-  | { notFound: true; err?: undefined }
-  | { artist: Artist; notFound?: undefined; err?: undefined }
-> {
+): ResultOrNotFoundOrErrorPromise<Artist> {
   const artistQuery = `SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
       GROUP_CONCAT(DISTINCT linkUrl SEPARATOR ',') AS linksString 
@@ -81,5 +77,5 @@ export async function getArtistByComicId(
     links: dbRes.result[0].linksString ? dbRes.result[0].linksString.split(',') : [],
   };
 
-  return { artist };
+  return { result: artist };
 }

@@ -4,6 +4,16 @@ import type { DBResponse } from '~/utils/database-facade';
 import { HANDLED_ERR_MSG } from '~/utils/error';
 // import * as Sentry from '@sentry/browser';
 
+export type ResultOrErrorPromise<T> = Promise<
+  { result: T; err?: undefined } | { err: ApiError }
+>;
+
+export type ResultOrNotFoundOrErrorPromise<T> = Promise<
+  | { err: ApiError }
+  | { notFound: true; err?: undefined }
+  | { result: T; notFound?: undefined; err?: undefined }
+>;
+
 export type ApiResponse<T = void> = {
   success: boolean;
   error: string | null;
@@ -71,7 +81,8 @@ export function logApiErrorMessage(message: string, context?: { [key: string]: a
   // });
 }
 
-// Quality of life, save some lines of code
+// Wrap a DBResponse and return an ApiError.
+// Meant to be used in functions that return Promise<ApiError | undefined>.
 export function makeDbErr(
   err: DBResponse<any>,
   message: string,
@@ -84,7 +95,8 @@ export function makeDbErr(
   };
 }
 
-// Quality of life, save some lines of code. Same as above but wrapped in {err}
+// Same as above but wrapped in { err }.
+// Meant to be used in functions that use ResultOrErrorPromise.
 export function makeDbErrObj(
   err: DBResponse<any>,
   message: string,

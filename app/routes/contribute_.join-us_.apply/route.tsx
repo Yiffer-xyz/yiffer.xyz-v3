@@ -113,7 +113,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return processApiError('Error in join us - apply', existingApplicationRes.err);
   }
 
-  return { hasExistingApplication: existingApplicationRes.application !== null };
+  return { hasExistingApplication: existingApplicationRes.result !== null };
 }
 
 const validateTelegramUsername = (username: string) =>
@@ -137,7 +137,7 @@ export async function action(args: ActionFunctionArgs) {
     return create500Json();
   }
 
-  if (existingApplicationRes.application) {
+  if (existingApplicationRes.result !== null) {
     return create400Json('You already have an existing application');
   }
 

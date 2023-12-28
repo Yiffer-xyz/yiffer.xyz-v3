@@ -301,19 +301,19 @@ export async function loader(args: LoaderFunctionArgs) {
     tagsPromise,
     userPromise,
   ]);
-  if (artistsRes.err || !artistsRes.artists) {
+  if (artistsRes.err) {
     return processApiError(
       'Error getting artists in upload',
       artistsRes.err || { logMessage: 'Artists returned as undefined' }
     );
   }
-  if (comicsRes.err || !comicsRes.comics) {
+  if (comicsRes.err) {
     return processApiError(
       'Error getting comics in upload',
       comicsRes.err || { logMessage: 'Comics returned as undefined' }
     );
   }
-  if (tagsRes.err || !tagsRes.tags) {
+  if (tagsRes.err) {
     return processApiError(
       'Error getting tags in upload',
       tagsRes.err || { logMessage: 'Tags returned as undefined' }
@@ -321,9 +321,9 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return {
-    artists: artistsRes.artists,
-    comics: comicsRes.comics,
-    tags: tagsRes.tags,
+    artists: artistsRes.result,
+    comics: comicsRes.result,
+    tags: tagsRes.result,
     user,
     uploadUrlBase: args.context.DB_API_URL_BASE,
     context: Object.keys(args.context),

@@ -63,19 +63,19 @@ export async function loader(args: LoaderFunctionArgs) {
     getAllTags(urlBase),
   ]);
 
-  if (comicsRes.err || !comicsRes.comics) {
+  if (comicsRes.err) {
     return processApiError(
       'Error getting comics in mod panel',
       comicsRes.err || { logMessage: 'Comics returned as null' }
     );
   }
-  if (artistsRes.err || !artistsRes.artists) {
+  if (artistsRes.err) {
     return processApiError(
       'Error getting artists in mod panel',
       artistsRes.err || { logMessage: 'Artists returned as null' }
     );
   }
-  if (tagsRes.err || !tagsRes.tags) {
+  if (tagsRes.err) {
     return processApiError(
       'Error getting tags in mod panel',
       tagsRes.err || { logMessage: 'Tags returned as null' }
@@ -83,9 +83,9 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   const globalContext: GlobalAdminContext = {
-    comics: comicsRes.comics,
-    artists: artistsRes.artists,
-    tags: tagsRes.tags,
+    comics: comicsRes.result,
+    artists: artistsRes.result,
+    tags: tagsRes.result,
   };
 
   return globalContext;

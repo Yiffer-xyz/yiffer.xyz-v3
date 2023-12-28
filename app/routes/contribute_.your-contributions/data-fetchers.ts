@@ -1,14 +1,15 @@
 import { queryDb } from '~/utils/database-facade';
+import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type {
   ComicProblem,
+  ComicPublishStatus,
   ComicSuggestion,
+  ComicUploadVerdict,
   ContributedComic,
-  TagSuggestion,
   ContributionStatus,
-} from '~/routes/contribute_.your-contributions/route';
-import { CONTRIBUTION_POINTS } from '~/types/contributions';
-import type { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
-import type { ApiError } from '~/utils/request-helpers';
+  TagSuggestion,
+} from '~/types/types';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 type DbContributedComic = {
@@ -41,7 +42,7 @@ function publishStatusToContributionStatus(
 export async function getYourContributedComics(
   urlBase: string,
   userId: number
-): Promise<{ err?: ApiError; contributions?: ContributedComic[] }> {
+): ResultOrErrorPromise<ContributedComic[]> {
   const query = `SELECT 
       comic.name,
       timestamp,
@@ -95,7 +96,7 @@ export async function getYourContributedComics(
     };
   });
 
-  return { contributions: comics };
+  return { result: comics };
 }
 
 type DbTagSuggestion = {
@@ -109,7 +110,7 @@ type DbTagSuggestion = {
 export async function getYourTagSuggestions(
   urlBase: string,
   userId: number
-): Promise<{ err?: ApiError; contributions?: TagSuggestion[] }> {
+): ResultOrErrorPromise<TagSuggestion[]> {
   const query = `SELECT 
       comic.Name AS comicName,
       status,
@@ -141,7 +142,7 @@ export async function getYourTagSuggestions(
     type: 'TagSuggestion',
   }));
 
-  return { contributions: tagSuggestions };
+  return { result: tagSuggestions };
 }
 
 type DbComicProblem = {
@@ -154,7 +155,7 @@ type DbComicProblem = {
 export async function getYourComicProblems(
   urlBase: string,
   userId: number
-): Promise<{ err?: ApiError; contributions?: ComicProblem[] }> {
+): ResultOrErrorPromise<ComicProblem[]> {
   const query = `SELECT
       comic.Name AS comicName,
       Status AS status,
@@ -183,7 +184,7 @@ export async function getYourComicProblems(
     problemCategory: dbComicProblem.problemCategory,
   }));
 
-  return { contributions: comicProblems };
+  return { result: comicProblems };
 }
 
 type DbComicSuggestion = {
@@ -197,7 +198,7 @@ type DbComicSuggestion = {
 export async function getYourComicSuggestions(
   urlBase: string,
   userId: number
-): Promise<{ err?: ApiError; contributions?: ComicSuggestion[] }> {
+): ResultOrErrorPromise<ComicSuggestion[]> {
   const query = `SELECT
       Name AS comicName,
       timestamp,
@@ -232,5 +233,5 @@ export async function getYourComicSuggestions(
     })
   );
 
-  return { contributions: comicSuggestions };
+  return { result: comicSuggestions };
 }

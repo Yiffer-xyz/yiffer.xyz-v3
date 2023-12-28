@@ -348,15 +348,15 @@ export async function loader(args: LoaderFunctionArgs) {
   if (comicsRes.err) {
     return processApiError('Error getting comic for admin>artist', comicsRes.err);
   }
-  if (artistRes.notFound || !artistRes.artist) {
+  if (artistRes.notFound || !artistRes.result) {
     throw new Response('Artist not found', {
       status: 404,
     });
   }
 
   return {
-    artist: artistRes.artist,
-    comics: comicsRes.comics as ComicTiny[],
+    artist: artistRes.result,
+    comics: comicsRes.result as ComicTiny[],
     user,
   };
 }

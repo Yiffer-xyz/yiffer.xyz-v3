@@ -26,7 +26,7 @@ import BackToContribute from '~/page-components/BackToContribute';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type { ContributionPointsEntry, UserType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError, ApiResponse } from '~/utils/request-helpers';
+import type { ApiResponse, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
@@ -242,7 +242,7 @@ export async function loader(args: LoaderFunctionArgs) {
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
-  return scoresRes;
+  return { topScores: scoresRes.result };
 }
 
 export async function action(
@@ -260,7 +260,7 @@ export async function action(
   }
   return {
     success: true,
-    data: res.topScores,
+    data: res.result,
     error: null,
   };
 }
@@ -276,7 +276,7 @@ async function getTopScores(
   urlBase: 'all-time' | string,
   yearMonth: string,
   excludeMods: boolean
-): Promise<{ topScores?: TopContributionPointsRow[]; err?: ApiError }> {
+): ResultOrErrorPromise<TopContributionPointsRow[]> {
   const query = `
     SELECT 
       user.id AS userId, 
@@ -298,14 +298,14 @@ async function getTopScores(
   `;
 
   const dbRes = await queryDb<ContributionPointsEntry[]>(urlBase, query, [yearMonth]);
-  if (dbRes.isError) {
+  if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting top score list', {
       yearMonth,
       excludeMods,
     });
   }
   return {
-    topScores: topScoreEntriesToPointList(dbRes.result!),
+    result: topScoreEntriesToPointList(dbRes.result!),
   };
 }
 

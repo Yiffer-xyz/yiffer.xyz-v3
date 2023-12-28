@@ -49,12 +49,15 @@ export async function updateArtistData(
     promises.push(updateGeneralDetails(urlBase, changes));
   }
   if (changes.links) {
-    const { artist, err: artistErr } = await getArtistById(urlBase, changes.artistId);
-    if (artistErr) {
-      return wrapApiError(artistErr, 'Error updating artist', changes);
+    const artistRes = await getArtistById(urlBase, changes.artistId);
+    if (artistRes.err) {
+      return wrapApiError(artistRes.err, 'Error updating artist', changes);
+    }
+    if (artistRes.notFound) {
+      return { logMessage: 'Artist not found', context: { artistId: changes.artistId } };
     }
     promises.push(
-      updateLinks(urlBase, changes.artistId, changes.links, artist as Artist)
+      updateLinks(urlBase, changes.artistId, changes.links, artistRes.result)
     );
   }
 

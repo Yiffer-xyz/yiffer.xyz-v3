@@ -1,7 +1,6 @@
-import type { ComicTiny } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import { getComicsByArtistId } from './get-comics';
 
@@ -9,13 +8,12 @@ export async function rejectArtistIfEmpty(
   urlBase: string,
   artistId: number,
   artistName: string
-): Promise<{ isEmpty?: boolean; err?: ApiError }> {
-  let { comics, err } = await getComicsByArtistId(urlBase, artistId);
-  if (err) {
-    return { err: wrapApiError(err, 'Error rejecting artist', { artistId }) };
+): ResultOrErrorPromise<{ isEmpty: boolean }> {
+  const comicsRes = await getComicsByArtistId(urlBase, artistId);
+  if (comicsRes.err) {
+    return { err: wrapApiError(comicsRes.err, 'Error rejecting artist', { artistId }) };
   }
-  comics = comics as ComicTiny[];
-  if (comics.length > 0) return { isEmpty: false };
+  if (comicsRes.result.length > 0) return { result: { isEmpty: false } };
 
   const randomStr = randomString(6);
   const newArtistName = `${artistName}-REJECTED-${randomStr}`;
@@ -30,7 +28,7 @@ export async function rejectArtistIfEmpty(
     });
   }
 
-  return { isEmpty: true };
+  return { result: { isEmpty: true } };
 }
 
 export async function setArtistNotPending(

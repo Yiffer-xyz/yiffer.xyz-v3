@@ -195,3 +195,41 @@ export type ContributionPointsEntry = {
 };
 
 export type FeedbackType = 'bug' | 'general' | 'support';
+
+export type ContributionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface ContributionBase {
+  comicName: string;
+  status: ContributionStatus;
+  timestamp: string;
+  points?: number;
+  pointsDescription?: string;
+  modComment?: string;
+}
+
+export interface ComicSuggestion extends ContributionBase {
+  type: 'ComicSuggestion';
+}
+
+export interface ContributedComic extends ContributionBase {
+  type: 'ContributedComic';
+  artistName: string;
+  numberOfPages: number;
+  numberOfKeywords: number;
+}
+
+export interface TagSuggestion extends ContributionBase {
+  type: 'TagSuggestion';
+  suggestion: string;
+}
+
+export interface ComicProblem extends ContributionBase {
+  type: 'ComicProblem';
+  problemCategory: string;
+}
+
+export type Contribution =
+  | ComicSuggestion
+  | ContributedComic
+  | TagSuggestion
+  | ComicProblem;

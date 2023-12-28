@@ -1,6 +1,6 @@
 import type { ArtistTiny } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 export async function getAllArtists(
@@ -10,7 +10,7 @@ export async function getAllArtists(
     includePending?: boolean;
     includeBanned?: boolean;
   }
-): Promise<{ err?: ApiError; artists?: ArtistTiny[] }> {
+): ResultOrErrorPromise<ArtistTiny[]> {
   let query = `SELECT
       id,
       name,
@@ -29,7 +29,7 @@ export async function getAllArtists(
   }
 
   const artistsRes = await queryDb<ArtistTiny[]>(urlBase, query);
-  if (artistsRes.isError) {
+  if (artistsRes.isError || !artistsRes.result) {
     return makeDbErrObj(artistsRes, 'Error getting artists from db', options);
   }
 
@@ -39,7 +39,7 @@ export async function getAllArtists(
     return artist;
   });
 
-  if (!options.modifyNameIncludeType) return { artists: boolArtists };
+  if (!options.modifyNameIncludeType) return { result: boolArtists };
 
   const mappedArtists = boolArtists.map(artist => {
     if (artist.isPending) {
@@ -51,5 +51,5 @@ export async function getAllArtists(
     return artist;
   });
 
-  return { artists: mappedArtists };
+  return { result: mappedArtists };
 }

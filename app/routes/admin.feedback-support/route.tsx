@@ -10,7 +10,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return processApiError('Error getting data in admin feedback route', feedbackRes.err);
   }
 
-  return { feedback: feedbackRes.feedback };
+  return { feedback: feedbackRes.result };
 }
 
 export default function AdminFeedback() {

@@ -128,7 +128,7 @@ export async function processAnyUpload(
   if (artistRes.notFound) {
     return { logMessage: 'Artist not found' };
   }
-  const artist = artistRes.artist;
+  const artist = artistRes.result;
 
   if (artist.isPending) {
     let pendingErr: ApiError | undefined;

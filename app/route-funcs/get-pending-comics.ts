@@ -1,19 +1,13 @@
 import type { DbPendingComic } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 export async function getPendingComics(
   urlBase: string,
   scheduledOnly?: boolean,
   topAmount?: number
-): Promise<
-  | {
-      pendingComics: DbPendingComic[];
-      err?: undefined;
-    }
-  | { err: ApiError }
-> {
+): ResultOrErrorPromise<DbPendingComic[]> {
   const pendingComicsQuery = `
     SELECT Q2.*, user.username AS scheduleModName FROM (
       SELECT Q1.*, user.username AS reviewerModName 
@@ -60,5 +54,5 @@ export async function getPendingComics(
       topAmount,
     });
   }
-  return { pendingComics: dbRes.result };
+  return { result: dbRes.result };
 }

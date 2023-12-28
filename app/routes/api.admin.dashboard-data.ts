@@ -6,7 +6,7 @@ import type {
   ComicUploadVerdict,
 } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
   makeDbErrObj,
@@ -48,23 +48,21 @@ export type DashboardAction = {
 export async function loader(args: LoaderFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
 
-  const dataResponses: { err?: ApiError; data?: DashboardAction[] }[] = await Promise.all(
-    [
-      getTagSuggestions(urlBase),
-      getProblems(urlBase),
-      getComicUploads(urlBase),
-      getComicSuggestions(urlBase),
-      getPendingComicProblems(urlBase),
-    ]
-  );
+  const dataResponses = await Promise.all([
+    getTagSuggestions(urlBase),
+    getProblems(urlBase),
+    getComicUploads(urlBase),
+    getComicSuggestions(urlBase),
+    getPendingComicProblems(urlBase),
+  ]);
 
   const allSuggestions: DashboardAction[] = [];
   for (const response of dataResponses) {
     if (response.err) {
       return processApiError('Error fetching admin dashboard data', response.err);
     }
-    if (response.data) {
-      allSuggestions.push(...response.data);
+    if (response.result) {
+      allSuggestions.push(...response.result);
     }
   }
 
@@ -91,10 +89,9 @@ type DbTagSuggestion = {
   modName?: string;
 };
 
-async function getTagSuggestions(urlBase: string): Promise<{
-  data?: DashboardAction[];
-  err?: ApiError;
-}> {
+async function getTagSuggestions(
+  urlBase: string
+): ResultOrErrorPromise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName 
       FROM (
         SELECT
@@ -153,7 +150,7 @@ async function getTagSuggestions(urlBase: string): Promise<{
   });
 
   return {
-    data: mappedResults,
+    result: mappedResults,
   };
 }
 
@@ -172,10 +169,7 @@ type DbComicProblem = {
   modName?: string;
 };
 
-async function getProblems(urlBase: string): Promise<{
-  data?: DashboardAction[];
-  err?: ApiError;
-}> {
+async function getProblems(urlBase: string): ResultOrErrorPromise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -231,7 +225,7 @@ async function getProblems(urlBase: string): Promise<{
   });
 
   return {
-    data: mappedResults,
+    result: mappedResults,
   };
 }
 
@@ -251,10 +245,9 @@ type DbComicSuggestion = {
   verdict?: ComicSuggestionVerdict;
 };
 
-async function getComicSuggestions(urlBase: string): Promise<{
-  data?: DashboardAction[];
-  err?: ApiError;
-}> {
+async function getComicSuggestions(
+  urlBase: string
+): ResultOrErrorPromise<DashboardAction[]> {
   const query = `SELECT Q1.*, user.username AS modName
       FROM (
         SELECT
@@ -316,7 +309,7 @@ async function getComicSuggestions(urlBase: string): Promise<{
   });
 
   return {
-    data: mappedResults,
+    result: mappedResults,
   };
 }
 
@@ -337,10 +330,7 @@ type DbComicUpload = {
   modComment?: string;
 };
 
-async function getComicUploads(urlBase: string): Promise<{
-  data?: DashboardAction[];
-  err?: ApiError;
-}> {
+async function getComicUploads(urlBase: string): ResultOrErrorPromise<DashboardAction[]> {
   const query = `
       SELECT Q1.*, user.username AS modName
       FROM (
@@ -433,7 +423,7 @@ async function getComicUploads(urlBase: string): Promise<{
   });
 
   return {
-    data: mappedResults,
+    result: mappedResults,
   };
 }
 
@@ -450,10 +440,9 @@ type DbPendingComicSimple = {
   errorText?: string;
 };
 
-export async function getPendingComicProblems(urlBase: string): Promise<{
-  data?: DashboardAction[];
-  err?: ApiError;
-}> {
+export async function getPendingComicProblems(
+  urlBase: string
+): ResultOrErrorPromise<DashboardAction[]> {
   const query = `
     SELECT Q1.*, user.username AS pendingProblemModName
     FROM (
@@ -510,6 +499,6 @@ export async function getPendingComicProblems(urlBase: string): Promise<{
   });
 
   return {
-    data: mappedResults,
+    result: mappedResults,
   };
 }
