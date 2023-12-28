@@ -6,15 +6,13 @@ import InfoBox from '~/ui-components/InfoBox';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { getUserSession } from '~/utils/auth.server';
 import { queryDb } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import BackToContribute from '~/page-components/BackToContribute';
+import type { FeedbackType } from '~/types/types';
 
 export { authLoader as loader };
-
-type FeedbackType = 'bug' | 'general' | 'support';
 
 export default function Feedback() {
   const userSession = useLoaderData<typeof authLoader>();
@@ -128,10 +126,19 @@ export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const urlBase = args.context.DB_API_URL_BASE;
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
-  const user = await getUserSession(args.request, args.context.JWT_CONFIG_STR);
 
-  const insertQuery = 'INSERT INTO feedback (text, type, userId) VALUES (?, ?, ?)';
-  const insertParams = [feedbackText, feedbackType, user?.userId ?? null];
+  const user = await authLoader(args);
+  let userIp = null;
+  let userId = null;
+  if (user) {
+    userId = user.userId;
+  } else {
+    userIp = args.request.headers.get('CF-Connecting-IP') || 'unknown';
+  }
+
+  const insertQuery =
+    'INSERT INTO feedback (text, type, userId, userIp) VALUES (?, ?, ?, ?)';
+  const insertParams = [feedbackText, feedbackType, userId, userIp];
 
   const dbRes = await queryDb(urlBase, insertQuery, insertParams);
   if (dbRes.isError) {

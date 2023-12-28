@@ -168,6 +168,11 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             isSelected={isRoute('tags')}
           />
           <SidebarLink
+            href="/admin/feedback-support"
+            text="Feedback/support"
+            isSelected={isRoute('feedback-support')}
+          />
+          <SidebarLink
             href="/admin/thumbnails"
             text="Update thumbnails"
             isSelected={isRoute('thumbnails')}

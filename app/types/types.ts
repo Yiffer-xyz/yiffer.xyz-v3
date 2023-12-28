@@ -193,3 +193,5 @@ export type ContributionPointsEntry = {
   comicUploadterrible: number;
   comicUploadRejected: number;
 };
+
+export type FeedbackType = 'bug' | 'general' | 'support';

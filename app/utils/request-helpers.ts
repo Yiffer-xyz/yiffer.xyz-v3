@@ -104,7 +104,7 @@ export function makeDbErrObj(
 // an error boundary.
 export function logErrorBoundaryException(err: Error) {
   console.log('Error boundary captured and logging exception!');
-  // console.log(err);
+  console.log(err);
   // Sentry.captureException(err, {
   //   tags: {
   //     errorBoundary: 'true',
