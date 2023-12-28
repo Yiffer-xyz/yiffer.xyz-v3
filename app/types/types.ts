@@ -2,7 +2,6 @@
 // other bindings such as R2, D1 sql, created locally through runtime
 // arguments (see package.json, --r2=<BUCKET> etc).
 export interface Env {
-  URL_BASE_OLD_DO_NOT_USE: string;
   DB_API_URL_BASE: string;
   FRONT_PAGE_URL: string;
   JWT_CONFIG_STR: string;
