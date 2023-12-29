@@ -1,6 +1,6 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import type { JwtConfig, User, UserSession } from '~/types/types';
+import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
 import { queryDb } from './database-facade';
 import type { ApiError } from './request-helpers';
 import { makeDbErrObj, wrapApiError } from './request-helpers';
@@ -14,7 +14,7 @@ type AuthResponse = {
   errorMessage?: string;
 };
 
-type UserWithPassword = User & { password: string };
+type UserWithPassword = SimpleUser & { password: string };
 
 export async function login(
   username: string,
@@ -30,7 +30,7 @@ export async function login(
     return { errorMessage };
   }
 
-  const redirect = await createUserSession(user as User, jwtConfigStr);
+  const redirect = await createUserSession(user as SimpleUser, jwtConfigStr);
   return { redirect };
 }
 
@@ -78,7 +78,7 @@ export async function signup(
     return makeDbErrObj(insertResult, 'Error inserting user - no insertId');
   }
 
-  const user: User = {
+  const user: SimpleUser = {
     id: insertResult.insertId,
     username,
     email,
@@ -96,7 +96,7 @@ async function authenticate(
   urlBase: string,
   usernameOrEmail: string,
   password: string
-): Promise<{ err?: ApiError; errorMessage?: string; user?: User }> {
+): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
   const query =
     'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
@@ -177,7 +177,7 @@ export async function logout(jwtConfigStr: string) {
   return redirect('/', { headers });
 }
 
-export async function createUserSession(user: User, jwtConfigStr: string) {
+export async function createUserSession(user: SimpleUser, jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
   // This one is for auth - will be verified on the server(s)

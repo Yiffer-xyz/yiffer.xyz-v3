@@ -150,12 +150,23 @@ export type UserSession = {
   userType: 'admin' | 'moderator' | 'user';
 };
 
-// Will definitely be expanded when we get more stuff in here
+// Used for auth, where we don't need all the fields
+export type SimpleUser = {
+  id: number;
+  username: string;
+  email: string;
+  userType: 'admin' | 'moderator' | 'user';
+};
+
 export type User = {
   id: number;
   username: string;
   email: string;
   userType: 'admin' | 'moderator' | 'user';
+  createdTime: string;
+  isBanned: boolean;
+  banReason?: string;
+  modNotes?: string;
 };
 
 export type ModApplication = {
@@ -165,7 +176,7 @@ export type ModApplication = {
   telegramUsername: string;
   username: string;
   notes: string;
-  status: 'pending' | 'approved' | 'rejected' | 'on hold';
+  status: 'pending' | 'approved' | 'rejected';
 };
 
 // It's not gorgeous, but it'll work. The numbers: counts of how many times

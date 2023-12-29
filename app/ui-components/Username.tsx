@@ -1,9 +1,9 @@
 import { RiShieldFill, RiShieldStarFill } from 'react-icons/ri';
-import type { User } from '~/types/types';
+import type { SimpleUser } from '~/types/types';
 import { UserType } from '~/types/types';
 
 type UsernameProps = {
-  user: Omit<User, 'email'>;
+  user: Omit<SimpleUser, 'email'>;
   className?: string;
 };
 
