@@ -19,9 +19,10 @@ export default function AdminFeedback() {
   return (
     <>
       <h1>Feedback and support</h1>
+      <p className="font-bold">ℹ️ See the figma prototype.</p>
 
       {feedback.map(feedback => (
-        <div key={feedback.timestamp} className="mb-8">
+        <div key={feedback.timestamp} className="my-4">
           <pre>{JSON.stringify(feedback, null, 2)}</pre>
         </div>
       ))}

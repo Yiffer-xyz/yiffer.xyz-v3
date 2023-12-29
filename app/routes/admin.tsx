@@ -173,6 +173,11 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             isSelected={isRoute('feedback-support')}
           />
           <SidebarLink
+            href="/admin/mod-applications"
+            text="Mod applications"
+            isSelected={isRoute('mod-applications')}
+          />
+          <SidebarLink
             href="/admin/thumbnails"
             text="Update thumbnails"
             isSelected={isRoute('thumbnails')}

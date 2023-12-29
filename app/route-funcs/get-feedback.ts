@@ -44,8 +44,6 @@ export async function getAllFeedback(urlBase: string): ResultOrErrorPromise<Feed
     return makeDbErrObj(dbRes, 'Could not get all feedback');
   }
 
-  console.log(dbRes);
-
   const feedback: Feedback[] = dbRes.result.map(fbRow => ({
     id: fbRow.id,
     text: fbRow.text,
