@@ -1,23 +1,9 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import { Fragment, useEffect, useMemo, useState } from 'react';
-import { MdArrowForward, MdCheck, MdClose, MdOpenInNew, MdReplay } from 'react-icons/md';
-import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
-import Button from '~/ui-components/Buttons/Button';
-import LoadingButton from '~/ui-components/Buttons/LoadingButton';
-import Link from '~/ui-components/Link';
-import { getArtistById } from '~/route-funcs/get-artist';
-import { getComicsByArtistId } from '~/route-funcs/get-comics';
-import type { NewArtist } from '../contribute_.upload/route';
-import type { Artist, ComicTiny } from '~/types/types';
-import type { FieldChange } from '~/utils/general';
-import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import useWindowSize from '~/utils/useWindowSize';
 import { getTagById } from '~/route-funcs/get-tags';
 
-export default function ManageArtist() {
+export default function ManageTag() {
   const { tag } = useLoaderData<typeof loader>();
 
   return (
@@ -40,10 +26,10 @@ export async function loader(args: LoaderFunctionArgs) {
   // There's also getTagByName api route already implemented.
 
   if (tagRes.err) {
-    return processApiError('Error getting artist for admin>artist', tagRes.err);
+    return processApiError('Error getting tag for admin>tags', tagRes.err);
   }
   if (tagRes.notFound) {
-    throw new Response('Artist not found', {
+    throw new Response('Tag not found', {
       status: 404,
     });
   }

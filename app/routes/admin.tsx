@@ -173,6 +173,11 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
             isSelected={isRoute('users')}
           />
           <SidebarLink
+            href="/admin/advertising"
+            text="Advertising"
+            isSelected={isRoute('advertising')}
+          />
+          <SidebarLink
             href="/admin/feedback-support"
             text="Feedback/support"
             isSelected={isRoute('feedback-support')}

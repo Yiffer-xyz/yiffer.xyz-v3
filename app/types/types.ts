@@ -243,3 +243,36 @@ export type Contribution =
   | ContributedComic
   | TagSuggestion
   | ComicProblem;
+
+export type AdType = 'card' | 'banner' | 'topSmall';
+export type AdStatus =
+  | 'PENDING'
+  | 'ACTIVE'
+  | 'ENDED'
+  | 'CANCELLED'
+  | 'NEEDS CORRECTION'
+  | 'AWAITING PAYMENT'
+  | 'ACTIVE BUT PENDING';
+
+// TODO-db: Make userId and clicks not nullable
+export type Advertisement = {
+  id: string;
+  adType: AdType;
+  adName?: string;
+  link: string;
+  mainText?: string;
+  secondaryText?: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+  };
+  status: AdStatus;
+  filetype: 'png' | 'gif' | 'jpg' | 'webp' | 'webm';
+  expiryDate?: string;
+  createdDate: string;
+  advertiserNotes?: string;
+  clicks: number;
+  adminNotes?: string;
+  correctionNote?: string;
+};
