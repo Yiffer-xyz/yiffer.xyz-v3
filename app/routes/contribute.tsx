@@ -15,7 +15,7 @@ export default function Index() {
     <div>
       <h1 className="text-center">Contribute</h1>
       <p className="text-center mx-auto">
-        <YifferLink href="https://yiffer.xyz" text="To main page" Icon={MdHome} />
+        <YifferLink href="/" text="To main page" Icon={MdHome} />
       </p>
 
       <div className="max-w-4xl mx-auto mt p-4 grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-8 sm:p-8">

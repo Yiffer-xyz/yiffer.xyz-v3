@@ -103,7 +103,6 @@ function App() {
         <Links />
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        {/* TODO: props */}
         <Layout frontPageUrl={data.frontPageUrl} user={data.user}>
           <Outlet />
         </Layout>
@@ -129,14 +128,9 @@ function Layout({
   user: UserSession | null;
   children: React.ReactNode;
 }) {
-  const [, setTheme] = useTheme();
+  const [theme, setTheme] = useTheme();
   const isLoggedIn = !!user;
-  const isMod = true; // TODO:
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-  function togglePopoverOpen() {
-    setIsPopoverOpen(!isPopoverOpen);
-  }
+  const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
 
   return (
     <>
@@ -168,8 +162,8 @@ function Layout({
             >
               Y
             </a>
-            {isLoggedIn ? (
-              <>
+            <>
+              {isLoggedIn && (
                 <Link
                   href="/account"
                   className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
@@ -177,22 +171,24 @@ function Layout({
                   text="Me"
                   Icon={RiAccountCircleLine}
                 />
-                {isMod && (
-                  <Link
-                    href="/admin"
-                    className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
-                    iconMargin={2}
-                    text="Mod"
-                    Icon={RiSettings3Line}
-                  />
-                )}
+              )}
+              {isLoggedIn && isMod && (
                 <Link
-                  href="/contribute"
-                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
+                  href="/admin"
+                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
                   iconMargin={2}
-                  text="Contribute"
-                  Icon={RiAddLine}
+                  text="Mod"
+                  Icon={RiSettings3Line}
                 />
+              )}
+              <Link
+                href="/contribute"
+                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
+                iconMargin={2}
+                text="Contribute"
+                Icon={RiAddLine}
+              />
+              {isLoggedIn && (
                 <a
                   href="/logout"
                   className="font-semibold bg-none dark:text-blue-strong-300 text-sm"
@@ -200,8 +196,9 @@ function Layout({
                   <RiLogoutBoxLine className="inline-block mr-0.5" />
                   Log out
                 </a>
-              </>
-            ) : (
+              )}
+            </>
+            {!isLoggedIn && (
               <a
                 href="/login"
                 className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
@@ -213,8 +210,8 @@ function Layout({
           </div>
 
           <div
-            onClick={togglePopoverOpen}
-            className="cursor-pointer"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="cursor-pointer dark:text-blue-strong-300"
             data-popover-target="popover-hover"
             data-popover-trigger="hover"
           >
@@ -222,30 +219,6 @@ function Layout({
           </div>
         </div>
       </nav>
-
-      {isPopoverOpen && (
-        <div className="flex gap-6 fixed top-0 right-0 z-50 p-4 bg-theme1-primary dark:bg-blue-strong-200">
-          <p>This one is wip.</p>
-          <p
-            onClick={() => {
-              setTheme('light');
-              setIsPopoverOpen(false);
-            }}
-            className="cursor-pointer font-bold dark:text-blue-strong-300"
-          >
-            Light
-          </p>
-          <p
-            onClick={() => {
-              setTheme('dark');
-              setIsPopoverOpen(false);
-            }}
-            className="cursor-pointer font-bold dark:text-blue-strong-300"
-          >
-            Dark
-          </p>
-        </div>
-      )}
 
       {children}
     </>

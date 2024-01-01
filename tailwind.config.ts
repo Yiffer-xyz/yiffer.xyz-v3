@@ -31,14 +31,17 @@ export default {
           primaryLessTrans: '#9aebe770',
           primaryTrans: '#9aebe740',
           primaryMoreTrans: '#9aebe71a',
+          primaryTransDarker: '#7ce9e460',
           dark: '#49ded7',
           darker: '#08ccc2',
+          darker2: '#02c1b7',
           verydark: '#007a74',
         },
         theme2: {
           primary: '#adfee0',
           dark: '#5df1ba',
           darker: '#1cda94',
+          darker2: '#00c37a',
         },
         blue: {
           // "strong" because the saturation is high. To be used in DARK mode

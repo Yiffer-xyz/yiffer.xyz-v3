@@ -13,23 +13,10 @@ export async function getLatestBlog(
   const blogQuery = `
     SELECT blog.id, title, content, timestamp, user.id AS userId, user.username
     FROM blog
-    INNER JOIN user ON blog.authorUserId = user.id
+    INNER JOIN user ON blog.author = user.id
     ORDER BY timestamp DESC
     LIMIT 1
   `;
-
-  return {
-    result: {
-      id: 1,
-      title: 'Test blog 123',
-      content: 'Test content',
-      timestamp: 'abc',
-      authorUser: {
-        id: 1,
-        username: 'Test user',
-      },
-    },
-  };
 
   const dbRes = await queryDb<DbBlog[]>(urlBase, blogQuery);
   if (dbRes.isError || !dbRes.result) {
