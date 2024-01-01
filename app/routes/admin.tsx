@@ -164,27 +164,27 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
           />
           <SidebarLink
             href="/admin/tags"
-            text="Tag manager"
+            text="🚧 Tag manager"
             isSelected={isRoute('tags')}
           />
           <SidebarLink
             href="/admin/users"
-            text="User manager"
+            text="🚧 User manager"
             isSelected={isRoute('users')}
           />
           <SidebarLink
             href="/admin/advertising"
-            text="Advertising"
+            text="🚧 Advertising"
             isSelected={isRoute('advertising')}
           />
           <SidebarLink
             href="/admin/feedback-support"
-            text="Feedback/support"
+            text="🚧 Feedback/support"
             isSelected={isRoute('feedback-support')}
           />
           <SidebarLink
             href="/admin/mod-applications"
-            text="Mod applications"
+            text="🚧 Mod applications"
             isSelected={isRoute('mod-applications')}
           />
           <SidebarLink

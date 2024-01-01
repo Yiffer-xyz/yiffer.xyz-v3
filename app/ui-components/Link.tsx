@@ -6,6 +6,7 @@ type LinkProps = {
   newTab?: boolean;
   Icon?: React.ElementType;
   IconRight?: React.ElementType;
+  iconMargin?: number;
   className?: string;
 };
 
@@ -15,6 +16,7 @@ export default function Link({
   newTab,
   Icon,
   IconRight,
+  iconMargin = 4,
   className,
   ...props
 }: LinkProps) {
@@ -40,7 +42,11 @@ export default function Link({
         className={linkClass}
         style={{ paddingBottom: '1px' }}
       >
+        {Icon ? (
+          <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
+        ) : undefined}
         {text}
+        {IconRight ? <IconRight style={{ marginLeft: iconMargin }} /> : undefined}
       </a>
     );
   } else {
@@ -55,9 +61,11 @@ export default function Link({
         prefetch="intent"
         {...props}
       >
-        {Icon ? <Icon style={{ marginRight: '4px' }} /> : undefined}
+        {Icon ? (
+          <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
+        ) : undefined}
         {text}
-        {IconRight ? <IconRight style={{ marginLeft: '4px' }} /> : undefined}
+        {IconRight ? <IconRight style={{ marginLeft: iconMargin }} /> : undefined}
       </RemixLink>
     );
   }

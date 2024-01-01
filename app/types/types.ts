@@ -276,3 +276,14 @@ export type Advertisement = {
   adminNotes?: string;
   correctionNote?: string;
 };
+
+export type Blog = {
+  id: number;
+  title: string;
+  content: string;
+  authorUser: {
+    id: number;
+    username: string;
+  };
+  timestamp: string;
+};

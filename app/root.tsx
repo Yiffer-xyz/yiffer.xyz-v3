@@ -20,6 +20,16 @@ import clsx from 'clsx';
 import toastCss from 'react-toastify/dist/ReactToastify.css';
 import { getThemeSession } from './utils/theme.server';
 import { getUserSession } from './utils/auth.server';
+import {
+  RiAccountCircleLine,
+  RiAddLine,
+  RiLoginBoxLine,
+  RiLogoutBoxLine,
+  RiSettings3Line,
+} from 'react-icons/ri';
+import Link from './ui-components/Link';
+import { MdLightbulbOutline } from 'react-icons/md';
+import { useState } from 'react';
 // import * as Sentry from '@sentry/browser';
 
 // Sentry.init({
@@ -122,6 +132,11 @@ function Layout({
   const [, setTheme] = useTheme();
   const isLoggedIn = !!user;
   const isMod = true; // TODO:
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  function togglePopoverOpen() {
+    setIsPopoverOpen(!isPopoverOpen);
+  }
 
   return (
     <>
@@ -130,10 +145,10 @@ function Layout({
           px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-400 w-full z-20"
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
-          <div className="flex gap-6 items-center">
+          <div className="flex gap-3 sm:gap-5 items-center">
             <a
               href={frontPageUrl}
-              className="text-gray-400 hidden lg:block bg-none dark:text-blue-strong-300"
+              className="text-gray-400 hidden lg:block bg-none dark:text-blue-strong-300 mr-1"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -144,7 +159,7 @@ function Layout({
             </a>
             <a
               href={frontPageUrl}
-              className="text-gray-400 block lg:hidden bg-none dark:text-blue-strong-300"
+              className="text-gray-400 block lg:hidden bg-none dark:text-blue-strong-300 mr-1"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -155,52 +170,83 @@ function Layout({
             </a>
             {isLoggedIn ? (
               <>
-                <a
-                  href="https://yiffer.xyz/account"
-                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
-                >
-                  Account
-                </a>
+                <Link
+                  href="/account"
+                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                  iconMargin={2}
+                  text="Me"
+                  Icon={RiAccountCircleLine}
+                />
                 {isMod && (
-                  <a
+                  <Link
                     href="/admin"
-                    className="font-semibold bg-none dark:text-blue-strong-300"
-                  >
-                    Admin
-                  </a>
+                    className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                    iconMargin={2}
+                    text="Mod"
+                    Icon={RiSettings3Line}
+                  />
                 )}
+                <Link
+                  href="/contribute"
+                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
+                  iconMargin={2}
+                  text="Contribute"
+                  Icon={RiAddLine}
+                />
                 <a
                   href="/logout"
-                  className="font-semibold bg-none dark:text-blue-strong-300"
+                  className="font-semibold bg-none dark:text-blue-strong-300 text-sm"
                 >
+                  <RiLogoutBoxLine className="inline-block mr-0.5" />
                   Log out
                 </a>
               </>
             ) : (
               <a
                 href="/login"
-                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300"
+                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
               >
+                <RiLoginBoxLine className="inline-block" />
                 Log in
               </a>
             )}
           </div>
-          <div className="flex gap-6">
-            <p
-              onClick={() => setTheme('light')}
-              className="cursor-pointer font-bold dark:text-blue-strong-300"
-            >
-              Light
-            </p>
-            <p
-              onClick={() => setTheme('dark')}
-              className="cursor-pointer font-bold dark:text-blue-strong-300"
-            >
-              Dark
-            </p>
+
+          <div
+            onClick={togglePopoverOpen}
+            className="cursor-pointer"
+            data-popover-target="popover-hover"
+            data-popover-trigger="hover"
+          >
+            <MdLightbulbOutline className="mb-1" />
           </div>
         </div>
       </nav>
+
+      {isPopoverOpen && (
+        <div className="flex gap-6 fixed top-0 right-0 z-50 p-4 bg-theme1-primary dark:bg-blue-strong-200">
+          <p>This one is wip.</p>
+          <p
+            onClick={() => {
+              setTheme('light');
+              setIsPopoverOpen(false);
+            }}
+            className="cursor-pointer font-bold dark:text-blue-strong-300"
+          >
+            Light
+          </p>
+          <p
+            onClick={() => {
+              setTheme('dark');
+              setIsPopoverOpen(false);
+            }}
+            className="cursor-pointer font-bold dark:text-blue-strong-300"
+          >
+            Dark
+          </p>
+        </div>
+      )}
+
       {children}
     </>
   );
