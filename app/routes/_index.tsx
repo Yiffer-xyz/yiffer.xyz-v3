@@ -39,7 +39,7 @@ export default function Index() {
           <p className="text-center">
             We are struggling financially.
             <br />
-            Please <Link text="support us on Patreon" href="#" />!
+            Please <Link text="support us on Patreon" href="#" isInsideParagraph />!
           </p>
           <p className="text-center mt-0.5">VIP patron: TODO implement.</p>
         </div>

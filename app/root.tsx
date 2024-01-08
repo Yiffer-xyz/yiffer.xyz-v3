@@ -136,13 +136,13 @@ function Layout({
     <>
       <nav
         className="flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:bg-none
-          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-400 w-full z-20"
+          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20"
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">
             <a
               href={frontPageUrl}
-              className="text-gray-400 hidden lg:block bg-none dark:text-blue-strong-300 mr-1"
+              className="text-gray-200 hidden lg:block bg-none dark:text-blue-strong-300 mr-1"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -153,7 +153,7 @@ function Layout({
             </a>
             <a
               href={frontPageUrl}
-              className="text-gray-400 block lg:hidden bg-none dark:text-blue-strong-300 mr-1"
+              className="text-gray-200 block lg:hidden bg-none dark:text-blue-strong-300 mr-1"
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -166,7 +166,7 @@ function Layout({
               {isLoggedIn && (
                 <Link
                   href="/account"
-                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                  className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
                   iconMargin={2}
                   text="Me"
                   Icon={RiAccountCircleLine}
@@ -175,7 +175,7 @@ function Layout({
               {isLoggedIn && isMod && (
                 <Link
                   href="/admin"
-                  className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                  className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
                   iconMargin={2}
                   text="Mod"
                   Icon={RiSettings3Line}
@@ -183,7 +183,7 @@ function Layout({
               )}
               <Link
                 href="/contribute"
-                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
+                className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
                 iconMargin={2}
                 text="Contribute"
                 Icon={RiAddLine}
@@ -201,7 +201,7 @@ function Layout({
             {!isLoggedIn && (
               <a
                 href="/login"
-                className="text-gray-400 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
               >
                 <RiLoginBoxLine className="inline-block" />
                 Log in
@@ -212,8 +212,6 @@ function Layout({
           <div
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             className="cursor-pointer dark:text-blue-strong-300"
-            data-popover-target="popover-hover"
-            data-popover-trigger="hover"
           >
             <MdLightbulbOutline className="mb-1" />
           </div>

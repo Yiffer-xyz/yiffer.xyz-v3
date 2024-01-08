@@ -14,9 +14,7 @@ export default function Index() {
   return (
     <div>
       <h1 className="text-center">Contribute</h1>
-      <p className="text-center mx-auto">
-        <YifferLink href="/" text="To main page" Icon={MdHome} />
-      </p>
+      <YifferLink href="/" text="To main page" Icon={MdHome} className="mx-auto" />
 
       <div className="max-w-4xl mx-auto mt p-4 grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-8 sm:p-8">
         <ContributionCard
@@ -86,7 +84,7 @@ function ContributionCard({
   ) : (
     <Link
       to={'/contribute/' + href}
-      prefetch="intent"
+      prefetch="render"
       style={{ backgroundImage: 'none' }}
     >
       <div
