@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { GlobalAdminContext } from '~/routes/admin';
-import { getComicById } from '~/route-funcs/get-comic';
+import { getComicByField } from '~/route-funcs/get-comic';
 import type { Comic } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
@@ -137,9 +137,13 @@ export async function loader(args: LoaderFunctionArgs) {
     return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
   }
 
-  const comicsRes = await getComicById(urlBase, comicId);
+  const comicsRes = await getComicByField(urlBase, 'id', comicId);
   if (comicsRes.err) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }
+  if (comicsRes.notFound) {
+    return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
+  }
+
   return { comic: comicsRes.result, user, PAGES_PATH: args.context.PAGES_PATH };
 }

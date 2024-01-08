@@ -29,7 +29,6 @@ import {
 } from 'react-icons/ri';
 import Link from './ui-components/Link';
 import { MdLightbulbOutline } from 'react-icons/md';
-import { useState } from 'react';
 // import * as Sentry from '@sentry/browser';
 
 // Sentry.init({

@@ -13,7 +13,7 @@ import {
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
-import { getArtistById } from '~/route-funcs/get-artist';
+import { getArtistByField } from '~/route-funcs/get-artist';
 
 export async function action(args: ActionFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
@@ -49,7 +49,7 @@ export async function updateArtistData(
     promises.push(updateGeneralDetails(urlBase, changes));
   }
   if (changes.links) {
-    const artistRes = await getArtistById(urlBase, changes.artistId);
+    const artistRes = await getArtistByField(urlBase, 'id', changes.artistId);
     if (artistRes.err) {
       return wrapApiError(artistRes.err, 'Error updating artist', changes);
     }

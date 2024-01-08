@@ -65,6 +65,20 @@ export type Comic = {
   metadata?: ComicMetadata;
 };
 
+export type ComicForBrowse = {
+  id: number;
+  name: string;
+  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
+  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+  artistName: string;
+  updated: string;
+  published: string;
+  numberOfPages: number;
+  state: 'wip' | 'cancelled' | 'finished';
+  userRating: number;
+  yourRating?: number;
+};
+
 export type ComicPublishStatus =
   | 'published'
   | 'pending'
@@ -287,3 +301,5 @@ export type Blog = {
   };
   timestamp: string;
 };
+
+export const browsePageSize = 60;

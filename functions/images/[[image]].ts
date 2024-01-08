@@ -1,6 +1,5 @@
-// This is not in use. It was an attempt at doing pages via R2, which
-// didn't end up working as well as intended. Leaving it here as an
-// example of how to to R2 with functions, however.
+// THIS IS ONLY FOR LOCAL DEV. IN PROD, NOTHING POINTS TO /images,
+// IT'S HANDLED BY CLOUDFLARE AND USING static.testyiffer.xyz.
 
 interface Env {
   COMICS_BUCKET: R2Bucket;

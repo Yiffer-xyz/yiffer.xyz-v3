@@ -55,24 +55,44 @@ export async function getAllComicNamesAndIDs(
   return { result: mappedComics };
 }
 
-export async function getComicsByArtistId(
+export async function getComicsByArtistField(
   urlBase: string,
-  artistId: number,
+  fieldName: 'id' | 'name',
+  fieldValue: string | number,
   options?: {
-    includeUnlisted: boolean;
+    includeUnlisted?: boolean;
+    includeOnlyPublished?: boolean;
   }
 ): ResultOrErrorPromise<ComicTiny[]> {
-  const query = `SELECT
-      name, id, publishStatus
-    FROM comic
-    WHERE artist = ?
+  let publishStatusFilter = '';
+  if (options?.includeOnlyPublished) {
+    publishStatusFilter = 'AND publishStatus = "published"';
+  } else {
+    publishStatusFilter = `
       AND publishStatus != "rejected"
       AND publishStatus != "rejected-list"
-      ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
+    `;
+    if (!options?.includeUnlisted) {
+      publishStatusFilter += 'AND publishStatus != "unlisted"';
+    }
+  }
 
-  const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
+  const fromWhereStr =
+    fieldName === 'id'
+      ? 'FROM comic WHERE artist = ?'
+      : 'FROM comic INNER JOIN artist ON (artist.id = comic.artist) WHERE artist.name = ?';
+
+  const query = `SELECT comic.name, comic.id, publishStatus
+    ${fromWhereStr}
+    ${publishStatusFilter}`;
+
+  const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [fieldValue]);
   if (dbRes.isError || !dbRes.result) {
-    return makeDbErrObj(dbRes, 'Error getting comics by artist', { artistId, options });
+    return makeDbErrObj(dbRes, 'Error getting comics by artist', {
+      fieldName,
+      fieldValue,
+      options,
+    });
   }
 
   const mappedComics = addStateToComicNames(dbRes.result as ComicTiny[]);

@@ -9,7 +9,7 @@ import {
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
-import { getComicsByArtistId } from '~/route-funcs/get-comics';
+import { getComicsByArtistField } from '~/route-funcs/get-comics';
 import { processUserUpload } from './api.admin.process-user-upload';
 import { rejectComic } from './api.admin.reject-pending-comic';
 import { unlistComic } from './api.admin.unlist-comic';
@@ -58,7 +58,7 @@ export async function toggleArtistBan(
 
   if (!isBanned) return;
 
-  const comicsRes = await getComicsByArtistId(urlBase, artistId);
+  const comicsRes = await getComicsByArtistField(urlBase, 'id', artistId);
   if (comicsRes.err) {
     return wrapApiError(comicsRes.err, 'Error banning/unbanning artist', logCtx);
   }

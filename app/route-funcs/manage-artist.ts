@@ -2,14 +2,14 @@ import { queryDb } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
-import { getComicsByArtistId } from './get-comics';
+import { getComicsByArtistField } from './get-comics';
 
 export async function rejectArtistIfEmpty(
   urlBase: string,
   artistId: number,
   artistName: string
 ): ResultOrErrorPromise<{ isEmpty: boolean }> {
-  const comicsRes = await getComicsByArtistId(urlBase, artistId);
+  const comicsRes = await getComicsByArtistField(urlBase, 'id', artistId);
   if (comicsRes.err) {
     return { err: wrapApiError(comicsRes.err, 'Error rejecting artist', { artistId }) };
   }

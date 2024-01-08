@@ -10,7 +10,7 @@ import {
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
-import { getComicById } from '~/route-funcs/get-comic';
+import { getComicByField } from '~/route-funcs/get-comic';
 
 export async function action(args: ActionFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
@@ -29,9 +29,15 @@ export async function updateComicData(
   urlBase: string,
   changes: ComicDataChanges
 ): Promise<ApiError | undefined> {
-  const comicRes = await getComicById(urlBase, changes.comicId);
+  const comicRes = await getComicByField(urlBase, 'id', changes.comicId);
   if (comicRes.err) {
     return wrapApiError(comicRes.err, `Could not update comic data`, changes);
+  }
+  if (comicRes.notFound) {
+    return {
+      logMessage: `Could not update comic data - comic not found`,
+      context: changes,
+    };
   }
   const existingComic = comicRes.result;
 

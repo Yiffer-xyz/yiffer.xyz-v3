@@ -14,20 +14,34 @@ type DbArtist = {
   linksString: string;
 };
 
-export async function getArtistById(
+export async function getArtistByField(
   urlBase: string,
-  artistId: number
+  fieldName: 'id' | 'name',
+  fieldValue: string | number
 ): ResultOrNotFoundOrErrorPromise<Artist> {
+  let fromString = '';
+  const fromTable = fieldName === 'id' ? 'artist' : 'IdQuery';
+
+  if (fieldName === 'id') {
+    fromString = 'artist ';
+  } else {
+    fromString = `(
+      SELECT * FROM artist WHERE name = ?
+    ) AS IdQuery `;
+  }
+
   const artistQuery = `
     SELECT
       id, name, patreonName, e621Name, isPending, isBanned, isRejected,
       GROUP_CONCAT(DISTINCT linkUrl SEPARATOR ',') AS linksString 
-    FROM artist LEFT JOIN artistlink ON (artistlink.artistId = artist.id)
-    WHERE id = ?`;
+    FROM ${fromString}
+    LEFT JOIN artistlink ON (artistlink.artistId = ${fromTable}.id)
+    ${fieldName === 'id' ? 'WHERE id = ?' : ''}
+  `;
 
-  const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [artistId]);
+  const dbRes = await queryDb<DbArtist[]>(urlBase, artistQuery, [fieldValue]);
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting artist', { artistId });
+    return makeDbErrObj(dbRes, 'Error getting artist', { fieldName, fieldValue });
   }
 
   if (!dbRes.result || dbRes.result.length === 0) {

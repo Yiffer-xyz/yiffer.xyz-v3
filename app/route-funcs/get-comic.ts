@@ -1,6 +1,9 @@
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ResultOrErrorPromise } from '~/utils/request-helpers';
+import type {
+  ResultOrErrorPromise,
+  ResultOrNotFoundOrErrorPromise,
+} from '~/utils/request-helpers';
 import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 
 type DbComic = {
@@ -43,41 +46,39 @@ type DbTag = {
   tagName: string;
 };
 
-export async function getComicById(
+export async function getComicByField(
   urlBase: string,
-  comicId: number,
+  fieldName: 'id' | 'name',
+  fieldValue: string | number,
   excludeMetadata?: boolean
-): ResultOrErrorPromise<Comic> {
-  const logCtx = { comicId, excludeMetadata };
+): ResultOrNotFoundOrErrorPromise<Comic> {
+  const logCtx = { fieldName, fieldValue, excludeMetadata };
   const [comicRes, linksRes, tagsRes] = await Promise.all([
-    getDbComicByField(urlBase, 'id', comicId),
-    getLinksByComicId(urlBase, comicId),
-    getTagsByComicId(urlBase, comicId),
+    getDbComicByField(urlBase, fieldName, fieldValue),
+    getLinksByComicField(urlBase, fieldName, fieldValue),
+    fieldName === 'id'
+      ? getTagsByComicId(urlBase, fieldValue as number)
+      : getTagsByComicName(urlBase, fieldValue as string),
   ]);
 
   if (comicRes.err) {
     return {
-      err: wrapApiError(comicRes.err, 'Error getting comic by id', logCtx),
+      err: wrapApiError(comicRes.err, 'Error getting comic by id/name', logCtx),
     };
   }
   if (linksRes.err) {
     return {
-      err: wrapApiError(linksRes.err, 'Error getting comic by id', logCtx),
+      err: wrapApiError(linksRes.err, 'Error getting comic by id/name', logCtx),
     };
   }
   if (tagsRes.err) {
     return {
-      err: wrapApiError(tagsRes.err, 'Error getting comic by id', logCtx),
+      err: wrapApiError(tagsRes.err, 'Error getting comic by id/name', logCtx),
     };
   }
 
-  if (!comicRes.result) {
-    return {
-      err: {
-        logMessage: 'ComicRes.comic has no value',
-        context: logCtx,
-      },
-    };
+  if (comicRes.notFound) {
+    return { notFound: true };
   }
 
   const finalComic = mergeDbFieldsToComic(
@@ -158,7 +159,7 @@ async function getDbComicByField(
   urlBase: string,
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): ResultOrErrorPromise<DbComic> {
+): ResultOrNotFoundOrErrorPromise<DbComic> {
   const comicQuery = `SELECT
       comic.id,
       comic.name,
@@ -195,12 +196,17 @@ async function getDbComicByField(
   if (comicDbRes.isError || !comicDbRes.result) {
     return makeDbErrObj(comicDbRes, 'Error getting comic', { fieldName, fieldValue });
   }
+  if (comicDbRes.result.length === 0) {
+    return { notFound: true };
+  }
+
   return { result: comicDbRes.result[0] };
 }
 
-async function getLinksByComicId(
+async function getLinksByComicField(
   urlBase: string,
-  comicId: number
+  fieldName: 'id' | 'name',
+  fieldValue: string | number
 ): ResultOrErrorPromise<DbComicLink[]> {
   const linksQuery = `SELECT
     Q1.*, comic.name AS lastComicName
@@ -213,12 +219,17 @@ async function getLinksByComicId(
       INNER JOIN comic ON (firstComic = comic.id) 
     ) AS Q1
     INNER JOIN comic ON (lastComicId = comic.id)
-    WHERE firstComicId = ? OR lastComicId = ?`;
+    WHERE 
+      ${fieldName === 'id' ? 'firstComicId' : 'firstComicName'} = ?
+      OR ${fieldName === 'id' ? 'lastComicId' : 'comic.name'} = ?`;
 
-  const params = [comicId, comicId];
+  const params = [fieldValue, fieldValue];
   const linksDbRes = await queryDb<DbComicLink[]>(urlBase, linksQuery, params);
   if (linksDbRes.isError || !linksDbRes.result) {
-    return makeDbErrObj(linksDbRes, 'Error getting comic links', { comicId });
+    return makeDbErrObj(linksDbRes, 'Error getting comic links', {
+      fieldName,
+      fieldValue,
+    });
   }
   return { result: linksDbRes.result };
 }
@@ -237,6 +248,25 @@ async function getTagsByComicId(
   const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicId]);
   if (tagsDbRes.isError || !tagsDbRes.result) {
     return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicId });
+  }
+  return { result: tagsDbRes.result };
+}
+
+async function getTagsByComicName(
+  urlBase: string,
+  comicName: string
+): ResultOrErrorPromise<DbTag[]> {
+  const tagsQuery = `SELECT
+      keyword.id AS tagId,
+      keyword.keywordName AS tagName
+      FROM comickeyword
+      INNER JOIN keyword ON (keyword.id = comickeyword.keywordId)
+      INNER JOIN comic ON (comic.id = comickeyword.comicId)
+    WHERE comic.name = ?`;
+
+  const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicName]);
+  if (tagsDbRes.isError || !tagsDbRes.result) {
+    return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicName });
   }
   return { result: tagsDbRes.result };
 }

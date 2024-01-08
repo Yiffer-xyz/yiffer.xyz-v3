@@ -6,8 +6,8 @@ import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Link from '~/ui-components/Link';
-import { getArtistById } from '~/route-funcs/get-artist';
-import { getComicsByArtistId } from '~/route-funcs/get-comics';
+import { getArtistByField } from '~/route-funcs/get-artist';
+import { getComicsByArtistField } from '~/route-funcs/get-comics';
 import type { NewArtist } from '../contribute_.upload/route';
 import type { Artist, ComicTiny } from '~/types/types';
 import type { FieldChange } from '~/utils/general';
@@ -338,8 +338,10 @@ export async function loader(args: LoaderFunctionArgs) {
   const artistParam = args.params.artist as string;
   const artistId = parseInt(artistParam);
 
-  const artistPromise = getArtistById(urlBase, artistId);
-  const comicsPromise = getComicsByArtistId(urlBase, artistId, { includeUnlisted: true });
+  const artistPromise = getArtistByField(urlBase, 'id', artistId);
+  const comicsPromise = getComicsByArtistField(urlBase, 'id', artistId, {
+    includeUnlisted: true,
+  });
   const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
 
   if (artistRes.err) {
