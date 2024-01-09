@@ -14,8 +14,6 @@ export const colors = {
   },
   status: {
     info1: '#39a6ef',
-    info2: '#39a6ef',
-    // error1: // use red.strong.300
     error2: '#e2557f',
     warn1: '#ec9e3f',
     warn2: '#fbc164',

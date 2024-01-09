@@ -5,6 +5,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { Blog } from '~/types/types';
 import { useTheme } from '~/utils/theme-provider';
 import { authLoader } from '~/utils/loaders';
+import { colors } from 'tailwind.config';
 
 export { authLoader as loader };
 
@@ -94,8 +95,7 @@ export default function Index() {
 }
 
 const darkHeaderStyle = {
-  backgroundImage:
-    '-webkit-gradient(linear,left top,right top,color-stop(.2,#49ded7),color-stop(.8,#5df1ba))',
+  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${colors.theme1.dark}),color-stop(.8,${colors.theme2.dark}))`,
   backgroundClip: 'text',
 };
 const lightHeaderStyle = {

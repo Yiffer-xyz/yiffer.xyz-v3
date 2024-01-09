@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
+import { colors } from 'tailwind.config';
 import useWindowSize from '~/utils/useWindowSize';
 
 type keyValOptions<T> = { text: string; value: T };
@@ -210,7 +211,9 @@ export default function SearchableSelect<T>({
   const borderStyle =
     error || disabled
       ? ''
-      : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+      : {
+          borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+        };
 
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
     disabled:border-gray-800 dark:disabled:border-gray-600

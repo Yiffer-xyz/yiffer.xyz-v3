@@ -10,6 +10,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { useLoaderData, useSearchParams } from '@remix-run/react';
 import { getComicsPaginated } from '~/route-funcs/get-comics-paginated';
 import { browsePageSize } from '~/types/types';
+import { colors } from 'tailwind.config';
 
 type BrowseParams = {
   page: number;
@@ -158,8 +159,7 @@ export default function BrowsePage() {
   );
 }
 const darkHeaderStyle = {
-  backgroundImage:
-    '-webkit-gradient(linear,left top,right top,color-stop(.2,#49ded7),color-stop(.8,#5df1ba))',
+  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${colors.theme1.dark}),color-stop(.8,${colors.theme2.dark}))`,
   backgroundClip: 'text',
 };
 const lightHeaderStyle = {

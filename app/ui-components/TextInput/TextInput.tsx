@@ -1,5 +1,6 @@
 import { MdClear } from 'react-icons/md';
 import { useMemo } from 'react';
+import { colors } from 'tailwind.config';
 
 export type BaseTextInputProps = {
   label: string;
@@ -53,7 +54,9 @@ export default function TextInput({
 
   const borderStyle = borderClass
     ? ''
-    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+    : {
+        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+      };
 
   return (
     <div className={`flex flex-col ${className}`} {...props}>
