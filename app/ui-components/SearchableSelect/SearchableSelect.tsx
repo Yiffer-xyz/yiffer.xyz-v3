@@ -127,7 +127,7 @@ export default function SearchableSelect<T>({
 
   function onSelected(clickedValue: T) {
     onChange(clickedValue);
-    clearAndCloseSearch();
+    setIsOpen(false);
   }
 
   function clearAndCloseSearch({ avoidIfHighlighted = false } = {}) {
@@ -183,6 +183,11 @@ export default function SearchableSelect<T>({
     }
 
     setCurrentlyHighlightedIndex(indexNum);
+  }
+
+  function onClearClicked() {
+    onValueCleared();
+    setSearchText('');
   }
 
   const filteredOptions = useMemo<keyValOptions<T>[]>(() => {
@@ -260,7 +265,7 @@ export default function SearchableSelect<T>({
       {value && (
         <span
           className="absolute right-2 top-3 hover:cursor-pointer"
-          onClick={onValueCleared}
+          onClick={onClearClicked}
         >
           <RiCloseLine />
         </span>
