@@ -126,6 +126,7 @@ export default function SearchableSelect<T>({
   }
 
   function onSelected(clickedValue: T) {
+    setSearchText(filteredOptions[0].text);
     onChange(clickedValue);
     setIsOpen(false);
   }
