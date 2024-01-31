@@ -38,13 +38,21 @@ export type ArtistTiny = {
   isBanned: boolean;
 };
 
+export type Category = 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+export type CategoryWithAll = Category | 'All';
+export const allCategories: CategoryWithAll[] = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'];
+
+export function isCategory(category: string): category is Category {
+  return ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].includes(category);
+}
+
 export type Comic = {
   name: string;
   id: number;
   state: 'wip' | 'cancelled' | 'finished';
   publishStatus: ComicPublishStatus;
   classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
-  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+  category: Category;
   numberOfPages: number;
   previousComic?: {
     id: number;
@@ -69,7 +77,7 @@ export type ComicForBrowse = {
   id: number;
   name: string;
   classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
-  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+  category: Category;
   artistName: string;
   updated: string;
   published: string;
@@ -303,3 +311,32 @@ export type Blog = {
 };
 
 export const browsePageSize = 60;
+
+export type SortType = 'Recently updated' | 'User score' | 'Your score' | 'Random';
+export const allSortTypes: SortType[] = [
+  'Recently updated',
+  'User score',
+  'Your score',
+  'Random',
+];
+
+export type ViewType =
+  | 'Tiny card'
+  | 'Simple card'
+  | 'Detailed card'
+  | 'Detailed with tags';
+export const allViewTypes: ViewType[] = [
+  'Tiny card',
+  'Simple card',
+  'Detailed card',
+  'Detailed with tags',
+];
+
+export type SearchFilterState = {
+  isAllCategories: boolean;
+  categories: Category[];
+  searchString: string;
+  tags: Tag[];
+  sort: SortType;
+  viewType: ViewType;
+};

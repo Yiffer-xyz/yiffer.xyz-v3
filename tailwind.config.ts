@@ -21,6 +21,7 @@ export const colors = {
   bgDark: '#262c30',
   theme1: {
     primary: '#9aebe7',
+    primaryEvenLessTrans: '#9aebe7aa',
     primaryLessTrans: '#9aebe770',
     primaryTrans: '#9aebe740',
     primaryMoreTrans: '#9aebe71a',
@@ -32,6 +33,9 @@ export const colors = {
   },
   theme2: {
     primary: '#adfee0',
+    primaryEvenLessTrans: '#adfee0aa',
+    primaryLessTrans: '#adfee070',
+    primaryTrans: '#adfee740',
     dark: '#5df1ba',
     darker: '#1cda94',
     darker2: '#00c37a',
@@ -97,6 +101,7 @@ export default {
       },
       borderWidth: {
         5: '5px',
+        3: '3px',
       },
       maxWidth: {
         '80p': '80%',

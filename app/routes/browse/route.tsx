@@ -1,31 +1,16 @@
 import { RiArrowRightLine } from 'react-icons/ri';
 import Link from '~/ui-components/Link';
 import { useTheme } from '~/utils/theme-provider';
-import SearchFilter from './SearchFilter';
+import SearchFilter from './SearchFilter/SearchFilterContainer';
 import Paginator from './Paginator';
-import { useCallback, useMemo } from 'react';
 import ComicCard, { SkeletonComicCard } from './ComicCard';
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { processApiError } from '~/utils/request-helpers';
-import { useLoaderData, useSearchParams } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { getComicsPaginated } from '~/route-funcs/get-comics-paginated';
 import { browsePageSize } from '~/types/types';
 import { colors } from 'tailwind.config';
-
-type BrowseParams = {
-  page: number;
-  search?: string;
-};
-
-function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
-  const page = parseInt(rawParams.get('page') ?? '1', 10);
-  const search = rawParams.get('search') ?? undefined;
-
-  return {
-    page: isNaN(page) ? 1 : page,
-    search,
-  };
-}
+import { parseBrowseParams, useBrowseParams } from './SearchFilter/useBrowseParams';
 
 export async function loader(args: LoaderFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
@@ -49,44 +34,11 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-function useBrowseParams() {
-  const [params, setParams] = useSearchParams();
-  const parsedParams = useMemo(() => parseBrowseParams(params), [params]);
-
-  const updateParams = useCallback(
-    (paramName: string, newValue: string | number | undefined) => {
-      if (newValue === undefined) {
-        params.delete(paramName);
-      } else {
-        params.set(paramName, newValue.toString());
-      }
-      setParams(params);
-    },
-    [params, setParams]
-  );
-
-  const setPage = useCallback(
-    (newPage: number) => updateParams('page', newPage),
-    [updateParams]
-  );
-
-  const setSearch = useCallback(
-    (newSearch: string) => updateParams('search', newSearch),
-    [updateParams]
-  );
-
-  return {
-    page: parsedParams.page,
-    setPage,
-    search: parsedParams.search,
-    setSearch,
-  };
-}
-
 export default function BrowsePage() {
   const [theme] = useTheme();
-  const { page, setPage } = useBrowseParams();
+  const browseUtilities = useBrowseParams();
   const { comics, numberOfPages } = useLoaderData<typeof loader>();
+  const { page, setPage } = browseUtilities;
 
   function onPageChange(newPage: number) {
     setPage(newPage);
@@ -138,7 +90,7 @@ export default function BrowsePage() {
         />
       </div>
 
-      <SearchFilter />
+      <SearchFilter browseUtilities={browseUtilities} />
 
       <Paginator
         numPages={numberOfPages}
@@ -150,7 +102,7 @@ export default function BrowsePage() {
 
       <p className="text-sm mx-auto w-fit mt-2">1 322 comics</p>
 
-      <div className="flex flex-row flex-wrap gap-4 items-center justify-center mt-4">
+      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4">
         {comics
           ? comics.map(comic => <ComicCard comic={comic} key={comic.id} />)
           : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}

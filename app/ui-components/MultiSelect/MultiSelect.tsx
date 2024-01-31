@@ -10,6 +10,7 @@ export type BaseMultiSelectProps<T> = {
   name: string;
   placeholder?: string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type FullMultiSelectProps<T> = {
@@ -260,7 +261,7 @@ export default function MultiSelect<T>({
       </div>
 
       {/* CLEAR CROSS ICON */}
-      {value && (
+      {value && value.length > 0 && (
         <span
           className="absolute right-2 top-4 hover:cursor-pointer"
           onClick={removeAllSelected}

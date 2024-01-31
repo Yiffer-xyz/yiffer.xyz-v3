@@ -18,6 +18,7 @@ export type BaseSearchableSelectProps<T> = {
   mobileCompact?: boolean;
   equalValueFunc?: (a: T, b: T | undefined) => boolean;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type FullSelectProps<T> = {

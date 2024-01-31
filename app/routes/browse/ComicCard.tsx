@@ -10,13 +10,13 @@ type ComicCardProps = {
 export default function ComicCard({ comic }: ComicCardProps) {
   return (
     <div
-      className="w-[160px] rounded overflow-hidden shadow dark:bg-gray-300"
+      className="w-[160px] rounded overflow-hidden shadow dark:bg-gray-300 flex flex-col"
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
         <img src="https://static-beta.yiffer.xyz/pi/ADADAD.webp" alt="comic thumbnail" />
       </RemixLink>
-      <div className="text-center p-1 flex flex-col items-center">
+      <div className="text-center p-1 flex flex-col items-center justify-between h-full">
         <Link href={`/${comic.name}`} text={comic.name} normalColor className="text-sm" />
         <Link
           href={`/artist/${comic.artistName}`}

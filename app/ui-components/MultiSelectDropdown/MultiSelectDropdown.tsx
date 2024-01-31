@@ -2,9 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { colors } from 'tailwind.config';
 import { waitMillisec } from '~/utils/general';
 
-export type BaseSelectProps<T> = {
+export type MultiSelectProps<T> = {
   options: { text: string; value: T }[];
   title?: string;
+  onValueAdded: (value: T) => void;
+  onValueRemoved: (value: T) => void;
+  onAllOptionSelected?: () => void;
+  values: T[];
+  allOption?: { text: string; value: T };
   error?: boolean;
   maxWidth?: number;
   minWidth?: number;
@@ -14,16 +19,14 @@ export type BaseSelectProps<T> = {
   style?: React.CSSProperties;
 };
 
-type FullSelectProps<T> = {
-  onChange: (value: T) => void;
-  value?: T;
-} & BaseSelectProps<T>;
-
-export default function Select<T>({
+export default function MultiSelectDropdown<T>({
   options,
   title = '',
-  value,
-  onChange,
+  values,
+  allOption,
+  onValueAdded,
+  onValueRemoved,
+  onAllOptionSelected = () => null,
   error = false,
   maxWidth = 999999,
   minWidth = 0,
@@ -31,32 +34,51 @@ export default function Select<T>({
   name,
   className = '',
   ...props
-}: FullSelectProps<T>) {
+}: MultiSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [computedMinWidth, setComputedMinWidth] = useState(0);
   const [shouldAddRightPadding, setShouldAddRightPadding] = useState(false);
   const [width, setWidth] = useState(0);
   const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
+  const [upperPartWidth, setUpperPartWidth] = useState(0);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
+  const upperPartRef = useRef<HTMLDivElement>(null);
+
+  const allOptions = useMemo(() => {
+    if (allOption) {
+      return [allOption, ...options];
+    }
+    return options;
+  }, [allOption, options]);
 
   useEffect(() => {
-    tryComputeWidth();
+    tryComputeInitialWidth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    computUpperWidth();
+  }, [values]);
 
   useEffect(() => {
     setCurrentlyHighlightedIndex(-1);
   }, [isOpen]);
 
-  async function tryComputeWidth() {
+  async function tryComputeInitialWidth() {
     let isFinished = false;
     while (!isFinished) {
       await waitMillisec(25);
-      isFinished = computeWidth();
+      isFinished = computeInitialWidth();
     }
   }
 
-  function computeWidth() {
+  function computUpperWidth() {
+    const container = upperPartRef.current;
+    const widthOfUpperPart = container?.clientWidth || 0;
+    setUpperPartWidth(widthOfUpperPart);
+  }
+
+  function computeInitialWidth() {
     const container = selectItemContainerRef.current;
     if (container && container.children.length > 0) {
       let maxChildWidth = 0;
@@ -66,8 +88,8 @@ export default function Select<T>({
         }
       }
 
-      if (computedMinWidth > (maxWidth as number)) {
-        setWidth(maxWidth as number);
+      if (computedMinWidth > maxWidth) {
+        setWidth(maxWidth);
       } else {
         if (maxChildWidth > minWidth) {
           setShouldAddRightPadding(true);
@@ -85,15 +107,22 @@ export default function Select<T>({
     if (width || isFullWidth) {
       return {};
     }
+
     if (computedMinWidth) {
-      return { minWidth: computedMinWidth + (shouldAddRightPadding ? 16 : 0) };
+      if (upperPartWidth > computedMinWidth) {
+        return { minWidth: upperPartWidth + 38 };
+      }
+      return { minWidth: computedMinWidth + (shouldAddRightPadding ? 38 : 0) };
     }
     if (minWidth) {
+      if (upperPartWidth > minWidth) {
+        return { minWidth: upperPartWidth + 38 };
+      }
       return { minWidth: minWidth };
     }
     return {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFullWidth, computedMinWidth, minWidth, width]);
+  }, [isFullWidth, computedMinWidth, minWidth, width, upperPartWidth, values.length]);
 
   const widthStyle = useMemo(() => {
     if (isFullWidth) {
@@ -105,14 +134,21 @@ export default function Select<T>({
     return {};
   }, [isFullWidth, width]);
 
-  function onSelected(clickedValue: any) {
-    onChange(clickedValue);
-    setIsOpen(false);
+  function onSelected(clickedValue: T) {
+    if (allOption && clickedValue === allOption.value) {
+      onAllOptionSelected();
+    } else if (values.includes(clickedValue)) {
+      onValueRemoved(clickedValue);
+    } else {
+      onValueAdded(clickedValue);
+    }
   }
 
   const convertedValue = useMemo(() => {
-    return options.find(option => option.value === value);
-  }, [options, value]);
+    return values
+      .map(val => allOptions.find(option => option.value === val)?.text)
+      .join(', ');
+  }, [allOptions, values]);
 
   function setHighlightedIndex(indexNum: number) {
     if (indexNum !== -1 && selectItemContainerRef.current) {
@@ -167,6 +203,10 @@ export default function Select<T>({
         borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
       };
 
+  function isValueSelected(value: T) {
+    return values.includes(value);
+  }
+
   return (
     <div
       onKeyDown={onKeyDown}
@@ -178,16 +218,17 @@ export default function Select<T>({
       onBlur={() => setIsOpen(false)}
     >
       {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
-      <div // TODO: "selected" from old
+
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className={`border border-0 border-b-2 px-2 after:absolute
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
-          after:border-t-text-light dark:after:border-t-text-dark after:right-3 ${
-            value ? '' : 'text-gray-750'
-          }`}
+          after:border-t-text-light dark:after:border-t-text-dark after:right-3`}
         style={{ ...borderStyle }}
       >
-        {(value && options.find(x => x.value === value)?.text) || '—'}
+        <div ref={upperPartRef} className="w-fit">
+          {convertedValue}
+        </div>
       </div>
       <div
         className={`${
@@ -195,7 +236,7 @@ export default function Select<T>({
         } overflow-hidden shadow-lg w-fit min-w-full absolute bg-white dark:bg-gray-400 left-0 right-0 z-40 max-h-80 overflow-y-auto`}
         ref={selectItemContainerRef}
       >
-        {options.map(({ text, value: optionValue }, index) => (
+        {allOptions.map(({ text, value: optionValue }, index) => (
           <div
             key={text}
             onMouseEnter={() => setHighlightedIndex(index)}
@@ -203,11 +244,20 @@ export default function Select<T>({
             onClick={e => onSelected(optionValue)}
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
               currentlyHighlightedIndex === index
-                ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                ? `bg-gradient-to-r from-theme1-primaryLessTrans to-theme2-primaryLessTrans  
+                   dark:from-theme1-primaryTrans dark:to-theme2-primaryTrans `
                 : ''
             }}`}
           >
-            {text}
+            <span
+              className={`${
+                isValueSelected(optionValue)
+                  ? ' border-b-2 border-theme1-darker2 dark:border-b-3 dark:border-theme1-primary font-semibold'
+                  : ''
+              }`}
+            >
+              {text}
+            </span>
           </div>
         ))}
       </div>
@@ -215,7 +265,7 @@ export default function Select<T>({
       <input
         type="text"
         name={name}
-        value={convertedValue?.text || ''}
+        value={convertedValue ?? ''}
         onChange={() => null}
         hidden
       />
