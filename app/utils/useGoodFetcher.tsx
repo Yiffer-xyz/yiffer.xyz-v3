@@ -4,7 +4,7 @@ import { useFetcher } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { ApiResponse } from './request-helpers';
-import { useTheme } from './theme-provider';
+import { useUIPreferences } from './theme-provider';
 
 // For some reason, Remix doesn't export SubmitTarget, so redeclare it...
 type RemixSubmitTarget =
@@ -68,7 +68,7 @@ export function useGoodFetcher<T = void>({
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const fetcher = useFetcher<ApiResponse<T>>();
   const fetchingStateRef = useRef<'is-fetching' | 'not-started'>('not-started');
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
 
   useEffect(() => {
     // Technically if it's a POST, the fetch itself is done at 'loading',

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { RiArrowLeftLine, RiArrowRightLine } from 'react-icons/ri';
 import { colors } from 'tailwind.config';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 
 type PaginatorProps = {
   currentPage: number;
@@ -18,7 +18,7 @@ export default function Paginator({
   onPageChange,
   className = '',
 }: PaginatorProps) {
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
 
   const paginationButtons = useMemo(() => {
     return getPaginationButtons(currentPage, numPages);

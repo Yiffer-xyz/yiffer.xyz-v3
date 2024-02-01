@@ -10,6 +10,7 @@ export type MultiSelectProps<T> = {
   onAllOptionSelected?: () => void;
   values: T[];
   allOption?: { text: string; value: T };
+  onClose?: () => void;
   error?: boolean;
   maxWidth?: number;
   minWidth?: number;
@@ -24,6 +25,7 @@ export default function MultiSelectDropdown<T>({
   title = '',
   values,
   allOption,
+  onClose = () => null,
   onValueAdded,
   onValueRemoved,
   onAllOptionSelected = () => null,
@@ -62,6 +64,8 @@ export default function MultiSelectDropdown<T>({
 
   useEffect(() => {
     setCurrentlyHighlightedIndex(-1);
+    if (!isOpen) onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   async function tryComputeInitialWidth() {

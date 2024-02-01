@@ -1,6 +1,6 @@
 import { RiArrowRightLine } from 'react-icons/ri';
 import Link from '~/ui-components/Link';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import SearchFilter from './SearchFilter/SearchFilterContainer';
 import Paginator from './Paginator';
 import ComicCard, { SkeletonComicCard } from './ComicCard';
@@ -35,7 +35,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function BrowsePage() {
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
   const { comics, numberOfPages } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;

@@ -1,53 +1,47 @@
 import { useFetcher } from '@remix-run/react';
 import type { Dispatch, SetStateAction } from 'react';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { UIPreferences, ViewType } from '~/types/types';
+import { isViewType } from '~/types/types';
 
-const themes = {
-  light: 'light',
-  dark: 'dark',
+const defaultUiPref: UIPreferences = {
+  theme: 'light',
+  viewMode: 'Simple card',
 };
 
-const prefersDarkMQ = '(prefers-color-scheme: dark)';
-
-function getPreferredTheme() {
-  return window.matchMedia(prefersDarkMQ).matches ? themes.dark : themes.light;
+interface UIPrefContextType {
+  uiPref: UIPreferences;
+  setUiPref: Dispatch<SetStateAction<UIPreferences>>;
 }
 
-interface IThemeContext {
-  theme: string | null;
-  setTheme: Dispatch<SetStateAction<string | null>>;
-}
-
-const ThemeContext = createContext<IThemeContext>({
-  theme: null,
-  setTheme: () => undefined,
+const UIPrefContext = createContext<UIPrefContextType>({
+  uiPref: defaultUiPref,
+  setUiPref: () => undefined,
 });
 
-type ThemeProviderProps = {
-  specifiedTheme?: string;
+type UIPrefProviderProps = {
+  specifiedUIPref: UIPreferences;
   children: React.ReactNode;
 };
 
-function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState(() => {
-    if (specifiedTheme) {
-      if (isTheme(specifiedTheme)) {
-        return specifiedTheme;
-      }
-      return null;
-    }
-    if (typeof window !== 'object') {
-      return null;
-    }
-    return getPreferredTheme();
+export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProps) {
+  const [uiPref, setUiPref] = useState<UIPreferences>(() => {
+    return specifiedUIPref;
   });
 
-  const persistTheme = useFetcher();
-  // TODO: remove this when persistTheme is memoized properly
-  const persistThemeRef = useRef(persistTheme);
+  const persistUIPref = useFetcher();
+  // TODO: remove this when persistTheme is memoized properly (??)
+  const persistUIPrefRef = useRef(persistUIPref);
   useEffect(() => {
-    persistThemeRef.current = persistTheme;
-  }, [persistTheme]);
+    persistUIPrefRef.current = persistUIPref;
+  }, [persistUIPref]);
 
   const mountRun = useRef(false);
 
@@ -56,58 +50,61 @@ function ThemeProvider({ specifiedTheme, children }: ThemeProviderProps) {
       mountRun.current = true;
       return;
     }
-    if (!theme) {
+    if (!uiPref) {
       return;
     }
 
-    persistThemeRef.current.submit(
-      { theme },
+    persistUIPrefRef.current.submit(
+      { uiPref: JSON.stringify(uiPref) },
       { action: 'api/set-theme', method: 'post' }
     );
-  }, [theme]);
+  }, [uiPref]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+    <UIPrefContext.Provider value={{ uiPref, setUiPref }}>
+      {children}
+    </UIPrefContext.Provider>
   );
 }
 
-function useTheme(): [string | null, Dispatch<SetStateAction<string | null>>] {
-  const context = useContext(ThemeContext);
+export function useUIPreferences() {
+  const context = useContext(UIPrefContext);
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
 
-  return [context.theme, context.setTheme];
+  const setTheme = useCallback((newTheme: 'light' | 'dark') => {
+    context.setUiPref(prev => ({ ...prev, theme: newTheme }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setViewMode = useCallback((newViewMode: ViewType) => {
+    context.setUiPref(prev => ({ ...prev, viewMode: newViewMode }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return {
+    theme: context.uiPref.theme,
+    setTheme,
+    viewMode: context.uiPref.viewMode,
+    setViewMode,
+  };
 }
 
-function isTheme(theme: string | null) {
-  return theme !== null && Object.values(themes).includes(theme);
-}
+export function parseUIPreferences(rawUIPref: string | null | undefined): UIPreferences {
+  if (!rawUIPref) return defaultUiPref;
 
-const clientThemeCode = `
-  ;(() => {
-    const theme = window.matchMedia(${JSON.stringify(prefersDarkMQ)}).matches
-      ? 'dark'
-      : 'light';
-    const cl = document.documentElement.classList;
-    const themeAlreadyApplied = cl.contains('light') || cl.contains('dark');
-    if (themeAlreadyApplied) {
-      // this script shouldn't exist if the theme is already applied!
-      console.warn(
-        "Theme bug",
-      );
-    } else {
-      cl.add(theme);
+  const newUIPref = { ...defaultUiPref };
+  try {
+    const parsed = JSON.parse(rawUIPref);
+    if (parsed.theme && (parsed.theme === 'light' || parsed.theme === 'dark')) {
+      newUIPref.theme = parsed.theme;
     }
-  })();
-`;
-
-function NonFlashOfWrongThemeEls({ ssrTheme }: { ssrTheme: boolean }) {
-  return (
-    <>
-      {ssrTheme ? null : <script dangerouslySetInnerHTML={{ __html: clientThemeCode }} />}
-    </>
-  );
+    if (parsed.viewMode && isViewType(parsed.viewMode)) {
+      newUIPref.viewMode = parsed.viewMode;
+    }
+    return newUIPref;
+  } catch (e) {
+    return defaultUiPref;
+  }
 }
-
-export { ThemeProvider, useTheme, isTheme, NonFlashOfWrongThemeEls };

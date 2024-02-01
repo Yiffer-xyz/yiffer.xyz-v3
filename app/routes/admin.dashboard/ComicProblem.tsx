@@ -4,7 +4,7 @@ import DropdownButton from '~/ui-components/Buttons/DropdownButton';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import type { DashboardAction } from '../api.admin.dashboard-data';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
 
 type ComicProblemProps = {
@@ -31,7 +31,7 @@ export function ComicProblem({
   innerContainerClassName,
 }: ComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#d7a74a' : '#b28734';
 
   const isChooseActionButtonLoading =

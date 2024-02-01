@@ -3,7 +3,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
 
 export type TagSuggestionAction = DashboardAction & {
@@ -26,7 +26,7 @@ export function TagSuggestion({
   loadingAction,
   innerContainerClassName,
 }: TagSuggestionProps) {
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#51bac8' : '#2299a9';
 
   return (

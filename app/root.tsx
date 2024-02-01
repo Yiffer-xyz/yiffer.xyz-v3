@@ -13,12 +13,12 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import type { UserSession } from './types/types';
-import { ThemeProvider, useTheme } from './utils/theme-provider';
+import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
 import styles from './styles/app.css';
 import rootStyles from './styles/main.css';
 import clsx from 'clsx';
 import toastCss from 'react-toastify/dist/ReactToastify.css';
-import { getThemeSession } from './utils/theme.server';
+import { getUIPrefSession } from './utils/theme.server';
 import { getUserSession } from './utils/auth.server';
 import {
   RiAccountCircleLine,
@@ -68,11 +68,11 @@ export const meta: MetaFunction = () => [
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const themeSession = await getThemeSession(request);
+  const uiPrefSession = await getUIPrefSession(request);
   const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
 
   const data = {
-    theme: themeSession.getTheme(),
+    uiPref: uiPrefSession.getUiPref(),
     user: userSession,
     frontPageUrl: context.FRONT_PAGE_URL,
   };
@@ -83,14 +83,14 @@ export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <ThemeProvider specifiedTheme={data.theme}>
+    <UIPrefProvider specifiedUIPref={data.uiPref}>
       <App />
-    </ThemeProvider>
+    </UIPrefProvider>
   );
 }
 
 function App() {
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const data = useLoaderData<typeof loader>();
 
   return (
@@ -127,7 +127,7 @@ function Layout({
   user: UserSession | null;
   children: React.ReactNode;
 }) {
-  const [theme, setTheme] = useTheme();
+  const { theme, setTheme } = useUIPreferences();
   const isLoggedIn = !!user;
   const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
 

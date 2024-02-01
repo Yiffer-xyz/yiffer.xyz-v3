@@ -3,14 +3,14 @@ import Link from '~/ui-components/Link';
 import { Link as RemixLink, useLoaderData } from '@remix-run/react';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { Blog } from '~/types/types';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { authLoader } from '~/utils/loaders';
 import { colors } from 'tailwind.config';
 
 export { authLoader as loader };
 
 export default function Index() {
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const userSession = useLoaderData<typeof authLoader>();
 
   const { data: latestBlog } = useGoodFetcher<Blog>({

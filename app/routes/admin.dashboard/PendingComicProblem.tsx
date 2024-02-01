@@ -4,7 +4,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 
 type PendingComicProblemProps = {
   action: DashboardAction;
@@ -28,7 +28,7 @@ export function PendingComicProblem({
   innerContainerClassName,
 }: PendingComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#65bf70' : '#268f33';
 
   return (

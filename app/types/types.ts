@@ -42,8 +42,8 @@ export type Category = 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
 export type CategoryWithAll = Category | 'All';
 export const allCategories: CategoryWithAll[] = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'];
 
-export function isCategory(category: string): category is Category {
-  return ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].includes(category);
+export function isCategory(category: string): category is CategoryWithAll {
+  return ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I', 'All'].includes(category);
 }
 
 export type Comic = {
@@ -320,17 +320,16 @@ export const allSortTypes: SortType[] = [
   'Random',
 ];
 
-export type ViewType =
-  | 'Tiny card'
-  | 'Simple card'
-  | 'Detailed card'
-  | 'Detailed with tags';
+export type ViewType = 'Tiny card' | 'Simple card' | 'Detailed card' | 'Detailed + tags';
 export const allViewTypes: ViewType[] = [
   'Tiny card',
   'Simple card',
   'Detailed card',
-  'Detailed with tags',
+  'Detailed + tags',
 ];
+export function isViewType(viewType: string): viewType is ViewType {
+  return allViewTypes.includes(viewType as ViewType);
+}
 
 export type SearchFilterState = {
   isAllCategories: boolean;
@@ -339,4 +338,9 @@ export type SearchFilterState = {
   tags: Tag[];
   sort: SortType;
   viewType: ViewType;
+};
+
+export type UIPreferences = {
+  theme: 'light' | 'dark';
+  viewMode: ViewType;
 };
