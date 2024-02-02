@@ -49,6 +49,8 @@ export default function Index() {
           <div
             className={`h-12 bg-gradient-to-r from-theme1-darker to-theme2-darker text-text-light
             hover:from-theme1-darker2 hover:to-theme2-darker2
+            dark:from-theme1-darker2 dark:to-theme2-darker2
+            dark:hover:from-theme1-darker3 dark:hover:to-theme2-darker3
             rounded flex flex-row justify-center items-center gap-1 shadow-md`}
           >
             <p className="font-semibold text-white">Browse comics</p>
@@ -89,6 +91,8 @@ export default function Index() {
           text={`Latest blog: ${latestBlog?.title ?? ''}`}
           IconRight={latestBlog ? RiArrowRightLine : undefined}
         />
+
+        <Link href="/about" text="About Yiffer.xyz" IconRight={RiArrowRightLine} />
       </div>
     </div>
   );

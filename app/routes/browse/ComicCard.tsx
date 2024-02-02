@@ -14,7 +14,10 @@ export default function ComicCard({ comic }: ComicCardProps) {
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
-        <img src="https://static-beta.yiffer.xyz/pi/ADADAD.webp" alt="comic thumbnail" />
+        <img
+          src="https://static.yiffer.xyz/comics/Burning%20Curiosity/thumbnail.webp"
+          alt="comic thumbnail"
+        />
       </RemixLink>
       <div className="text-center p-1 flex flex-col items-center justify-between h-full">
         <Link href={`/${comic.name}`} text={comic.name} normalColor className="text-sm" />

@@ -11,6 +11,7 @@ export type BrowseParams = {
   isAllCategories: boolean;
   categories: CategoryWithAll[];
   sort: SortType;
+  tagIDs: number[];
 };
 
 export type BrowseUtilities = BrowseParams & {
@@ -18,22 +19,8 @@ export type BrowseUtilities = BrowseParams & {
   setSearch: (newSearch: string) => void;
   setCategories: (newCategories: CategoryWithAll[]) => void;
   setSort: (newSort: SortType) => void;
+  setTagIDs: (newIDs: number[]) => void;
 };
-
-function rawUrlSortToSort(rawSort: string | null): SortType {
-  if (rawSort === null) return 'Recently updated';
-  for (const sort of allSortTypes) {
-    if (sort.toLowerCase().replace(' ', '-') === rawSort) {
-      return sort;
-    }
-  }
-  return 'Recently updated';
-}
-
-function sortToUrlSort(sort: SortType): string {
-  if (sort === 'Recently updated') return '';
-  return sort.toLowerCase().replace(' ', '-');
-}
 
 export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
   const page = parseInt(rawParams.get('page') ?? '1', 10);
@@ -41,6 +28,8 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
   const rawParamCategories = rawParams.getAll(CATEGORY_URL_KEY);
   const rawCategories: CategoryWithAll[] = rawParamCategories.filter(isCategory);
   const rawSort = rawParams.get('sort') as SortType | null;
+  const rawTags = rawParams.getAll('tag') ?? [];
+  const tags = rawTags.map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
 
   let categories: CategoryWithAll[];
   if (rawCategories.length === 0) {
@@ -55,6 +44,7 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
     categories,
     isAllCategories: rawCategories.length === 0,
     sort: rawUrlSortToSort(rawSort),
+    tagIDs: tags,
   };
 }
 
@@ -75,7 +65,13 @@ export function useBrowseParams(): BrowseUtilities {
   );
 
   const setPage = useCallback(
-    (newPage: number) => updateParams('page', newPage),
+    (newPage: number) => {
+      if (newPage <= 1) {
+        updateParams('page', undefined);
+      } else {
+        updateParams('page', newPage);
+      }
+    },
     [updateParams]
   );
 
@@ -121,5 +117,43 @@ export function useBrowseParams(): BrowseUtilities {
     setCategories,
     sort: parsedParams.sort,
     setSort,
+    tagIDs: parsedParams.tagIDs,
+    setTagIDs: (newTags: number[]) => {
+      params.delete('tag');
+      newTags.forEach(tag => {
+        params.append('tag', tag.toString());
+      });
+      setParams(params);
+    },
   };
+}
+
+function rawUrlSortToSort(rawSort: string | null): SortType {
+  if (rawSort === null) return 'Updated';
+  for (const sort of allSortTypes) {
+    if (sort.toLowerCase().replace(' ', '-') === rawSort) {
+      return sort;
+    }
+  }
+  return 'Updated';
+}
+
+function sortToUrlSort(sort: SortType): string {
+  if (sort === 'Updated') return '';
+  return sort.toLowerCase().replace(' ', '-');
+}
+
+export function sortToApiSort(
+  sort: SortType
+): 'updated' | 'userRating' | 'yourRating' | 'random' {
+  switch (sort) {
+    case 'Updated':
+      return 'updated';
+    case 'User score':
+      return 'userRating';
+    case 'Your score':
+      return 'yourRating';
+    case 'Random':
+      return 'random';
+  }
 }
