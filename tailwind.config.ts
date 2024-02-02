@@ -9,8 +9,9 @@ import type { Config } from 'tailwindcss';
 
 export const colors = {
   text: {
-    light: '#222',
+    light: '#292929',
     dark: '#eee',
+    white: '#fff',
   },
   status: {
     info1: '#39a6ef',
@@ -29,6 +30,7 @@ export const colors = {
     dark: '#49ded7',
     darker: '#08ccc2',
     darker2: '#02c1b7',
+    darker3: '#00b8ad',
     verydark: '#007a74',
   },
   theme2: {
@@ -39,6 +41,7 @@ export const colors = {
     dark: '#5df1ba',
     darker: '#1cda94',
     darker2: '#00c37a',
+    darker3: '#00b56d',
   },
   blue: {
     // "strong" because the saturation is high. To be used in DARK mode

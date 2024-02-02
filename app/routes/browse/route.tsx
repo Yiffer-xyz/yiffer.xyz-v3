@@ -10,7 +10,11 @@ import { useLoaderData } from '@remix-run/react';
 import { getComicsPaginated } from '~/route-funcs/get-comics-paginated';
 import { browsePageSize } from '~/types/types';
 import { colors } from 'tailwind.config';
-import { parseBrowseParams, useBrowseParams } from './SearchFilter/useBrowseParams';
+import {
+  parseBrowseParams,
+  sortToApiSort,
+  useBrowseParams,
+} from './SearchFilter/useBrowseParams';
 
 export async function loader(args: LoaderFunctionArgs) {
   const urlBase = args.context.DB_API_URL_BASE;
@@ -18,11 +22,16 @@ export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const params = parseBrowseParams(url.searchParams);
 
+  const categories = params.categories.includes('All') ? undefined : params.categories;
+
   const comicsRes = await getComicsPaginated({
     urlBase,
     limit: browsePageSize,
     offset: params.page !== 1 ? (params.page - 1) * browsePageSize : undefined,
     search: params.search,
+    order: sortToApiSort(params.sort),
+    tagIDs: params.tagIDs.length > 0 ? params.tagIDs : undefined,
+    categories,
   });
   if (comicsRes.err) {
     return processApiError('Error getting comics', comicsRes.err);
@@ -31,13 +40,14 @@ export async function loader(args: LoaderFunctionArgs) {
   return {
     comics: comicsRes.result.comics,
     numberOfPages: comicsRes.result.numberOfPages,
+    totalNumComics: comicsRes.result.totalNumComics,
   };
 }
 
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
-  const { comics, numberOfPages } = useLoaderData<typeof loader>();
+  const { comics, numberOfPages, totalNumComics } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
   function onPageChange(newPage: number) {
@@ -100,7 +110,9 @@ export default function BrowsePage() {
         className="mt-6"
       />
 
-      <p className="text-sm mx-auto w-fit mt-2">1 322 comics</p>
+      <p className="text-sm mx-auto w-fit mt-2">
+        {totalNumComics.toLocaleString('en').replace(',', ' ')} comics
+      </p>
 
       <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4">
         {comics

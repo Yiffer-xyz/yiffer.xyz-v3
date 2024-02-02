@@ -10,10 +10,9 @@ type GetComicsParams = {
   limit?: number;
   offset?: number;
   categories?: string[];
-  tags?: string[];
-  keywordIds?: number[];
+  tagIDs?: number[];
   search?: string;
-  order?: 'updated' | 'userRating' | 'yourRating' | 'TODO';
+  order?: 'updated' | 'userRating' | 'yourRating' | 'random';
   artistId?: number;
 };
 
@@ -23,14 +22,14 @@ export async function getComicsPaginated({
   limit,
   offset,
   categories,
-  tags,
-  keywordIds,
+  tagIDs,
   search,
   order,
   artistId,
 }: GetComicsParams): ResultOrErrorPromise<{
   comics: ComicForBrowse[];
   numberOfPages: number;
+  totalNumComics: number;
   page: number;
 }> {
   search = search?.trim();
@@ -40,8 +39,7 @@ export async function getComicsPaginated({
     limit,
     offset,
     categories,
-    tags,
-    keywordIds,
+    tagIDs,
     search,
     order,
     artistId,
@@ -52,18 +50,19 @@ export async function getComicsPaginated({
     filterQueryParams,
     keywordCountString,
     innerJoinKeywordString,
-  ] = getFilterQuery({ categories, tags, keywordIds, search, artistId });
+  ] = getFilterQuery({ categories, keywordIds: tagIDs, search, artistId });
 
   const isUnfilteredQuery =
     (!categories || categories.length === 0) &&
-    (!tags || tags.length === 0) &&
-    (!keywordIds || keywordIds.length === 0) &&
+    (!tagIDs || tagIDs.length === 0) &&
     !search &&
     !artistId;
 
-  order = order || 'updated';
-  if (!['updated', 'userRating', 'yourRating'].includes(order)) order = 'updated';
-  const orderQueryString = `ORDER BY ${order} DESC`;
+  let orderBy = (order ?? 'updated') as string;
+  if (order === 'random') orderBy = 'RAND()';
+  if (!['updated', 'userRating', 'yourRating', 'RAND()'].includes(orderBy))
+    orderBy = 'updated';
+  const orderQueryString = `ORDER BY ${orderBy} DESC`;
 
   let paginationQueryString = '';
   if (limit) {
@@ -153,6 +152,7 @@ export async function getComicsPaginated({
     result: {
       comics: dbRes.result,
       numberOfPages: Math.ceil(countDbRes.result[0].count / browsePageSize),
+      totalNumComics: countDbRes.result[0].count,
       page: Math.ceil((offset ?? 0) / browsePageSize) + 1,
     },
   };
@@ -160,13 +160,11 @@ export async function getComicsPaginated({
 
 export function getFilterQuery({
   categories,
-  tags,
   keywordIds,
   search,
   artistId,
 }: {
   categories?: string[];
-  tags?: string[];
   keywordIds?: number[];
   search?: string;
   artistId?: number;
@@ -176,7 +174,7 @@ export function getFilterQuery({
   let innerJoinKeywordString = '';
   let keywordCountString = '';
 
-  if (categories || tags || search || keywordIds || artistId) {
+  if (categories || search || keywordIds || artistId) {
     const queries = [];
 
     if (keywordIds) {
@@ -195,18 +193,10 @@ export function getFilterQuery({
       const categoryStrings: string[] = [];
       categories.forEach(category => {
         filterQueryParams.push(category);
-        categoryStrings.push(' Cat = ? ');
+        // TODO: In the future, rename this shit, it's so bad
+        categoryStrings.push(' Tag = ? ');
       });
       queries.push(`(${categoryStrings.join('OR')})`);
-    }
-
-    if (tags) {
-      const tagStrings: string[] = [];
-      tags.forEach(tag => {
-        filterQueryParams.push(tag);
-        tagStrings.push(' Tag = ? ');
-      });
-      queries.push(`(${tagStrings.join('OR')})`);
     }
 
     if (search) {

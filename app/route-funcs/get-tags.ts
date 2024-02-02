@@ -15,6 +15,15 @@ export async function getAllTags(urlBase: string): ResultOrErrorPromise<Tag[]> {
   return { result: dbRes.result };
 }
 
+export async function getAllTagNames(urlBase: string): ResultOrErrorPromise<string[]> {
+  const keywordsQuery = 'SELECT keywordName AS name FROM keyword';
+  const dbRes = await queryDb<{ name: string }[]>(urlBase, keywordsQuery);
+  if (dbRes.isError || !dbRes.result) {
+    return makeDbErrObj(dbRes, 'Error getting all tag names');
+  }
+  return { result: dbRes.result.map(tag => tag.name) };
+}
+
 export async function getTagById(
   urlBase: string,
   tagId: number

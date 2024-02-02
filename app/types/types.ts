@@ -312,13 +312,8 @@ export type Blog = {
 
 export const browsePageSize = 60;
 
-export type SortType = 'Recently updated' | 'User score' | 'Your score' | 'Random';
-export const allSortTypes: SortType[] = [
-  'Recently updated',
-  'User score',
-  'Your score',
-  'Random',
-];
+export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';
+export const allSortTypes: SortType[] = ['Updated', 'User score', 'Your score', 'Random'];
 
 export type ViewType = 'Tiny card' | 'Simple card' | 'Detailed card' | 'Detailed + tags';
 export const allViewTypes: ViewType[] = [
