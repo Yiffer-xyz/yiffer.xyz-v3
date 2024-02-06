@@ -1,6 +1,6 @@
 import type { TypedResponse } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import type { DBResponse } from '~/utils/database-facade';
+import type { DBResponse, ExecDBResponse } from '~/utils/database-facade';
 import { HANDLED_ERR_MSG } from '~/utils/error';
 // import * as Sentry from '@sentry/browser';
 
@@ -21,7 +21,7 @@ export type ApiResponse<T = void> = {
 };
 
 export type ApiError = {
-  error?: DBResponse<any>;
+  error?: DBResponse<any> | ExecDBResponse;
   logMessage: string;
   context?: { [key: string]: any };
 };
@@ -54,7 +54,7 @@ export function logApiError(
     ? prependMessage + ' >> ' + err.logMessage
     : err.logMessage;
 
-  console.log('ERROR, message: ', fullErrMsg);
+  console.log('⛔', fullErrMsg);
   console.log(err);
 
   const extra: any = {
@@ -84,13 +84,13 @@ export function logApiErrorMessage(message: string, context?: { [key: string]: a
 // Wrap a DBResponse and return an ApiError.
 // Meant to be used in functions that return Promise<ApiError | undefined>.
 export function makeDbErr(
-  err: DBResponse<any>,
-  message: string,
+  err: DBResponse<any> | ExecDBResponse,
+  message?: string,
   context?: { [key: string]: any }
 ): ApiError {
   return {
     error: err,
-    logMessage: message,
+    logMessage: message ?? 'No log message supplied (bad!)',
     context: context || {},
   };
 }
@@ -98,14 +98,14 @@ export function makeDbErr(
 // Same as above but wrapped in { err }.
 // Meant to be used in functions that use ResultOrErrorPromise.
 export function makeDbErrObj(
-  err: DBResponse<any>,
-  message: string,
+  err: DBResponse<any> | ExecDBResponse,
+  message?: string,
   context?: { [key: string]: any }
 ): { err: ApiError } {
   return {
     err: {
       error: err,
-      logMessage: message,
+      logMessage: message ?? 'No log message supplied (bad!)',
       context: context || {},
     },
   };

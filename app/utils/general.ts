@@ -62,3 +62,7 @@ export function isUsernameUrl(str: string): boolean {
 
   return false;
 }
+
+export function boolToInt(bool: boolean): 0 | 1 {
+  return bool ? 1 : 0;
+}

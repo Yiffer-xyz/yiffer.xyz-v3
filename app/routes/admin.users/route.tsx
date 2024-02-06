@@ -85,10 +85,7 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Missing or too short searchText');
   }
 
-  const userResult = await searchUsers(
-    args.context.DB_API_URL_BASE,
-    searchText.toString()
-  );
+  const userResult = await searchUsers(args.context.DB, searchText.toString());
   if (userResult.err) {
     return processApiError('Error searching users', userResult.err);
   }

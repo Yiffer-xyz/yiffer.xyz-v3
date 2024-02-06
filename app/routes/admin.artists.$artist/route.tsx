@@ -6,10 +6,9 @@ import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Link from '~/ui-components/Link';
-import { getArtistByField } from '~/route-funcs/get-artist';
-import { getComicsByArtistField } from '~/route-funcs/get-comics';
+import { getArtistAndComicsByField } from '~/route-funcs/get-artist';
 import type { NewArtist } from '../contribute_.upload/route';
-import type { Artist, ComicTiny } from '~/types/types';
+import type { Artist } from '~/types/types';
 import type { FieldChange } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
@@ -32,6 +31,7 @@ export default function ManageArtist() {
     onFinish: () => {
       setNeedsUpdate(true);
       setIsBanning(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
   });
 
@@ -334,31 +334,23 @@ export type ArtistDataChanges = {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
+  const db = args.context.DB;
   const artistParam = args.params.artist as string;
   const artistId = parseInt(artistParam);
 
-  const artistPromise = getArtistByField(urlBase, 'id', artistId);
-  const comicsPromise = getComicsByArtistField(urlBase, 'id', artistId, {
-    includeUnlisted: true,
-  });
-  const [artistRes, comicsRes] = await Promise.all([artistPromise, comicsPromise]);
-
-  if (artistRes.err) {
-    return processApiError('Error getting artist for admin>artist', artistRes.err);
+  const combinedRes = await getArtistAndComicsByField(db, 'id', artistId);
+  if (combinedRes.err) {
+    return processApiError('Error getting data for admin>artist', combinedRes.err);
   }
-  if (comicsRes.err) {
-    return processApiError('Error getting comic for admin>artist', comicsRes.err);
-  }
-  if (artistRes.notFound || !artistRes.result) {
+  if (combinedRes.notFound) {
     throw new Response('Artist not found', {
       status: 404,
     });
   }
 
   return {
-    artist: artistRes.result,
-    comics: comicsRes.result as ComicTiny[],
+    artist: combinedRes.result.artist,
+    comics: combinedRes.result.comics,
     user,
   };
 }

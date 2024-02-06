@@ -1,7 +1,7 @@
 import Select from '~/ui-components/Select/Select';
 import type { BrowseUtilities } from './useBrowseParams';
 import TextInput from '~/ui-components/TextInput/TextInput';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Category, CategoryWithAll, SortType, Tag } from '~/types/types';
 import { allCategories, allSortTypes, allViewTypes } from '~/types/types';

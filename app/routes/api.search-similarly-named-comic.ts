@@ -16,13 +16,12 @@ export type SimilarComicResponse = {
 };
 
 export async function action(args: ActionFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
   const body = await args.request.formData();
   const comicName = body.get('comicName') as string;
   const excludeName = body.get('excludeName');
 
   const comicsRes = await getSimilarlyNamedComics(
-    urlBase,
+    args.context.DB,
     comicName,
     excludeName ? excludeName.toString() : undefined
   );
@@ -36,7 +35,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function getSimilarlyNamedComics(
-  urlBase: string,
+  db: D1Database,
   comicName: string,
   excludeName?: string
 ): ResultOrErrorPromise<SimilarComicResponse> {
@@ -60,7 +59,7 @@ export async function getSimilarlyNamedComics(
     exactMatchRejectedComic: undefined,
   };
 
-  const allComicsTinyRes = await getAllComicNamesAndIDs(urlBase, {
+  const allComicsTinyRes = await getAllComicNamesAndIDs(db, {
     includeRejectedList: true,
     includeUnlisted: true,
   });

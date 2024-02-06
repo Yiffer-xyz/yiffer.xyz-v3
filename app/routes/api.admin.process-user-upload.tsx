@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
+import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -17,7 +17,6 @@ import { rejectArtistIfEmpty, setArtistNotPending } from '../route-funcs/manage-
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
@@ -38,7 +37,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const err = await processUserUpload(
     user.userId,
-    urlBase,
+    args.context.DB,
     comicId,
     formComicName.toString(),
     verdict,
@@ -54,7 +53,7 @@ export async function action(args: ActionFunctionArgs) {
 
 export async function processUserUpload(
   modId: number,
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   comicName: string,
   frontendVerdict: ComicUploadVerdict,
@@ -72,7 +71,7 @@ export async function processUserUpload(
 
   const err = await processAnyUpload(
     modId,
-    urlBase,
+    db,
     comicId,
     comicName,
     modComment,
@@ -94,7 +93,7 @@ export async function processUserUpload(
 
 export async function processAnyUpload(
   modId: number,
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   comicName: string,
   modComment: string | undefined,
@@ -115,8 +114,8 @@ export async function processAnyUpload(
   }
 
   const [artistRes, updateComicDbRes] = await Promise.all([
-    getArtistByComicId(urlBase, comicId),
-    queryDb(urlBase, comicQuery, comicQueryParams),
+    getArtistByComicId(db, comicId),
+    queryDbExec(db, comicQuery, comicQueryParams),
   ]);
 
   if (updateComicDbRes.isError) {
@@ -133,10 +132,10 @@ export async function processAnyUpload(
   if (artist.isPending) {
     let pendingErr: ApiError | undefined;
     if (isRejected) {
-      const rejectRes = await rejectArtistIfEmpty(urlBase, artist.id, artist.name);
+      const rejectRes = await rejectArtistIfEmpty(db, artist.id, artist.name);
       pendingErr = rejectRes.err;
     } else {
-      pendingErr = await setArtistNotPending(urlBase, artist.id);
+      pendingErr = await setArtistNotPending(db, artist.id);
     }
 
     if (pendingErr) {
@@ -219,14 +218,14 @@ export async function processAnyUpload(
     frontendVerdict === 'rejected' || frontendVerdict === 'rejected-list'
       ? 'comicUploadRejected'
       : `comicUpload${frontendVerdict.replace('-', '')}`;
-  const err = await addContributionPoints(urlBase, userUploadId ?? null, dbTableName);
+  const err = await addContributionPoints(db, userUploadId ?? null, dbTableName);
   if (err) {
     return wrapApiError(err, `Error adding contribution points`);
   }
 
   if (!metadataQuery) return;
 
-  const metadataDbRes = await queryDb(urlBase, metadataQuery, metadataQueryParams);
+  const metadataDbRes = await queryDb(db, metadataQuery, metadataQueryParams);
   if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Error updating comic metadata in db');
   }

@@ -242,7 +242,7 @@ export default function PendingComics() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const dbRes = await getPendingComics(args.context.DB_API_URL_BASE);
+  const dbRes = await getPendingComics(args.context.DB);
 
   if (dbRes.err) {
     return processApiError('Error getting pending comics in mod panel', dbRes.err);

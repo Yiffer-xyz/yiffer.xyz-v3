@@ -18,11 +18,10 @@ export default function ManageSingleUser() {
 
 export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
 
-  const userRes = await getUserById(urlBase, userId);
+  const userRes = await getUserById(args.context.DB, userId);
 
   if (userRes.err) {
     return processApiError('Error getting user for admin>users', userRes.err);

@@ -8,7 +8,7 @@
     "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
     "tailwindcss": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "dev": "concurrently \"npm run tailwindcss\" \"remix dev --manual -c \\\"npm run start\\\"\"",
-    "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public --r2=COMICS_BUCKET",
+    "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public --r2=COMICS_BUCKET --d1 DB=fac2fded-f9ec-4aaf-84f2-c3b37b3e0305",
     "typecheck": "tsc",
     "format": "npx prettier --write ."
   },

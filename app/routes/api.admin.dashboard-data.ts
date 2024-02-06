@@ -5,13 +5,9 @@ import type {
   ComicSuggestionVerdict,
   ComicUploadVerdict,
 } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
-import type { ResultOrErrorPromise } from '~/utils/request-helpers';
-import {
-  createSuccessJson,
-  makeDbErrObj,
-  processApiError,
-} from '~/utils/request-helpers';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
+import { createSuccessJson, makeDbErrObj } from '~/utils/request-helpers';
 
 type UserOrIP = {
   username?: string;
@@ -45,26 +41,163 @@ export type DashboardAction = {
   verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
 };
 
+const tagSuggestionsQuery = `SELECT Q1.*, user.username AS modName 
+  FROM (
+    SELECT
+        keywordsuggestion.id AS id,
+        keywordsuggestion.keywordId AS keywordId,
+        keyword.KeywordName AS keywordName,
+        comic.name AS comicName,
+        comic.id AS comicId,
+        isAdding,
+        status,
+        keywordsuggestion.timestamp,
+        userId,
+        username,
+        userIP,
+        modId
+      FROM keywordsuggestion
+      INNER JOIN comic ON (comic.id = keywordsuggestion.comicId)
+      INNER JOIN keyword ON (keyword.Id = keywordsuggestion.keywordId)
+      LEFT JOIN user ON (user.id = keywordsuggestion.userId)
+  ) AS Q1
+  LEFT JOIN user ON (Q1.modId = user.id)
+`;
+
+const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
+  FROM (
+    SELECT
+      comicproblem.id AS id,
+      comicproblemcategory.Name AS categoryName,
+      description,
+      comic.name AS comicName,
+      comic.id AS comicId,
+      comicproblem.status,
+      comicproblem.timestamp,
+      userId,
+      userIP,
+      user.username AS username,
+      modId
+    FROM comicproblem
+    INNER JOIN comicproblemcategory ON (comicproblemcategory.id = comicproblem.problemCategoryId)
+    INNER JOIN comic ON (comic.id = comicproblem.comicId)
+    LEFT JOIN user ON (user.id = comicproblem.userId)
+  ) AS Q1
+  LEFT JOIN user ON (Q1.modId = user.id)
+`;
+
+const comicSuggestionsQuery = `SELECT Q1.*, user.username AS modName
+  FROM (
+    SELECT
+      comicsuggestion.id AS id,
+      comicsuggestion.name AS comicName,
+      description AS description,
+      artistName AS artistName,
+      comicsuggestion.status AS status,
+      comicsuggestion.timestamp AS timestamp,
+      verdict,
+      userId,
+      userIP,
+      user.username AS username,
+      modId AS modId,
+      modComment
+    FROM comicsuggestion
+    LEFT JOIN user ON (user.id = comicsuggestion.userId)
+  ) AS Q1
+  LEFT JOIN user ON (Q1.modId = user.id)
+`;
+
+const comicUploadsQuery = `SELECT Q1.*, user.username AS modName
+  FROM (
+    SELECT
+      comic.id,
+      comic.name AS comicName,
+      comic.id AS comicId,
+      artist.name AS artistName,
+      publishStatus,
+      verdict,
+      timestamp,
+      comicmetadata.uploadUserId,
+      comicmetadata.uploadUserIP,
+      comicmetadata.originalNameIfRejected,
+      user.username AS uploadUsername,
+      modId,
+      modComment
+    FROM comic
+    INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
+    INNER JOIN artist ON (artist.id = comic.artist)
+    LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
+  ) AS Q1
+  LEFT JOIN user ON (Q1.modId = user.id)
+`;
+
+const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemModName
+  FROM (
+    SELECT
+      comic.name AS comicName,
+      comic.id AS comicId,
+      artist.name AS artistName,
+      comicmetadata.uploadUserId,
+      comicmetadata.uploadUserIP,
+      user.username AS uploadUsername,
+      pendingProblemModId,
+      timestamp,
+      errorText
+    FROM comic
+    INNER JOIN artist ON (artist.id = comic.artist)
+    INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
+    LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
+    WHERE publishStatus = 'pending'
+    AND errorText IS NOT NULL
+  ) AS Q1
+  LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
+`;
+
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
+  const dataFetchStatements: DBInputWithErrMsg[] = [
+    {
+      query: tagSuggestionsQuery,
+      errorLogMessage: 'Error getting dashboard tag suggestions',
+    },
+    {
+      query: comicProblemsQuery,
+      errorLogMessage: 'Error getting dashboard comic problems',
+    },
+    {
+      query: comicUploadsQuery,
+      errorLogMessage: 'Error getting dashboard comic uploads',
+    },
+    {
+      query: comicSuggestionsQuery,
+      errorLogMessage: 'Error getting dashboard comic suggestions',
+    },
+    {
+      query: pendingComicsSimpleQuery,
+      errorLogMessage: 'Error getting dashboard pending comics',
+    },
+  ];
 
-  const dataResponses = await Promise.all([
-    getTagSuggestions(urlBase),
-    getProblems(urlBase),
-    getComicUploads(urlBase),
-    getComicSuggestions(urlBase),
-    getPendingComicProblems(urlBase),
-  ]);
+  const dbResList = await queryDbMultiple<
+    [
+      DbTagSuggestion[],
+      DbComicProblem[],
+      DbComicUpload[],
+      DbComicSuggestion[],
+      DbPendingComicSimple[],
+    ]
+  >(args.context.DB, dataFetchStatements);
 
-  const allSuggestions: DashboardAction[] = [];
-  for (const response of dataResponses) {
-    if (response.err) {
-      return processApiError('Error fetching admin dashboard data', response.err);
-    }
-    if (response.result) {
-      allSuggestions.push(...response.result);
-    }
+  if (dbResList.isError) {
+    return makeDbErrObj(dbResList, dbResList.errorLogMessage);
   }
+
+  const allSuggestions: DashboardAction[] = [
+    ...mapDbTagSuggestions(dbResList.result[0]),
+    ...mapDbComicProblems(dbResList.result[1]),
+    ...mapDbComicUploads(dbResList.result[2]),
+    ...mapDbComicSuggestions(dbResList.result[3]),
+    ...mapDbPendingComicProblems(dbResList.result[4]),
+  ];
 
   allSuggestions.sort((a, b) => {
     return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
@@ -89,38 +222,8 @@ type DbTagSuggestion = {
   modName?: string;
 };
 
-async function getTagSuggestions(
-  urlBase: string
-): ResultOrErrorPromise<DashboardAction[]> {
-  const query = `SELECT Q1.*, user.username AS modName 
-      FROM (
-        SELECT
-            keywordsuggestion.id AS id,
-            keywordsuggestion.keywordId AS keywordId,
-            keyword.KeywordName AS keywordName,
-            comic.name AS comicName,
-            comic.id AS comicId,
-            isAdding,
-            status,
-            keywordsuggestion.timestamp,
-            userId,
-            username,
-            userIP,
-            modId
-          FROM keywordsuggestion
-          INNER JOIN comic ON (comic.id = keywordsuggestion.comicId)
-          INNER JOIN keyword ON (keyword.Id = keywordsuggestion.keywordId)
-          LEFT JOIN user ON (user.id = keywordsuggestion.userId)
-      ) AS Q1
-    LEFT JOIN user ON (Q1.modId = user.id)
-  `;
-
-  const dbRes = await queryDb<DbTagSuggestion[]>(urlBase, query);
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting tag suggestions');
-  }
-
-  const mappedResults: DashboardAction[] = dbRes.result.map(dbTagSugg => {
+function mapDbTagSuggestions(input: DbTagSuggestion[]): DashboardAction[] {
+  return input.map(dbTagSugg => {
     return {
       type: 'tagSuggestion',
       id: dbTagSugg.id,
@@ -148,10 +251,6 @@ async function getTagSuggestions(
       comicId: dbTagSugg.comicId,
     };
   });
-
-  return {
-    result: mappedResults,
-  };
 }
 
 type DbComicProblem = {
@@ -169,36 +268,8 @@ type DbComicProblem = {
   modName?: string;
 };
 
-async function getProblems(urlBase: string): ResultOrErrorPromise<DashboardAction[]> {
-  const query = `SELECT Q1.*, user.username AS modName
-      FROM (
-        SELECT
-          comicproblem.id AS id,
-          comicproblemcategory.Name AS categoryName,
-          description,
-          comic.name AS comicName,
-          comic.id AS comicId,
-          comicproblem.status,
-          comicproblem.timestamp,
-          userId,
-          userIP,
-          user.username AS username,
-          modId
-        FROM comicproblem
-        INNER JOIN comicproblemcategory ON (comicproblemcategory.id = comicproblem.problemCategoryId)
-        INNER JOIN comic ON (comic.id = comicproblem.comicId)
-        LEFT JOIN user ON (user.id = comicproblem.userId)
-      ) AS Q1
-    LEFT JOIN user ON (Q1.modId = user.id)
-  `;
-
-  const dbRes = await queryDb<DbComicProblem[]>(urlBase, query);
-
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting comic problems');
-  }
-
-  const mappedResults: DashboardAction[] = dbRes.result.map(dbComicProblem => {
+function mapDbComicProblems(input: DbComicProblem[]): DashboardAction[] {
+  return input.map(dbComicProblem => {
     return {
       type: 'comicProblem',
       id: dbComicProblem.id,
@@ -223,10 +294,6 @@ async function getProblems(urlBase: string): ResultOrErrorPromise<DashboardActio
           : undefined,
     };
   });
-
-  return {
-    result: mappedResults,
-  };
 }
 
 type DbComicSuggestion = {
@@ -245,37 +312,8 @@ type DbComicSuggestion = {
   verdict?: ComicSuggestionVerdict;
 };
 
-async function getComicSuggestions(
-  urlBase: string
-): ResultOrErrorPromise<DashboardAction[]> {
-  const query = `SELECT Q1.*, user.username AS modName
-      FROM (
-        SELECT
-          comicsuggestion.id AS id,
-          comicsuggestion.name AS comicName,
-          description AS description,
-          artistName AS artistName,
-          comicsuggestion.status AS status,
-          comicsuggestion.timestamp AS timestamp,
-          verdict,
-          userId,
-          userIP,
-          user.username AS username,
-          modId AS modId,
-          modComment
-        FROM comicsuggestion
-        LEFT JOIN user ON (user.id = comicsuggestion.userId)
-      ) AS Q1
-    LEFT JOIN user ON (Q1.modId = user.id)
-  `;
-
-  const dbRes = await queryDb<DbComicSuggestion[]>(urlBase, query);
-
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting comic suggestions');
-  }
-
-  const mappedResults: DashboardAction[] = dbRes.result.map(dbComicSugg => {
+function mapDbComicSuggestions(input: DbComicSuggestion[]): DashboardAction[] {
+  return input.map(dbComicSugg => {
     let verdictText = undefined;
     if (dbComicSugg.status === 'approved' || dbComicSugg.status === 'rejected') {
       verdictText = dbComicSugg.status === 'approved' ? 'Approved' : 'Rejected';
@@ -307,10 +345,6 @@ async function getComicSuggestions(
           : undefined,
     };
   });
-
-  return {
-    result: mappedResults,
-  };
 }
 
 type DbComicUpload = {
@@ -330,101 +364,74 @@ type DbComicUpload = {
   modComment?: string;
 };
 
-async function getComicUploads(urlBase: string): ResultOrErrorPromise<DashboardAction[]> {
-  const query = `
-      SELECT Q1.*, user.username AS modName
-      FROM (
-        SELECT
-          comic.id,
-          comic.name AS comicName,
-          comic.id AS comicId,
-          artist.name AS artistName,
-          publishStatus,
-          verdict,
-          timestamp,
-          comicmetadata.uploadUserId,
-          comicmetadata.uploadUserIP,
-          comicmetadata.originalNameIfRejected,
-          user.username AS uploadUsername,
-          modId,
-          modComment
-        FROM comic
-        INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
-        INNER JOIN artist ON (artist.id = comic.artist)
-        LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
-      ) AS Q1
-    LEFT JOIN user ON (Q1.modId = user.id)
-  `;
+function mapDbComicUploads(input: DbComicUpload[]): DashboardAction[] {
+  return (
+    input
+      // If a mod uploads, it skips the verification and goes straight to pending
+      // In these cases, don't show in the dashboard. This is the only case where it
+      // will be not uploaded but lack a modId.
+      .filter(
+        dbComicUpload =>
+          !(dbComicUpload.publishStatus !== 'uploaded' && !dbComicUpload.modId)
+      )
+      .map(dbComicUpload => {
+        let fullVerdictText = '';
+        const isProcessed = dbComicUpload.publishStatus !== 'uploaded';
 
-  const dbRes = await queryDb<DbComicUpload[]>(urlBase, query);
+        if (isProcessed && !dbComicUpload.uploadUserId) {
+          if (dbComicUpload.publishStatus === 'pending') {
+            fullVerdictText = 'Approved, set to pending';
+          }
+          if (dbComicUpload.publishStatus === 'rejected') {
+            fullVerdictText = 'Rejected';
+          }
+          if (dbComicUpload.publishStatus === 'rejected-list') {
+            fullVerdictText = 'Rejected, added to ban list';
+          }
+        }
+        if (isProcessed && dbComicUpload.verdict) {
+          const verdictText =
+            CONTRIBUTION_POINTS.comicUpload[dbComicUpload.verdict]
+              .actionDashboardDescription;
+          const isRejected =
+            dbComicUpload.verdict === 'rejected' ||
+            dbComicUpload.verdict === 'rejected-list';
 
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting comic uploads');
-  }
+          fullVerdictText = isRejected ? 'Rejected' : 'Approved';
+          if (verdictText) {
+            fullVerdictText += ` - ${verdictText}`;
+          }
+          if (dbComicUpload.modComment) {
+            fullVerdictText += ` - mod comment: ${dbComicUpload.modComment}`;
+          }
+        }
 
-  // If a mod uploads, it skips the verification and goes straight to pending
-  // In these cases, don't show in the dashboard. This is the only case where it
-  // will be not uploaded but lack a modId.
-  const notModUploads = dbRes.result.filter(
-    dbComicUpload => !(dbComicUpload.publishStatus !== 'uploaded' && !dbComicUpload.modId)
+        let comicName = dbComicUpload.comicName;
+        if (dbComicUpload.publishStatus === 'rejected') {
+          comicName = dbComicUpload.originalNameIfRejected || comicName;
+        }
+
+        return {
+          type: 'comicUpload',
+          id: dbComicUpload.id,
+          comicId: dbComicUpload.comicId,
+          primaryField: `${comicName} - ${dbComicUpload.artistName}`,
+          isProcessed: dbComicUpload.publishStatus !== 'uploaded',
+          timestamp: dbComicUpload.timestamp,
+          user: dbComicUpload.uploadUsername
+            ? {
+                userId: dbComicUpload.uploadUserId,
+                username: dbComicUpload.uploadUsername,
+              }
+            : { ip: dbComicUpload.uploadUserIP },
+          verdict: isProcessed ? fullVerdictText : undefined,
+          assignedMod:
+            dbComicUpload.modId && dbComicUpload.modName
+              ? { userId: dbComicUpload.modId, username: dbComicUpload.modName }
+              : undefined,
+        };
+      })
   );
-
-  const mappedResults: DashboardAction[] = notModUploads.map(dbComicUpload => {
-    let fullVerdictText = '';
-    const isProcessed = dbComicUpload.publishStatus !== 'uploaded';
-
-    if (isProcessed && !dbComicUpload.uploadUserId) {
-      if (dbComicUpload.publishStatus === 'pending') {
-        fullVerdictText = 'Approved, set to pending';
-      }
-      if (dbComicUpload.publishStatus === 'rejected') {
-        fullVerdictText = 'Rejected';
-      }
-      if (dbComicUpload.publishStatus === 'rejected-list') {
-        fullVerdictText = 'Rejected, added to ban list';
-      }
-    }
-    if (isProcessed && dbComicUpload.verdict) {
-      const verdictText =
-        CONTRIBUTION_POINTS.comicUpload[dbComicUpload.verdict].actionDashboardDescription;
-      const isRejected =
-        dbComicUpload.verdict === 'rejected' || dbComicUpload.verdict === 'rejected-list';
-
-      fullVerdictText = isRejected ? 'Rejected' : 'Approved';
-      if (verdictText) {
-        fullVerdictText += ` - ${verdictText}`;
-      }
-      if (dbComicUpload.modComment) {
-        fullVerdictText += ` - mod comment: ${dbComicUpload.modComment}`;
-      }
-    }
-
-    let comicName = dbComicUpload.comicName;
-    if (dbComicUpload.publishStatus === 'rejected') {
-      comicName = dbComicUpload.originalNameIfRejected || comicName;
-    }
-
-    return {
-      type: 'comicUpload',
-      id: dbComicUpload.id,
-      comicId: dbComicUpload.comicId,
-      primaryField: `${comicName} - ${dbComicUpload.artistName}`,
-      isProcessed: dbComicUpload.publishStatus !== 'uploaded',
-      timestamp: dbComicUpload.timestamp,
-      user: dbComicUpload.uploadUsername
-        ? { userId: dbComicUpload.uploadUserId, username: dbComicUpload.uploadUsername }
-        : { ip: dbComicUpload.uploadUserIP },
-      verdict: isProcessed ? fullVerdictText : undefined,
-      assignedMod:
-        dbComicUpload.modId && dbComicUpload.modName
-          ? { userId: dbComicUpload.modId, username: dbComicUpload.modName }
-          : undefined,
-    };
-  });
-
-  return {
-    result: mappedResults,
-  };
 }
 
 type DbPendingComicSimple = {
@@ -440,39 +447,8 @@ type DbPendingComicSimple = {
   errorText?: string;
 };
 
-export async function getPendingComicProblems(
-  urlBase: string
-): ResultOrErrorPromise<DashboardAction[]> {
-  const query = `
-    SELECT Q1.*, user.username AS pendingProblemModName
-    FROM (
-      SELECT
-        comic.name AS comicName,
-        comic.id AS comicId,
-        artist.name AS artistName,
-        comicmetadata.uploadUserId,
-        comicmetadata.uploadUserIP,
-        user.username AS uploadUsername,
-        pendingProblemModId,
-        timestamp,
-        errorText
-      FROM comic
-      INNER JOIN artist ON (artist.id = comic.artist)
-      INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
-      LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
-      WHERE publishStatus = 'pending'
-      AND errorText IS NOT NULL
-    ) AS Q1
-    LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
-  `;
-
-  const dbRes = await queryDb<DbPendingComicSimple[]>(urlBase, query);
-
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting pending comics');
-  }
-
-  const mappedResults: DashboardAction[] = dbRes.result.map(dbPending => {
+function mapDbPendingComicProblems(input: DbPendingComicSimple[]): DashboardAction[] {
+  return input.map(dbPending => {
     return {
       type: 'pendingComicProblem',
       id: dbPending.comicId,
@@ -497,8 +473,4 @@ export async function getPendingComicProblems(
           : undefined,
     };
   });
-
-  return {
-    result: mappedResults,
-  };
 }

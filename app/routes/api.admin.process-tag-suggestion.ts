@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -25,10 +26,8 @@ export async function action(args: ActionFunctionArgs) {
     'mod'
   );
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
-
   const err = await processTagSuggestion(
-    urlBase,
+    args.context.DB,
     user?.userId as number,
     fields.isApproved,
     fields.actionId,
@@ -47,7 +46,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function processTagSuggestion(
-  urlBase: string,
+  db: D1Database,
   modId: number,
   isApproved: boolean,
   actionId: number,
@@ -59,10 +58,25 @@ async function processTagSuggestion(
   const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
-  let updateTagQuery = undefined;
-  let updateTagQueryParams = undefined;
+  // TODO-db: the below. How to deal with dup_entry in sqlite?
+  // if (dbRes.isError) {
+  //   if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
+  //     return makeDbErr(dbRes, 'Error updating comickeyword');
+  //   }
+  // }
+
+  const dbStatements: DBInputWithErrMsg[] = [
+    {
+      query: updateActionQuery,
+      params: updateActionQueryParams,
+      errorLogMessage: 'Error updating comickeyword',
+    },
+  ];
 
   if (isApproved) {
+    let updateTagQuery = undefined;
+    let updateTagQueryParams = undefined;
+
     if (isAdding) {
       updateTagQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES (?, ?)`;
       updateTagQueryParams = [comicId, tagId];
@@ -71,21 +85,24 @@ async function processTagSuggestion(
       updateTagQueryParams = [comicId, tagId];
     }
 
-    const dbRes = await queryDb(urlBase, updateTagQuery, updateTagQueryParams);
-    if (dbRes.isError) {
-      if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
-        return makeDbErr(dbRes, 'Error updating comickeyword');
-      }
-    }
+    dbStatements.push({
+      query: updateTagQuery,
+      params: updateTagQueryParams,
+      errorLogMessage: 'Error updating mod panel action',
+    });
   }
 
-  const actionRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (actionRes.isError) {
-    return makeDbErr(actionRes, 'Error updating mod panel action');
+  const dbRes = await queryDbMultiple(
+    db,
+    dbStatements,
+    'Error updating action+tag in processTagSuggestion'
+  );
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, dbRes.errorMessage);
   }
 
   const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
-  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  const err = await addContributionPoints(db, suggestingUserId ?? null, tableName);
   if (err) {
     return wrapApiError(err, `Error adding contribution points`);
   }

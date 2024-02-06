@@ -10,7 +10,6 @@ import {
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
@@ -22,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formTypeFilter) return create400Json('Missing adTypeFilter');
   const typeFilter = formTypeFilter.toString().split(',') as AdType[];
 
-  const adsRes = await getAllAds(urlBase, statusFilter, typeFilter);
+  const adsRes = await getAllAds(args.context.DB, statusFilter, typeFilter);
 
   if (adsRes.err) {
     return processApiError('Error in /get-ads', adsRes.err);

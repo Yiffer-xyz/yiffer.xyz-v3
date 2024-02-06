@@ -15,13 +15,12 @@ export default function ManageTag() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
   const tagParam = args.params.tag as string;
   // TODO: Make it possible to use both id and tag name here. Check if parseable as number,
   // and if not, use as name.
   const tagId = parseInt(tagParam);
 
-  const tagRes = await getTagById(urlBase, tagId);
+  const tagRes = await getTagById(args.context.DB, tagId);
 
   // There's also getTagByName api route already implemented.
 

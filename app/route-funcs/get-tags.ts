@@ -1,3 +1,4 @@
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import type { Tag } from '~/types/types';
 import type {
@@ -6,18 +7,25 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-export async function getAllTags(urlBase: string): ResultOrErrorPromise<Tag[]> {
-  const keywordsQuery = 'SELECT id, keywordName AS name FROM keyword';
-  const dbRes = await queryDb<Tag[]>(urlBase, keywordsQuery);
+export function getAllTagsQuery(): DBInputWithErrMsg {
+  return {
+    query: 'SELECT id, keywordName AS name FROM keyword',
+    errorLogMessage: 'Error getting all tags',
+  };
+}
+
+export async function getAllTags(db: D1Database): ResultOrErrorPromise<Tag[]> {
+  const { query } = getAllTagsQuery();
+  const dbRes = await queryDb<Tag[]>(db, query);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting all tags');
   }
   return { result: dbRes.result };
 }
 
-export async function getAllTagNames(urlBase: string): ResultOrErrorPromise<string[]> {
+export async function getAllTagNames(db: D1Database): ResultOrErrorPromise<string[]> {
   const keywordsQuery = 'SELECT keywordName AS name FROM keyword';
-  const dbRes = await queryDb<{ name: string }[]>(urlBase, keywordsQuery);
+  const dbRes = await queryDb<{ name: string }[]>(db, keywordsQuery);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting all tag names');
   }
@@ -25,12 +33,12 @@ export async function getAllTagNames(urlBase: string): ResultOrErrorPromise<stri
 }
 
 export async function getTagById(
-  urlBase: string,
+  db: D1Database,
   tagId: number
 ): ResultOrNotFoundOrErrorPromise<Tag> {
-  const tagQuery = 'SELECT id, keywordName AS name FROM keyword WHERE id = ?';
+  const tagQuery = 'SELECT id, keywordName AS name FROM keyword WHERE id = ? LIMIT 1';
 
-  const dbRes = await queryDb<Tag[]>(urlBase, tagQuery, [tagId]);
+  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagId]);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting tag', { tagId });
   }
@@ -43,12 +51,13 @@ export async function getTagById(
 }
 
 export async function getTagByName(
-  urlBase: string,
+  db: D1Database,
   tagName: string
 ): ResultOrNotFoundOrErrorPromise<Tag> {
-  const tagQuery = 'SELECT id, keywordName AS name FROM keyword WHERE keywordName = ?';
+  const tagQuery =
+    'SELECT id, keywordName AS name FROM keyword WHERE keywordName = ? LIMIT 1';
 
-  const dbRes = await queryDb<Tag[]>(urlBase, tagQuery, [tagName]);
+  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagName]);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting tag', { tagName });
   }

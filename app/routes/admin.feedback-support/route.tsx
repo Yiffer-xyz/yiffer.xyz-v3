@@ -4,8 +4,7 @@ import { getAllFeedback } from '~/route-funcs/get-feedback';
 import { processApiError } from '~/utils/request-helpers';
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
-  const feedbackRes = await getAllFeedback(urlBase);
+  const feedbackRes = await getAllFeedback(args.context.DB);
   if (feedbackRes.err) {
     return processApiError('Error getting data in admin feedback route', feedbackRes.err);
   }

@@ -11,7 +11,7 @@ import { publishComic } from './api.admin.publish-comic';
 // Authorizes via x-yiffer-api-key header that the worker has as a secret
 export async function loader(args: LoaderFunctionArgs) {
   const requestApiKeyHeader = args.request.headers.get('x-yiffer-api-key');
-  const urlBase = args.context.DB_API_URL_BASE;
+  const db = args.context.DB;
   const cronKey = args.context.CRON_KEY;
   const schedulePerDay = parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT as string);
 
@@ -24,13 +24,13 @@ export async function loader(args: LoaderFunctionArgs) {
     );
   }
 
-  const dbRes = await getPendingComics(urlBase, true, schedulePerDay);
+  const dbRes = await getPendingComics(db, true, schedulePerDay);
   if (dbRes.err) {
     return processApiError('Error in /publish-comics-cron', dbRes.err);
   }
 
   for (const comic of dbRes.result) {
-    const err = await publishComic(urlBase, comic.comicId);
+    const err = await publishComic(db, comic.comicId);
     if (err) {
       return processApiError(`Error in /publish-comics-cron, failed publishing`, err);
     }

@@ -238,7 +238,7 @@ export default function Scoreboard() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const scoresRes = await getTopScores(args.context.DB_API_URL_BASE, 'all-time', false);
+  const scoresRes = await getTopScores(args.context.DB, undefined, false);
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
@@ -250,9 +250,10 @@ export async function action(
 ): Promise<ApiResponse<TopContributionPointsRow[]>> {
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
+  const yearMonthStr = yearMonth.toString();
   const res = await getTopScores(
-    args.context.DB_API_URL_BASE,
-    yearMonth.toString(),
+    args.context.DB,
+    yearMonthStr === 'all-time' ? undefined : yearMonthStr,
     excludeMods === 'true'
   );
   if (res.err) {
@@ -273,8 +274,8 @@ type TopContributionPointsRow = {
 };
 
 async function getTopScores(
-  urlBase: 'all-time' | string,
-  yearMonth: string,
+  db: D1Database,
+  yearMonth: string | undefined,
   excludeMods: boolean
 ): ResultOrErrorPromise<TopContributionPointsRow[]> {
   const query = `
@@ -293,19 +294,23 @@ async function getTopScores(
       comicUploadterrible
     FROM contributionpoints
     INNER JOIN user ON (user.id = contributionpoints.userId)
-    WHERE yearMonth = ?
+    ${yearMonth ? 'WHERE yearMonth = ?' : ''}
     ${excludeMods ? `AND userType != 'moderator' AND userType != 'admin'` : ''}
   `;
 
-  const dbRes = await queryDb<ContributionPointsEntry[]>(urlBase, query, [yearMonth]);
-  if (dbRes.isError || !dbRes.result) {
+  const dbRes = await queryDb<ContributionPointsEntry[]>(
+    db,
+    query,
+    yearMonth ? [yearMonth] : undefined
+  );
+  if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting top score list', {
       yearMonth,
       excludeMods,
     });
   }
   return {
-    result: topScoreEntriesToPointList(dbRes.result!),
+    result: topScoreEntriesToPointList(dbRes.result),
   };
 }
 

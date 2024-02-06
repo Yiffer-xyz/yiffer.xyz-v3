@@ -82,7 +82,7 @@ export async function action(args: ActionFunctionArgs) {
   const { err, redirect, errorMessage } = await login(
     username,
     password,
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     args.context.JWT_CONFIG_STR
   );
 

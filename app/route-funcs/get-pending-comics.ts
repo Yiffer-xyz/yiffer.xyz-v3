@@ -4,7 +4,7 @@ import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 export async function getPendingComics(
-  urlBase: string,
+  db: D1Database,
   scheduledOnly?: boolean,
   topAmount?: number
 ): ResultOrErrorPromise<DbPendingComic[]> {
@@ -46,7 +46,7 @@ export async function getPendingComics(
     ${topAmount ? `LIMIT ${topAmount}` : ''}
   `;
 
-  const dbRes = await queryDb<DbPendingComic[]>(urlBase, pendingComicsQuery);
+  const dbRes = await queryDb<DbPendingComic[]>(db, pendingComicsQuery);
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting pending comics', {
