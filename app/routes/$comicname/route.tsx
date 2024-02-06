@@ -5,14 +5,14 @@ import { processApiError } from '~/utils/request-helpers';
 
 export async function loader(args: LoaderFunctionArgs) {
   const comic = await getComicByField(
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     'name',
     args.params.comicname as string,
     true
   );
 
   if (comic.err) {
-    return processApiError('Error getting comic', comic.err);
+    return processApiError('Error getting comic in /comic', comic.err);
   }
 
   if (comic.notFound) {

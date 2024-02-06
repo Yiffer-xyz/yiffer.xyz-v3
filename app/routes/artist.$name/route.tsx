@@ -1,7 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import { getArtistByField } from '~/route-funcs/get-artist';
-import { getComicsByArtistField } from '~/route-funcs/get-comics';
+import { getArtistAndComicsByField } from '~/route-funcs/get-artist';
 import type { Artist, ComicTiny } from '~/types/types';
 import { processApiError } from '~/utils/request-helpers';
 
@@ -14,26 +13,22 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
   const artistName = args.params.name;
   if (!artistName) return { notFound: true, comics: [], queriedArtistName: '' };
 
-  const artistRes = await getArtistByField(
-    args.context.DB_API_URL_BASE,
-    'name',
-    artistName
-  );
-  const comicsRes = await getComicsByArtistField(
-    args.context.DB_API_URL_BASE,
+  const combinedRes = await getArtistAndComicsByField(
+    args.context.DB,
     'name',
     artistName
   );
 
-  if (artistRes.err) return processApiError('Error getting artist', artistRes.err);
-  if (comicsRes.err) return processApiError('Error getting comics', comicsRes.err);
-
-  if (artistRes.notFound)
+  if (combinedRes.err) {
+    return processApiError('Error getting artist+comics', combinedRes.err);
+  }
+  if (combinedRes.notFound) {
     return { notFound: true, comics: [], queriedArtistName: artistName };
+  }
 
   return {
-    artist: artistRes.result,
-    comics: comicsRes.result,
+    artist: combinedRes.result.artist,
+    comics: combinedRes.result.comics,
     notFound: false,
     queriedArtistName: artistName,
   };

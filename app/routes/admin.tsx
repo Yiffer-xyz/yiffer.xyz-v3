@@ -6,10 +6,13 @@ import { MdChevronRight } from 'react-icons/md';
 import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
-import { getAllArtists } from '~/route-funcs/get-artists';
-import { getAllComicNamesAndIDs } from '~/route-funcs/get-comics';
-import { getAllTags } from '~/route-funcs/get-tags';
-import { processApiError } from '~/utils/request-helpers';
+import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
+import type { DbComicTiny } from '~/route-funcs/get-comics';
+import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-comics';
+import { getAllTagsQuery } from '~/route-funcs/get-tags';
+import { makeDbErr, processApiError } from '~/utils/request-helpers';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 
 export type GlobalAdminContext = {
   comics: ComicTiny[];
@@ -41,7 +44,6 @@ export default function Admin() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
 
   const url = new URL(args.request.url);
@@ -49,43 +51,41 @@ export async function loader(args: LoaderFunctionArgs) {
     return redirect('/admin/dashboard');
   }
 
-  const [comicsRes, artistsRes, tagsRes] = await Promise.all([
-    getAllComicNamesAndIDs(urlBase, {
-      modifyNameIncludeType: true,
-      includeUnlisted: true,
-      includeThumbnailStatus: true,
-    }),
-    getAllArtists(urlBase, {
+  const dbStatements: DBInputWithErrMsg[] = [
+    getAllArtistsQuery({
       includePending: true,
       includeBanned: true,
       modifyNameIncludeType: true,
     }),
-    getAllTags(urlBase),
-  ]);
+    getAllComicNamesAndIDsQuery({
+      modifyNameIncludeType: true,
+      includeUnlisted: true,
+      includeThumbnailStatus: true,
+    }),
+    getAllTagsQuery(),
+  ];
 
-  if (comicsRes.err) {
+  const dbRes = await queryDbMultiple<[ArtistTiny[], DbComicTiny[], Tag[]]>(
+    args.context.DB,
+    dbStatements,
+    'Error getting artist+dbComic+tags'
+  );
+
+  if (dbRes.isError) {
     return processApiError(
-      'Error getting comics in mod panel',
-      comicsRes.err || { logMessage: 'Comics returned as null' }
+      'Error in admin top level getter',
+      makeDbErr(dbRes, dbRes.errorMessage)
     );
   }
-  if (artistsRes.err) {
-    return processApiError(
-      'Error getting artists in mod panel',
-      artistsRes.err || { logMessage: 'Artists returned as null' }
-    );
-  }
-  if (tagsRes.err) {
-    return processApiError(
-      'Error getting tags in mod panel',
-      tagsRes.err || { logMessage: 'Tags returned as null' }
-    );
-  }
+
+  const [allDbArtists, allDbComics, tags] = dbRes.result;
+  const artists = mapArtistTiny(allDbArtists, true);
+  const comics = mapDBComicTiny(allDbComics, true);
 
   const globalContext: GlobalAdminContext = {
-    comics: comicsRes.result,
-    artists: artistsRes.result,
-    tags: tagsRes.result,
+    comics,
+    artists,
+    tags,
   };
 
   return globalContext;

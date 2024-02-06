@@ -212,7 +212,7 @@ export default function ArtistEditor({
           name="e621Name"
           value={newArtistData.e621Name}
           onChange={newVal => updateArtist({ ...newArtistData, e621Name: newVal })}
-          className="mt-2"
+          className="mt-2 h-auto"
           helperText="Only the name - not the full link"
           placeholder='e.g. "braeburned"'
           disabled={newArtistData.hasConfirmedNoE621Name}
@@ -238,7 +238,7 @@ export default function ArtistEditor({
           name="patreonName"
           value={newArtistData.patreonName}
           onChange={newVal => updateArtist({ ...newArtistData, patreonName: newVal })}
-          className="mt-6"
+          className="mt-6 h-auto"
           helperText="Only the name - not the full link"
           placeholder='e.g. "braeburned"'
           disabled={newArtistData.hasConfirmedNoPatreonName}

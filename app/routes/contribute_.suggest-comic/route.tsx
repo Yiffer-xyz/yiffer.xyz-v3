@@ -8,7 +8,8 @@ import Textarea from '~/ui-components/Textarea/Textarea';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import type { SimilarComicResponse } from '../api.search-similarly-named-comic';
-import { queryDb } from '~/utils/database-facade';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   create400Json,
@@ -379,7 +380,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const errors = await checkForExistingComicOrSuggestion(
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     comicName as string
   );
   if (errors?.err) {
@@ -411,7 +412,7 @@ export async function action(args: ActionFunctionArgs) {
     userIp,
   ];
 
-  const dbRes = await queryDb(args.context.DB_API_URL_BASE, insertQuery, insertParams);
+  const dbRes = await queryDb(args.context.DB, insertQuery, insertParams);
 
   if (dbRes.isError) {
     return processApiError(undefined, {
@@ -425,42 +426,39 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function checkForExistingComicOrSuggestion(
-  dbUrlBase: string,
+  db: D1Database,
   comicName: string
 ): ResultOrErrorPromise<{ comicExists?: boolean; suggestionExists?: boolean }> {
-  const existingSuggestionQueryPromise = queryDb<{ count: number }[]>(
-    dbUrlBase,
-    `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
-    [comicName]
-  );
-  const existingComicQueryPromise = queryDb<{ count: number }[]>(
-    dbUrlBase,
-    `SELECT COUNT(*) AS count FROM comic WHERE Name = ?`,
-    [comicName]
+  const dbStatements: DBInputWithErrMsg[] = [
+    {
+      query: `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
+      params: [comicName],
+      errorLogMessage: 'Error checking for existing suggestions',
+    },
+    {
+      query: 'SELECT COUNT(*) AS count FROM comic WHERE Name = ?',
+      params: [comicName],
+      errorLogMessage: 'Error checking for existing comics',
+    },
+  ];
+
+  const dbRes = await queryDbMultiple<[{ count: number }[], { count: number }[]]>(
+    db,
+    dbStatements,
+    'Error checking for existing comic+suggestion in checkForExistingComicOrSuggestion'
   );
 
-  const [existingSuggestionDbRes, existingComicDbRes] = await Promise.all([
-    existingSuggestionQueryPromise,
-    existingComicQueryPromise,
-  ]);
-
-  if (existingSuggestionDbRes.isError) {
-    return makeDbErrObj(
-      existingSuggestionDbRes,
-      'Error checking for existing suggestions',
-      { comicName }
-    );
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, dbRes.errorMessage, { comicName });
   }
-  if (existingSuggestionDbRes.result && existingSuggestionDbRes.result[0].count > 0) {
+
+  const [suggestionsCount, existingComicsCount] = dbRes.result;
+
+  if (suggestionsCount.length && suggestionsCount[0].count > 0) {
     return { result: { suggestionExists: true } };
   }
 
-  if (existingComicDbRes.isError) {
-    return makeDbErrObj(existingComicDbRes, 'Error checking for existing comics', {
-      comicName,
-    });
-  }
-  if (existingComicDbRes.result && existingComicDbRes.result[0].count > 0) {
+  if (existingComicsCount.length && existingComicsCount[0].count > 0) {
     return { result: { comicExists: true } };
   }
 

@@ -31,7 +31,7 @@ type Feedback = {
   timestamp: string;
 };
 
-export async function getAllFeedback(urlBase: string): ResultOrErrorPromise<Feedback[]> {
+export async function getAllFeedback(db: D1Database): ResultOrErrorPromise<Feedback[]> {
   const query = `
     SELECT feedback.id, text, type, username, user.email AS userEmail, userId, userIP, isArchived, feedback.timestamp
       FROM feedback
@@ -39,7 +39,7 @@ export async function getAllFeedback(urlBase: string): ResultOrErrorPromise<Feed
       ORDER BY feedback.timestamp DESC
   `;
 
-  const dbRes = await queryDb<DbFeedback[]>(urlBase, query);
+  const dbRes = await queryDb<DbFeedback[]>(db, query);
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Could not get all feedback');
   }

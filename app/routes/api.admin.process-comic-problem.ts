@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
@@ -17,10 +17,9 @@ export async function action(args: ActionFunctionArgs) {
     'mod'
   );
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const err = await processComicProblem(
-    urlBase,
+    args.context.DB,
     fields.isApproved,
     fields.actionId,
     user!.userId,
@@ -36,7 +35,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function processComicProblem(
-  urlBase: string,
+  db: D1Database,
   isApproved: boolean,
   actionId: number,
   modId: number,
@@ -45,13 +44,13 @@ async function processComicProblem(
   const updateActionQuery = `UPDATE comicproblem SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
-  const dbRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
+  const dbRes = await queryDbExec(db, updateActionQuery, updateActionQueryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic problem');
   }
 
   const err = await addContributionPoints(
-    urlBase,
+    db,
     reportingUserId ?? null,
     isApproved ? 'comicProblem' : 'comicProblemRejected'
   );

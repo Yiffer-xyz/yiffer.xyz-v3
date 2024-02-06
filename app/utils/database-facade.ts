@@ -9,57 +9,122 @@ export type DBResponse<T> =
       errorMessage: string;
       errorCode?: string;
       result: T;
-      sql: string;
       insertId?: number;
     };
 
+export type ExecDBResponse = {
+  isError: boolean;
+  errorMessage: string;
+  errorCode?: string;
+};
+
+export type DBInputWithErrMsg = {
+  query: string;
+  params?: any[];
+  errorLogMessage: string;
+};
+
 // T should be an array with the responses expected in order
 export async function queryDbMultiple<T>(
-  urlBase: string,
-  queries: { query: string; params?: any[] }[]
+  db: D1Database,
+  queriesWithParams: { query: string; params?: any[]; errorLogMessage: string }[],
+  combinedErrMsg: string
 ): Promise<DBResponse<T>> {
-  const response = await fetch(`${urlBase}/new-api/query-db-multiple`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(queries),
-  });
+  try {
+    const statements = queriesWithParams.map(query => {
+      let statement: D1PreparedStatement;
+      if (query.params && query.params.length) {
+        statement = db.prepare(query.query).bind(...query.params);
+      } else {
+        statement = db.prepare(query.query);
+      }
 
-  if (!response.ok) {
+      return statement;
+    });
+
+    const responses = await db.batch(statements);
+    const results: any[] = [];
+    for (let i = 0; i < responses.length; i++) {
+      const res = responses[i];
+      if (res.error) {
+        return {
+          errorMessage: `${queriesWithParams[i].errorLogMessage} >> ${res.error}`,
+          isError: true,
+        };
+      }
+      results.push(res.results);
+    }
+
+    return {
+      isError: false,
+      errorMessage: '',
+      result: results as T,
+    };
+  } catch (err: any) {
+    console.error(err);
+    console.log(queriesWithParams);
     return {
       isError: true,
-      errorMessage: 'Error connecting to server',
+      errorMessage: `queryDbMultiple err: ${combinedErrMsg} >> ${err.message}`,
     };
-  } else {
-    const responseContent = await response.json();
-    return responseContent as DBResponse<T>;
   }
 }
 
 export async function queryDb<T>(
-  urlBase: string,
+  db: D1Database,
   query: string,
   params: any[] = []
 ): Promise<DBResponse<T>> {
-  const response = await fetch(`${urlBase}/new-api/query-db`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query,
-      params,
-    }),
-  });
+  try {
+    let statement: D1PreparedStatement;
+    if (params && params.length) {
+      statement = db.prepare(query).bind(...params);
+    } else {
+      statement = db.prepare(query);
+    }
 
-  if (!response.ok) {
+    const response = await statement.all();
+
+    if (response.error) {
+      return {
+        isError: true,
+        errorMessage: response.error,
+      };
+    } else {
+      return {
+        isError: false,
+        errorMessage: '',
+        result: response.results as T,
+      };
+    }
+  } catch (err: any) {
+    console.error(err);
+    console.log({ query, params });
     return {
       isError: true,
-      errorMessage: 'Error connecting to server',
+      errorMessage: err.message,
     };
-  } else {
-    const responseContent = await response.json();
-    return responseContent as DBResponse<T>;
+  }
+}
+
+export async function queryDbExec(
+  db: D1Database,
+  query: string,
+  params: any[] = []
+): Promise<ExecDBResponse> {
+  try {
+    const statement = db.prepare(query).bind(...params);
+    await statement.all();
+    return {
+      isError: false,
+      errorMessage: '',
+    };
+  } catch (err: any) {
+    console.error(err);
+    console.log({ query, params });
+    return {
+      isError: true,
+      errorMessage: err.message,
+    };
   }
 }

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -11,14 +11,13 @@ import {
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  const err = await publishComic(urlBase, parseInt(formComicId.toString()));
+  const err = await publishComic(args.context.DB, parseInt(formComicId.toString()));
   if (err) {
     return processApiError('Error in /publish-comic', err, {
       comicId: formComicId,
@@ -28,7 +27,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function publishComic(
-  urlBase: string,
+  db: D1Database,
   comicId: number
 ): Promise<ApiError | undefined> {
   const query = `
@@ -38,7 +37,7 @@ export async function publishComic(
       updated = NOW()
     WHERE id = ?
   `;
-  const dbRes = await queryDb(urlBase, query, [comicId]);
+  const dbRes = await queryDbExec(db, query, [comicId]);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error publishing comic', { comicId });
   }

@@ -1,0 +1,6 @@
+compatibility_date = "2024-01-29"
+
+[[d1_databases]]
+binding = "DB" # available in your Worker on env.DB
+database_name = "yiffer-local-dev"
+database_id = "fac2fded-f9ec-4aaf-84f2-c3b37b3e0305"

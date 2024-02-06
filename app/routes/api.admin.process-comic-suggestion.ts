@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicSuggestionVerdict } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
@@ -18,10 +18,9 @@ export async function action(args: ActionFunctionArgs) {
   const { fields, user, isUnauthorized } =
     await parseFormJson<ProcessComicSuggestionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const err = await processComicSuggestion(
-    urlBase,
+    args.context.DB,
     fields.actionId,
     fields.isApproved,
     user!.userId,
@@ -39,7 +38,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function processComicSuggestion(
-  urlBase: string,
+  db: D1Database,
   actionId: number,
   isApproved: boolean,
   modId: number,
@@ -61,12 +60,12 @@ async function processComicSuggestion(
     actionId,
   ];
 
-  const dbRes = await queryDb(urlBase, updateQuery, updateQueryParams);
+  const dbRes = await queryDbExec(db, updateQuery, updateQueryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic suggestion');
   }
 
   const columnName = isApproved ? `comicSuggestion${verdict}` : 'comicSuggestionRejected';
-  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, columnName);
+  const err = await addContributionPoints(db, suggestingUserId ?? null, columnName);
   if (err) return err;
 }

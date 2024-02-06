@@ -1,11 +1,11 @@
 import type { ComicForBrowse } from '~/types/types';
 import { browsePageSize } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 type GetComicsParams = {
-  urlBase: string;
+  db: D1Database;
   userId?: number;
   limit?: number;
   offset?: number;
@@ -17,7 +17,7 @@ type GetComicsParams = {
 };
 
 export async function getComicsPaginated({
-  urlBase,
+  db,
   userId,
   limit,
   offset,
@@ -59,8 +59,8 @@ export async function getComicsPaginated({
     !artistId;
 
   let orderBy = (order ?? 'updated') as string;
-  if (order === 'random') orderBy = 'RAND()';
-  if (!['updated', 'userRating', 'yourRating', 'RAND()'].includes(orderBy))
+  if (order === 'random') orderBy = 'RANDOM()';
+  if (!['updated', 'userRating', 'yourRating', 'RANDOM()'].includes(orderBy))
     orderBy = 'updated';
   const orderQueryString = `ORDER BY ${orderBy} DESC`;
 
@@ -82,7 +82,7 @@ export async function getComicsPaginated({
 
   const innerComicQuery = `
     SELECT 
-      comic.id AS id, comic.name, comic.cat AS classification, comic.tag AS category,
+      comic.id AS id, comic.name, comic.tag AS category,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
       ${userId ? ', voteQuery.yourVote AS yourRating' : ''}
     FROM comic 
@@ -125,34 +125,44 @@ export async function getComicsPaginated({
   }
 
   const query = `
-    SELECT cc.id, cc.name, cc.classification, cc.category, cc.artistName, 
-    cc.updated, cc.state, cc.published, cc.numberOfPages, AVG(comicvote.Vote) AS userRating, 
+    SELECT cc.id, cc.name, cc.category, cc.artistName, 
+    cc.updated, cc.state, cc.published, cc.numberOfPages, AVG(comicvote.vote) AS userRating, 
     ${userId ? 'cc.yourRating' : '0 AS yourRating'}
     FROM (
       ${innerComicQuery}
     ) AS cc 
-    LEFT JOIN comicvote ON (cc.Id = comicvote.ComicId) 
+    LEFT JOIN comicvote ON (cc.id = comicvote.comicId) 
     GROUP BY name, id 
     ${order === 'userRating' ? orderQueryString + paginationQueryString : ''} 
   `;
 
-  const [dbRes, countDbRes] = await Promise.all([
-    queryDb<ComicForBrowse[]>(urlBase, query, queryParams),
-    queryDb<{ count: number }[]>(urlBase, totalCountQuery, totalCountQueryParams),
-  ]);
+  console.log(query);
+  console.log(queryParams);
+
+  const dbRes = await queryDbMultiple<[ComicForBrowse[], { count: number }[]]>(
+    db,
+    [
+      { query, params: queryParams, errorLogMessage: 'Error getting comics' },
+      {
+        query: totalCountQuery,
+        params: totalCountQueryParams,
+        errorLogMessage: 'Error getting comics count',
+      },
+    ],
+    'Error getting comics+count'
+  );
 
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting comics', logCtx);
+    return makeDbErrObj(dbRes, dbRes.errorMessage ?? dbRes.errorMessage, logCtx);
   }
-  if (countDbRes.isError) {
-    return makeDbErrObj(countDbRes, 'Error getting count', logCtx);
-  }
+
+  const [comics, countDbRes] = dbRes.result;
 
   return {
     result: {
-      comics: dbRes.result,
-      numberOfPages: Math.ceil(countDbRes.result[0].count / browsePageSize),
-      totalNumComics: countDbRes.result[0].count,
+      comics,
+      numberOfPages: Math.ceil(countDbRes[0].count / browsePageSize),
+      totalNumComics: countDbRes[0].count,
       page: Math.ceil((offset ?? 0) / browsePageSize) + 1,
     },
   };
@@ -169,7 +179,7 @@ export function getFilterQuery({
   search?: string;
   artistId?: number;
 }) {
-  let filterQueryString = 'WHERE publishStatus = "published"';
+  let filterQueryString = `WHERE publishStatus = 'published'`;
   const filterQueryParams = [];
   let innerJoinKeywordString = '';
   let keywordCountString = '';

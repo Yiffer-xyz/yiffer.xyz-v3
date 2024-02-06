@@ -4,7 +4,7 @@ import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
 export async function searchUsers(
-  urlBase: string,
+  db: D1Database,
   searchText: string
 ): ResultOrErrorPromise<User[]> {
   const searchQuery = `
@@ -13,7 +13,7 @@ export async function searchUsers(
     WHERE username LIKE ? OR email LIKE ?
   `;
 
-  const dbRes = await queryDb<User[]>(urlBase, searchQuery, [
+  const dbRes = await queryDb<User[]>(db, searchQuery, [
     `%${searchText}%`,
     `%${searchText}%`,
   ]);
@@ -23,29 +23,30 @@ export async function searchUsers(
 
   const users: User[] = dbRes.result.map(user => ({
     ...user,
-    isBanned: !!user.isBanned, // Hack; it's 0|1 in db
+    isBanned: !!user.isBanned,
   }));
 
   return { result: users };
 }
 
 export async function getUserById(
-  urlBase: string,
+  db: D1Database,
   userId: number
 ): ResultOrErrorPromise<User> {
   const userQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes
     FROM user
     WHERE id = ?
+    LIMIT 1
   `;
 
-  const dbRes = await queryDb<User[]>(urlBase, userQuery, [userId]);
+  const dbRes = await queryDb<User[]>(db, userQuery, [userId]);
   if (dbRes.isError || !dbRes.result || dbRes.result.length === 0) {
     return makeDbErrObj(dbRes, 'Error getting user', { userId });
   }
 
   const user = dbRes.result[0];
-  user.isBanned = !!user.isBanned; // Hack; it's 0|1 in db
+  user.isBanned = !!user.isBanned;
 
   return { result: user };
 }

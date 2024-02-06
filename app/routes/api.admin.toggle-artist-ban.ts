@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -13,10 +13,10 @@ import { getComicsByArtistField } from '~/route-funcs/get-comics';
 import { processUserUpload } from './api.admin.process-user-upload';
 import { rejectComic } from './api.admin.reject-pending-comic';
 import { unlistComic } from './api.admin.unlist-comic';
+import { boolToInt } from '~/utils/general';
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
@@ -31,7 +31,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await toggleArtistBan(
-    urlBase,
+    args.context.DB,
     parseInt(formArtistId.toString()),
     formIsBanned === 'true',
     user.userId
@@ -43,24 +43,24 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function toggleArtistBan(
-  urlBase: string,
+  db: D1Database,
   artistId: number,
   isBanned: boolean,
   modId: number
 ): Promise<ApiError | undefined> {
   const logCtx = { artistId, isBanned, modId };
   const query = `UPDATE artist SET isBanned = ? WHERE id = ?`;
-  const params = [isBanned, artistId];
-  const dbRes = await queryDb(urlBase, query, params);
+  const params = [boolToInt(isBanned), artistId];
+  const dbRes = await queryDbExec(db, query, params);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, 'Error banning/unbanning artist', logCtx);
+    return makeDbErr(dbRes, 'Error 1 banning/unbanning artist', logCtx);
   }
 
   if (!isBanned) return;
 
-  const comicsRes = await getComicsByArtistField(urlBase, 'id', artistId);
+  const comicsRes = await getComicsByArtistField(db, 'id', artistId);
   if (comicsRes.err) {
-    return wrapApiError(comicsRes.err, 'Error banning/unbanning artist', logCtx);
+    return wrapApiError(comicsRes.err, 'Error 2 banning/unbanning artist', logCtx);
   }
   if (comicsRes.result.length === 0) return;
 
@@ -68,18 +68,12 @@ export async function toggleArtistBan(
   const pendingComics = comicsRes.result.filter(c => c.publishStatus === 'pending');
   const uploadedComics = comicsRes.result.filter(c => c.publishStatus === 'uploaded');
 
+  // These should ideally all be in one transaction but that seems somewhat of a nightmare...
   const processComicPromises: Promise<ApiError | undefined>[] = [
-    ...liveComics.map(c => unlistComic(urlBase, c.id, 'Artist banned')),
-    ...pendingComics.map(c => rejectComic(urlBase, c.id)),
+    ...liveComics.map(c => unlistComic(db, c.id, 'Artist banned')),
+    ...pendingComics.map(c => rejectComic(db, c.id)),
     ...uploadedComics.map(c =>
-      processUserUpload(
-        modId,
-        urlBase,
-        c.id,
-        c.name,
-        'rejected',
-        'Artist rejected/banned'
-      )
+      processUserUpload(modId, db, c.id, c.name, 'rejected', 'Artist rejected/banned')
     ),
   ];
 
@@ -87,7 +81,7 @@ export async function toggleArtistBan(
 
   for (const err of processErrors) {
     if (err) {
-      return wrapApiError(err, 'Error banning/unbanning artist', logCtx);
+      return wrapApiError(err, 'Error 3 banning/unbanning artist', logCtx);
     }
   }
 }

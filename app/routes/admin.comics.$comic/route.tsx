@@ -129,7 +129,6 @@ export default function ManageComicInner() {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
   const comicParam = args.params.comic as string;
 
   const comicId = parseInt(comicParam);
@@ -137,7 +136,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
   }
 
-  const comicsRes = await getComicByField(urlBase, 'id', comicId);
+  const comicsRes = await getComicByField(args.context.DB, 'id', comicId);
   if (comicsRes.err) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }

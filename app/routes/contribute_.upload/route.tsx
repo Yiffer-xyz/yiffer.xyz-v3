@@ -4,10 +4,11 @@ import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
-import { getAllArtists } from '~/route-funcs/get-artists';
-import { getAllComicNamesAndIDs } from '~/route-funcs/get-comics';
-import { getAllTags } from '~/route-funcs/get-tags';
-import type { ComicTiny, Tag } from '~/types/types';
+import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
+import type { DbComicTiny } from '~/route-funcs/get-comics';
+import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-comics';
+import { getAllTagsQuery } from '~/route-funcs/get-tags';
+import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import BackToContribute from '~/page-components/BackToContribute';
 import Step1 from './step1';
@@ -20,6 +21,7 @@ import {
   create500Json,
   createSuccessJson,
   logApiError,
+  makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
@@ -28,6 +30,8 @@ import { isUsernameUrl, randomString } from '~/utils/general';
 import Button from '~/ui-components/Buttons/Button';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
@@ -155,7 +159,6 @@ export default function Upload() {
       uploadId,
       comicName: comicData.comicName,
       category: comicData.category,
-      classification: comicData.classification,
       state: comicData.state,
       tagIds: comicData.tags.map(tag => tag.id),
       newArtist: newArtist,
@@ -199,7 +202,6 @@ export default function Upload() {
       ...comicData,
       comicName: 'Test ' + randomString(12),
       category: 'MF',
-      classification: 'Furry',
       state: 'finished',
       validation: {
         isLegalComicName: true,
@@ -286,47 +288,35 @@ export default function Upload() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
+  const db = args.context.DB;
 
-  const allArtistsPromise = getAllArtists(urlBase, {
-    includePending: true,
-    modifyNameIncludeType: true,
-  });
-  const comicsPromise = getAllComicNamesAndIDs(urlBase, { modifyNameIncludeType: true });
-  const tagsPromise = getAllTags(urlBase);
-  const userPromise = authLoader(args);
-  const [artistsRes, comicsRes, tagsRes, user] = await Promise.all([
-    allArtistsPromise,
-    comicsPromise,
-    tagsPromise,
-    userPromise,
+  const dbStatements: DBInputWithErrMsg[] = [
+    getAllArtistsQuery({ includePending: true, modifyNameIncludeType: true }),
+    getAllComicNamesAndIDsQuery({ modifyNameIncludeType: true }),
+    getAllTagsQuery(),
+  ];
+
+  const [dbRes, user] = await Promise.all([
+    queryDbMultiple<[ArtistTiny[], DbComicTiny[], Tag[]]>(db, dbStatements),
+    authLoader(args),
   ]);
-  if (artistsRes.err) {
+
+  if (dbRes.isError) {
     return processApiError(
-      'Error getting artists in upload',
-      artistsRes.err || { logMessage: 'Artists returned as undefined' }
+      'Error loading contribute>upload',
+      makeDbErr(dbRes, dbRes.errorMessage)
     );
   }
-  if (comicsRes.err) {
-    return processApiError(
-      'Error getting comics in upload',
-      comicsRes.err || { logMessage: 'Comics returned as undefined' }
-    );
-  }
-  if (tagsRes.err) {
-    return processApiError(
-      'Error getting tags in upload',
-      tagsRes.err || { logMessage: 'Tags returned as undefined' }
-    );
-  }
+
+  const [allDbArtists, allDbComics, tags] = dbRes.result;
+  const artists = mapArtistTiny(allDbArtists, true);
+  const comics = mapDBComicTiny(allDbComics, true);
 
   return {
-    artists: artistsRes.result,
-    comics: comicsRes.result,
-    tags: tagsRes.result,
+    artists,
+    comics,
+    tags,
     user,
-    uploadUrlBase: args.context.DB_API_URL_BASE,
-    context: Object.keys(args.context),
   };
 }
 
@@ -338,7 +328,7 @@ export async function action(args: ActionFunctionArgs) {
   if (error) return create400Json(error);
 
   const err = await processUpload(
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     body,
     user,
     args.request.headers.get('CF-Connecting-IP') || 'unknown'
@@ -373,9 +363,6 @@ function validateUploadForm(uploadBody: UploadBody): { error?: string } {
   if (!uploadBody.category) {
     return { error: 'Category is required' };
   }
-  if (!uploadBody.classification) {
-    return { error: 'Classification is required' };
-  }
   if (!uploadBody.state) {
     return { error: 'State is required' };
   }
@@ -409,7 +396,6 @@ function createEmptyUploadData(): NewComicData {
   return {
     comicName: '',
     category: '',
-    classification: '',
     state: '',
     tags: [],
     newArtist: {
@@ -447,7 +433,6 @@ export type UploadBody = {
   artistId?: number;
   newArtist?: NewArtist;
   category: string;
-  classification: string;
   state: string;
   previousComic?: ComicTiny;
   nextComic?: ComicTiny;
@@ -462,7 +447,6 @@ export type NewComicData = {
   artistId?: number;
   newArtist: NewArtist;
   category: string;
-  classification: string;
   state: string;
   previousComic?: ComicTiny;
   nextComic?: ComicTiny;

@@ -1,7 +1,8 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
-import { queryDb } from './database-facade';
+import type { DBInputWithErrMsg } from './database-facade';
+import { queryDb, queryDbMultiple } from './database-facade';
 import type { ApiError } from './request-helpers';
 import { makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
@@ -19,10 +20,10 @@ type UserWithPassword = SimpleUser & { password: string };
 export async function login(
   username: string,
   password: string,
-  urlBase: string,
+  db: D1Database,
   jwtConfigStr: string
 ): Promise<AuthResponse> {
-  const { err, errorMessage, user } = await authenticate(urlBase, username, password);
+  const { err, errorMessage, user } = await authenticate(db, username, password);
   if (err) {
     return { err: wrapApiError(err, 'Error in login func', { username, password }) };
   }
@@ -38,27 +39,39 @@ export async function signup(
   username: string,
   email: string,
   password: string,
-  urlBase: string,
+  db: D1Database,
   jwtConfigStr: string,
   postmarkToken: string
 ): Promise<AuthResponse> {
   const usernameQuery = 'SELECT * FROM user WHERE username = ?';
   const emailQuery = 'SELECT * FROM user WHERE email = ?';
 
-  const [usernameResult, emailResult] = await Promise.all([
-    queryDb<any[]>(urlBase, usernameQuery, [username]),
-    queryDb<any[]>(urlBase, emailQuery, [email]),
-  ]);
-  if (usernameResult.isError) {
-    return makeDbErrObj(usernameResult, 'Signup error fetching username');
+  const dbStatements: DBInputWithErrMsg[] = [
+    {
+      query: usernameQuery,
+      params: [username],
+      errorLogMessage: 'Error fetching username',
+    },
+    {
+      query: emailQuery,
+      params: [email],
+      errorLogMessage: 'Error fetching email',
+    },
+  ];
+
+  const dbRes = await queryDbMultiple<[any[], any[]]>(
+    db,
+    dbStatements,
+    'Error checking username+email in signup'
+  );
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, dbRes.errorMessage);
   }
-  if (emailResult.isError) {
-    return makeDbErrObj(emailResult, 'Signup error fetching email');
-  }
-  if (usernameResult.result?.length) {
+
+  if (dbRes.result[0].length) {
     return { errorMessage: 'Username already exists' };
   }
-  if (emailResult.result?.length) {
+  if (dbRes.result[1].length) {
     return { errorMessage: 'Email already exists' };
   }
 
@@ -66,20 +79,22 @@ export async function signup(
 
   const hashedPassword = await hash(password, 8);
   const insertQuery = 'INSERT INTO user (username, password, email) VALUES (?, ?, ?)';
-  const insertResult = await queryDb(urlBase, insertQuery, [
-    username,
-    hashedPassword,
-    email,
-  ]);
+  const insertResult = await queryDb(db, insertQuery, [username, hashedPassword, email]);
   if (insertResult.isError) {
     return makeDbErrObj(insertResult, 'Error inserting user');
   }
-  if (!insertResult.insertId) {
-    return makeDbErrObj(insertResult, 'Error inserting user - no insertId');
+  // TODO-db: insert id
+  const newUserResult = await queryDb<{ id: number }[]>(
+    db,
+    'SELECT id FROM user WHERE username = ? LIMIT 1',
+    [username]
+  );
+  if (newUserResult.isError) {
+    return makeDbErrObj(newUserResult, 'Error fetching new user after creation');
   }
 
   const user: SimpleUser = {
-    id: insertResult.insertId,
+    id: newUserResult.result[0].id,
     username,
     email,
     userType: 'user',
@@ -93,7 +108,7 @@ export async function signup(
 }
 
 async function authenticate(
-  urlBase: string,
+  db: D1Database,
   usernameOrEmail: string,
   password: string
 ): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
@@ -101,7 +116,7 @@ async function authenticate(
     'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
-  const fetchDbRes = await queryDb<UserWithPassword[]>(urlBase, query, queryParams);
+  const fetchDbRes = await queryDb<UserWithPassword[]>(db, query, queryParams);
   if (fetchDbRes.isError) {
     return makeDbErrObj(fetchDbRes, 'Login error fetching username/email');
   }

@@ -14,7 +14,12 @@ export default function Index() {
   return (
     <div>
       <h1 className="text-center">Contribute</h1>
-      <YifferLink href="/" text="To main page" Icon={MdHome} className="mx-auto" />
+      <YifferLink
+        href="/"
+        text="To main page"
+        Icon={MdHome}
+        className="mx-auto block w-fit"
+      />
 
       <div className="max-w-4xl mx-auto mt p-4 grid gap-4 grid-cols-1 sm:grid-cols-2 sm:gap-8 sm:p-8">
         <ContributionCard

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
@@ -13,9 +13,12 @@ export type UnAssignActionBody = {
 export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized } = await parseFormJson<UnAssignActionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
 
-  const err = await unAssignActionToMod(urlBase, fields.actionId, fields.actionType);
+  const err = await unAssignActionToMod(
+    args.context.DB,
+    fields.actionId,
+    fields.actionType
+  );
   if (err) {
     return processApiError('Error in /unassign-action', err);
   }
@@ -23,7 +26,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function unAssignActionToMod(
-  urlBase: string,
+  db: D1Database,
   actionId: number,
   actionType: DashboardActionType
 ): Promise<ApiError | undefined> {
@@ -50,7 +53,7 @@ async function unAssignActionToMod(
   const query = `UPDATE ${table} SET ${modIdColumn} = NULL WHERE ${identifyingColumn} = ?`;
   const queryParams = [actionId];
 
-  const dbRes = await queryDb(urlBase, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error unassigning mod action', {
       actionId,

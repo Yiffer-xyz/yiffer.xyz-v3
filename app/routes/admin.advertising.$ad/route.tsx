@@ -22,9 +22,8 @@ export default function ManageAd() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
   const adId = args.params.ad as string;
-  const adRes = await getAdById(urlBase, adId);
+  const adRes = await getAdById(args.context.DB, adId);
 
   if (adRes.err) {
     return processApiError('Error getting ad for admin>advertising>ad', adRes.err);

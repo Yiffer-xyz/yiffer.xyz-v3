@@ -1,12 +1,12 @@
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { UserSession } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
+import { queryDb, queryDbExec } from '~/utils/database-facade';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 
 export async function processUpload(
-  urlBase: string,
+  db: D1Database,
   uploadBody: UploadBody,
   user: UserSession | null,
   userIP?: string
@@ -14,18 +14,19 @@ export async function processUpload(
   const skipApproval = !!user && ['moderator', 'admin'].includes(user?.userType);
 
   if (uploadBody.newArtist) {
-    const createRes = await createArtist(urlBase, uploadBody.newArtist, skipApproval);
+    const createRes = await createArtist(db, uploadBody.newArtist, skipApproval);
     if (createRes.err)
       return wrapApiError(createRes.err, 'Error uploading', { uploadBody });
     uploadBody.artistId = createRes.result.artistId;
   }
 
-  const dbRes = await createComic(urlBase, uploadBody, skipApproval);
+  const dbRes = await createComic(db, uploadBody, skipApproval);
   if (dbRes.err) return wrapApiError(dbRes.err, 'Error uploading', { uploadBody });
+  // TODO-db: rollback artist if failure
   const comicId = dbRes.result;
 
   const err = await createComicMetadata(
-    urlBase,
+    db,
     comicId,
     uploadBody,
     skipApproval,
@@ -33,20 +34,23 @@ export async function processUpload(
     userIP
   );
   if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
+  // TODO-db: rollback artist and comic if failure
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
-    const err = await createComicLinks(urlBase, uploadBody, comicId);
+    const err = await createComicLinks(db, uploadBody, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
+    // TODO-db: rollback artist and comic and metadata if failure
   }
 
   if (uploadBody.tagIds) {
-    const err = await createComicTags(urlBase, uploadBody.tagIds, comicId);
+    const err = await createComicTags(db, uploadBody.tagIds, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
+    // TODO-db: rollback artist and comic and metadata (and links) if failure
   }
 }
 
 async function createComicTags(
-  urlBase: string,
+  db: D1Database,
   tagIds: number[],
   comicId: number
 ): Promise<ApiError | undefined> {
@@ -65,14 +69,14 @@ async function createComicTags(
     }
   });
 
-  const dbRes = await queryDb(urlBase, query, params);
+  const dbRes = await queryDbExec(db, query, params);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic tags');
   }
 }
 
 async function createComicLinks(
-  urlBase: string,
+  db: D1Database,
   uploadBody: UploadBody,
   comicId: number
 ): Promise<ApiError | undefined> {
@@ -93,14 +97,14 @@ async function createComicLinks(
     query += ', (?, ?)';
   }
 
-  const dbRes = await queryDb(urlBase, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic links');
   }
 }
 
 async function createComicMetadata(
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   uploadBody: UploadBody,
   skipApproval: boolean,
@@ -121,17 +125,13 @@ async function createComicMetadata(
     skipApproval ? 'excellent' : null,
   ];
 
-  const dbRes = await queryDb(urlBase, query, values);
+  const dbRes = await queryDbExec(db, query, values);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic metadata');
   }
 
   if (skipApproval) {
-    const err = await addContributionPoints(
-      urlBase,
-      userId ?? null,
-      `comicUploadexcellent`
-    );
+    const err = await addContributionPoints(db, userId ?? null, `comicUploadexcellent`);
     if (err) {
       return wrapApiError(err, 'Error adding contribution points for direct mod upload');
     }
@@ -139,7 +139,7 @@ async function createComicMetadata(
 }
 
 async function createComic(
-  urlBase: string,
+  db: D1Database,
   uploadBody: UploadBody,
   skipApproval: boolean
 ): ResultOrErrorPromise<number> {
@@ -150,7 +150,6 @@ async function createComic(
   `;
   const values = [
     uploadBody.comicName.trim(),
-    uploadBody.classification,
     uploadBody.category,
     uploadBody.state,
     uploadBody.numberOfPages,
@@ -158,10 +157,11 @@ async function createComic(
     skipApproval ? 'pending' : 'uploaded',
   ];
 
-  const result = await queryDb(urlBase, query, values);
+  const result = await queryDb(db, query, values);
   if (result.isError) {
     return makeDbErrObj(result, 'Error inserting comic');
   }
+  // TODO-db: insertid
   if (!result.insertId) {
     return makeDbErrObj(result, 'Error inserting comic: no insert ID');
   }
@@ -169,7 +169,7 @@ async function createComic(
 }
 
 async function createArtist(
-  urlBase: string,
+  db: D1Database,
   newArtist: NewArtist,
   skipApproval: boolean
 ): ResultOrErrorPromise<{ artistId: number }> {
@@ -183,17 +183,18 @@ async function createArtist(
     newArtist.patreonName ? newArtist.patreonName.trim() : null,
     skipApproval ? 0 : 1,
   ];
-  const dbRes = await queryDb(urlBase, insertQuery, insertValues);
+  // TODO-db: insert id here..
+  const dbRes = await queryDb(db, insertQuery, insertValues);
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error inserting artist');
   }
   const artistId = dbRes.insertId;
   if (!artistId) {
-    return makeDbErrObj(dbRes, 'Error inserting artist');
+    return makeDbErrObj(dbRes, 'Error inserting artist - no insert id');
   }
 
   if (newArtist.links && newArtist.links.length > 0) {
-    const err = await createArtistLinks(urlBase, newArtist, artistId);
+    const err = await createArtistLinks(db, newArtist, artistId);
     if (err) {
       return { err: wrapApiError(err, 'Error creating artist links') };
     }
@@ -203,7 +204,7 @@ async function createArtist(
 }
 
 async function createArtistLinks(
-  urlBase: string,
+  db: D1Database,
   newArtist: NewArtist,
   newArtistId: number
 ): Promise<ApiError | undefined> {
@@ -219,7 +220,7 @@ async function createArtistLinks(
     }
   }
 
-  const dbRes = await queryDb(urlBase, linkInsertQuery, linkInsertValues);
+  const dbRes = await queryDbExec(db, linkInsertQuery, linkInsertValues);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error inserting artist links');
   }

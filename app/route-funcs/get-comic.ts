@@ -1,17 +1,14 @@
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
-import type {
-  ResultOrErrorPromise,
-  ResultOrNotFoundOrErrorPromise,
-} from '~/utils/request-helpers';
-import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
+import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
+import { makeDbErrObj } from '~/utils/request-helpers';
 
 type DbComic = {
   id: number;
   name: string;
   state: 'wip' | 'cancelled' | 'finished';
   publishStatus: ComicPublishStatus;
-  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
   category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
   numberOfPages: number;
   published?: string;
@@ -47,44 +44,39 @@ type DbTag = {
 };
 
 export async function getComicByField(
-  urlBase: string,
+  db: D1Database,
   fieldName: 'id' | 'name',
   fieldValue: string | number,
   excludeMetadata?: boolean
 ): ResultOrNotFoundOrErrorPromise<Comic> {
   const logCtx = { fieldName, fieldValue, excludeMetadata };
-  const [comicRes, linksRes, tagsRes] = await Promise.all([
-    getDbComicByField(urlBase, fieldName, fieldValue),
-    getLinksByComicField(urlBase, fieldName, fieldValue),
+  const dbStatements: DBInputWithErrMsg[] = [
+    getDbComicByFieldQuery(fieldName, fieldValue),
+    getLinksByComicFieldQuery(fieldName, fieldValue),
     fieldName === 'id'
-      ? getTagsByComicId(urlBase, fieldValue as number)
-      : getTagsByComicName(urlBase, fieldValue as string),
-  ]);
+      ? getTagsByComicIdQuery(fieldValue as number)
+      : getTagsByComicNameQuery(fieldValue as string),
+  ];
 
-  if (comicRes.err) {
-    return {
-      err: wrapApiError(comicRes.err, 'Error getting comic by id/name', logCtx),
-    };
-  }
-  if (linksRes.err) {
-    return {
-      err: wrapApiError(linksRes.err, 'Error getting comic by id/name', logCtx),
-    };
-  }
-  if (tagsRes.err) {
-    return {
-      err: wrapApiError(tagsRes.err, 'Error getting comic by id/name', logCtx),
-    };
+  const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[]]>(
+    db,
+    dbStatements,
+    'Error getting comic+links+tags'
+  );
+
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, dbRes.errorMessage, logCtx);
   }
 
-  if (comicRes.notFound) {
+  const [comicRes, linksRes, tagsRes] = dbRes.result;
+  if (comicRes.length === 0) {
     return { notFound: true };
   }
 
   const finalComic = mergeDbFieldsToComic(
-    comicRes.result,
-    linksRes.result,
-    tagsRes.result,
+    comicRes[0],
+    linksRes,
+    tagsRes,
     !!excludeMetadata
   );
 
@@ -102,7 +94,6 @@ function mergeDbFieldsToComic(
     name: dbComic.name,
     state: dbComic.state,
     publishStatus: dbComic.publishStatus,
-    classification: dbComic.classification,
     category: dbComic.category,
     numberOfPages: dbComic.numberOfPages,
     published: dbComic.published,
@@ -155,17 +146,15 @@ function mergeDbFieldsToComic(
   return comic;
 }
 
-async function getDbComicByField(
-  urlBase: string,
+function getDbComicByFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): ResultOrNotFoundOrErrorPromise<DbComic> {
+): DBInputWithErrMsg {
   const comicQuery = `SELECT
       comic.id,
       comic.name,
       state,
       publishStatus,
-      cat AS classification,
       tag AS category,
       numberOfPages,
       published,
@@ -190,24 +179,20 @@ async function getDbComicByField(
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
-    WHERE comic.${fieldName} = ?`;
+    WHERE comic.${fieldName} = ?
+    LIMIT 1`;
 
-  const comicDbRes = await queryDb<DbComic[]>(urlBase, comicQuery, [fieldValue]);
-  if (comicDbRes.isError || !comicDbRes.result) {
-    return makeDbErrObj(comicDbRes, 'Error getting comic', { fieldName, fieldValue });
-  }
-  if (comicDbRes.result.length === 0) {
-    return { notFound: true };
-  }
-
-  return { result: comicDbRes.result[0] };
+  return {
+    query: comicQuery,
+    params: [fieldValue],
+    errorLogMessage: 'Error getting comic',
+  };
 }
 
-async function getLinksByComicField(
-  urlBase: string,
+function getLinksByComicFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): ResultOrErrorPromise<DbComicLink[]> {
+): DBInputWithErrMsg {
   const linksQuery = `SELECT
     Q1.*, comic.name AS lastComicName
     FROM (
@@ -224,20 +209,15 @@ async function getLinksByComicField(
       OR ${fieldName === 'id' ? 'lastComicId' : 'comic.name'} = ?`;
 
   const params = [fieldValue, fieldValue];
-  const linksDbRes = await queryDb<DbComicLink[]>(urlBase, linksQuery, params);
-  if (linksDbRes.isError || !linksDbRes.result) {
-    return makeDbErrObj(linksDbRes, 'Error getting comic links', {
-      fieldName,
-      fieldValue,
-    });
-  }
-  return { result: linksDbRes.result };
+
+  return {
+    query: linksQuery,
+    params,
+    errorLogMessage: 'Error getting comic links',
+  };
 }
 
-async function getTagsByComicId(
-  urlBase: string,
-  comicId: number
-): ResultOrErrorPromise<DbTag[]> {
+function getTagsByComicIdQuery(comicId: number): DBInputWithErrMsg {
   const tagsQuery = `SELECT
       keyword.id AS tagId,
       keyword.keywordName AS tagName
@@ -245,17 +225,14 @@ async function getTagsByComicId(
       INNER JOIN keyword ON (keyword.id = comickeyword.keywordId)
     WHERE comicId = ?`;
 
-  const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicId]);
-  if (tagsDbRes.isError || !tagsDbRes.result) {
-    return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicId });
-  }
-  return { result: tagsDbRes.result };
+  return {
+    query: tagsQuery,
+    params: [comicId],
+    errorLogMessage: 'Error getting tags',
+  };
 }
 
-async function getTagsByComicName(
-  urlBase: string,
-  comicName: string
-): ResultOrErrorPromise<DbTag[]> {
+function getTagsByComicNameQuery(comicName: string): DBInputWithErrMsg {
   const tagsQuery = `SELECT
       keyword.id AS tagId,
       keyword.keywordName AS tagName
@@ -264,9 +241,9 @@ async function getTagsByComicName(
       INNER JOIN comic ON (comic.id = comickeyword.comicId)
     WHERE comic.name = ?`;
 
-  const tagsDbRes = await queryDb<DbTag[]>(urlBase, tagsQuery, [comicName]);
-  if (tagsDbRes.isError || !tagsDbRes.result) {
-    return makeDbErrObj(tagsDbRes, 'Error getting tags', { comicName });
-  }
-  return { result: tagsDbRes.result };
+  return {
+    query: tagsQuery,
+    params: [comicName],
+    errorLogMessage: 'Error getting tags',
+  };
 }

@@ -11,16 +11,28 @@ import {
 } from '~/ui-components/Table';
 import { capitalizeString } from '~/utils/general';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
-import { processApiError } from '~/utils/request-helpers';
+import { makeDbErr, processApiError } from '~/utils/request-helpers';
 import BackToContribute from '~/page-components/BackToContribute';
 import { PointInfo } from '../contribute_.scoreboard/route';
+import type {
+  DbComicProblem,
+  DbComicSuggestion,
+  DbContributedComic,
+  DbTagSuggestion,
+} from './data-fetchers';
 import {
-  getYourComicProblems,
-  getYourComicSuggestions,
-  getYourContributedComics,
-  getYourTagSuggestions,
+  mapDBComicProblems,
+  mapDBTagSuggestions,
+  mapDbComicSuggestions,
+  mapDbContributedComics,
+  yourComicProblemsQuery,
+  yourComicSuggestionsQuery,
+  yourContributedComicsQuery,
+  yourTagSuggestionsQuery,
 } from './data-fetchers';
 import type { Contribution, ContributionStatus } from '~/types/types';
+import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
@@ -106,32 +118,48 @@ export default function YourContributions() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase: string = args.context.DB_API_URL_BASE;
   const user = await redirectIfNotLoggedIn(args);
 
-  const uploadedComicsPromise = getYourContributedComics(urlBase, user.userId);
-  const tagSuggestionsPromise = getYourTagSuggestions(urlBase, user.userId);
-  const comicProblemsPromise = getYourComicProblems(urlBase, user.userId);
-  const comicSuggestionsPromise = getYourComicSuggestions(urlBase, user.userId);
+  const dbStatements: DBInputWithErrMsg[] = [
+    {
+      query: yourContributedComicsQuery,
+      params: [user.userId],
+      errorLogMessage: 'Error getting your contributed comics',
+    },
+    {
+      query: yourTagSuggestionsQuery,
+      params: [user.userId],
+      errorLogMessage: 'Error getting your tag suggestions',
+    },
+    {
+      query: yourComicProblemsQuery,
+      params: [user.userId],
+      errorLogMessage: 'Error getting your comic problems',
+    },
+    {
+      query: yourComicSuggestionsQuery,
+      params: [user.userId],
+      errorLogMessage: 'Error getting your comic suggestions',
+    },
+  ];
 
-  const resolvedPromises = await Promise.all([
-    uploadedComicsPromise,
-    tagSuggestionsPromise,
-    comicProblemsPromise,
-    comicSuggestionsPromise,
-  ]);
+  const dbRes = await queryDbMultiple<
+    [DbContributedComic[], DbTagSuggestion[], DbComicProblem[], DbComicSuggestion[]]
+  >(args.context.DB, dbStatements, 'Error getting combo of contributions');
 
-  for (const promise of resolvedPromises) {
-    if (promise.err) {
-      return processApiError('Error getting your contributions', promise.err, {
-        userId: user.userId,
-      });
-    }
+  if (dbRes.isError) {
+    return processApiError(
+      'Error getting your contributions',
+      makeDbErr(dbRes, dbRes.errorMessage, { userId: user.userId })
+    );
   }
 
-  let contributions = (resolvedPromises as { result: Contribution[] }[])
-    .map(res => res.result)
-    .flat();
+  let contributions: Contribution[] = [
+    ...mapDbContributedComics(dbRes.result[0]),
+    ...mapDBTagSuggestions(dbRes.result[1]),
+    ...mapDBComicProblems(dbRes.result[2]),
+    ...mapDbComicSuggestions(dbRes.result[3]),
+  ];
 
   contributions = contributions.sort((a, b) => {
     return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;

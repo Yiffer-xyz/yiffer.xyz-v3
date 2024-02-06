@@ -6,7 +6,7 @@ import InfoBox from '~/ui-components/InfoBox';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import BackToContribute from '~/page-components/BackToContribute';
@@ -124,7 +124,6 @@ export default function Feedback() {
 
 export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
-  const urlBase = args.context.DB_API_URL_BASE;
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
 
   const user = await authLoader(args);
@@ -140,7 +139,7 @@ export async function action(args: ActionFunctionArgs) {
     'INSERT INTO feedback (text, type, userId, userIp) VALUES (?, ?, ?, ?)';
   const insertParams = [feedbackText, feedbackType, userId, userIp];
 
-  const dbRes = await queryDb(urlBase, insertQuery, insertParams);
+  const dbRes = await queryDbExec(args.context.DB, insertQuery, insertParams);
   if (dbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error saving user feedback',

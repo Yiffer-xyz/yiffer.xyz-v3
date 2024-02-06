@@ -8,7 +8,7 @@ type DbBlog = Omit<Blog, 'authorUser'> & { userId: number; username: string };
 // Here, later: get all blogs, etc. For mod panel.
 
 export async function getLatestBlog(
-  urlBase: string
+  db: D1Database
 ): ResultOrErrorPromise<Blog | undefined> {
   const blogQuery = `
     SELECT blog.id, title, content, timestamp, user.id AS userId, user.username
@@ -18,13 +18,14 @@ export async function getLatestBlog(
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<DbBlog[]>(urlBase, blogQuery);
+  const dbRes = await queryDb<DbBlog[]>(db, blogQuery);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting latest blog');
   }
 
   if (dbRes.result.length === 0) return { result: undefined };
   const blog = dbBlogToBlog(dbRes.result[0]);
+
   return { result: blog };
 }
 

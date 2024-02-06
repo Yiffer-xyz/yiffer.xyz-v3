@@ -17,15 +17,13 @@ import {
 } from './SearchFilter/useBrowseParams';
 
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
-
   const url = new URL(args.request.url);
   const params = parseBrowseParams(url.searchParams);
 
   const categories = params.categories.includes('All') ? undefined : params.categories;
 
   const comicsRes = await getComicsPaginated({
-    urlBase,
+    db: args.context.DB,
     limit: browsePageSize,
     offset: params.page !== 1 ? (params.page - 1) * browsePageSize : undefined,
     search: params.search,

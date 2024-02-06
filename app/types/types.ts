@@ -10,8 +10,8 @@ export interface Env {
   SENTRY_DSN: string;
   SENTRY_AUTH_TOKEN: string;
   PAGES_PATH: string;
-
   COMICS_BUCKET: R2Bucket;
+  DB: D1Database;
 }
 
 export enum UserType {
@@ -51,7 +51,6 @@ export type Comic = {
   id: number;
   state: 'wip' | 'cancelled' | 'finished';
   publishStatus: ComicPublishStatus;
-  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
   category: Category;
   numberOfPages: number;
   previousComic?: {
@@ -76,7 +75,6 @@ export type Comic = {
 export type ComicForBrowse = {
   id: number;
   name: string;
-  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
   category: Category;
   artistName: string;
   updated: string;
