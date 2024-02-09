@@ -1,6 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
-import { queryDbMultiple } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -58,21 +57,6 @@ async function processTagSuggestion(
   const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
-  // TODO-db: the below. How to deal with dup_entry in sqlite?
-  // if (dbRes.isError) {
-  //   if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
-  //     return makeDbErr(dbRes, 'Error updating comickeyword');
-  //   }
-  // }
-
-  const dbStatements: DBInputWithErrMsg[] = [
-    {
-      query: updateActionQuery,
-      params: updateActionQueryParams,
-      errorLogMessage: 'Error updating comickeyword',
-    },
-  ];
-
   if (isApproved) {
     let updateTagQuery = undefined;
     let updateTagQueryParams = undefined;
@@ -85,20 +69,19 @@ async function processTagSuggestion(
       updateTagQueryParams = [comicId, tagId];
     }
 
-    dbStatements.push({
-      query: updateTagQuery,
-      params: updateTagQueryParams,
-      errorLogMessage: 'Error updating mod panel action',
-    });
+    const dbRes = await queryDb(db, updateTagQuery, updateTagQueryParams);
+    if (dbRes.isError) {
+      if (dbRes.errorMessage.includes('UNIQUE constraint failed')) {
+        // If tag already existed on comic, just return silently. It's ok.
+      } else {
+        return makeDbErr(dbRes, 'Error updating comickeyword in processTagSuggestion');
+      }
+    }
   }
 
-  const dbRes = await queryDbMultiple(
-    db,
-    dbStatements,
-    'Error updating action+tag in processTagSuggestion'
-  );
+  const dbRes = await queryDb(db, updateActionQuery, updateActionQueryParams);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage);
+    return makeDbErr(dbRes, 'Error updating keywordsuggestion in processTagSuggestion');
   }
 
   const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';

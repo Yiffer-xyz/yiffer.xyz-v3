@@ -259,7 +259,7 @@ export default function Dashboard() {
 
         return (
           <div
-            key={action.id}
+            key={`${action.type}-${action.id}`}
             className={`p-3 w-full mb-4 max-w-3xl rounded 
               ${assignationBgClass}
             `}

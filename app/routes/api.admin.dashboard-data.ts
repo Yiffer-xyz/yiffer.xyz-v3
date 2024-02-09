@@ -185,10 +185,10 @@ export async function loader(args: LoaderFunctionArgs) {
       DbComicSuggestion[],
       DbPendingComicSimple[],
     ]
-  >(args.context.DB, dataFetchStatements);
+  >(args.context.DB, dataFetchStatements, 'Error getting dashboard data');
 
   if (dbResList.isError) {
-    return makeDbErrObj(dbResList, dbResList.errorLogMessage);
+    return makeDbErrObj(dbResList, dbResList.errorMessage);
   }
 
   const allSuggestions: DashboardAction[] = [
