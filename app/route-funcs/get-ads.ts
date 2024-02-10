@@ -63,21 +63,16 @@ export async function getAdById(
 
   const dbRes = await queryDbMultiple<
     [DbAd[], { amount: number; registeredDate: string }[]]
-  >(
-    db,
-    [
-      { query: getAdQuery, params: [adId], errorLogMessage: 'Could not get ad' },
-      {
-        query: getAdPaymentsQuery,
-        params: [adId],
-        errorLogMessage: 'Could not get ad payments',
-      },
-    ],
-    'Error getting ad and payments'
-  );
+  >(db, [
+    { query: getAdQuery, params: [adId] },
+    {
+      query: getAdPaymentsQuery,
+      params: [adId],
+    },
+  ]);
 
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
   }
 
   const [adRes, adPaymentsRes] = dbRes.result;

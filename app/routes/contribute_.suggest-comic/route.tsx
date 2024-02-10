@@ -8,7 +8,7 @@ import Textarea from '~/ui-components/Textarea/Textarea';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import type { SimilarComicResponse } from '../api.search-similarly-named-comic';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
@@ -429,27 +429,28 @@ async function checkForExistingComicOrSuggestion(
   db: D1Database,
   comicName: string
 ): ResultOrErrorPromise<{ comicExists?: boolean; suggestionExists?: boolean }> {
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     {
       query: `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
       params: [comicName],
-      errorLogMessage: 'Error checking for existing suggestions',
     },
     {
       query: 'SELECT COUNT(*) AS count FROM comic WHERE Name = ?',
       params: [comicName],
-      errorLogMessage: 'Error checking for existing comics',
     },
   ];
 
   const dbRes = await queryDbMultiple<[{ count: number }[], { count: number }[]]>(
     db,
-    dbStatements,
-    'Error checking for existing comic+suggestion in checkForExistingComicOrSuggestion'
+    dbStatements
   );
 
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage, { comicName });
+    return makeDbErrObj(
+      dbRes,
+      'Error checking for existing comic+suggestion in checkForExistingComicOrSuggestion',
+      { comicName }
+    );
   }
 
   const [suggestionsCount, existingComicsCount] = dbRes.result;

@@ -11,7 +11,7 @@ import type { DbComicTiny } from '~/route-funcs/get-comics';
 import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-comics';
 import { getAllTagsQuery } from '~/route-funcs/get-tags';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 
 export type GlobalAdminContext = {
@@ -51,7 +51,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return redirect('/admin/dashboard');
   }
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     getAllArtistsQuery({
       includePending: true,
       includeBanned: true,
@@ -67,14 +67,13 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const dbRes = await queryDbMultiple<[ArtistTiny[], DbComicTiny[], Tag[]]>(
     args.context.DB,
-    dbStatements,
-    'Error getting artist+dbComic+tags'
+    dbStatements
   );
 
   if (dbRes.isError) {
     return processApiError(
       'Error in admin top level getter',
-      makeDbErr(dbRes, dbRes.errorMessage)
+      makeDbErr(dbRes, 'Error getting artist+dbComic+tags')
     );
   }
 

@@ -136,24 +136,16 @@ export async function getComicsPaginated({
     ${order === 'userRating' ? orderQueryString + paginationQueryString : ''} 
   `;
 
-  console.log(query);
-  console.log(queryParams);
-
-  const dbRes = await queryDbMultiple<[ComicForBrowse[], { count: number }[]]>(
-    db,
-    [
-      { query, params: queryParams, errorLogMessage: 'Error getting comics' },
-      {
-        query: totalCountQuery,
-        params: totalCountQueryParams,
-        errorLogMessage: 'Error getting comics count',
-      },
-    ],
-    'Error getting comics+count'
-  );
+  const dbRes = await queryDbMultiple<[ComicForBrowse[], { count: number }[]]>(db, [
+    { query, params: queryParams },
+    {
+      query: totalCountQuery,
+      params: totalCountQueryParams,
+    },
+  ]);
 
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage ?? dbRes.errorMessage, logCtx);
+    return makeDbErrObj(dbRes, 'Error getting comics+count', logCtx);
   }
 
   const [comics, countDbRes] = dbRes.result;

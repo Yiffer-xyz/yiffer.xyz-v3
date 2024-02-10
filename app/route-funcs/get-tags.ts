@@ -1,4 +1,4 @@
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import type { Tag } from '~/types/types';
 import type {
@@ -7,7 +7,7 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-export function getAllTagsQuery(): DBInputWithErrMsg {
+export function getAllTagsQuery(): QueryWithParams {
   return {
     query: 'SELECT id, keywordName AS name FROM keyword',
     errorLogMessage: 'Error getting all tags',

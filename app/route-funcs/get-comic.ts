@@ -1,5 +1,5 @@
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
@@ -50,7 +50,7 @@ export async function getComicByField(
   excludeMetadata?: boolean
 ): ResultOrNotFoundOrErrorPromise<Comic> {
   const logCtx = { fieldName, fieldValue, excludeMetadata };
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     getDbComicByFieldQuery(fieldName, fieldValue),
     getLinksByComicFieldQuery(fieldName, fieldValue),
     fieldName === 'id'
@@ -60,12 +60,11 @@ export async function getComicByField(
 
   const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[]]>(
     db,
-    dbStatements,
-    'Error getting comic+links+tags'
+    dbStatements
   );
 
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErrObj(dbRes, 'Error getting comic+links+tags', logCtx);
   }
 
   const [comicRes, linksRes, tagsRes] = dbRes.result;
@@ -149,7 +148,7 @@ function mergeDbFieldsToComic(
 function getDbComicByFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): DBInputWithErrMsg {
+): QueryWithParams {
   const comicQuery = `SELECT
       comic.id,
       comic.name,
@@ -185,14 +184,13 @@ function getDbComicByFieldQuery(
   return {
     query: comicQuery,
     params: [fieldValue],
-    errorLogMessage: 'Error getting comic',
   };
 }
 
 function getLinksByComicFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): DBInputWithErrMsg {
+): QueryWithParams {
   const linksQuery = `SELECT
     Q1.*, comic.name AS lastComicName
     FROM (
@@ -213,11 +211,10 @@ function getLinksByComicFieldQuery(
   return {
     query: linksQuery,
     params,
-    errorLogMessage: 'Error getting comic links',
   };
 }
 
-function getTagsByComicIdQuery(comicId: number): DBInputWithErrMsg {
+function getTagsByComicIdQuery(comicId: number): QueryWithParams {
   const tagsQuery = `SELECT
       keyword.id AS tagId,
       keyword.keywordName AS tagName
@@ -228,11 +225,10 @@ function getTagsByComicIdQuery(comicId: number): DBInputWithErrMsg {
   return {
     query: tagsQuery,
     params: [comicId],
-    errorLogMessage: 'Error getting tags',
   };
 }
 
-function getTagsByComicNameQuery(comicName: string): DBInputWithErrMsg {
+function getTagsByComicNameQuery(comicName: string): QueryWithParams {
   const tagsQuery = `SELECT
       keyword.id AS tagId,
       keyword.keywordName AS tagName
@@ -244,6 +240,5 @@ function getTagsByComicNameQuery(comicName: string): DBInputWithErrMsg {
   return {
     query: tagsQuery,
     params: [comicName],
-    errorLogMessage: 'Error getting tags',
   };
 }

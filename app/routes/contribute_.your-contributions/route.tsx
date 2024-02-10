@@ -31,7 +31,7 @@ import {
   yourTagSuggestionsQuery,
 } from './data-fetchers';
 import type { Contribution, ContributionStatus } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 
 export default function YourContributions() {
@@ -120,37 +120,33 @@ export default function YourContributions() {
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     {
       query: yourContributedComicsQuery,
       params: [user.userId],
-      errorLogMessage: 'Error getting your contributed comics',
     },
     {
       query: yourTagSuggestionsQuery,
       params: [user.userId],
-      errorLogMessage: 'Error getting your tag suggestions',
     },
     {
       query: yourComicProblemsQuery,
       params: [user.userId],
-      errorLogMessage: 'Error getting your comic problems',
     },
     {
       query: yourComicSuggestionsQuery,
       params: [user.userId],
-      errorLogMessage: 'Error getting your comic suggestions',
     },
   ];
 
   const dbRes = await queryDbMultiple<
     [DbContributedComic[], DbTagSuggestion[], DbComicProblem[], DbComicSuggestion[]]
-  >(args.context.DB, dbStatements, 'Error getting combo of contributions');
+  >(args.context.DB, dbStatements);
 
   if (dbRes.isError) {
     return processApiError(
       'Error getting your contributions',
-      makeDbErr(dbRes, dbRes.errorMessage, { userId: user.userId })
+      makeDbErr(dbRes, 'Error getting combo of contributions', { userId: user.userId })
     );
   }
 

@@ -1,4 +1,4 @@
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import type { ApiError } from '~/utils/request-helpers';
 import { makeDbErr } from '~/utils/request-helpers';
@@ -113,19 +113,17 @@ export async function recalculatePublishingQueue(
     WHERE comicId = ?
   `;
 
-  const updateStatements: DBInputWithErrMsg[] = comicsToUpdate.map(comic => ({
+  const updateStatements: QueryWithParams[] = comicsToUpdate.map(comic => ({
     query: updateQuery,
     params: [comic.newQueuePos, comic.comicId],
-    errorLogMessage: `Error updating queue position of pending comic, id ${comic.comicId}`,
   }));
 
-  const dbRes = await queryDbMultiple(
-    db,
-    updateStatements,
-    'Error updating comics in recalculatePublishingQueue'
-  );
+  const dbRes = await queryDbMultiple(db, updateStatements);
 
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage);
+    return makeDbErr(
+      dbRes,
+      'Error updating queue position of pending comic in recalculatePublishingQueue'
+    );
   }
 }

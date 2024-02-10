@@ -1,5 +1,5 @@
 import type { ArtistTiny } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
@@ -9,7 +9,7 @@ export function getAllArtistsQuery(options: {
   modifyNameIncludeType?: boolean;
   includePending?: boolean;
   includeBanned?: boolean;
-}): DBInputWithErrMsg {
+}): QueryWithParams {
   let query = `SELECT
     id,
     name,

@@ -32,27 +32,21 @@ export async function unScheduleComic(
   const metadataQuery =
     'UPDATE comicmetadata SET publishDate = NULL, scheduleModId = NULL, publishingQueuePos = NULL WHERE comicId = ?';
 
-  const dbRes = await queryDbMultiple(
-    db,
-    [
-      {
-        query: comicQuery,
-        params: [comicId],
-        errorLogMessage: 'Could not update comic table',
-      },
-      {
-        query: metadataQuery,
-        params: [comicId],
-        errorLogMessage: 'Could not update metadata table',
-      },
-    ],
-    'Error updating comic+metadata in unScheduleComic'
-  );
+  const dbRes = await queryDbMultiple(db, [
+    {
+      query: comicQuery,
+      params: [comicId],
+    },
+    {
+      query: metadataQuery,
+      params: [comicId],
+    },
+  ]);
 
   const logCtx = { comicId };
 
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErr(dbRes, 'Error updating comic+metadata in unScheduleComic', logCtx);
   }
 
   recalculatePublishingQueue(db); // Can run in background

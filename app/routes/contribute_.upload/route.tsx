@@ -30,7 +30,7 @@ import { isUsernameUrl, randomString } from '~/utils/general';
 import Button from '~/ui-components/Buttons/Button';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
@@ -290,7 +290,7 @@ export default function Upload() {
 export async function loader(args: LoaderFunctionArgs) {
   const db = args.context.DB;
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     getAllArtistsQuery({ includePending: true, modifyNameIncludeType: true }),
     getAllComicNamesAndIDsQuery({ modifyNameIncludeType: true }),
     getAllTagsQuery(),
@@ -304,7 +304,7 @@ export async function loader(args: LoaderFunctionArgs) {
   if (dbRes.isError) {
     return processApiError(
       'Error loading contribute>upload',
-      makeDbErr(dbRes, dbRes.errorMessage)
+      makeDbErr(dbRes, 'Error getting artist+dbComic+tags')
     );
   }
 

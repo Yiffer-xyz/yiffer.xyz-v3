@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -47,11 +47,10 @@ export async function unlistComic(
   }
   const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     {
       query: comicUpdateQuery,
       params: [comicId],
-      errorLogMessage: 'Could not update publishStatus',
     },
   ];
 
@@ -59,22 +58,16 @@ export async function unlistComic(
     dbStatements.push({
       query: 'INSERT INTO comicmetadata (comicId, unlistComment) VALUES (?, ?)',
       params: [comicId, unlistComment],
-      errorLogMessage: 'Could not insert comic metadata',
     });
   } else {
     dbStatements.push({
       query: 'UPDATE comicmetadata SET unlistComment = ? WHERE comicId = ?',
       params: [unlistComment, comicId],
-      errorLogMessage: 'Could not update comic metadata',
     });
   }
 
-  const dbRes = await queryDbMultiple(
-    db,
-    dbStatements,
-    'Error updating comic+metadata in unlistComic'
-  );
+  const dbRes = await queryDbMultiple(db, dbStatements);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErr(dbRes, 'Error updating comic+metadata in unlistComic', logCtx);
   }
 }

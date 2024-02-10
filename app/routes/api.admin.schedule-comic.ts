@@ -42,27 +42,21 @@ export async function scheduleComic(
     'UPDATE comicmetadata SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
 
-  const dbRes = await queryDbMultiple(
-    db,
-    [
-      {
-        query: comicQuery,
-        params: [comicId],
-        errorLogMessage: 'Could not update comic table',
-      },
-      {
-        query: metadataQuery,
-        params: [modId, comicId],
-        errorLogMessage: 'Could not update metadata table',
-      },
-    ],
-    'Error updating comic+metadata in scheduleComic'
-  );
+  const dbRes = await queryDbMultiple(db, [
+    {
+      query: comicQuery,
+      params: [comicId],
+    },
+    {
+      query: metadataQuery,
+      params: [modId, comicId],
+    },
+  ]);
 
   const logCtx = { comicId, publishDate, modId };
 
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErr(dbRes, 'Error updating comic+metadata in scheduleComic', logCtx);
   }
 
   recalculatePublishingQueue(db); // Can run in background

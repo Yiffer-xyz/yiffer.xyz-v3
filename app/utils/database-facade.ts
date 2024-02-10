@@ -2,33 +2,27 @@ export type DBResponse<T> =
   | {
       isError: true;
       errorMessage: string;
-      errorCode?: string;
     }
   | {
       isError: false;
-      errorMessage: string;
-      errorCode?: string;
       result: T;
-      insertId?: number;
+      errorMessage?: string;
     };
 
 export type ExecDBResponse = {
   isError: boolean;
-  errorMessage: string;
-  errorCode?: string;
+  errorMessage?: string;
 };
 
-export type DBInputWithErrMsg = {
+export type QueryWithParams = {
   query: string;
   params?: any[];
-  errorLogMessage: string;
 };
 
 // T should be an array with the responses expected in order
 export async function queryDbMultiple<T>(
   db: D1Database,
-  queriesWithParams: { query: string; params?: any[]; errorLogMessage: string }[],
-  combinedErrMsg: string
+  queriesWithParams: QueryWithParams[]
 ): Promise<DBResponse<T>> {
   try {
     const statements = queriesWithParams.map(query => {
@@ -48,8 +42,8 @@ export async function queryDbMultiple<T>(
       const res = responses[i];
       if (res.error) {
         return {
-          errorMessage: `${queriesWithParams[i].errorLogMessage} >> ${res.error}`,
           isError: true,
+          errorMessage: `QueryDbMultiple caught err in statement #${i + 1}: ${res.error}`,
         };
       }
       results.push(res.results);
@@ -65,7 +59,7 @@ export async function queryDbMultiple<T>(
     console.log(queriesWithParams);
     return {
       isError: true,
-      errorMessage: `queryDbMultiple err: ${combinedErrMsg} >> ${err.message}`,
+      errorMessage: `QueryDbMultiple err: ${err.message}`,
     };
   }
 }
@@ -93,7 +87,6 @@ export async function queryDb<T>(
     } else {
       return {
         isError: false,
-        errorMessage: '',
         result: response.results as T,
       };
     }
@@ -117,7 +110,6 @@ export async function queryDbExec(
     await statement.all();
     return {
       isError: false,
-      errorMessage: '',
     };
   } catch (err: any) {
     console.error(err);

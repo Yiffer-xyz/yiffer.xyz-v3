@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -32,11 +32,10 @@ export async function setComicError(
   const updateActionQuery = `UPDATE comicmetadata SET errorText = ? WHERE comicId = ?`;
   const updateActionQueryParams = [errorText, comicId];
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     {
       query: updateActionQuery,
       params: updateActionQueryParams,
-      errorLogMessage: 'Error updating comicmetadata',
     },
   ];
 
@@ -48,16 +47,11 @@ export async function setComicError(
     dbStatements.push({
       query: removeModQuery,
       params: removeModQueryParams,
-      errorLogMessage: 'Error removing mod id',
     });
   }
 
-  const dbRes = await queryDbMultiple(
-    db,
-    dbStatements,
-    'Error updating action+remove mod in setComicError'
-  );
+  const dbRes = await queryDbMultiple(db, dbStatements);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage);
+    return makeDbErr(dbRes, 'Error updating action+remove mod in setComicError');
   }
 }

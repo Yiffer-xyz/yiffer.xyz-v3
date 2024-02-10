@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ArtistDataChanges } from './admin.artists.$artist/route';
 import type { Artist } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { isUsernameUrl } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -38,7 +38,7 @@ export async function updateArtistData(
   db: D1Database,
   changes: ArtistDataChanges
 ): Promise<ApiError | undefined> {
-  const dbUpdateStatements: DBInputWithErrMsg[] = [];
+  const dbUpdateStatements: QueryWithParams[] = [];
 
   if (
     changes.name ||
@@ -62,13 +62,9 @@ export async function updateArtistData(
     );
   }
 
-  const dbRes = await queryDbMultiple(
-    db,
-    dbUpdateStatements,
-    'Error updating details+links in updateArtistData'
-  );
+  const dbRes = await queryDbMultiple(db, dbUpdateStatements);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, changes);
+    return makeDbErr(dbRes, 'Error updating details+links in updateArtistData', changes);
   }
 }
 
@@ -76,10 +72,10 @@ function getUpdateLinksQuery(
   artistId: number,
   links: string[],
   existingArtist: Artist
-): DBInputWithErrMsg[] {
+): QueryWithParams[] {
   const newLinks = links.filter(l => !existingArtist.links.includes(l));
   const deletedLinks = existingArtist.links.filter(l => !links.includes(l));
-  const dbStatements: DBInputWithErrMsg[] = [];
+  const dbStatements: QueryWithParams[] = [];
 
   if (newLinks.length > 0) {
     const addLinksQuery = `INSERT INTO artistlink (artistId, linkUrl) VALUES ${newLinks
@@ -88,7 +84,6 @@ function getUpdateLinksQuery(
     dbStatements.push({
       query: addLinksQuery,
       params: newLinks.flatMap(l => [artistId, l]),
-      errorLogMessage: 'Error adding artist link',
     });
   }
 
@@ -99,14 +94,13 @@ function getUpdateLinksQuery(
     dbStatements.push({
       query: deleteLinksQuery,
       params: [artistId, ...deletedLinks],
-      errorLogMessage: 'Error deleting artist links',
     });
   }
 
   return dbStatements;
 }
 
-function getUpdateGeneralDetailsQuery(changes: ArtistDataChanges): DBInputWithErrMsg {
+function getUpdateGeneralDetailsQuery(changes: ArtistDataChanges): QueryWithParams {
   let updateFieldStr = '';
   const updateFieldValues: any[] = [];
   if (changes.name) {
@@ -128,6 +122,5 @@ function getUpdateGeneralDetailsQuery(changes: ArtistDataChanges): DBInputWithEr
   return {
     query: `UPDATE artist SET ${updateFieldStr} WHERE id = ?`,
     params: updateFieldValues,
-    errorLogMessage: 'Error updating artist details',
   };
 }

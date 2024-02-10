@@ -8,7 +8,7 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
 
@@ -74,29 +74,20 @@ const emptyContributionData: ContributionData = {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
-  const dbStatements: DBInputWithErrMsg[] = [
-    {
-      query: 'SELECT COUNT(*) AS count FROM user',
-      errorLogMessage: 'Error getting user count',
-    },
-    {
-      query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'`,
-      errorLogMessage: 'Error getting comic count',
-    },
+  const dbStatements: QueryWithParams[] = [
+    { query: 'SELECT COUNT(*) AS count FROM user' },
+    { query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'` },
     {
       query:
         'SELECT COUNT(*) AS count FROM artist WHERE isBanned = 0 AND isPending = 0 AND isRejected = 0',
-      errorLogMessage: 'Error getting artist count',
     },
     {
       query: `SELECT SUM(numberOfpages) AS count FROM comic WHERE publishStatus = 'published'`,
-      errorLogMessage: 'Error getting sum of all pages count',
     },
     {
       query: `SELECT
         COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' || status = 'ENDED'
         GROUP BY status, adType`,
-      errorLogMessage: 'Error getting ads count',
     },
     {
       query: `SELECT
@@ -121,12 +112,10 @@ export async function loader(args: LoaderFunctionArgs) {
           OR (user.UserType != 'moderator' AND user.userType != 'admin')
         )
         GROUP BY isGuest`,
-      errorLogMessage: 'Error getting contribution stats',
     },
     {
       query: `SELECT SUM(amount) AS amount, strftime('%Y', registeredDate) AS year
         FROM advertisementpayment GROUP BY year ORDER BY year desc`,
-      errorLogMessage: 'Error getting ad payment stats',
     },
   ];
 
@@ -162,12 +151,12 @@ export async function loader(args: LoaderFunctionArgs) {
         year: number;
       }[],
     ]
-  >(args.context.DB, dbStatements, 'Error getting all the stats together');
+  >(args.context.DB, dbStatements);
 
   if (dbRes.isError) {
     return await processApiError(
       'Error in GET /stats',
-      makeDbErr(dbRes, dbRes.errorMessage)
+      makeDbErr(dbRes, 'Error getting all the stats together')
     );
   }
   const adsRes = dbRes.result[4];

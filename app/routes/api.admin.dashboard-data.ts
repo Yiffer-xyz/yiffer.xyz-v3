@@ -5,9 +5,9 @@ import type {
   ComicSuggestionVerdict,
   ComicUploadVerdict,
 } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
-import { createSuccessJson, makeDbErrObj } from '~/utils/request-helpers';
+import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 
 type UserOrIP = {
   username?: string;
@@ -154,27 +154,12 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
 `;
 
 export async function loader(args: LoaderFunctionArgs) {
-  const dataFetchStatements: DBInputWithErrMsg[] = [
-    {
-      query: tagSuggestionsQuery,
-      errorLogMessage: 'Error getting dashboard tag suggestions',
-    },
-    {
-      query: comicProblemsQuery,
-      errorLogMessage: 'Error getting dashboard comic problems',
-    },
-    {
-      query: comicUploadsQuery,
-      errorLogMessage: 'Error getting dashboard comic uploads',
-    },
-    {
-      query: comicSuggestionsQuery,
-      errorLogMessage: 'Error getting dashboard comic suggestions',
-    },
-    {
-      query: pendingComicsSimpleQuery,
-      errorLogMessage: 'Error getting dashboard pending comics',
-    },
+  const dataFetchStatements: QueryWithParams[] = [
+    { query: tagSuggestionsQuery },
+    { query: comicProblemsQuery },
+    { query: comicUploadsQuery },
+    { query: comicSuggestionsQuery },
+    { query: pendingComicsSimpleQuery },
   ];
 
   const dbResList = await queryDbMultiple<
@@ -185,10 +170,13 @@ export async function loader(args: LoaderFunctionArgs) {
       DbComicSuggestion[],
       DbPendingComicSimple[],
     ]
-  >(args.context.DB, dataFetchStatements, 'Error getting dashboard data');
+  >(args.context.DB, dataFetchStatements);
 
   if (dbResList.isError) {
-    return makeDbErrObj(dbResList, dbResList.errorMessage);
+    return processApiError(
+      'Error in /api/admin/dashboard-data loader',
+      makeDbErr(dbResList, 'Error getting dashboard data')
+    );
   }
 
   const allSuggestions: DashboardAction[] = [

@@ -33,26 +33,20 @@ export async function relistComic(
   const comicQuery = `UPDATE comic SET publishStatus = 'published' WHERE id = ?`;
   const metadataQuery = 'UPDATE comicmetadata SET unlistComment = NULL WHERE comicId = ?';
 
-  const dbRes = await queryDbMultiple(
-    db,
-    [
-      {
-        query: comicQuery,
-        params: [comicId],
-        errorLogMessage: 'Could not update comic table',
-      },
-      {
-        query: metadataQuery,
-        params: [comicId],
-        errorLogMessage: 'Could not update metadata table',
-      },
-    ],
-    'Error updating comic+metadata in relistComic'
-  );
+  const dbRes = await queryDbMultiple(db, [
+    {
+      query: comicQuery,
+      params: [comicId],
+    },
+    {
+      query: metadataQuery,
+      params: [comicId],
+    },
+  ]);
 
   const logCtx = { comicId };
 
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, logCtx);
+    return makeDbErr(dbRes, 'Error updating comic+metadata in relistComic', logCtx);
   }
 }

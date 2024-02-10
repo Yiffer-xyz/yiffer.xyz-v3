@@ -32,7 +32,7 @@ export async function loader(args: LoaderFunctionArgs) {
     categories,
   });
   if (comicsRes.err) {
-    return processApiError('Error getting comics', comicsRes.err);
+    return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
   }
 
   return {

@@ -1,5 +1,5 @@
 import type { ComicPublishStatus, ComicTiny } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
@@ -18,7 +18,7 @@ export function getAllComicNamesAndIDsQuery(options?: {
   includeRejectedList?: boolean;
   includeUnlisted?: boolean;
   includeThumbnailStatus?: boolean;
-}): DBInputWithErrMsg {
+}): QueryWithParams {
   const thumbnailQuery = options?.includeThumbnailStatus
     ? ', hasHighresThumbnail, published'
     : '';
@@ -81,7 +81,7 @@ export function getComicsByArtistFieldQuery(
     includeUnlisted?: boolean;
     includeOnlyPublished?: boolean;
   }
-): DBInputWithErrMsg {
+): QueryWithParams {
   let publishStatusFilter = '';
   if (options?.includeOnlyPublished) {
     publishStatusFilter = `AND publishStatus = 'published'`;

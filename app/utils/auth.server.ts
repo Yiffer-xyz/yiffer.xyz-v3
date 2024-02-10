@@ -1,7 +1,7 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
-import type { DBInputWithErrMsg } from './database-facade';
+import type { QueryWithParams } from './database-facade';
 import { queryDb, queryDbMultiple } from './database-facade';
 import type { ApiError } from './request-helpers';
 import { makeDbErrObj, wrapApiError } from './request-helpers';
@@ -46,26 +46,20 @@ export async function signup(
   const usernameQuery = 'SELECT * FROM user WHERE username = ?';
   const emailQuery = 'SELECT * FROM user WHERE email = ?';
 
-  const dbStatements: DBInputWithErrMsg[] = [
+  const dbStatements: QueryWithParams[] = [
     {
       query: usernameQuery,
       params: [username],
-      errorLogMessage: 'Error fetching username',
     },
     {
       query: emailQuery,
       params: [email],
-      errorLogMessage: 'Error fetching email',
     },
   ];
 
-  const dbRes = await queryDbMultiple<[any[], any[]]>(
-    db,
-    dbStatements,
-    'Error checking username+email in signup'
-  );
+  const dbRes = await queryDbMultiple<[any[], any[]]>(db, dbStatements);
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage);
+    return makeDbErrObj(dbRes, 'Error checking username+email in signup');
   }
 
   if (dbRes.result[0].length) {

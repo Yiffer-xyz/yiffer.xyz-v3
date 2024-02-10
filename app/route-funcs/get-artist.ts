@@ -1,5 +1,5 @@
 import type { Artist, ComicTiny } from '~/types/types';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
@@ -29,13 +29,12 @@ export async function getArtistAndComicsByField(
     getComicsByArtistFieldQuery(fieldName, fieldValue),
   ];
 
-  const dbRes = await queryDbMultiple<[DbArtist[], ComicTiny[]]>(
-    db,
-    dbStatements,
-    'Error getting artist and comics by field'
-  );
+  const dbRes = await queryDbMultiple<[DbArtist[], ComicTiny[]]>(db, dbStatements);
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, dbRes.errorMessage, { fieldName, fieldValue });
+    return makeDbErrObj(dbRes, 'Error getting artist and comics by field', {
+      fieldName,
+      fieldValue,
+    });
   }
 
   if (dbRes.result[0].length === 0) {
@@ -53,7 +52,7 @@ export async function getArtistAndComicsByField(
 export function getArtistByFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
-): DBInputWithErrMsg {
+): QueryWithParams {
   let fromString = '';
   const fromTable = fieldName === 'id' ? 'artist' : 'IdQuery';
 
@@ -77,7 +76,6 @@ export function getArtistByFieldQuery(
   return {
     query: artistQuery,
     params: [fieldValue],
-    errorLogMessage: `Error getting artist by ${fieldName}`,
   };
 }
 
@@ -90,7 +88,7 @@ export async function getArtistByField(
 
   const dbRes = await queryDb<DbArtist[]>(db, dbStatement.query, dbStatement.params);
   if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting artist by field', {
+    return makeDbErrObj(dbRes, `Error getting artist by ${fieldName}`, {
       fieldName,
       fieldValue,
     });

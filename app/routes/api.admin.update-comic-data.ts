@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicDataChanges } from './admin.comics.$comic/LiveComic';
-import type { DBInputWithErrMsg } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -40,7 +40,7 @@ export async function updateComicData(
   }
   const existingComic = comicRes.result;
 
-  const dbStatements: DBInputWithErrMsg[] = [];
+  const dbStatements: QueryWithParams[] = [];
 
   if (changes.name) {
     // IMPLEMENT WHEN STORAGE IS IN PLACE.
@@ -93,13 +93,9 @@ export async function updateComicData(
     dbStatements.push(getUpdateGeneralDetailsQuery(changes));
   }
 
-  const dbRes = await queryDbMultiple(
-    db,
-    dbStatements,
-    'Error updating various data in updateComicData'
-  );
+  const dbRes = await queryDbMultiple(db, dbStatements);
   if (dbRes.isError) {
-    return makeDbErr(dbRes, dbRes.errorMessage, changes);
+    return makeDbErr(dbRes, 'Error updating various data in updateComicData', changes);
   }
 }
 
@@ -107,11 +103,11 @@ function getUpdateTagsQuery(
   comicId: number,
   oldTagIds: number[],
   tagIds: number[]
-): DBInputWithErrMsg[] {
+): QueryWithParams[] {
   const newTagIds = tagIds.filter(id => !oldTagIds.includes(id));
   const deletedTagIds = oldTagIds.filter(id => !tagIds.includes(id));
 
-  const dbStatements: DBInputWithErrMsg[] = [];
+  const dbStatements: QueryWithParams[] = [];
 
   if (newTagIds.length > 0) {
     const newTagsQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES ${newTagIds
@@ -120,7 +116,6 @@ function getUpdateTagsQuery(
     dbStatements.push({
       query: newTagsQuery,
       params: newTagIds.flatMap(id => [comicId, id]),
-      errorLogMessage: 'Error inserting comickeywords',
     });
   }
   if (deletedTagIds.length > 0) {
@@ -130,14 +125,13 @@ function getUpdateTagsQuery(
     dbStatements.push({
       query: deletedTagsQuery,
       params: [comicId, ...deletedTagIds],
-      errorLogMessage: 'Error deleting comickeywords',
     });
   }
 
   return dbStatements;
 }
 
-function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): DBInputWithErrMsg {
+function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParams {
   let updateFieldStr = '';
   const updateFieldValues: any[] = [];
   if (changes.category) {
@@ -161,7 +155,6 @@ function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): DBInputWithErr
   return {
     query: updateQuery,
     params: updateFieldValues,
-    errorLogMessage: 'Error updating comic details',
   };
 }
 
@@ -182,15 +175,14 @@ function getUpdateComicLinkQuery(
   oldLinkedId: number | undefined,
   newLinkedComicId: number | undefined,
   type: 'next' | 'prev'
-): DBInputWithErrMsg[] {
+): QueryWithParams[] {
   if (oldLinkedId === newLinkedComicId) return [];
-  const dbStatements: DBInputWithErrMsg[] = [];
+  const dbStatements: QueryWithParams[] = [];
 
   if (oldLinkedId) {
     dbStatements.push({
       query: `DELETE FROM comiclink WHERE ${type === 'next' ? 'first' : 'last'}Comic = ?`,
       params: [comicId],
-      errorLogMessage: `Error deleting comic link ${type}`,
     });
   }
   if (newLinkedComicId) {
@@ -200,7 +192,6 @@ function getUpdateComicLinkQuery(
         type === 'next' ? comicId : newLinkedComicId,
         type === 'next' ? newLinkedComicId : comicId,
       ],
-      errorLogMessage: `Error inserting new comic link ${type}`,
     });
   }
 
