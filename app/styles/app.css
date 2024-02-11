@@ -739,6 +739,11 @@ video {
   margin-bottom: 1rem;
 }
 
+.my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .-mb-1 {
   margin-bottom: -0.25rem;
 }
@@ -1637,6 +1642,11 @@ video {
   padding-right: 1.5rem;
 }
 
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
 .py-0 {
   padding-top: 0px;
   padding-bottom: 0px;
@@ -2421,6 +2431,10 @@ video {
 
   .sm\:w-\[400px\] {
     width: 400px;
+  }
+
+  .sm\:w-\[420px\] {
+    width: 420px;
   }
 
   .sm\:w-fit {

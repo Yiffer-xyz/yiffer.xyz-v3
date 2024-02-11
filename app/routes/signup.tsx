@@ -3,6 +3,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
+import TopGradientBox from '~/ui-components/TopGradientBox';
 import { signup } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
@@ -19,63 +20,70 @@ export default function Signup() {
   });
 
   return (
-    <fetcher.Form className="max-w-xs mx-auto">
-      <h1 className="text-3xl">Sign up</h1>
+    <div className="mx-auto w-full sm:w-[400px] px-8">
+      <fetcher.Form className="w-full my-8">
+        <TopGradientBox innerClassName="px-8 py-6">
+          <h1 className="text-3xl">Sign up</h1>
 
-      <div className="mt-4 flex flex-col gap-6">
-        <TextInputUncontrolled
-          name="username"
-          label="Username"
-          autocomplete="username"
-          className="mb-6 mt-4"
-          type="text"
-        />
+          <div className="mt-4 flex flex-col gap-6">
+            <TextInputUncontrolled
+              name="username"
+              label="Username"
+              autocomplete="username"
+              className="mb-6 mt-4"
+              type="text"
+            />
 
-        <TextInputUncontrolled
-          name="email"
-          label="Email"
-          autocomplete="email"
-          className="mb-6"
-          type="text"
-        />
+            <TextInputUncontrolled
+              name="email"
+              label="Email"
+              autocomplete="email"
+              className="mb-6"
+              type="text"
+            />
 
-        <TextInputUncontrolled
-          name="password"
-          label="Password - at least 6 characters"
-          autocomplete="password"
-          type="password"
-          className="mb-6"
-        />
+            <TextInputUncontrolled
+              name="password"
+              label="Password - at least 6 characters"
+              autocomplete="password"
+              type="password"
+              className="mb-6"
+            />
 
-        <TextInputUncontrolled
-          name="password2"
-          label="Repeat password"
-          autocomplete="password"
-          type="password"
-          className="mb-6"
-        />
+            <TextInputUncontrolled
+              name="password2"
+              label="Repeat password"
+              autocomplete="password"
+              type="password"
+              className="mb-6"
+            />
+          </div>
+
+          {fetcher?.isError && (
+            <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
+          )}
+
+          <div className="flex">
+            <LoadingButton
+              text="Sign up"
+              color="primary"
+              variant="contained"
+              className="mt-2"
+              fullWidth
+              isLoading={fetcher.isLoading}
+              isSubmit
+            />
+          </div>
+        </TopGradientBox>
+      </fetcher.Form>
+
+      <div>
+        <Link href="/login" text="Log in" />
       </div>
-
-      {fetcher?.isError && (
-        <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
-      )}
-
-      <div className="flex">
-        <LoadingButton
-          text="Sign up"
-          color="primary"
-          variant="contained"
-          className="mt-2 mb-6"
-          fullWidth
-          isLoading={fetcher.isLoading}
-          isSubmit
-        />
+      <div className="mt-2">
+        <Link href="/forgotten-password" text="Forgotten password?" />
       </div>
-
-      <Link href="/login" text="Log in instead" />
-      <br />
-      <Link href="/forgotten-password" text="Forgotten password?" />
-    </fetcher.Form>
+    </div>
   );
 }
 

@@ -1,3 +1,5 @@
+export const EMAIL_ENDPOINT = 'https://api.postmarkapp.com/email';
+
 export const COMIC_PROBLEM_CATEGORIES = [
   {
     title: 'Update missing',

@@ -94,7 +94,10 @@ export async function signup(
     userType: 'user',
   };
 
-  sendEmail(createWelcomeEmail(username, email), postmarkToken);
+  const err = await sendEmail(createWelcomeEmail(username, email), postmarkToken);
+  if (err) {
+    logApiError('Error sending welcome email in signup', err, { username, email });
+  }
 
   const redirect = await createUserSession(user, jwtConfigStr);
 
