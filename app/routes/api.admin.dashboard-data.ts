@@ -68,7 +68,7 @@ const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
   FROM (
     SELECT
       comicproblem.id AS id,
-      comicproblemcategory.Name AS categoryName,
+      problemCategory,
       description,
       comic.name AS comicName,
       comic.id AS comicId,
@@ -79,7 +79,6 @@ const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
       user.username AS username,
       modId
     FROM comicproblem
-    INNER JOIN comicproblemcategory ON (comicproblemcategory.id = comicproblem.problemCategoryId)
     INNER JOIN comic ON (comic.id = comicproblem.comicId)
     LEFT JOIN user ON (user.id = comicproblem.userId)
   ) AS Q1
@@ -243,7 +242,7 @@ function mapDbTagSuggestions(input: DbTagSuggestion[]): DashboardAction[] {
 
 type DbComicProblem = {
   id: number;
-  categoryName: string;
+  problemCategory: string;
   description: string;
   comicName: string;
   comicId: number;
@@ -263,7 +262,7 @@ function mapDbComicProblems(input: DbComicProblem[]): DashboardAction[] {
       id: dbComicProblem.id,
       comicId: dbComicProblem.comicId,
       primaryField: dbComicProblem.comicName,
-      secondaryField: dbComicProblem.categoryName,
+      secondaryField: dbComicProblem.problemCategory,
       description: dbComicProblem.description,
       isProcessed: dbComicProblem.status !== 'pending',
       timestamp: dbComicProblem.timestamp,

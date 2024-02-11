@@ -173,10 +173,9 @@ export const yourComicProblemsQuery = `SELECT
     comic.Name AS comicName,
     Status AS status,
     Timestamp AS timestamp,
-    comicproblemcategory.Name AS problemCategory
+    problemCategory
   FROM comicproblem
   INNER JOIN comic ON (comic.Id = comicproblem.ComicId)
-  INNER JOIN comicproblemcategory ON (comicproblemcategory.Id = comicproblem.ProblemCategoryId)
   WHERE UserId = ?;
 `;
 

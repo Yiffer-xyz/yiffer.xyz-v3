@@ -43,7 +43,7 @@ export function TagSuggestion({
               newTab
             />
             <Link
-              href={`/comics/${action.primaryField}`}
+              href={`/${action.primaryField}`}
               text="Live"
               IconRight={MdOpenInNew}
               newTab

@@ -2,6 +2,7 @@ DELETE FROM blog;
 DELETE FROM modapplication;
 DELETE FROM contributionpoints;
 DELETE FROM comicmetadata;
+DELETE FROM comicproblem;
 DELETE FROM keywordsuggestion;
 DELETE FROM comicsuggestion;
 DELETE FROM comickeyword;
@@ -812,7 +813,7 @@ INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) V
 INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (605, '2023-12-17 15:18:46', 5, NULL);
 INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (606, '2024-01-30 15:18:46', 6, NULL);
 INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (607, '2024-02-04 15:11:46', 7, NULL);
-INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (608, '2024-02-04 16:18:46', NULL, '11.22.33.44')
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (608, '2024-02-04 16:18:46', NULL, '11.22.33.44');
 
 -- ARTIST LINKS
 INSERT INTO artistlink (LinkUrl, ArtistId) VALUES ('https://tv2.no', 7);
@@ -1265,6 +1266,27 @@ VALUES ('The Adventure', 'Valkoinen', 'A great adventure blah blah description',
 INSERT INTO comicsuggestion (name, artistName, description, userId, userIP, status, verdict, modComment, modId, timestamp)
 VALUES ('The Journey', 'Melon', 'A great journey blah blah description', 1, NULL, 'approved', 'good', 'very Good very Good very Good very Good very Good very Good very Good very Good very Good very Good very Good', 1, '2024-02-04 14:22:00');
 
+-- COMICPROBLEM
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (1, 'The storyline is confusing and hard to follow', 123, 'Comic info wrong', NULL, '2023-12-05', 1);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (2, 'Some pages seem to be in the wrong order', 456, 'Page order wrong', '19.165.11.2', '2023-12-10', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (3, 'The comic was supposed to update yesterday, but it didn''t', 234, 'Update missing', NULL, '2023-12-15', 3);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (4, 'Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long Long.', 567, 'Other', '19.165.11.4', '2023-12-20', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (5, 'Character names are not consistent throughout', 321, 'Comic info wrong', NULL, '2023-12-25', 5);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (6, 'Pages 10 and 11 are swapped', 111, 'Page order wrong', '19.165.11.6', '2023-12-30', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (7, 'Art style changes abruptly after page 5', 222, 'Other', NULL, '2024-01-04', 7);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (8, 'Missing the latest update for this week', 333, 'Update missing', '19.165.11.8', '2024-01-09', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (9, 'The summary does not match the story', 444, 'Comic info wrong', NULL, '2024-01-14', 9);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (10, 'Pages seem out of order in chapter 3', 555, 'Page order wrong', '19.165.11.10', '2024-01-19', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (11, 'The main character''s backstory is inconsistent', 600, 'Other', NULL, '2024-01-24', 11);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (12, 'The comic has not been updated in over a month', 100, 'Update missing', '192.168.1.12', '2024-01-29', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (13, 'There are several typos in the dialogue', 200, 'Comic info wrong', NULL, '2024-02-03', 13);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (14, 'The latest chapter has pages from a different comic\n. Long Long Long Long Long Long Long Long Long Long Long Long Long\nLong Long Long Long Long Long Long Long Long Long Long Long Long.\n\nLong Long Long Long Long Long Long Long Long Long Long.', 300, 'Page order wrong', '192.168.1.14', '2024-02-08', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (15, 'Cover art does not match the content inside', 400, 'Other', NULL, '2024-02-11', 15);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (16, 'I expected a new update today, but it''s not here', 500, 'Update missing', '192.168.1.16', '2023-12-05', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (17, 'Character descriptions are different from earlier chapters', 600, 'Comic info wrong', NULL, '2023-12-10', 17);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (18, 'Pages 15 and 16 seem to have been swapped around', 50, 'Page order wrong', '192.168.1.18', '2023-12-15', NULL);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (19, 'The plot summary does not make sense with the current storyline', 150, 'Other', NULL, '2023-12-20', 19);
+INSERT INTO `comicproblem` (id, description, comicId, problemCategory, userIP, timestamp, userId) VALUES (20, 'Haven''t seen an update in weeks, is the comic still ongoing?', 250, 'Update missing', '192.168.1.20', '2023-12-25', NULL);
 
 -- COMICKEYWORD
 INSERT INTO comickeyword (ComicId, KeywordId) VALUES (495, 91);

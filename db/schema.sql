@@ -219,29 +219,18 @@ ON DELETE SET NULL
 ON UPDATE CASCADE);
 
 ------------------------------------------------------
--- COMIC PROBLEM CATEGORY
-------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comicproblemcategory` (
-`id` INTEGER  NOT NULL ,
-`name` TEXT NOT NULL,
-`helperText` TEXT NOT NULL,
-PRIMARY KEY (`id`));
-
-CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicproblemcategory_unique_name` ON `comicproblemcategory` (`name`);
-
-------------------------------------------------------
 -- COMIC PROBLEM
 ------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `comicproblem` (
 `id` INTEGER  NOT NULL ,
 `description` TEXT NOT NULL,
 `comicId` INTEGER  NOT NULL,
-`problemCategoryId` INTEGER  NOT NULL,
+`problemCategory` TEXT NOT NULL,
 `modId` INTEGER  NULL DEFAULT NULL,
 `userIP` TEXT NULL DEFAULT NULL,
-`status` TEXT CHECK( `status` IN ('pending', 'approved', 'rejected')) NOT NULL DEFAULT 'pending',
-`timestamp` TEXT NOT NULL,
 `userId` INTEGER  NULL DEFAULT NULL,
+`status` TEXT CHECK( `status` IN ('pending', 'approved', 'rejected')) NOT NULL DEFAULT 'pending',
+`timestamp` TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`),
 FOREIGN KEY (`comicId`)
 REFERENCES `comic` (`id`)
@@ -249,10 +238,6 @@ ON DELETE CASCADE
 ON UPDATE CASCADE,
 FOREIGN KEY (`modId`)
 REFERENCES `user` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-FOREIGN KEY (`problemCategoryId`)
-REFERENCES `comicproblemcategory` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE,
 FOREIGN KEY (`userId`)

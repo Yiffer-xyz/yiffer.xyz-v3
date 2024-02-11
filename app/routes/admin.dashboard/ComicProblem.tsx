@@ -6,6 +6,8 @@ import Chip from '~/ui-components/Chip';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
+import Link from '~/ui-components/Link';
+import { MdOpenInNew } from 'react-icons/md';
 
 type ComicProblemProps = {
   action: DashboardAction;
@@ -48,9 +50,21 @@ export function ComicProblem({
         <div className="flex flex-col justify-between gap-2">
           <Chip color={themedColor} text="Comic problem" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-            <p>
+            <div className="flex flex-row gap-x-3">
               <b>{action.primaryField}</b>
-            </p>
+              <Link
+                href={`/admin/comics/${action.comicId}`}
+                text="Admin"
+                IconRight={MdOpenInNew}
+                newTab
+              />
+              <Link
+                href={`/${action.primaryField}`}
+                text="Live"
+                IconRight={MdOpenInNew}
+                newTab
+              />
+            </div>
             <p>{action.secondaryField}</p>
           </div>
         </div>
