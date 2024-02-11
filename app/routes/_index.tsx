@@ -58,7 +58,7 @@ export default function Index() {
           </div>
         </RemixLink>
 
-        <RemixLink to={userSession ? '/account' : 'login'} className="w-full mb-2">
+        <RemixLink to={userSession ? '/me' : 'login'} className="w-full mb-2">
           <div
             className={`h-12 bg-theme1-primaryTrans hover:bg-theme1-primaryTransDarker
             rounded flex flex-row justify-center items-center gap-1 shadow-md`}
