@@ -1,7 +1,7 @@
 import cropperCss from 'cropperjs/dist/cropper.min.css';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
@@ -42,7 +42,7 @@ export function links() {
 
 export default function Upload() {
   const { artists, comics, user, tags } = useLoaderData<typeof loader>();
-  const [step, setStep] = useState<number | string>(2);
+  const [step, setStep] = useState<number | string>(1);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,6 +64,10 @@ export default function Upload() {
     encType: 'multipart/form-data',
     toastError: true,
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   async function uploadFiles(
     comicData: NewComicData,

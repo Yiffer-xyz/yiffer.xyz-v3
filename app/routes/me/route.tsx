@@ -2,7 +2,6 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
-import type { authLoader } from '~/utils/loaders';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -11,10 +10,10 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function AccountPage() {
-  const user = useLoaderData<typeof authLoader>();
+  const user = useLoaderData<typeof loader>();
 
   return (
-    <div className="mx-auto w-fit px-4">
+    <div className="mx-auto w-fit px-4 pb-8">
       <h1>Account</h1>
       <p>
         <RiAccountCircleFill /> {user?.username}

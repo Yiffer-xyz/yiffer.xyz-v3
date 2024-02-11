@@ -4,7 +4,7 @@ import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';
 import { queryDb, queryDbMultiple } from './database-facade';
 import type { ApiError } from './request-helpers';
-import { makeDbErrObj, wrapApiError } from './request-helpers';
+import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 import bcrypt from 'bcryptjs';
 const { hash, compare } = bcrypt;
@@ -99,6 +99,39 @@ export async function signup(
   const redirect = await createUserSession(user, jwtConfigStr);
 
   return { redirect };
+}
+
+export async function changePassword(
+  db: D1Database,
+  userId: number,
+  oldPassword: string,
+  newPassword: string
+): Promise<{ friendlyErrorMsg: string | undefined }> {
+  const userQuery = 'SELECT password FROM user WHERE id = ?';
+  const userQueryRes = await queryDb<UserWithPassword[]>(db, userQuery, [userId]);
+  if (userQueryRes.isError) {
+    logApiError('Error fetching user for pw change', makeDbErr(userQueryRes), { userId });
+    return { friendlyErrorMsg: 'Error fetching user for password change' };
+  }
+  if (!userQueryRes.result?.length) {
+    return { friendlyErrorMsg: 'User not found' };
+  }
+
+  const user = userQueryRes.result[0];
+  const isPasswordValid = await compare(oldPassword, user.password);
+  if (!isPasswordValid) {
+    return { friendlyErrorMsg: 'Old password is incorrect' };
+  }
+
+  const hashedPassword = await hash(newPassword, 8);
+  const updateQuery = 'UPDATE user SET password = ? WHERE id = ?';
+  const updateQueryRes = await queryDb(db, updateQuery, [hashedPassword, userId]);
+  if (updateQueryRes.isError) {
+    logApiError('Error updating password', makeDbErr(updateQueryRes), { userId });
+    return { friendlyErrorMsg: 'Error updating password' };
+  }
+
+  return { friendlyErrorMsg: undefined };
 }
 
 async function authenticate(

@@ -168,7 +168,6 @@ export default function Upload() {
         />
       ) : (
         <>
-          <h4>Introduction</h4>
           <p>
             If you would like to follow your suggestion&apos;s status,{' '}
             <span>create an account!</span> You can then follow updates in the &quot;view
