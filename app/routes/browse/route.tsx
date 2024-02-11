@@ -92,7 +92,7 @@ export default function BrowsePage() {
           IconRight={RiArrowRightLine}
         />
         <Link
-          href="/advertising-info"
+          href="/advertising"
           text="Advertise your furry stuff on Yiffer.xyz"
           IconRight={RiArrowRightLine}
         />

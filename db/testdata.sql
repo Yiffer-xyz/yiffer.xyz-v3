@@ -1,5 +1,7 @@
 DELETE FROM blog;
+DELETE FROM modapplication;
 DELETE FROM contributionpoints;
+DELETE FROM comicmetadata;
 DELETE FROM keywordsuggestion;
 DELETE FROM comicsuggestion;
 DELETE FROM comickeyword;
@@ -168,6 +170,27 @@ INSERT INTO artist (id, name, E621Name, patreonName, isPending, isBanned, isReje
 INSERT INTO artist (id, name, E621Name, patreonName, isPending, isBanned, isRejected) VALUES (48, 'Fast Wolf', 'E621name-wiq', 'Patreonname-nug', 0, 0, 0);
 INSERT INTO artist (id, name, E621Name, patreonName, isPending, isBanned, isRejected) VALUES (49, 'Loud Wolf', 'E621name-mvg', 'Patreonname-ihb', 0, 0, 0);
 INSERT INTO artist (id, name, E621Name, patreonName, isPending, isBanned, isRejected) VALUES (50, 'Soft Mountain', 'E621name-nyv', 'Patreonname-lqw', 0, 0, 0);
+
+-- MODAPPLICATION
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (1, 10, 'FerrixGulo', 'Roses are red, violets are blue, moderating is fun, and so are you');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (2, 11, 'synthwavewolfy', 'The sun shines bright, the sky so blue, in this community, I found my crew');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (3, 12, 'FENNECFOXES', 'Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long application Long applicationLong application Long application Long application Long application.');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (4, 13, 'KiwiWlf', 'Morning dew and twilight’s glow, in our chat, good vibes we sow');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (5, 14, 'BluLeggy', 'Stars at night, they shine so bright, in our forum, we do what’s right');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (6, 15, 'CassiusFox', 'Flowers bloom, and birds do sing, in our space, joy we bring');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (7, 16, 'DeeYeen', 'Mountains high and valleys low, in our group, we learn and grow');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (8, 17, 'LibaaxaKovu', 'Rivers run and breezes kiss, in our circle, peace and bliss');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (9, 18, 'Vincehooves', 'Through the woods and over streams, in our chat, we chase our dreams');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (10, 19, 'Titoku', 'Under moon and sun so bright, together we make things right');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (11, 20, 'kiosion', 'In the forest, in the glen, together strong, we count to ten');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (12, 21, 'Tokhiya', 'With each dawn and setting sun, in our group, much fun is spun');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (13, 22, 'Zuzulf', 'Oceans wide and deserts vast, in our forum, friendships last');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (14, 23, 'WhoYouLeastExpect', 'In the meadows, in the fields, to no challenge, do we yield');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (15, 24, 'SnowCabbit', 'Through the clouds and past the stars, together we break all the bars');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (16, 25, 'HimaruSheppy', 'In the rain or in the shine, in our group, all is fine');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (17, 26, 'softgreykitty', 'From dawn till dusk, we do not rest, in our quest to be the best');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (18, 27, 'zephyrjackal', 'In the storm or in the calm, in our chat, we share our balm');
+INSERT INTO `modapplication` (id, userId, telegramUsername, notes) VALUES (19, 28, 'melon_mow', 'Through the valleys and over hills, in our group, we cure all ills');
 
 -- COMICS
 INSERT INTO comic (Id, Name, Tag, NumberOfPages, published, Updated, State, Artist, publishStatus, hasHighresThumbnail) VALUES (1, 'One Delightful Gadget', 'FF', 23, '2019-01-16 14:21:15', '2019-03-12 21:51:22', 'finished', 41, 'published', 1);
@@ -770,6 +793,26 @@ INSERT INTO comic (Id, Name, Tag, NumberOfPages, published, Updated, State, Arti
 INSERT INTO comic (Id, Name, Tag, NumberOfPages, published, Updated, State, Artist, publishStatus, hasHighresThumbnail) VALUES (598, 'One Calm Dream', 'FF', 6, '2018-07-26 08:12:28', '2023-07-10 06:12:53', 'finished', 2, 'published', 1);
 INSERT INTO comic (Id, Name, Tag, NumberOfPages, published, Updated, State, Artist, publishStatus, hasHighresThumbnail) VALUES (599, 'One Soft Owl', 'MM', 14, '2022-02-06 15:53:00', '2022-06-01 21:33:22', 'cancelled', 19, 'published', 1);
 INSERT INTO comic (Id, Name, Tag, NumberOfPages, published, Updated, State, Artist, publishStatus, hasHighresThumbnail) VALUES (600, 'Three Old Bears', 'F', 14, '2021-06-22 12:51:19', '2022-09-27 07:43:53', 'wip', 14, 'published', 1);
+
+-- COMICS, BUT PENDING
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (601, 'Nine Fresh Rabbits', 'MF+', 11, 'finished', 45, 'scheduled');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (602, 'Two Fresh Cats', 'MF', 14, 'wip', 33, 'pending');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (603, 'Seven Awful Dogs', 'F', 5, 'wip', 33, 'scheduled');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (604, 'Twelve Horny Lions', 'I', 8, 'finished', 33, 'pending');
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP, publishingQueuePos) VALUES (601, '2023-12-18 15:18:46', 1, NULL, 1);
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (602, '2024-01-31 15:18:46', 2, NULL); 
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP, publishingQueuePos) VALUES (603, '2024-02-05 15:11:46', 3, NULL, 2);
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (604, '2024-02-05 16:18:46', NULL, '11.22.33.44');
+
+-- COMICS, BUT UPLOADED
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (605, 'Six evil mice', 'MF', 12, 'finished', 6, 'uploaded');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (606, 'Fourteen happy cats', 'MF', 14, 'wip', 6, 'uploaded');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (607, 'Two sad dogs', 'F', 5, 'wip', 6, 'uploaded');
+INSERT INTO comic (Id, Name, Tag, NumberOfPages, State, Artist, publishStatus) VALUES (608, 'Eight horny lions', 'I', 8, 'finished', 6, 'uploaded');
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (605, '2023-12-17 15:18:46', 5, NULL);
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (606, '2024-01-30 15:18:46', 6, NULL);
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (607, '2024-02-04 15:11:46', 7, NULL);
+INSERT INTO comicmetadata (comicId, timestamp, uploadUserId, uploadUserIP) VALUES (608, '2024-02-04 16:18:46', NULL, '11.22.33.44')
 
 -- ARTIST LINKS
 INSERT INTO artistlink (LinkUrl, ArtistId) VALUES ('https://tv2.no', 7);

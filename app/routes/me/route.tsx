@@ -37,7 +37,7 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="#"
+          href="/advertising"
           title="Advertising"
           includeRightArrow
           description="See and manage your ads"
@@ -45,7 +45,7 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="#"
+          href="/patreon"
           title="Patreon"
           includeRightArrow
           description="See and manage your Patreon subscription and rewards"

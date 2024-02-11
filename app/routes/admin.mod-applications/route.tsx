@@ -24,7 +24,7 @@ export default function AdminModApplications() {
       <p className="font-bold">ℹ️ See the figma prototype.</p>
 
       {applications.map(appl => (
-        <div key={appl.timestamp} className="my-4">
+        <div key={appl.id} className="my-4">
           <pre>{JSON.stringify(appl, null, 2)}</pre>
         </div>
       ))}

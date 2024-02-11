@@ -40,7 +40,8 @@ export default function Index() {
           <p className="text-center">
             We are struggling financially.
             <br />
-            Please <Link text="support us on Patreon" href="#" isInsideParagraph />!
+            Please <Link text="support us on Patreon" href="/patreon" isInsideParagraph />
+            !
           </p>
           <p className="text-center mt-0.5">VIP patron: TODO implement.</p>
         </div>
@@ -69,7 +70,7 @@ export default function Index() {
         </RemixLink>
 
         <Link
-          href="https://pi.yiffer.xyz"
+          href="/advertising"
           text="Advertise on Yiffer.xyz"
           IconRight={RiArrowRightLine}
         />
