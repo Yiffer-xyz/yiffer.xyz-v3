@@ -131,6 +131,9 @@ function Layout({
   const isLoggedIn = !!user;
   const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
 
+  const darkNavLinkColorStyle = 'dark:text-blue-strong-300';
+  const navLinkStyle = `text-gray-200 font-semibold bg-none text-sm ${darkNavLinkColorStyle}`;
+
   return (
     <>
       <nav
@@ -141,7 +144,7 @@ function Layout({
           <div className="flex gap-3 sm:gap-5 items-center">
             <a
               href={frontPageUrl}
-              className="text-gray-200 hidden lg:block bg-none dark:text-blue-strong-300 mr-1"
+              className={`text-gray-200 hidden lg:block bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -152,7 +155,7 @@ function Layout({
             </a>
             <a
               href={frontPageUrl}
-              className="text-gray-200 block lg:hidden bg-none dark:text-blue-strong-300 mr-1"
+              className={`text-gray-200 block lg:hidden bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
                 fontFamily: 'Shrikhand,cursive',
                 fontSize: '1.25rem',
@@ -164,8 +167,8 @@ function Layout({
             <>
               {isLoggedIn && (
                 <Link
-                  href="/account"
-                  className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                  href="/me"
+                  className={navLinkStyle}
                   iconMargin={2}
                   text="Me"
                   Icon={RiAccountCircleLine}
@@ -174,7 +177,7 @@ function Layout({
               {isLoggedIn && isMod && (
                 <Link
                   href="/admin"
-                  className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
+                  className={navLinkStyle}
                   iconMargin={2}
                   text="Mod"
                   Icon={RiSettings3Line}
@@ -182,26 +185,20 @@ function Layout({
               )}
               <Link
                 href="/contribute"
-                className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm -ml-1"
+                className={`${navLinkStyle} -ml-1`}
                 iconMargin={2}
                 text="Contribute"
                 Icon={RiAddLine}
               />
               {isLoggedIn && (
-                <a
-                  href="/logout"
-                  className="font-semibold bg-none dark:text-blue-strong-300 text-sm"
-                >
+                <a href="/logout" className={navLinkStyle}>
                   <RiLogoutBoxLine className="inline-block mr-0.5" />
                   Log out
                 </a>
               )}
             </>
             {!isLoggedIn && (
-              <a
-                href="/login"
-                className="text-gray-200 font-semibold bg-none dark:text-blue-strong-300 text-sm"
-              >
+              <a href="/login" className={navLinkStyle}>
                 <RiLoginBoxLine className="inline-block" />
                 Log in
               </a>
@@ -210,7 +207,7 @@ function Layout({
 
           <div
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="cursor-pointer dark:text-blue-strong-300"
+            className="text-gray-200 cursor-pointer dark:text-blue-strong-300"
           >
             <MdLightbulbOutline className="mb-1" />
           </div>

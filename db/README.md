@@ -8,9 +8,9 @@ If you haven't yet, log in to Cloudflare via `wrangler login`. Install wrangler 
 Should make this more easily configurable in the future, of course. Ideas for how to, or contributions, are very welcome. Probably some task running tool.
 
 ### Set up tables and test data
-`wrangler d1 execute yiffer-local-dev --local --file=db/schema.sql`
+`wrangler d1 execute yiffer-local-dev --file=db/schema.sql --local`
 
-`wrangler d1 execute yiffer-local-dev --local --file=db/testdata.sql`
+`wrangler d1 execute yiffer-local-dev --file=db/testdata.sql --local`
 
 If you've already got data but want to reset it, `wrangler d1 execute yiffer-local-dev --local --file=db/delete.sql`. This is very flaky/unreliable at the moment, often throwing dumb errors like `table main.XXXX does not exist`. Will figure out something more stable in the future.
 
