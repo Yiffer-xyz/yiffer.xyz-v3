@@ -62,9 +62,6 @@ export default function SearchableSelect<T>({
   }, []);
 
   useEffect(() => {
-    if (searchText && !isOpen) {
-      setIsOpen(true);
-    }
     setCurrentlyHighlightedIndex(-1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
@@ -104,9 +101,9 @@ export default function SearchableSelect<T>({
       return {};
     }
     if (minWidth) {
-      return { minWidth: `${minWidth + 0}px` };
+      return { minWidth: `${minWidth}px` };
     } else if (initialWidth) {
-      return { minWidth: `${initialWidth + 0}px` };
+      return { minWidth: `${initialWidth}px` };
     }
     return {};
   }, [initialWidth, isFullWidth, minWidth, width]);
@@ -127,10 +124,10 @@ export default function SearchableSelect<T>({
     });
   }
 
-  function onSelected(clickedValue: T) {
-    setSearchText(filteredOptions[0].text);
-    onChange(clickedValue);
+  function onSelected(text: string, clickedValue: T) {
+    setSearchText(text);
     setIsOpen(false);
+    onChange(clickedValue);
   }
 
   function clearAndCloseSearch({ avoidIfHighlighted = false } = {}) {
@@ -146,13 +143,15 @@ export default function SearchableSelect<T>({
   function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
       if (currentlyHighlightedIndex !== -1 && filteredOptions.length > 0) {
-        onSelected(filteredOptions[currentlyHighlightedIndex].value);
+        const { text, value } = filteredOptions[currentlyHighlightedIndex];
+        onSelected(text, value);
       } else if (
         currentlyHighlightedIndex === -1 &&
         filteredOptions.length > 0 &&
         isOpen
       ) {
-        onSelected(filteredOptions[0].value);
+        const { text, value } = filteredOptions[currentlyHighlightedIndex];
+        onSelected(text, value);
       }
     } else if (event.key === 'ArrowDown') {
       if (!isOpen) {
@@ -285,7 +284,7 @@ export default function SearchableSelect<T>({
         {filteredOptions.map(({ text, value: optionValue }, index) => (
           <div
             key={text}
-            onClick={() => onSelected(optionValue)}
+            onClick={() => onSelected(text, optionValue)}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
