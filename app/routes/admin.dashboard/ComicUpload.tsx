@@ -5,7 +5,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
 
 type ComicUploadProps = {
@@ -30,7 +30,7 @@ export function ComicUpload({
   innerContainerClassName,
 }: ComicUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#8c7ad5' : '#6751be';
 
   return (

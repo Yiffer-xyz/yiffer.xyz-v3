@@ -11,8 +11,6 @@ import { processAnyUpload } from './api.admin.process-user-upload';
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
-
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
@@ -39,7 +37,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const err = await processAnyUpload(
     user.userId,
-    urlBase,
+    args.context.DB,
     parseInt(formComicId.toString()),
     comicName.toString(),
     undefined,

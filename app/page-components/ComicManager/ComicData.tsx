@@ -13,10 +13,6 @@ const categoryOptions = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].map(c => ({
   value: c,
   text: c,
 }));
-const classificationOptions = ['Furry', 'Pokemon', 'MLP', 'Other'].map(c => ({
-  value: c,
-  text: c,
-}));
 const stateOptions = [
   { text: 'Finished', value: 'finished' },
   { text: 'WIP', value: 'wip' },
@@ -127,15 +123,6 @@ export default function ComicDataEditor({
           onChange={newVal => onUpdate({ ...comicData, category: newVal })}
           options={categoryOptions}
           minWidth={72}
-        />
-
-        <Select
-          title="Classification"
-          name="classification"
-          value={comicData.classification}
-          onChange={newVal => onUpdate({ ...comicData, classification: newVal })}
-          options={classificationOptions}
-          minWidth={108}
         />
 
         <Select

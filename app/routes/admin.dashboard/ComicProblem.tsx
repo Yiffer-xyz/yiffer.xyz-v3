@@ -4,8 +4,10 @@ import DropdownButton from '~/ui-components/Buttons/DropdownButton';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import type { DashboardAction } from '../api.admin.dashboard-data';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
+import Link from '~/ui-components/Link';
+import { MdOpenInNew } from 'react-icons/md';
 
 type ComicProblemProps = {
   action: DashboardAction;
@@ -31,7 +33,7 @@ export function ComicProblem({
   innerContainerClassName,
 }: ComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#d7a74a' : '#b28734';
 
   const isChooseActionButtonLoading =
@@ -48,9 +50,21 @@ export function ComicProblem({
         <div className="flex flex-col justify-between gap-2">
           <Chip color={themedColor} text="Comic problem" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-            <p>
+            <div className="flex flex-row gap-x-3">
               <b>{action.primaryField}</b>
-            </p>
+              <Link
+                href={`/admin/comics/${action.comicId}`}
+                text="Admin"
+                IconRight={MdOpenInNew}
+                newTab
+              />
+              <Link
+                href={`/${action.primaryField}`}
+                text="Live"
+                IconRight={MdOpenInNew}
+                newTab
+              />
+            </div>
             <p>{action.secondaryField}</p>
           </div>
         </div>

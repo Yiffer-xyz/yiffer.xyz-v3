@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -12,14 +12,12 @@ import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
-
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  const err = await unScheduleComic(urlBase, parseInt(formComicId.toString()));
+  const err = await unScheduleComic(args.context.DB, parseInt(formComicId.toString()));
   if (err) {
     return processApiError('Error in /unschedule-comic', err);
   }
@@ -27,24 +25,29 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function unScheduleComic(
-  urlBase: string,
+  db: D1Database,
   comicId: number
 ): Promise<ApiError | undefined> {
+  const comicQuery = `UPDATE comic SET publishStatus = 'pending' WHERE id = ?`;
   const metadataQuery =
     'UPDATE comicmetadata SET publishDate = NULL, scheduleModId = NULL, publishingQueuePos = NULL WHERE comicId = ?';
-  const comicQuery = `UPDATE comic SET publishStatus = 'pending' WHERE id = ?`;
 
-  const [metadataDbRes, comicDbRes] = await Promise.all([
-    queryDb(urlBase, metadataQuery, [comicId]),
-    queryDb(urlBase, comicQuery, [comicId]),
+  const dbRes = await queryDbMultiple(db, [
+    {
+      query: comicQuery,
+      params: [comicId],
+    },
+    {
+      query: metadataQuery,
+      params: [comicId],
+    },
   ]);
 
-  if (metadataDbRes.isError) {
-    return makeDbErr(metadataDbRes, 'Could not update comicmetadata', { comicId });
-  }
-  if (comicDbRes.isError) {
-    return makeDbErr(comicDbRes, 'Could not update comic table', { comicId });
+  const logCtx = { comicId };
+
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating comic+metadata in unScheduleComic', logCtx);
   }
 
-  recalculatePublishingQueue(urlBase); // Can run in background
+  recalculatePublishingQueue(db); // Can run in background
 }

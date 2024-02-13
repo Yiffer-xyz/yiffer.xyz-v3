@@ -1,7 +1,8 @@
 import { createCookieSessionStorage } from '@remix-run/cloudflare';
-import { isTheme } from '~/utils/theme-provider';
+import type { UIPreferences } from '~/types/types';
+import { parseUIPreferences } from '~/utils/theme-provider';
 
-const themeStorage = createCookieSessionStorage({
+const uiPrefStorage = createCookieSessionStorage({
   cookie: {
     name: 'dev-yiffer-theme',
     secure: false, // TODO:
@@ -11,21 +12,20 @@ const themeStorage = createCookieSessionStorage({
   },
 });
 
-async function getThemeSession(request: Request) {
-  const session = await themeStorage.getSession(request.headers.get('Cookie'));
+export async function getUIPrefSession(request: Request) {
+  const session = await uiPrefStorage.getSession(request.headers.get('Cookie'));
 
   return {
-    getTheme: function (): string {
-      const themeVal = session.get('theme');
-      return isTheme(themeVal) ? themeVal : null;
+    getUiPref: function (): UIPreferences {
+      const rawUiPref = session.get('ui-pref');
+      const parsedUiPref = parseUIPreferences(rawUiPref);
+      return parsedUiPref;
     },
-    setTheme: function (theme: string | null) {
-      return session.set('theme', theme);
+    setUiPref: function (uiPref: UIPreferences) {
+      return session.set('ui-pref', JSON.stringify(uiPref));
     },
     commit: async function (): Promise<string> {
-      return themeStorage.commitSession(session);
+      return uiPrefStorage.commitSession(session);
     },
   };
 }
-
-export { getThemeSession };

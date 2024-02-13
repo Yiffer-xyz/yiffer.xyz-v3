@@ -1,15 +1,15 @@
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
-import { getComicsByArtistId } from './get-comics';
+import { getComicsByArtistField } from './get-comics';
 
 export async function rejectArtistIfEmpty(
-  urlBase: string,
+  db: D1Database,
   artistId: number,
   artistName: string
 ): ResultOrErrorPromise<{ isEmpty: boolean }> {
-  const comicsRes = await getComicsByArtistId(urlBase, artistId);
+  const comicsRes = await getComicsByArtistField(db, 'id', artistId);
   if (comicsRes.err) {
     return { err: wrapApiError(comicsRes.err, 'Error rejecting artist', { artistId }) };
   }
@@ -19,7 +19,7 @@ export async function rejectArtistIfEmpty(
   const newArtistName = `${artistName}-REJECTED-${randomStr}`;
 
   const rejectQuery = `UPDATE artist SET name = ?, isRejected = 1 WHERE id = ?`;
-  const dbRes = await queryDb(urlBase, rejectQuery, [newArtistName, artistId]);
+  const dbRes = await queryDbExec(db, rejectQuery, [newArtistName, artistId]);
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error rejecting artist', {
       artistId,
@@ -32,11 +32,11 @@ export async function rejectArtistIfEmpty(
 }
 
 export async function setArtistNotPending(
-  urlBase: string,
+  db: D1Database,
   artistId: number
 ): Promise<ApiError | undefined> {
   const updateQuery = `UPDATE artist SET isPending = 0 WHERE id = ?`;
-  const dbRes = await queryDb(urlBase, updateQuery, [artistId]);
+  const dbRes = await queryDbExec(db, updateQuery, [artistId]);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error setting artist not pending', { artistId });
   }

@@ -1,5 +1,6 @@
 import { MdClear } from 'react-icons/md';
 import { useMemo } from 'react';
+import { colors } from 'tailwind.config';
 
 export type BaseTextInputProps = {
   label: string;
@@ -13,6 +14,7 @@ export type BaseTextInputProps = {
   errorText?: string;
   error?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type FullTextInputProps = {
@@ -53,12 +55,23 @@ export default function TextInput({
 
   const borderStyle = borderClass
     ? ''
-    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+    : {
+        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+      };
 
   return (
-    <div className={`flex flex-col ${className}`} {...props}>
+    <div
+      className={`flex flex-col pt-3 h-9 leading-9 box-content relative ${className}`}
+      {...props}
+    >
       {label && (
-        <label className={`${error ? 'text-red-strong-300' : ''} text-sm`}>{label}</label>
+        <label
+          className={`${
+            error ? 'text-red-strong-300' : ''
+          } text-sm absolute top-0 left-1`}
+        >
+          {label}
+        </label>
       )}
       <div className={`-mt-1 relative`}>
         <input
@@ -69,8 +82,11 @@ export default function TextInput({
           autoComplete={autocomplete || undefined}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full bg-transparent p-1.5 outline-none border border-0 border-b-2 
-            border-gradient-to-r placeholder-gray-800 dark:placeholder-gray-700 ${borderClass}`}
+          className={`text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
+          disabled:border-gray-800 dark:disabled:border-gray-600 pt-1
+          after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
+          after:border-t-text-light dark:after:border-t-text-dark after:right-3
+          placeholder-gray-800 dark:placeholder-gray-700 w-full outline-none ${borderClass}`}
           style={{
             appearance: 'textfield',
             ...borderStyle,

@@ -16,13 +16,12 @@ export type SimilarArtistResponse = {
 };
 
 export const action: ActionFunction = async function ({ request, context }) {
-  const urlBase = context.DB_API_URL_BASE;
   const body = await request.formData();
   const artistName = body.get('artistName') as string;
   const excludeName = body.get('excludeName');
 
   const artistsRes = await getSimilarArtists(
-    urlBase,
+    context.DB,
     artistName,
     excludeName ? excludeName.toString() : undefined
   );
@@ -33,7 +32,7 @@ export const action: ActionFunction = async function ({ request, context }) {
 };
 
 export async function getSimilarArtists(
-  urlBase: string,
+  db: D1Database,
   newArtistName: string,
   excludeName?: string
 ): ResultOrErrorPromise<SimilarArtistResponse> {
@@ -58,7 +57,7 @@ export async function getSimilarArtists(
 
   const allArtistsQuery = 'SELECT name, isBanned FROM artist';
   const allArtistsRes = await queryDb<{ name: string; isBanned: boolean }[]>(
-    urlBase,
+    db,
     allArtistsQuery
   );
   if (allArtistsRes.isError || !allArtistsRes.result) {

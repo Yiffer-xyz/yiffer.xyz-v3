@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
@@ -14,10 +14,9 @@ export type AssignActionBody = {
 export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized } = await parseFormJson<AssignActionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const err = await assignActionToMod(
-    urlBase,
+    args.context.DB,
     fields.actionId,
     fields.actionType,
     fields.modId
@@ -27,7 +26,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function assignActionToMod(
-  urlBase: string,
+  db: D1Database,
   actionId: number,
   actionType: DashboardActionType,
   modId: number
@@ -55,7 +54,7 @@ async function assignActionToMod(
   const query = `UPDATE ${table} SET ${modIdColumn} = ? WHERE ${identifyingColumn} = ?`;
   const queryParams = [modId, actionId];
 
-  const dbRes = await queryDb(urlBase, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error assigning action to mod', {
       actionId,

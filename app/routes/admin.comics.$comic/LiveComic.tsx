@@ -88,8 +88,6 @@ export default function LiveComic({
         body.tagIds = change.newDataValue;
       } else if (change.field === 'Category') {
         body.category = change.newDataValue;
-      } else if (change.field === 'Classification') {
-        body.classification = change.newDataValue;
       } else if (change.field === 'State') {
         body.state = change.newDataValue;
       } else if (change.field === 'Previous comic') {
@@ -290,10 +288,9 @@ export type ComicDataChanges = {
   artistId?: number;
   tagIds?: number[];
   category?: string;
-  classification?: string;
   state?: string;
-  previousComicId?: number;
-  nextComicId?: number;
+  previousComicId?: number | null;
+  nextComicId?: number | null;
 };
 
 function setupInitialUpdatedComic(comic: Comic): NewComicData {
@@ -302,7 +299,6 @@ function setupInitialUpdatedComic(comic: Comic): NewComicData {
     comicName: comic.name,
     artistId: comic.artist.id,
     category: comic.category,
-    classification: comic.classification,
     state: comic.state,
     validation: {
       isLegalComicName: true,
@@ -365,14 +361,6 @@ function getComicDataChanges(
       newDataValue: updatedComicData.category,
     });
   }
-  if (comic.classification !== updatedComicData.classification) {
-    changes.push({
-      field: 'Classification',
-      oldValue: comic.classification,
-      newValue: updatedComicData.classification,
-      newDataValue: updatedComicData.classification,
-    });
-  }
   if (comic.state !== updatedComicData.state) {
     changes.push({
       field: 'State',
@@ -387,7 +375,7 @@ function getComicDataChanges(
       oldValue: comic.previousComic?.name || 'None',
       newValue:
         allComics.find(c => c.id === updatedComicData.previousComic?.id)?.name || 'None',
-      newDataValue: updatedComicData.previousComic?.id,
+      newDataValue: updatedComicData.previousComic?.id ?? null,
     });
   }
   if (comic.nextComic?.id !== updatedComicData.nextComic?.id) {
@@ -396,7 +384,7 @@ function getComicDataChanges(
       oldValue: comic.nextComic?.name || 'None',
       newValue:
         allComics.find(c => c.id === updatedComicData.nextComic?.id)?.name || 'None',
-      newDataValue: updatedComicData.nextComic?.id,
+      newDataValue: updatedComicData.nextComic?.id ?? null,
     });
   }
 

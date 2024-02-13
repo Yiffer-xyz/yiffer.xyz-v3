@@ -11,6 +11,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import TopGradientBox from '~/ui-components/TopGradientBox';
 
 export default function Login() {
   const fetcher = useGoodFetcher({
@@ -19,47 +20,54 @@ export default function Login() {
   });
 
   return (
-    <fetcher.Form className="max-w-xs mx-auto">
-      <h1 className="text-3xl">Log in</h1>
+    <div className="mx-auto w-full sm:w-[400px] px-8">
+      <fetcher.Form className="w-full my-8">
+        <TopGradientBox innerClassName="px-8 py-6">
+          <h1 className="text-3xl">Log in</h1>
 
-      <div className="mt-4 flex flex-col gap-6">
-        <TextInputUncontrolled
-          name="username"
-          label="Username or email"
-          autocomplete="username"
-          className="mb-6 mt-4"
-          type="text"
-        />
+          <div className="mt-4 flex flex-col gap-6">
+            <TextInputUncontrolled
+              name="username"
+              label="Username or email"
+              autocomplete="username"
+              className="mb-6 mt-4"
+              type="text"
+            />
 
-        <TextInputUncontrolled
-          name="password"
-          label="Password - at least 6 characters"
-          autocomplete="password"
-          type="password"
-          className="mb-6"
-        />
+            <TextInputUncontrolled
+              name="password"
+              label="Password - at least 6 characters"
+              autocomplete="password"
+              type="password"
+              className="mb-6"
+            />
+          </div>
+
+          {fetcher.isError && (
+            <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
+          )}
+
+          <div className="flex">
+            <LoadingButton
+              text="Log in"
+              color="primary"
+              variant="contained"
+              className="mt-2"
+              fullWidth
+              isLoading={fetcher.isLoading}
+              isSubmit
+            />
+          </div>
+        </TopGradientBox>
+      </fetcher.Form>
+
+      <div>
+        <Link href="/signup" text="Sign up" />
       </div>
-
-      {fetcher.isError && (
-        <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
-      )}
-
-      <div className="flex">
-        <LoadingButton
-          text="Log in"
-          color="primary"
-          variant="contained"
-          className="mt-2 mb-6"
-          fullWidth
-          isLoading={fetcher.isLoading}
-          isSubmit
-        />
+      <div className="mt-2">
+        <Link href="/forgotten-password" text="Forgotten password?" />
       </div>
-
-      <Link href="/signup" text="Sign up instead" />
-      <br />
-      <Link href="/forgotten-password" text="Forgotten password?" />
-    </fetcher.Form>
+    </div>
   );
 }
 
@@ -82,7 +90,7 @@ export async function action(args: ActionFunctionArgs) {
   const { err, redirect, errorMessage } = await login(
     username,
     password,
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     args.context.JWT_CONFIG_STR
   );
 

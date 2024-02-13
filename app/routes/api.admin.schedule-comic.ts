@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -12,10 +12,8 @@ import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
-
   const formComicId = formDataBody.get('comicId');
   const formPublishDate = formDataBody.get('publishDate');
 
@@ -23,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formPublishDate) return create400Json('Missing publishDate');
 
   const err = await scheduleComic(
-    urlBase,
+    args.context.DB,
     parseInt(formComicId.toString()),
     formPublishDate.toString(),
     user.userId
@@ -35,7 +33,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function scheduleComic(
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   publishDate: string,
   modId: number
@@ -44,18 +42,22 @@ export async function scheduleComic(
     'UPDATE comicmetadata SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
 
-  const [metadataDbRes, comicDbRes] = await Promise.all([
-    queryDb(urlBase, metadataQuery, [publishDate, modId, comicId]),
-    queryDb(urlBase, comicQuery, [comicId]),
+  const dbRes = await queryDbMultiple(db, [
+    {
+      query: comicQuery,
+      params: [comicId],
+    },
+    {
+      query: metadataQuery,
+      params: [modId, comicId],
+    },
   ]);
 
   const logCtx = { comicId, publishDate, modId };
-  if (metadataDbRes.isError) {
-    return makeDbErr(metadataDbRes, 'Could not update metadata table', logCtx);
-  }
-  if (comicDbRes.isError) {
-    return makeDbErr(comicDbRes, 'Could not update comic table', logCtx);
+
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating comic+metadata in scheduleComic', logCtx);
   }
 
-  recalculatePublishingQueue(urlBase); // Can run in background
+  recalculatePublishingQueue(db); // Can run in background
 }

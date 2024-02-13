@@ -27,10 +27,9 @@ export const CONTRIBUTION_POINTS = {
       points: 150,
       description: 'Minor issues',
       scoreListDescription:
-        'Uploaded comic, minor issues found (incorrect category/classification, wrong name)',
+        'Uploaded comic, minor issues found (incorrect category, wrong name)',
       actionDashboardDescription: 'Minor issues',
-      modPanelDescription:
-        'Minor issues (e.g. incorrect category/classification, name spelling error)',
+      modPanelDescription: 'Minor issues (e.g. incorrect category, name spelling error)',
     },
     'major-issues': {
       points: 100,

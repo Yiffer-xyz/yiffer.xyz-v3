@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import type { DBResponse } from '~/utils/database-facade';
-import { queryDb } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -12,7 +12,6 @@ import {
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
@@ -23,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formUnlistComment) return create400Json('Missing comment');
 
   const err = await unlistComic(
-    urlBase,
+    args.context.DB,
     parseInt(formComicId.toString()),
     formUnlistComment.toString()
   );
@@ -35,37 +34,40 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function unlistComic(
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   unlistComment: string
 ): Promise<ApiError | undefined> {
   const logCtx = { comicId, unlistComment };
   const getDetailsQuery = 'SELECT comicId FROM comicmetadata WHERE comicId = ?';
-  const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
-  const [detailsDbRes, updateDbRes] = await Promise.all([
-    queryDb<any[]>(urlBase, getDetailsQuery, [comicId]),
-    queryDb(urlBase, comicUpdateQuery, [comicId]),
-  ]);
-
+  const detailsDbRes = await queryDb<any[]>(db, getDetailsQuery, [comicId]);
   if (detailsDbRes.isError) {
     return makeDbErr(detailsDbRes, 'Could not get metadata', logCtx);
   }
-  if (updateDbRes.isError) {
-    return makeDbErr(updateDbRes, 'Could not update publishStatus', logCtx);
-  }
+  const comicUpdateQuery = `UPDATE comic SET publishStatus = 'unlisted' WHERE id = ?`;
 
-  let metadataDbRes: DBResponse<any>;
+  const dbStatements: QueryWithParams[] = [
+    {
+      query: comicUpdateQuery,
+      params: [comicId],
+    },
+  ];
+
   if (detailsDbRes.result?.length === 0) {
-    const insertQuery =
-      'INSERT INTO comicmetadata (comicId, unlistComment) VALUES (?, ?)';
-    metadataDbRes = await queryDb(urlBase, insertQuery, [comicId, unlistComment]);
+    dbStatements.push({
+      query: 'INSERT INTO comicmetadata (comicId, unlistComment) VALUES (?, ?)',
+      params: [comicId, unlistComment],
+    });
   } else {
-    const updateQuery = 'UPDATE comicmetadata SET unlistComment = ? WHERE comicId = ?';
-    metadataDbRes = await queryDb(urlBase, updateQuery, [unlistComment, comicId]);
+    dbStatements.push({
+      query: 'UPDATE comicmetadata SET unlistComment = ? WHERE comicId = ?',
+      params: [unlistComment, comicId],
+    });
   }
 
-  if (metadataDbRes.isError) {
-    return makeDbErr(metadataDbRes, 'Could not insert/update comicmetadata', logCtx);
+  const dbRes = await queryDbMultiple(db, dbStatements);
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating comic+metadata in unlistComic', logCtx);
   }
 }

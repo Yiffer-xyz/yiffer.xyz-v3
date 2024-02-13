@@ -1,5 +1,5 @@
 import type { AdStatus, AdType, Advertisement } from '~/types/types';
-import { queryDb } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type {
   ResultOrErrorPromise,
   ResultOrNotFoundOrErrorPromise,
@@ -13,7 +13,7 @@ type DbAd = Omit<Advertisement, 'user'> & {
 };
 
 export async function getAllAds(
-  urlBase: string,
+  db: D1Database,
   statusFilter: AdStatus[],
   typeFilter: AdType[]
 ): ResultOrErrorPromise<Advertisement[]> {
@@ -30,10 +30,7 @@ export async function getAllAds(
       AND adType IN (${typeFilter.map(() => '?').join(',')})
   `;
 
-  const adsRes = await queryDb<DbAd[]>(urlBase, getAdsQuery, [
-    ...statusFilter,
-    ...typeFilter,
-  ]);
+  const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, [...statusFilter, ...typeFilter]);
 
   if (adsRes.isError) {
     return makeDbErrObj(adsRes, 'Could not get ads', logCtx);
@@ -43,7 +40,7 @@ export async function getAllAds(
 }
 
 export async function getAdById(
-  urlBase: string,
+  db: D1Database,
   adId: string
 ): ResultOrNotFoundOrErrorPromise<{
   ad: Advertisement;
@@ -64,29 +61,30 @@ export async function getAdById(
   const getAdPaymentsQuery =
     'SELECT amount, registeredDate FROM advertisementpayment WHERE adId = ?';
 
-  const adResPromise = queryDb<DbAd[]>(urlBase, getAdQuery, [adId]);
-  const adPaymentsResPromise = queryDb<{ amount: number; registeredDate: string }[]>(
-    urlBase,
-    getAdPaymentsQuery,
-    [adId]
-  );
+  const dbRes = await queryDbMultiple<
+    [DbAd[], { amount: number; registeredDate: string }[]]
+  >(db, [
+    { query: getAdQuery, params: [adId] },
+    {
+      query: getAdPaymentsQuery,
+      params: [adId],
+    },
+  ]);
 
-  const [adRes, adPaymentsRes] = await Promise.all([adResPromise, adPaymentsResPromise]);
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
+  }
 
-  if (adRes.isError || !adRes.result) {
-    return makeDbErrObj(adRes, 'Could not get ad', logCtx);
-  }
-  if (adPaymentsRes.isError || !adPaymentsRes.result) {
-    return makeDbErrObj(adPaymentsRes, 'Could not get ad payments', logCtx);
-  }
-  if (adRes.result.length === 0) {
+  const [adRes, adPaymentsRes] = dbRes.result;
+
+  if (adRes.length === 0) {
     return { notFound: true };
   }
 
   return {
     result: {
-      ad: DbAdToFullAd(adRes.result[0]),
-      payments: adPaymentsRes.result,
+      ad: DbAdToFullAd(adRes[0]),
+      payments: adPaymentsRes,
     },
   };
 }

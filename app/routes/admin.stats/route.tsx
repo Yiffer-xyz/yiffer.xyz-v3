@@ -8,6 +8,7 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
 
@@ -56,115 +57,117 @@ type ContributionData = {
   tagSuggestionRejected: number;
 };
 
+const emptyContributionData: ContributionData = {
+  comicUploadRejected: 0,
+  comicUploadterrible: 0,
+  comicUploadpageissues: 0,
+  comicUploadmajorissues: 0,
+  comicUploadminorissues: 0,
+  comicUploadexcellent: 0,
+  comicSuggestiongood: 0,
+  comicSuggestionbad: 0,
+  comicSuggestionRejected: 0,
+  comicProblem: 0,
+  comicProblemRejected: 0,
+  tagSuggestion: 0,
+  tagSuggestionRejected: 0,
+};
+
 export async function loader(args: LoaderFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
-  const userQuery = { query: 'SELECT COUNT(*) AS count FROM user' };
-  const totalComicsQuery = {
-    query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'`,
-  };
-  const totalArtistsQuery = {
-    query:
-      'SELECT COUNT(*) AS count FROM artist WHERE isBanned = 0 AND isPending = 0 AND isRejected = 0',
-  };
-  const pagesQuery = {
-    query: `SELECT SUM(numberOfpages) AS count FROM comic WHERE publishStatus = 'published'`,
-  };
-  const adsQuery = {
-    query: `SELECT
-      COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' || status = 'ENDED'
-      GROUP BY status, adType`,
-  };
-  const contributionsQuery = {
-    query: `SELECT
-      ISNULL(userid) AS isGuest,
-      SUM(tagSuggestion) AS tagSuggestion,
-      SUM(tagSuggestionRejected) AS tagSuggestionRejected,
-      SUM(comicProblem) AS comicProblem,
-      SUM(comicProblemRejected) AS comicProblemRejected,
-      SUM(comicSuggestiongood) AS comicSuggestiongood,
-      SUM(comicSuggestionbad) AS comicSuggestionbad,
-      SUM(comicSuggestionRejected) AS comicSuggestionRejected,
-      SUM(comicUploadexcellent) AS comicUploadexcellent,
-      SUM(comicUploadminorissues) AS comicUploadminorissues,
-      SUM(comicUploadmajorissues) AS comicUploadmajorissues,
-      SUM(comicUploadpageissues) AS comicUploadpageissues,
-      SUM(comicUploadterrible) AS comicUploadterrible,
-      SUM(comicUploadRejected) AS comicUploadRejected
-    FROM contributionpoints
-    LEFT JOIN user ON (user.id = contributionpoints.userId)
-    WHERE (
-      user.UserType IS NULL
-      OR (user.UserType != 'moderator' AND user.userType != 'admin')
-    )
-    GROUP BY isGuest`,
-  };
-  const adPaymentQuery = {
-    query: `SELECT SUM(amount) AS amount, YEAR(registeredDate) AS year
-      FROM advertisementpayment GROUP BY year ORDER BY year desc`,
-  };
+  const dbStatements: QueryWithParams[] = [
+    { query: 'SELECT COUNT(*) AS count FROM user' },
+    { query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'` },
+    {
+      query:
+        'SELECT COUNT(*) AS count FROM artist WHERE isBanned = 0 AND isPending = 0 AND isRejected = 0',
+    },
+    {
+      query: `SELECT SUM(numberOfpages) AS count FROM comic WHERE publishStatus = 'published'`,
+    },
+    {
+      query: `SELECT
+        COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' || status = 'ENDED'
+        GROUP BY status, adType`,
+    },
+    {
+      query: `SELECT
+          CASE WHEN userid IS NULL THEN 1 ELSE 0 END AS isGuest,
+          SUM(tagSuggestion) AS tagSuggestion,
+          SUM(tagSuggestionRejected) AS tagSuggestionRejected,
+          SUM(comicProblem) AS comicProblem,
+          SUM(comicProblemRejected) AS comicProblemRejected,
+          SUM(comicSuggestiongood) AS comicSuggestiongood,
+          SUM(comicSuggestionbad) AS comicSuggestionbad,
+          SUM(comicSuggestionRejected) AS comicSuggestionRejected,
+          SUM(comicUploadexcellent) AS comicUploadexcellent,
+          SUM(comicUploadminorissues) AS comicUploadminorissues,
+          SUM(comicUploadmajorissues) AS comicUploadmajorissues,
+          SUM(comicUploadpageissues) AS comicUploadpageissues,
+          SUM(comicUploadterrible) AS comicUploadterrible,
+          SUM(comicUploadRejected) AS comicUploadRejected
+        FROM contributionpoints
+        LEFT JOIN user ON (user.id = contributionpoints.userId)
+        WHERE (
+          user.UserType IS NULL
+          OR (user.UserType != 'moderator' AND user.userType != 'admin')
+        )
+        GROUP BY isGuest`,
+    },
+    {
+      query: `SELECT SUM(amount) AS amount, strftime('%Y', registeredDate) AS year
+        FROM advertisementpayment GROUP BY year ORDER BY year desc`,
+    },
+  ];
 
   const dbRes = await queryDbMultiple<
     [
-      // { count: number }[],
-      { result: [{ count: number }] },
-      { result: [{ count: number }] },
-      { result: [{ count: number }] },
-      { result: [{ count: number }] },
+      [{ count: number }],
+      [{ count: number }],
+      [{ count: number }],
+      [{ count: number }],
       {
-        result: {
-          count: number;
-          status: 'ACTIVE' | 'ENDED';
-          adType: 'topSmall' | 'card' | 'banner';
-        }[];
-      },
+        count: number;
+        status: 'ACTIVE' | 'ENDED';
+        adType: 'topSmall' | 'card' | 'banner';
+      }[],
       {
-        result: {
-          isGuest: number;
-          tagSuggestion: number;
-          tagSuggestionRejected: number;
-          comicProblem: number;
-          comicProblemRejected: number;
-          comicSuggestiongood: number;
-          comicSuggestionbad: number;
-          comicSuggestionRejected: number;
-          comicUploadexcellent: number;
-          comicUploadminorissues: number;
-          comicUploadmajorissues: number;
-          comicUploadpageissues: number;
-          comicUploadterrible: number;
-          comicUploadRejected: number;
-        }[];
-      },
+        isGuest: number;
+        tagSuggestion: number;
+        tagSuggestionRejected: number;
+        comicProblem: number;
+        comicProblemRejected: number;
+        comicSuggestiongood: number;
+        comicSuggestionbad: number;
+        comicSuggestionRejected: number;
+        comicUploadexcellent: number;
+        comicUploadminorissues: number;
+        comicUploadmajorissues: number;
+        comicUploadpageissues: number;
+        comicUploadterrible: number;
+        comicUploadRejected: number;
+      }[],
       {
-        result: {
-          amount: number;
-          year: number;
-        }[];
-      },
+        amount: number;
+        year: number;
+      }[],
     ]
-  >(urlBase, [
-    userQuery,
-    totalComicsQuery,
-    totalArtistsQuery,
-    pagesQuery,
-    adsQuery,
-    contributionsQuery,
-    adPaymentQuery,
-  ]);
+  >(args.context.DB, dbStatements);
 
-  if (dbRes.isError || !dbRes.result) {
-    return await processApiError('Error in GET /stats', makeDbErr(dbRes, 'DB error'));
+  if (dbRes.isError) {
+    return await processApiError(
+      'Error in GET /stats',
+      makeDbErr(dbRes, 'Error getting all the stats together')
+    );
   }
-
-  const adsRes = dbRes.result[4].result;
-  const contribRes = dbRes.result[5].result;
+  const adsRes = dbRes.result[4];
+  const contribRes = dbRes.result[5];
 
   const siteStats: SiteStats = {
-    totalUsers: dbRes.result[0].result[0].count,
-    totalComics: dbRes.result[1].result[0].count,
-    totalArtists: dbRes.result[2].result[0].count,
-    totalPages: dbRes.result[3].result[0].count,
-    adPayments: dbRes.result[6].result,
+    totalUsers: dbRes.result[0][0].count,
+    totalComics: dbRes.result[1][0].count,
+    totalArtists: dbRes.result[2][0].count,
+    totalPages: dbRes.result[3][0].count,
+    adPayments: dbRes.result[6],
     ads: {
       banner: {
         active:
@@ -192,8 +195,10 @@ export async function loader(args: LoaderFunctionArgs) {
       },
     },
     contributions: {
-      loggedIn: contribRes.find(c => c.isGuest === 0) as ContributionData,
-      guests: contribRes.find(c => c.isGuest === 1) as ContributionData,
+      loggedIn: (contribRes.find(c => c.isGuest === 0) ??
+        emptyContributionData) as ContributionData,
+      guests: (contribRes.find(c => c.isGuest === 1) ??
+        emptyContributionData) as ContributionData,
     },
   };
 

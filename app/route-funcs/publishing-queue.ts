@@ -1,4 +1,5 @@
-import { queryDb } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
+import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import type { ApiError } from '~/utils/request-helpers';
 import { makeDbErr } from '~/utils/request-helpers';
 
@@ -8,17 +9,15 @@ type ComicInQueue = {
 };
 
 export async function moveComicInQueue(
-  urlBase: string,
+  db: D1Database,
   comicId: number,
   moveBy: 1 | -1
 ): Promise<ApiError | undefined> {
   const logCtx = { comicId, moveBy };
   const getPosQuery = 'SELECT publishingQueuePos FROM comicmetadata WHERE comicId = ?';
-  const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(
-    urlBase,
-    getPosQuery,
-    [comicId]
-  );
+  const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(db, getPosQuery, [
+    comicId,
+  ]);
 
   if (positionDbRes.isError || !positionDbRes.result) {
     return makeDbErr(positionDbRes, 'Error moving comic in publishing queue', logCtx);
@@ -34,8 +33,8 @@ export async function moveComicInQueue(
     'UPDATE comicmetadata SET publishingQueuePos = ? WHERE publishingQueuePos = ?';
   const moveOtherComicQueryParams = [oldPos, oldPos + moveBy];
 
-  const moveOtherDbRes = await queryDb(
-    urlBase,
+  const moveOtherDbRes = await queryDbExec(
+    db,
     moveOtherComicQuery,
     moveOtherComicQueryParams
   );
@@ -47,7 +46,7 @@ export async function moveComicInQueue(
     );
   }
 
-  const moveComicDbRes = await queryDb(urlBase, moveComicQuery, moveComicQueryParams);
+  const moveComicDbRes = await queryDbExec(db, moveComicQuery, moveComicQueryParams);
   if (moveComicDbRes.isError) {
     return makeDbErr(
       moveComicDbRes,
@@ -58,7 +57,7 @@ export async function moveComicInQueue(
 }
 
 export async function recalculatePublishingQueue(
-  urlBase: string
+  db: D1Database
 ): Promise<ApiError | undefined> {
   const query = `
     SELECT publishingQueuePos, comicId
@@ -69,7 +68,7 @@ export async function recalculatePublishingQueue(
     ORDER BY publishingQueuePos ASC
   `;
 
-  const queueDbRes = await queryDb<ComicInQueue[]>(urlBase, query);
+  const queueDbRes = await queryDb<ComicInQueue[]>(db, query);
   if (queueDbRes.isError) {
     return makeDbErr(queueDbRes, 'Error getting comics in queue');
   }
@@ -114,14 +113,17 @@ export async function recalculatePublishingQueue(
     WHERE comicId = ?
   `;
 
-  const updatePromises = comicsToUpdate.map(comic =>
-    queryDb(urlBase, updateQuery, [comic.newQueuePos, comic.comicId])
-  );
+  const updateStatements: QueryWithParams[] = comicsToUpdate.map(comic => ({
+    query: updateQuery,
+    params: [comic.newQueuePos, comic.comicId],
+  }));
 
-  const updateDbRes = await Promise.all(updatePromises);
-  for (const result of updateDbRes) {
-    if (result.isError) {
-      return makeDbErr(result, 'Error updating queue position of pending comic');
-    }
+  const dbRes = await queryDbMultiple(db, updateStatements);
+
+  if (dbRes.isError) {
+    return makeDbErr(
+      dbRes,
+      'Error updating queue position of pending comic in recalculatePublishingQueue'
+    );
   }
 }

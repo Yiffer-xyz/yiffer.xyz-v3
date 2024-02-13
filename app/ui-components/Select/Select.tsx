@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { colors } from 'tailwind.config';
 import { waitMillisec } from '~/utils/general';
 
 export type BaseSelectProps<T> = {
@@ -10,6 +11,7 @@ export type BaseSelectProps<T> = {
   isFullWidth?: boolean;
   name: string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 type FullSelectProps<T> = {
@@ -161,7 +163,9 @@ export default function Select<T>({
 
   const borderStyle = error
     ? ''
-    : { borderImage: 'linear-gradient(to right, #9aebe7, #adfee0) 1' };
+    : {
+        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+      };
 
   return (
     <div

@@ -9,7 +9,7 @@ import TextareaUncontrolled from '~/ui-components/Textarea/TextareaUncontrolled'
 import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { getModApplicationForUser } from '~/route-funcs/get-mod-application';
-import { queryDb } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { authLoader, redirectIfNotLoggedIn } from '~/utils/loaders';
 import {
   create400Json,
@@ -105,7 +105,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const existingApplicationRes = await getModApplicationForUser(
-    args.context.DB_API_URL_BASE,
+    args.context.DB,
     user.userId
   );
 
@@ -120,7 +120,7 @@ const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){5,32}$/.test(username);
 
 export async function action(args: ActionFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
+  const db = args.context.DB;
   const reqBody = await args.request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
 
@@ -131,7 +131,7 @@ export async function action(args: ActionFunctionArgs) {
   const user = await authLoader(args);
   if (!user) return create400Json('Not logged in');
 
-  const existingApplicationRes = await getModApplicationForUser(urlBase, user.userId);
+  const existingApplicationRes = await getModApplicationForUser(db, user.userId);
   if (existingApplicationRes.err) {
     logApiError('Error creating mod application', existingApplicationRes.err);
     return create500Json();
@@ -146,7 +146,7 @@ export async function action(args: ActionFunctionArgs) {
     VALUES (?, ?, ?)`;
   const insertParams = [user.userId, telegram.toString().trim(), notes];
 
-  const insertDbRes = await queryDb(urlBase, insertQuery, insertParams);
+  const insertDbRes = await queryDbExec(db, insertQuery, insertParams);
   if (insertDbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error creating mod application',

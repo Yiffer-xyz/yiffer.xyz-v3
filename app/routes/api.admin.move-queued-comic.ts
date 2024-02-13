@@ -9,7 +9,6 @@ import { moveComicInQueue } from '~/route-funcs/publishing-queue';
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
-  const urlBase = args.context.DB_API_URL_BASE;
 
   const formDataBody = await args.request.formData();
 
@@ -22,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await moveComicInQueue(
-    urlBase,
+    args.context.DB,
     parseInt(formComicId.toString()),
     formMoveDirection === 'up' ? -1 : 1
   );

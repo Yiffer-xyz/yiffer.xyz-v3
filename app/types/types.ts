@@ -10,8 +10,8 @@ export interface Env {
   SENTRY_DSN: string;
   SENTRY_AUTH_TOKEN: string;
   PAGES_PATH: string;
-
   COMICS_BUCKET: R2Bucket;
+  DB: D1Database;
 }
 
 export enum UserType {
@@ -38,13 +38,20 @@ export type ArtistTiny = {
   isBanned: boolean;
 };
 
+export type Category = 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+export type CategoryWithAll = Category | 'All';
+export const allCategories: CategoryWithAll[] = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'];
+
+export function isCategory(category: string): category is CategoryWithAll {
+  return ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I', 'All'].includes(category);
+}
+
 export type Comic = {
   name: string;
   id: number;
   state: 'wip' | 'cancelled' | 'finished';
   publishStatus: ComicPublishStatus;
-  classification: 'Furry' | 'Pokemon' | 'MLP' | 'Other';
-  category: 'M' | 'F' | 'MF' | 'MM' | 'FF' | 'MF+' | 'I';
+  category: Category;
   numberOfPages: number;
   previousComic?: {
     id: number;
@@ -63,6 +70,19 @@ export type Comic = {
   published?: string;
   updated?: string;
   metadata?: ComicMetadata;
+};
+
+export type ComicForBrowse = {
+  id: number;
+  name: string;
+  category: Category;
+  artistName: string;
+  updated: string;
+  published: string;
+  numberOfPages: number;
+  state: 'wip' | 'cancelled' | 'finished';
+  userRating: number;
+  yourRating?: number;
 };
 
 export type ComicPublishStatus =
@@ -275,4 +295,45 @@ export type Advertisement = {
   clicks: number;
   adminNotes?: string;
   correctionNote?: string;
+};
+
+export type Blog = {
+  id: number;
+  title: string;
+  content: string;
+  authorUser: {
+    id: number;
+    username: string;
+  };
+  timestamp: string;
+};
+
+export const browsePageSize = 60;
+
+export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';
+export const allSortTypes: SortType[] = ['Updated', 'User score', 'Your score', 'Random'];
+
+export type ViewType = 'Tiny card' | 'Simple card' | 'Detailed card' | 'Detailed + tags';
+export const allViewTypes: ViewType[] = [
+  'Tiny card',
+  'Simple card',
+  'Detailed card',
+  'Detailed + tags',
+];
+export function isViewType(viewType: string): viewType is ViewType {
+  return allViewTypes.includes(viewType as ViewType);
+}
+
+export type SearchFilterState = {
+  isAllCategories: boolean;
+  categories: Category[];
+  searchString: string;
+  tags: Tag[];
+  sort: SortType;
+  viewType: ViewType;
+};
+
+export type UIPreferences = {
+  theme: 'light' | 'dark';
+  viewMode: ViewType;
 };

@@ -25,10 +25,8 @@ export async function action(args: ActionFunctionArgs) {
     'mod'
   );
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
-  const urlBase = args.context.DB_API_URL_BASE;
-
   const err = await processTagSuggestion(
-    urlBase,
+    args.context.DB,
     user?.userId as number,
     fields.isApproved,
     fields.actionId,
@@ -47,7 +45,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function processTagSuggestion(
-  urlBase: string,
+  db: D1Database,
   modId: number,
   isApproved: boolean,
   actionId: number,
@@ -59,10 +57,10 @@ async function processTagSuggestion(
   const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
-  let updateTagQuery = undefined;
-  let updateTagQueryParams = undefined;
-
   if (isApproved) {
+    let updateTagQuery = undefined;
+    let updateTagQueryParams = undefined;
+
     if (isAdding) {
       updateTagQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES (?, ?)`;
       updateTagQueryParams = [comicId, tagId];
@@ -71,21 +69,23 @@ async function processTagSuggestion(
       updateTagQueryParams = [comicId, tagId];
     }
 
-    const dbRes = await queryDb(urlBase, updateTagQuery, updateTagQueryParams);
+    const dbRes = await queryDb(db, updateTagQuery, updateTagQueryParams);
     if (dbRes.isError) {
-      if (!dbRes.errorCode || dbRes.errorCode !== 'ER_DUP_ENTRY') {
-        return makeDbErr(dbRes, 'Error updating comickeyword');
+      if (dbRes.errorMessage.includes('UNIQUE constraint failed')) {
+        // If tag already existed on comic, just return silently. It's ok.
+      } else {
+        return makeDbErr(dbRes, 'Error updating comickeyword in processTagSuggestion');
       }
     }
   }
 
-  const actionRes = await queryDb(urlBase, updateActionQuery, updateActionQueryParams);
-  if (actionRes.isError) {
-    return makeDbErr(actionRes, 'Error updating mod panel action');
+  const dbRes = await queryDb(db, updateActionQuery, updateActionQueryParams);
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating keywordsuggestion in processTagSuggestion');
   }
 
   const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
-  const err = await addContributionPoints(urlBase, suggestingUserId ?? null, tableName);
+  const err = await addContributionPoints(db, suggestingUserId ?? null, tableName);
   if (err) {
     return wrapApiError(err, `Error adding contribution points`);
   }

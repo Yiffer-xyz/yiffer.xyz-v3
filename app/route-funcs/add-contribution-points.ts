@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
-import { queryDb } from '~/utils/database-facade';
+import { queryDb, queryDbExec } from '~/utils/database-facade';
 import type { ApiError } from '~/utils/request-helpers';
 import { makeDbErr } from '~/utils/request-helpers';
 
 export async function addContributionPoints(
-  urlBase: string,
+  db: D1Database,
   userId: number | null,
   pointColumn: string
 ): Promise<ApiError | undefined> {
@@ -17,7 +17,7 @@ export async function addContributionPoints(
   `;
   const getExistingPointsForMonthQueryParams = [userId, yearMonth];
   const existingDbRes = await queryDb<{ yearMonth: string }[]>(
-    urlBase,
+    db,
     getExistingPointsForMonthQuery,
     getExistingPointsForMonthQueryParams
   );
@@ -37,8 +37,8 @@ export async function addContributionPoints(
         VALUES (?, ?, 1)
       `;
       const insertPointsQueryParams = [userId, timeVal];
-      const insertDbRes = await queryDb(
-        urlBase,
+      const insertDbRes = await queryDbExec(
+        db,
         insertPointsQuery,
         insertPointsQueryParams
       );
@@ -52,8 +52,8 @@ export async function addContributionPoints(
         WHERE userId = ? AND yearMonth = ?
       `;
       const updatePointsQueryParams = [userId, timeVal];
-      const updateDbRes = await queryDb(
-        urlBase,
+      const updateDbRes = await queryDbExec(
+        db,
         updatePointsQuery,
         updatePointsQueryParams
       );

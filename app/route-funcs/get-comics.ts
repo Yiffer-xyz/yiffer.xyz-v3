@@ -1,9 +1,10 @@
 import type { ComicPublishStatus, ComicTiny } from '~/types/types';
+import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbComicTiny = {
+export type DbComicTiny = {
   name: string;
   id: number;
   publishStatus: ComicPublishStatus;
@@ -11,15 +12,13 @@ type DbComicTiny = {
   published?: string;
 };
 
-export async function getAllComicNamesAndIDs(
-  urlBase: string,
-  options?: {
-    modifyNameIncludeType?: boolean;
-    includeRejectedList?: boolean;
-    includeUnlisted?: boolean;
-    includeThumbnailStatus?: boolean; // TODO: Remove once all thumbnails are fixed
-  }
-): ResultOrErrorPromise<ComicTiny[]> {
+// NOTE: results after db fetch should go through mapDBComicTiny()
+export function getAllComicNamesAndIDsQuery(options?: {
+  modifyNameIncludeType?: boolean;
+  includeRejectedList?: boolean;
+  includeUnlisted?: boolean;
+  includeThumbnailStatus?: boolean;
+}): QueryWithParams {
   const thumbnailQuery = options?.includeThumbnailStatus
     ? ', hasHighresThumbnail, published'
     : '';
@@ -27,21 +26,26 @@ export async function getAllComicNamesAndIDs(
   let query =
     'SELECT name, id, publishStatus' +
     thumbnailQuery +
-    ' FROM comic WHERE publishStatus != "rejected"';
+    ` FROM comic WHERE publishStatus != 'rejected'`;
 
   if (!options?.includeRejectedList) {
-    query += ' AND publishStatus != "rejected-list" ';
+    query += ` AND publishStatus != 'rejected-list' `;
   }
   if (!options?.includeUnlisted) {
-    query += ' AND publishStatus != "unlisted" ';
+    query += ` AND publishStatus != 'unlisted' `;
   }
 
-  const response = await queryDb<DbComicTiny[]>(urlBase, query);
-  if (response.isError || !response.result) {
-    return makeDbErrObj(response, 'Error  getting comics', options);
-  }
+  return {
+    query,
+    errorLogMessage: 'Error getting all comic names and IDs',
+  };
+}
 
-  const comics: ComicTiny[] = response.result.map(comic => ({
+export function mapDBComicTiny(
+  dbComics: DbComicTiny[],
+  modifyNameIncludeType?: boolean
+): ComicTiny[] {
+  const mapped = dbComics.map(comic => ({
     name: comic.name,
     id: comic.id,
     publishStatus: comic.publishStatus,
@@ -49,37 +53,89 @@ export async function getAllComicNamesAndIDs(
     temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
   }));
 
-  if (!options?.modifyNameIncludeType) return { result: comics };
-
-  const mappedComics = addStateToComicNames(comics);
-  return { result: mappedComics };
+  if (!modifyNameIncludeType) return mapped;
+  return addStateToComicNames(mapped);
 }
 
-export async function getComicsByArtistId(
-  urlBase: string,
-  artistId: number,
+export async function getAllComicNamesAndIDs(
+  db: D1Database,
   options?: {
-    includeUnlisted: boolean;
+    modifyNameIncludeType?: boolean;
+    includeRejectedList?: boolean;
+    includeUnlisted?: boolean;
+    includeThumbnailStatus?: boolean;
   }
 ): ResultOrErrorPromise<ComicTiny[]> {
-  const query = `SELECT
-      name, id, publishStatus
-    FROM comic
-    WHERE artist = ?
-      AND publishStatus != "rejected"
-      AND publishStatus != "rejected-list"
-      ${options?.includeUnlisted ? '' : 'AND publishStatus != "unlisted"'}`;
+  const { query } = getAllComicNamesAndIDsQuery();
+  const response = await queryDb<DbComicTiny[]>(db, query);
+  if (response.isError || !response.result) {
+    return makeDbErrObj(response, 'Error  getting comics', options);
+  }
+  return { result: mapDBComicTiny(response.result, options?.modifyNameIncludeType) };
+}
 
-  const dbRes = await queryDb<ComicTiny[]>(urlBase, query, [artistId]);
-  if (dbRes.isError || !dbRes.result) {
-    return makeDbErrObj(dbRes, 'Error getting comics by artist', { artistId, options });
+export function getComicsByArtistFieldQuery(
+  fieldName: 'id' | 'name',
+  fieldValue: string | number,
+  options?: {
+    includeUnlisted?: boolean;
+    includeOnlyPublished?: boolean;
+  }
+): QueryWithParams {
+  let publishStatusFilter = '';
+  if (options?.includeOnlyPublished) {
+    publishStatusFilter = `AND publishStatus = 'published'`;
+  } else {
+    publishStatusFilter = `
+      AND publishStatus != 'rejected'
+      AND publishStatus != 'rejected-list'
+    `;
+    if (!options?.includeUnlisted) {
+      publishStatusFilter += `AND publishStatus != 'unlisted'`;
+    }
   }
 
-  const mappedComics = addStateToComicNames(dbRes.result as ComicTiny[]);
+  const fromWhereStr =
+    fieldName === 'id'
+      ? 'FROM comic WHERE artist = ?'
+      : 'FROM comic INNER JOIN artist ON (artist.id = comic.artist) WHERE artist.name = ?';
+
+  const query = `SELECT comic.name, comic.id, publishStatus
+    ${fromWhereStr}
+    ${publishStatusFilter}`;
+
+  return {
+    query,
+    params: [fieldValue],
+    errorLogMessage: `Error getting artist comics by ${fieldName}`,
+  };
+}
+
+export async function getComicsByArtistField(
+  db: D1Database,
+  fieldName: 'id' | 'name',
+  fieldValue: string | number,
+  options?: {
+    includeUnlisted?: boolean;
+    includeOnlyPublished?: boolean;
+  }
+): ResultOrErrorPromise<ComicTiny[]> {
+  const { query, params } = getComicsByArtistFieldQuery(fieldName, fieldValue);
+
+  const dbRes = await queryDb<ComicTiny[]>(db, query, params);
+  if (dbRes.isError || !dbRes.result) {
+    return makeDbErrObj(dbRes, 'Error getting comics by artist', {
+      fieldName,
+      fieldValue,
+      options,
+    });
+  }
+
+  const mappedComics = addStateToComicNames(dbRes.result);
   return { result: mappedComics };
 }
 
-function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {
+export function addStateToComicNames(comics: ComicTiny[]): ComicTiny[] {
   const mappedComics = comics.map(comic => {
     if (comic.publishStatus === 'uploaded') {
       comic.name = comic.name + ' (UPLOADED)';

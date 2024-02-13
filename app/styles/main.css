@@ -5,7 +5,7 @@
   box-shadow: none;
 }
 body {
-  background-color: #fafafa;
+  background-color: #f8f8f8;
 }
 h1 {
   font-size: 3rem;
@@ -52,7 +52,7 @@ button svg {
 a {
   background-size: 0% 1px;
   transition: background-size 0.2s;
-  background-position: 50% 100%;
+  background-position: 50% 94%;
 }
 a:hover,
 a:focus {

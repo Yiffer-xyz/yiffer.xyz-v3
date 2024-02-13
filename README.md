@@ -28,6 +28,8 @@ For routes that are as simple as [fetch data, render page], or even [fetch data,
 
 Sometimes, particularly when making async calls prompted by user actions without leaving the page, it's not that easy. In these cases, I'm not a fan of how Remix deals with fetching. For these situations, use the `useGoodFetcher` hook.
 
+Pitfall: If you make a route func that's supposed to be a GET route, you must export a `loader`, not an `action`.
+
 API Routes that are not tied to a single component are still `action`s. These have their own routes starting with `/api/<routename>`, and the files are therefore named `.api.<routename>`. For these, the action function is often slim, only dealing with the request/response un/packing, using a helper function to do the actual work. This is for reusability's sake - other actions can also use this helper function.
 
 ## Error handling

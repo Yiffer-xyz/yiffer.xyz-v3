@@ -1,4 +1,3 @@
-import { queryDb } from '~/utils/database-facade';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type {
   ComicProblem,
@@ -9,10 +8,8 @@ import type {
   ContributionStatus,
   TagSuggestion,
 } from '~/types/types';
-import type { ResultOrErrorPromise } from '~/utils/request-helpers';
-import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbContributedComic = {
+export type DbContributedComic = {
   name: string;
   timestamp: string;
   publishStatus: ComicPublishStatus;
@@ -39,34 +36,8 @@ function publishStatusToContributionStatus(
   }
 }
 
-export async function getYourContributedComics(
-  urlBase: string,
-  userId: number
-): ResultOrErrorPromise<ContributedComic[]> {
-  const query = `SELECT 
-      comic.name,
-      timestamp,
-      publishStatus,
-      verdict,
-      modComment,
-      artist.name AS artistName,
-      numberOfPages,
-      COUNT(*) AS numberOfKeywords,
-      comicmetadata.originalNameIfRejected,
-      comicmetadata.originalArtistIfRejected
-    FROM comic 
-    INNER JOIN artist ON (artist.Id = comic.Artist)
-    INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
-    LEFT JOIN comickeyword ON (comickeyword.comicId = comic.id)
-    WHERE comicmetadata.uploadUserId = ?
-    GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
-
-  const dbComicsRes = await queryDb<DbContributedComic[]>(urlBase, query, [userId]);
-  if (dbComicsRes.isError || !dbComicsRes.result) {
-    return makeDbErrObj(dbComicsRes, 'Error getting your contributed comics', { userId });
-  }
-
-  const comics: ContributedComic[] = dbComicsRes.result.map(dbComic => {
+export function mapDbContributedComics(comics: DbContributedComic[]): ContributedComic[] {
+  const mappedComics: ContributedComic[] = comics.map(dbComic => {
     const { points, description } = dbComic.verdict
       ? CONTRIBUTION_POINTS.comicUpload[dbComic.verdict]
       : { points: 0, description: undefined };
@@ -96,10 +67,10 @@ export async function getYourContributedComics(
     };
   });
 
-  return { result: comics };
+  return mappedComics;
 }
 
-type DbTagSuggestion = {
+export type DbTagSuggestion = {
   comicName: string;
   status: ContributionStatus;
   timestamp: string;
@@ -107,29 +78,8 @@ type DbTagSuggestion = {
   isAdding: boolean;
 };
 
-export async function getYourTagSuggestions(
-  urlBase: string,
-  userId: number
-): ResultOrErrorPromise<TagSuggestion[]> {
-  const query = `SELECT 
-      comic.Name AS comicName,
-      status,
-      timestamp,
-      keyword.KeywordName AS tagName,
-      isAdding
-    FROM keywordsuggestion
-    INNER JOIN comic ON (comic.Id = keywordsuggestion.ComicId)
-    INNER JOIN keyword ON (keyword.Id = keywordsuggestion.KeywordId)
-    WHERE userId = ?;
-  `;
-
-  const dbTagSuggRes = await queryDb<DbTagSuggestion[]>(urlBase, query, [userId]);
-
-  if (dbTagSuggRes.isError || !dbTagSuggRes.result) {
-    return makeDbErrObj(dbTagSuggRes, 'Error getting your tag suggestions', { userId });
-  }
-
-  const tagSuggestions: TagSuggestion[] = dbTagSuggRes.result.map(dbTagSuggestion => ({
+export function mapDBTagSuggestions(suggestions: DbTagSuggestion[]): TagSuggestion[] {
+  return suggestions.map(dbTagSuggestion => ({
     comicName: dbTagSuggestion.comicName,
     status: dbTagSuggestion.status,
     timestamp: dbTagSuggestion.timestamp,
@@ -141,39 +91,17 @@ export async function getYourTagSuggestions(
     modComment: undefined,
     type: 'TagSuggestion',
   }));
-
-  return { result: tagSuggestions };
 }
 
-type DbComicProblem = {
+export type DbComicProblem = {
   comicName: string;
   status: ContributionStatus;
   timestamp: string;
   problemCategory: string;
 };
 
-export async function getYourComicProblems(
-  urlBase: string,
-  userId: number
-): ResultOrErrorPromise<ComicProblem[]> {
-  const query = `SELECT
-      comic.Name AS comicName,
-      Status AS status,
-      Timestamp AS timestamp,
-      comicproblemcategory.Name AS problemCategory
-    FROM comicproblem
-    INNER JOIN comic ON (comic.Id = comicproblem.ComicId)
-    INNER JOIN comicproblemcategory ON (comicproblemcategory.Id = comicproblem.ProblemCategoryId)
-    WHERE UserId = ?;
-  `;
-
-  const dbProblemsRes = await queryDb<DbComicProblem[]>(urlBase, query, [userId]);
-
-  if (dbProblemsRes.isError || !dbProblemsRes.result) {
-    return makeDbErrObj(dbProblemsRes, 'Error getting your comic problems', { userId });
-  }
-
-  const comicProblems: ComicProblem[] = dbProblemsRes.result.map(dbComicProblem => ({
+export function mapDBComicProblems(problems: DbComicProblem[]): ComicProblem[] {
+  return problems.map(dbComicProblem => ({
     comicName: dbComicProblem.comicName,
     status: dbComicProblem.status,
     timestamp: dbComicProblem.timestamp,
@@ -183,11 +111,9 @@ export async function getYourComicProblems(
     type: 'ComicProblem',
     problemCategory: dbComicProblem.problemCategory,
   }));
-
-  return { result: comicProblems };
 }
 
-type DbComicSuggestion = {
+export type DbComicSuggestion = {
   comicName: string;
   status: ContributionStatus;
   verdict?: 'good' | 'bad';
@@ -195,43 +121,70 @@ type DbComicSuggestion = {
   modComment?: string;
 };
 
-export async function getYourComicSuggestions(
-  urlBase: string,
-  userId: number
-): ResultOrErrorPromise<ComicSuggestion[]> {
-  const query = `SELECT
-      Name AS comicName,
-      timestamp,
-      status,
-      verdict,
-      modComment
-    FROM comicsuggestion
-    WHERE UserId = ?;
-  `;
-
-  const dbSuggestionsRes = await queryDb<DbComicSuggestion[]>(urlBase, query, [userId]);
-
-  if (dbSuggestionsRes.isError || !dbSuggestionsRes.result) {
-    return makeDbErrObj(dbSuggestionsRes, 'Error getting your comic suggestions', {
-      userId,
-    });
-  }
-
-  const comicSuggestions: ComicSuggestion[] = dbSuggestionsRes.result.map(
-    dbComicSuggestion => ({
-      comicName: dbComicSuggestion.comicName,
-      status: dbComicSuggestion.status,
-      timestamp: dbComicSuggestion.timestamp,
-      points: dbComicSuggestion.verdict
-        ? CONTRIBUTION_POINTS.comicSuggestion[dbComicSuggestion.verdict].points
-        : 0,
-      pointsDescription: dbComicSuggestion.verdict
-        ? CONTRIBUTION_POINTS.comicSuggestion[dbComicSuggestion.verdict].description
-        : undefined,
-      modComment: dbComicSuggestion.modComment,
-      type: 'ComicSuggestion',
-    })
-  );
-
-  return { result: comicSuggestions };
+export function mapDbComicSuggestions(
+  suggestions: DbComicSuggestion[]
+): ComicSuggestion[] {
+  return suggestions.map(dbComicSuggestion => ({
+    comicName: dbComicSuggestion.comicName,
+    status: dbComicSuggestion.status,
+    timestamp: dbComicSuggestion.timestamp,
+    points: dbComicSuggestion.verdict
+      ? CONTRIBUTION_POINTS.comicSuggestion[dbComicSuggestion.verdict].points
+      : 0,
+    pointsDescription: dbComicSuggestion.verdict
+      ? CONTRIBUTION_POINTS.comicSuggestion[dbComicSuggestion.verdict].description
+      : undefined,
+    modComment: dbComicSuggestion.modComment,
+    type: 'ComicSuggestion',
+  }));
 }
+
+export const yourContributedComicsQuery = `SELECT 
+  comic.name,
+  timestamp,
+  publishStatus,
+  verdict,
+  modComment,
+  artist.name AS artistName,
+  numberOfPages,
+  COUNT(*) AS numberOfKeywords,
+  comicmetadata.originalNameIfRejected,
+  comicmetadata.originalArtistIfRejected
+  FROM comic 
+  INNER JOIN artist ON (artist.Id = comic.Artist)
+  INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
+  LEFT JOIN comickeyword ON (comickeyword.comicId = comic.id)
+  WHERE comicmetadata.uploadUserId = ?
+  GROUP BY comic.name, timestamp, publishStatus, verdict, modComment, artistName, numberOfPages`;
+
+export const yourTagSuggestionsQuery = `SELECT 
+    comic.Name AS comicName,
+    status,
+    timestamp,
+    keyword.KeywordName AS tagName,
+    isAdding
+  FROM keywordsuggestion
+  INNER JOIN comic ON (comic.Id = keywordsuggestion.ComicId)
+  INNER JOIN keyword ON (keyword.Id = keywordsuggestion.KeywordId)
+  WHERE userId = ?;
+`;
+
+export const yourComicProblemsQuery = `SELECT
+    comic.Name AS comicName,
+    Status AS status,
+    Timestamp AS timestamp,
+    problemCategory
+  FROM comicproblem
+  INNER JOIN comic ON (comic.Id = comicproblem.ComicId)
+  WHERE UserId = ?;
+`;
+
+export const yourComicSuggestionsQuery = `SELECT
+    Name AS comicName,
+    timestamp,
+    status,
+    verdict,
+    modComment
+  FROM comicsuggestion
+  WHERE UserId = ?;
+`;

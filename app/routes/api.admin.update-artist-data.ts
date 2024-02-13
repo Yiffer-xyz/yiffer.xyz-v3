@@ -1,8 +1,8 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ArtistDataChanges } from './admin.artists.$artist/route';
 import type { Artist } from '~/types/types';
-import type { DBResponse } from '~/utils/database-facade';
-import { queryDb } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
+import { queryDbMultiple } from '~/utils/database-facade';
 import { isUsernameUrl } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -13,10 +13,9 @@ import {
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
-import { getArtistById } from '~/route-funcs/get-artist';
+import { getArtistByField } from '~/route-funcs/get-artist';
 
 export async function action(args: ActionFunctionArgs) {
-  const urlBase = args.context.DB_API_URL_BASE;
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;
@@ -28,7 +27,7 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('patreonName cannot be a URL');
   }
 
-  const err = await updateArtistData(urlBase, body);
+  const err = await updateArtistData(args.context.DB, body);
   if (err) {
     return processApiError('Errir in /update-artist-data', err);
   }
@@ -36,84 +35,72 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function updateArtistData(
-  urlBase: string,
+  db: D1Database,
   changes: ArtistDataChanges
 ): Promise<ApiError | undefined> {
-  const promises: Promise<ApiError | undefined>[] = [];
+  const dbUpdateStatements: QueryWithParams[] = [];
 
   if (
     changes.name ||
     changes.e621Name !== undefined ||
     changes.patreonName !== undefined
   ) {
-    promises.push(updateGeneralDetails(urlBase, changes));
+    dbUpdateStatements.push(getUpdateGeneralDetailsQuery(changes));
   }
+
   if (changes.links) {
-    const artistRes = await getArtistById(urlBase, changes.artistId);
+    const artistRes = await getArtistByField(db, 'id', changes.artistId);
     if (artistRes.err) {
       return wrapApiError(artistRes.err, 'Error updating artist', changes);
     }
     if (artistRes.notFound) {
       return { logMessage: 'Artist not found', context: { artistId: changes.artistId } };
     }
-    promises.push(
-      updateLinks(urlBase, changes.artistId, changes.links, artistRes.result)
+
+    dbUpdateStatements.push(
+      ...getUpdateLinksQuery(changes.artistId, changes.links, artistRes.result)
     );
   }
 
-  const maybeErrors = await Promise.all(promises);
-  for (const err of maybeErrors) {
-    if (err) {
-      return wrapApiError(err, 'Error updating artist', changes);
-    }
+  const dbRes = await queryDbMultiple(db, dbUpdateStatements);
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating details+links in updateArtistData', changes);
   }
 }
 
-async function updateLinks(
-  urlBase: string,
+function getUpdateLinksQuery(
   artistId: number,
   links: string[],
   existingArtist: Artist
-): Promise<ApiError | undefined> {
+): QueryWithParams[] {
   const newLinks = links.filter(l => !existingArtist.links.includes(l));
   const deletedLinks = existingArtist.links.filter(l => !links.includes(l));
-  const dbPromises: Promise<DBResponse<any>>[] = [];
+  const dbStatements: QueryWithParams[] = [];
 
   if (newLinks.length > 0) {
     const addLinksQuery = `INSERT INTO artistlink (artistId, linkUrl) VALUES ${newLinks
       .map(() => '(?, ?)')
       .join(', ')}`;
-    dbPromises.push(
-      queryDb(
-        urlBase,
-        addLinksQuery,
-        newLinks.flatMap(l => [artistId, l])
-      )
-    );
+    dbStatements.push({
+      query: addLinksQuery,
+      params: newLinks.flatMap(l => [artistId, l]),
+    });
   }
+
   if (deletedLinks.length > 0) {
     const deleteLinksQuery = `DELETE FROM artistlink WHERE artistId = ? AND linkUrl IN (${deletedLinks
       .map(() => '?')
       .join(', ')})`;
-    dbPromises.push(queryDb<any>(urlBase, deleteLinksQuery, [artistId, ...deletedLinks]));
+    dbStatements.push({
+      query: deleteLinksQuery,
+      params: [artistId, ...deletedLinks],
+    });
   }
 
-  const dbResponses = await Promise.all(dbPromises);
-  for (const dbRes of dbResponses) {
-    if (dbRes.isError) {
-      return makeDbErr(dbRes, 'Error updating artist links', {
-        artistId,
-        links,
-        existingArtist,
-      });
-    }
-  }
+  return dbStatements;
 }
 
-async function updateGeneralDetails(
-  urlBase: string,
-  changes: ArtistDataChanges
-): Promise<ApiError | undefined> {
+function getUpdateGeneralDetailsQuery(changes: ArtistDataChanges): QueryWithParams {
   let updateFieldStr = '';
   const updateFieldValues: any[] = [];
   if (changes.name) {
@@ -132,9 +119,8 @@ async function updateGeneralDetails(
   updateFieldStr = updateFieldStr.slice(0, -2);
   updateFieldValues.push(changes.artistId);
 
-  const updateQuery = `UPDATE artist SET ${updateFieldStr} WHERE id = ?`;
-  const dbRes = await queryDb(urlBase, updateQuery, updateFieldValues);
-  if (dbRes.isError) {
-    return makeDbErr(dbRes, 'Error updating artist details', { changes });
-  }
+  return {
+    query: `UPDATE artist SET ${updateFieldStr} WHERE id = ?`,
+    params: updateFieldValues,
+  };
 }

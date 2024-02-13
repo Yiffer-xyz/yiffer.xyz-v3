@@ -8,7 +8,7 @@ import Chip from '~/ui-components/Chip';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import type { ComicSuggestionVerdict } from '~/types/types';
-import { useTheme } from '~/utils/theme-provider';
+import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from './route';
 
 type ComicSuggestionProps = {
@@ -42,7 +42,7 @@ export function ComicSuggestion({
   const [isOpen, setIsOpen] = useState(false);
   const [isRejectingWithComment, setIsRejectingWithComment] = useState(false);
   const [rejectComment, setRejectComment] = useState('');
-  const [theme] = useTheme();
+  const { theme } = useUIPreferences();
   const themedColor = theme === 'light' ? '#db72ab' : '#c54b8d';
 
   const isChooseActionButtonLoading =

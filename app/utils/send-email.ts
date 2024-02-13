@@ -1,3 +1,6 @@
+import { EMAIL_ENDPOINT } from '~/types/constants';
+import type { ApiError } from './request-helpers';
+
 type PostmarkEmail = {
   To: string;
   From: string;
@@ -11,7 +14,27 @@ enum EmailAccountSenders {
   advertising = 'advertising',
 }
 
-const emailEndpoint = 'https://api.postmarkapp.com/email';
+export async function sendEmail(
+  email: PostmarkEmail,
+  postmarkToken: string
+): Promise<ApiError | undefined> {
+  const res = await fetch(EMAIL_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Postmark-Server-Token': postmarkToken,
+    },
+    body: JSON.stringify(email),
+  });
+
+  if (res.ok) return;
+
+  return {
+    logMessage: `Error sending email: ${res.status} - ${res.statusText}`,
+    context: email,
+  };
+}
 
 export function createWelcomeEmail(username: string, recipient: string): PostmarkEmail {
   const html = `
@@ -30,14 +53,26 @@ export function createWelcomeEmail(username: string, recipient: string): Postmar
   };
 }
 
-export async function sendEmail(email: PostmarkEmail, postmarkToken: string) {
-  await fetch(emailEndpoint, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'X-Postmark-Server-Token': postmarkToken,
-    },
-    body: JSON.stringify(email),
-  });
+export function createPasswordResetEmail(
+  resetToken: string,
+  recipient: string
+): PostmarkEmail {
+  const html = `
+    <p>
+      You have requested a password reset for your account on Yiffer.xyz.
+      If you did not request this, please change your password immediately.
+    </p>
+    <p>
+      Click the following link to reset your password:<br/>
+      <a href="https://yiffer.xyz/reset-password-link/${resetToken}">https://yiffer.xyz/reset-password-link/${resetToken}</a>
+    </p>
+    <p>Regards, Yiffer.xyz</p>
+  `;
+  return {
+    To: recipient,
+    From: `${EmailAccountSenders.account}@yiffer.xyz`,
+    Subject: 'Password reset - Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
 }
