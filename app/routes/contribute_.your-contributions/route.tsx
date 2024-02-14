@@ -166,7 +166,7 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-function getContributionDetails(contribution: Contribution) {
+export function getContributionDetails(contribution: Contribution) {
   switch (contribution.type) {
     case 'ContributedComic':
       return (
@@ -203,7 +203,7 @@ function getContributionDetails(contribution: Contribution) {
   }
 }
 
-function getContributionName(contribution: Contribution) {
+export function getContributionName(contribution: Contribution) {
   switch (contribution.type) {
     case 'ContributedComic':
       return 'Comic upload';
@@ -219,7 +219,7 @@ function getContributionName(contribution: Contribution) {
   }
 }
 
-function getContributionStatusColor(status: ContributionStatus): string {
+export function getContributionStatusColor(status: ContributionStatus): string {
   switch (status) {
     case 'approved':
       return 'text-green-500 dark:text-green-300';
@@ -230,7 +230,7 @@ function getContributionStatusColor(status: ContributionStatus): string {
   }
 }
 
-function getDate(timestamp: string): string {
+export function getDate(timestamp: string): string {
   const d = new Date(timestamp);
   const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
   const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
