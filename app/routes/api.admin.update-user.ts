@@ -13,7 +13,7 @@ export type UpdateUserBody = {
 };
 
 export async function action(args: ActionFunctionArgs) {
-  const { fields, isUnauthorized } = await parseFormJson<UpdateUserBody>(args, 'admin');
+  const { fields, isUnauthorized } = await parseFormJson<UpdateUserBody>(args, 'mod');
 
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
