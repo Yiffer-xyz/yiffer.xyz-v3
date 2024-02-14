@@ -17,6 +17,9 @@ import {Table, TableBody, TableCell, TableHeadRow, TableRow} from '~/ui-componen
 import {capitalizeString} from '~/utils/general'
 import TextInput from '~/ui-components/TextInput/TextInput'
 import InfoBox from '~/ui-components/InfoBox'
+import {useGoodFetcher} from '~/utils/useGoodFetcher'
+import {UpdateUserBody} from '~/routes/api.admin.update-user'
+import {UserType} from '~/types/types'
 
 export default function ManageSingleUser() {
   const { user, contributions } = useLoaderData<typeof loader>();
@@ -30,21 +33,62 @@ export default function ManageSingleUser() {
     text: c,
   }));
 
+  const updateUserFetcher = useGoodFetcher({
+    url: '/api/admin/update-user',
+    method: 'post',
+    toastSuccessMessage: 'User updated',
+  })
+  const banUserFetcher = useGoodFetcher({
+    url: '/api/admin/update-user',
+    method: 'post',
+    toastSuccessMessage: 'User banned',
+  })
+  const unbanUserFetcher = useGoodFetcher({
+    url: '/api/admin/update-user',
+    method: 'post',
+    toastSuccessMessage: 'User unbanned',
+  })
+
   function onUserTypeChanged(newType: string) {
-    // TODO: Update user type on backend, toast success / error
+    const body: UpdateUserBody = {
+      userId: user.id,
+      userType: newType as UserType,
+    }
+
+    updateUserFetcher.submit({body: JSON.stringify(body)});
+
     setUserType(newType);
   }
 
   function updateModNotes() {
-    // TODO: Update mod notes on backend
+    const body: UpdateUserBody = {
+      userId: user.id,
+      modNotes,
+    }
+
+    updateUserFetcher.submit({body: JSON.stringify(body)});
   }
 
   function onBanUser() {
-    // TODO: Submit ban note to backend
+    const body: UpdateUserBody = {
+      userId: user.id,
+      isBanned: true,
+      banReason,
+    }
+
+    banUserFetcher.submit({body: JSON.stringify(body)});
+
+    setBanFlowActive(false);
   }
 
   function unbanUser() {
-    // TODO: Submit unban to backend
+    const body: UpdateUserBody = {
+      userId: user.id,
+      isBanned: false,
+      banReason: '',
+    }
+
+    unbanUserFetcher.submit({body: JSON.stringify(body)});
   }
 
   return (
@@ -129,7 +173,7 @@ export default function ManageSingleUser() {
 
       <h3>Contributions</h3>
       {contributions.length > 0 && (
-        <Table horizontalScroll={true} className="mx-auto mt-8">
+        <Table horizontalScroll={true} className="mt-8">
           <TableHeadRow isTableMaxHeight={false}>
             <TableCell>Contribution</TableCell>
             <TableCell>Status</TableCell>
