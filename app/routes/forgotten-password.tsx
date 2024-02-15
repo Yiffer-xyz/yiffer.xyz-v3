@@ -72,10 +72,10 @@ export default function ForgottenPassword() {
       )}
 
       <div>
-        <Link href="/login" text="Log in" />
+        <Link href="/login" text="Log in" showRightArrow />
       </div>
       <div className="mt-2">
-        <Link href="/signup" text="Sign up" />
+        <Link href="/signup" text="Sign up" showRightArrow />
       </div>
     </div>
   );
@@ -95,7 +95,12 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Invalid email');
   }
 
-  const err = await resetPassword(args.context.DB, args.context.POSTMARK_TOKEN, email);
+  const err = await resetPassword(
+    args.context.DB,
+    args.context.POSTMARK_TOKEN,
+    args.context.FRONT_END_URL_BASE,
+    email
+  );
 
   if (err) {
     return processApiError('Error in /forgotten-password', err, { email });

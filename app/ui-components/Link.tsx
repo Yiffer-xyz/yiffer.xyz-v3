@@ -1,4 +1,5 @@
 import { Link as RemixLink } from '@remix-run/react';
+import { RiArrowRightLine } from 'react-icons/ri';
 
 type LinkProps = {
   href: string;
@@ -8,6 +9,7 @@ type LinkProps = {
   normalColor?: boolean;
   Icon?: React.ElementType;
   IconRight?: React.ElementType;
+  showRightArrow?: boolean;
   iconMargin?: number;
   className?: string;
 };
@@ -21,6 +23,7 @@ export default function Link({
   Icon,
   IconRight,
   iconMargin = 4,
+  showRightArrow,
   className,
   ...props
 }: LinkProps) {
@@ -60,7 +63,10 @@ export default function Link({
         <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
       ) : undefined}
       {text}
-      {IconRight ? <IconRight style={{ marginLeft: iconMargin }} /> : undefined}
+      {showRightArrow && <RiArrowRightLine style={{ marginLeft: iconMargin }} />}
+      {!showRightArrow && IconRight ? (
+        <IconRight style={{ marginLeft: iconMargin }} />
+      ) : undefined}
     </a>
   ) : (
     <RemixLink
@@ -76,7 +82,10 @@ export default function Link({
         <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
       ) : undefined}
       {text}
-      {IconRight ? <IconRight style={{ marginLeft: iconMargin }} /> : undefined}
+      {showRightArrow && <RiArrowRightLine style={{ marginLeft: iconMargin }} />}
+      {!showRightArrow && IconRight ? (
+        <IconRight style={{ marginLeft: iconMargin }} />
+      ) : undefined}
     </RemixLink>
   );
 

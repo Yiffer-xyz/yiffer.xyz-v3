@@ -62,10 +62,10 @@ export default function Login() {
       </fetcher.Form>
 
       <div>
-        <Link href="/signup" text="Sign up" />
+        <Link href="/signup" text="Sign up" showRightArrow />
       </div>
       <div className="mt-2">
-        <Link href="/forgotten-password" text="Forgotten password?" />
+        <Link href="/forgotten-password" text="Forgotten password?" showRightArrow />
       </div>
     </div>
   );

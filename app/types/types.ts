@@ -2,7 +2,7 @@
 // other bindings such as R2, D1 sql, created locally through runtime
 // arguments (see package.json, --r2=<BUCKET> etc).
 export interface Env {
-  DB_API_URL_BASE: string;
+  FRONT_END_URL_BASE: string;
   FRONT_PAGE_URL: string;
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;

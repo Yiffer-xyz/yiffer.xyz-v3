@@ -55,7 +55,8 @@ export function createWelcomeEmail(username: string, recipient: string): Postmar
 
 export function createPasswordResetEmail(
   resetToken: string,
-  recipient: string
+  recipient: string,
+  frontEndUrlBase: string
 ): PostmarkEmail {
   const html = `
     <p>
@@ -64,7 +65,7 @@ export function createPasswordResetEmail(
     </p>
     <p>
       Click the following link to reset your password:<br/>
-      <a href="https://yiffer.xyz/reset-password-link/${resetToken}">https://yiffer.xyz/reset-password-link/${resetToken}</a>
+      <a href="${frontEndUrlBase}/reset-password/${resetToken}">${frontEndUrlBase}/reset-password/${resetToken}</a>
     </p>
     <p>Regards, Yiffer.xyz</p>
   `;
