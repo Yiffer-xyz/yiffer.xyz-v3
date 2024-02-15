@@ -8,7 +8,7 @@ export type DeleteFeedbackBody = {
 };
 
 export async function action(args: ActionFunctionArgs) {
-  const { fields, isUnauthorized } = await parseFormJson<DeleteFeedbackBody>(args, 'mod');
+  const { fields, isUnauthorized } = await parseFormJson<DeleteFeedbackBody>(args, 'admin');
 
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 

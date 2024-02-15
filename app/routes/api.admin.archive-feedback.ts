@@ -8,7 +8,7 @@ export type ArchiveFeedbackBody = {
 };
 
 export async function action(args: ActionFunctionArgs) {
-  const { fields, isUnauthorized } = await parseFormJson<ArchiveFeedbackBody>(args, 'mod');
+  const { fields, isUnauthorized } = await parseFormJson<ArchiveFeedbackBody>(args, 'admin');
 
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
