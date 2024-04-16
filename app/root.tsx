@@ -29,6 +29,7 @@ import {
 } from 'react-icons/ri';
 import Link from './ui-components/Link';
 import { MdLightbulbOutline } from 'react-icons/md';
+import { ToastContainer } from 'react-toastify';
 // import * as Sentry from '@sentry/browser';
 
 // Sentry.init({
@@ -106,6 +107,7 @@ function App() {
           <Outlet />
         </Layout>
         <ScrollRestoration />
+        <ToastContainer />
         <Scripts />
         <LiveReload />
         {/* <script

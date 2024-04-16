@@ -1486,6 +1486,10 @@ video {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
+.bg-blue-moreTrans {
+  background-color: #3fb9f31a;
+}
+
 .bg-opacity-30 {
   --tw-bg-opacity: 0.3;
 }
