@@ -29,6 +29,7 @@ import { queryDb } from '~/utils/database-facade';
 import type { ApiResponse, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import ToggleButton from '~/ui-components/Buttons/ToggleButton';
 
 type CachedPoints = {
   yearMonth: string;
@@ -44,7 +45,7 @@ export default function Scoreboard() {
       setCachedPoints(prev => [
         ...prev,
         {
-          yearMonth: showAllTime ? 'all-time' : format(date, 'yyyy-MM'),
+          yearMonth: activeCategory === 'All time' ? 'all-time' : format(date, 'yyyy-MM'),
           excludeMods,
           points: fetcher.data || [],
         },
@@ -55,7 +56,7 @@ export default function Scoreboard() {
   const allTimePoints = useLoaderData<typeof loader>();
 
   const [showPointInfo, setShowPointInfo] = useState(false);
-  const [showAllTime, setShowAllTime] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<'Monthly' | 'All time'>('Monthly');
   const [excludeMods, setExcludeMods] = useState(false);
   const [date, setDate] = useState(new Date());
 
@@ -73,7 +74,7 @@ export default function Scoreboard() {
 
   function changeDisplayInterval(
     incrementBy: 1 | -1 | undefined,
-    setAllTime: boolean | undefined,
+    newCategory: 'Monthly' | 'All time' | undefined,
     newExcludeMods: boolean | undefined
   ) {
     let newDate = new Date();
@@ -86,8 +87,8 @@ export default function Scoreboard() {
       setDate(newDate);
     }
 
-    if (setAllTime !== undefined) {
-      setShowAllTime(setAllTime);
+    if (newCategory) {
+      setActiveCategory(newCategory);
     }
     if (newExcludeMods !== undefined) {
       setExcludeMods(newExcludeMods);
@@ -97,7 +98,7 @@ export default function Scoreboard() {
       newExcludeMods === undefined ? excludeMods : newExcludeMods;
 
     let yearMonth = format(date, 'yyyy-MM');
-    if (setAllTime) yearMonth = 'all-time';
+    if (newCategory === 'All time') yearMonth = 'all-time';
     if (incrementBy !== undefined) yearMonth = format(newDate, 'yyyy-MM');
 
     const foundCachedPoints = cachedPoints.find(
@@ -161,32 +162,24 @@ export default function Scoreboard() {
           className="mb-4"
         />
 
-        <div className="flex mb-4">
-          <Button
-            text="Monthly"
-            variant="contained"
-            color="primary"
-            className={
-              'rounded-r-none' + disabledClass + (showAllTime ? '' : enabledClass)
-            }
-            onClick={() => changeDisplayInterval(undefined, false, undefined)}
-          />
-          <Button
-            text="All time"
-            variant="contained"
-            color="primary"
-            className={
-              'rounded-l-none' + disabledClass + (showAllTime ? enabledClass : '')
-            }
-            onClick={() => changeDisplayInterval(undefined, true, undefined)}
-          />
-        </div>
+        <ToggleButton
+          className="mb-4"
+          buttons={[
+            { text: 'Monthly', value: 'Monthly' },
+            { text: 'All time', value: 'All time' },
+          ]}
+          value={activeCategory}
+          onChange={(value: 'Monthly' | 'All time') => {
+            setActiveCategory(value);
+            changeDisplayInterval(undefined, value, undefined);
+          }}
+        />
 
-        {!showAllTime && (
+        {activeCategory === 'Monthly' && (
           <div className="flex justify-between items-center w-fit mb-2 text-lg">
             <IconButton
               icon={MdArrowBack}
-              onClick={() => changeDisplayInterval(-1, false, undefined)}
+              onClick={() => changeDisplayInterval(-1, undefined, undefined)}
               disabled={fetcher.isLoading}
               variant="naked"
             />
@@ -195,7 +188,7 @@ export default function Scoreboard() {
 
             <IconButton
               icon={MdArrowForward}
-              onClick={() => changeDisplayInterval(1, false, undefined)}
+              onClick={() => changeDisplayInterval(1, undefined, undefined)}
               disabled={!canIncrementMonth}
               variant="naked"
             />
