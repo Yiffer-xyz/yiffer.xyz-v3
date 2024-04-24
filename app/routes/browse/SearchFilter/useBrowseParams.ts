@@ -12,6 +12,7 @@ export type BrowseParams = {
   categories: CategoryWithAll[];
   sort: SortType;
   tagIDs: number[];
+  showTags: boolean;
 };
 
 export type BrowseUtilities = BrowseParams & {
@@ -19,7 +20,10 @@ export type BrowseUtilities = BrowseParams & {
   setSearch: (newSearch: string) => void;
   setCategories: (newCategories: CategoryWithAll[]) => void;
   setSort: (newSort: SortType) => void;
-  setTagIDs: (newIDs: number[]) => void;
+  addTagID: (tag: number) => void;
+  removeTagID: (tag: number) => void;
+  clearTagIDs: () => void;
+  setShowTags: (showTags: boolean) => void;
 };
 
 export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
@@ -30,6 +34,7 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
   const rawSort = rawParams.get('sort') as SortType | null;
   const rawTags = rawParams.getAll('tag') ?? [];
   const tags = rawTags.map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
+  const showTags = rawParams.get('showTags') === 'true';
 
   let categories: CategoryWithAll[];
   if (rawCategories.length === 0) {
@@ -45,6 +50,7 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
     isAllCategories: rawCategories.length === 0,
     sort: rawUrlSortToSort(rawSort),
     tagIDs: tags,
+    showTags,
   };
 }
 
@@ -118,12 +124,28 @@ export function useBrowseParams(): BrowseUtilities {
     sort: parsedParams.sort,
     setSort,
     tagIDs: parsedParams.tagIDs,
-    setTagIDs: (newTags: number[]) => {
+    addTagID: (tag: number) => {
+      if (parsedParams.tagIDs.includes(tag)) return;
+      params.append('tag', tag.toString());
+      setParams(params);
+    },
+    removeTagID: (tag: number) => {
+      if (!parsedParams.tagIDs.includes(tag)) return;
       params.delete('tag');
-      newTags.forEach(tag => {
-        params.append('tag', tag.toString());
+      parsedParams.tagIDs.forEach(id => {
+        if (id !== tag) {
+          params.append('tag', id.toString());
+        }
       });
       setParams(params);
+    },
+    clearTagIDs: () => {
+      params.delete('tag');
+      setParams(params);
+    },
+    showTags: parsedParams.showTags,
+    setShowTags: (showTags: boolean) => {
+      updateParams('showTags', showTags === true ? 'true' : undefined);
     },
   };
 }

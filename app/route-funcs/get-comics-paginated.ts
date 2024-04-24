@@ -4,6 +4,8 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
+type ComicForBrowseDB = Omit<ComicForBrowse, 'tags'> & { tags?: string };
+
 type GetComicsParams = {
   db: D1Database;
   userId?: number;
@@ -14,6 +16,7 @@ type GetComicsParams = {
   search?: string;
   order?: 'updated' | 'userRating' | 'yourRating' | 'random';
   artistId?: number;
+  includeTags?: boolean;
 };
 
 export async function getComicsPaginated({
@@ -26,6 +29,7 @@ export async function getComicsPaginated({
   search,
   order,
   artistId,
+  includeTags,
 }: GetComicsParams): ResultOrErrorPromise<{
   comics: ComicForBrowse[];
   numberOfPages: number;
@@ -80,12 +84,24 @@ export async function getComicsPaginated({
     ) AS voteQuery ON (comic.id = voteQuery.comicId) 
   `;
 
+  let includeTagsString = '';
+  if (includeTags) {
+    includeTagsString = `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
+        INNER JOIN keyword ON (keyword.id = ck1.keywordId)`;
+  }
+
   const innerComicQuery = `
     SELECT 
       comic.id AS id, comic.name, comic.tag AS category,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
       ${userId ? ', voteQuery.yourVote AS yourRating' : ''}
+      ${
+        includeTags
+          ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
+          : ''
+      }
     FROM comic 
+    ${includeTagsString}
     ${innerJoinKeywordString}
     INNER JOIN artist ON (artist.id = comic.artist) 
     ${userId ? comicVoteQuery : ''} 
@@ -128,6 +144,7 @@ export async function getComicsPaginated({
     SELECT cc.id, cc.name, cc.category, cc.artistName, 
     cc.updated, cc.state, cc.published, cc.numberOfPages, AVG(comicvote.vote) AS userRating, 
     ${userId ? 'cc.yourRating' : '0 AS yourRating'}
+    ${includeTags ? ', cc.tags' : ''}
     FROM (
       ${innerComicQuery}
     ) AS cc 
@@ -136,7 +153,7 @@ export async function getComicsPaginated({
     ${order === 'userRating' ? orderQueryString + paginationQueryString : ''} 
   `;
 
-  const dbRes = await queryDbMultiple<[ComicForBrowse[], { count: number }[]]>(db, [
+  const dbRes = await queryDbMultiple<[ComicForBrowseDB[], { count: number }[]]>(db, [
     { query, params: queryParams },
     {
       query: totalCountQuery,
@@ -148,7 +165,22 @@ export async function getComicsPaginated({
     return makeDbErrObj(dbRes, 'Error getting comics+count', logCtx);
   }
 
-  const [comics, countDbRes] = dbRes.result;
+  const [comicsRaw, countDbRes] = dbRes.result;
+  let comics: ComicForBrowse[];
+
+  if (includeTags) {
+    comics = comicsRaw.map(c => ({
+      ...c,
+      tags: c.tags?.split(',').map(tag => {
+        const [name, id] = tag.split('~');
+        return { name, id: parseInt(id, 10) };
+      }),
+    }));
+  } else {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    comics = comicsRaw;
+  }
 
   return {
     result: {
@@ -178,17 +210,18 @@ export function getFilterQuery({
 
   if (categories || search || keywordIds || artistId) {
     const queries = [];
-
     if (keywordIds) {
-      keywordCountString = `HAVING COUNT(*) >= ${keywordIds.length}`;
-      const keywordQueryStrings: string[] = [];
+      let keywordIdString = 'ckKwFilter.keywordId IN (';
       keywordIds.forEach(kwId => {
         filterQueryParams.push(kwId);
-        keywordQueryStrings.push(' comickeyword.keywordId=? ');
+        keywordIdString += '?,';
       });
-      queries.push(`(${keywordQueryStrings.join('OR')})`);
+      keywordIdString = keywordIdString.slice(0, -1) + ')';
+
+      keywordCountString = `HAVING COUNT(DISTINCT ckKwFilter.keywordId) >= ${keywordIds.length}`;
+      queries.push(keywordIdString);
       innerJoinKeywordString =
-        'INNER JOIN comickeyword ON (comic.Id = comickeyword.comicId)';
+        'INNER JOIN comickeyword AS ckKwFilter ON (comic.Id = ckKwFilter.comicId)';
     }
 
     if (categories) {

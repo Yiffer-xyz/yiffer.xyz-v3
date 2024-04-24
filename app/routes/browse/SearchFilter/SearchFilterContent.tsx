@@ -10,10 +10,10 @@ import MultiSelectDropdown from '~/ui-components/MultiSelectDropdown/MultiSelect
 import useDebounce from '~/utils/useDebounce';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { SEARCHFILTER_PADDING_HORIZ } from './SearchFilterContainer';
-import useWindowSize from '~/utils/useWindowSize';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
+import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -43,11 +43,11 @@ export default function SearchFilterContent({
     sort,
     setSort,
     tagIDs,
-    setTagIDs,
+    addTagID,
+    removeTagID,
   } = browseParams;
 
-  const { viewMode, setViewMode } = useUIPreferences();
-  const { isMobile } = useWindowSize();
+  const { viewMode, setViewMode, comicCardTags, setComicCardTags } = useUIPreferences();
 
   const { ref, height } = useResizeObserver<HTMLDivElement>();
   useEffect(() => {
@@ -84,6 +84,11 @@ export default function SearchFilterContent({
     debouncedSearch();
   }
 
+  // Reset search input when search param changes
+  useEffect(() => {
+    setInternalSearch(search);
+  }, [search]);
+
   const mapTagIDsToTags = useCallback(
     (tagIDs: number[]) => {
       return (allTags ?? []).filter(tag => tagIDs.includes(tag.id));
@@ -103,12 +108,12 @@ export default function SearchFilterContent({
 
   function onTagSelected(tag: Tag) {
     _setTags([..._tags, tag]);
-    setTagIDs([...tagIDs, tag.id]);
+    addTagID(tag.id);
   }
 
   function onTagDeselected(tag: Tag) {
     _setTags(_tags.filter(t => t.id !== tag.id));
-    setTagIDs(tagIDs.filter(id => id !== tag.id));
+    removeTagID(tag.id);
   }
 
   // Local vars updated while dropdown open; set to params when it's closed
@@ -130,37 +135,46 @@ export default function SearchFilterContent({
     setSort(newSort);
   };
 
-  const categoryMinWidth = isMobile
-    ? undefined
-    : (openWidth - 2 * SEARCHFILTER_PADDING_HORIZ) * 0.49;
+  const categoryMinWidth = (openWidth - 2 * SEARCHFILTER_PADDING_HORIZ) * 0.49;
 
   return (
     <div className={`flex flex-col gap-6 mt-2 ${isVisible ? '' : 'hidden'}`} ref={ref}>
-      <MultiSelectDropdown
-        values={_categories}
-        name="Category"
-        title="Category"
-        options={allCategories.map(x => ({ text: x, value: x }))}
-        allOption={{ text: 'All', value: 'All' as CategoryWithAll }}
-        onClose={onCategoriesClose}
-        minWidth={categoryMinWidth}
-        onValueAdded={category => {
-          const newCategories = [..._categories, category];
-          if (category !== 'All' && newCategories.includes('All')) {
-            newCategories.splice(newCategories.indexOf('All'), 1);
-          }
-          _setCategories(newCategories);
-        }}
-        onValueRemoved={category => {
-          if (_categories.length === 1) {
-            if (category === 'All' && _categories[0] === ('All' as Category)) return;
-            _setCategories(['All']);
-            return;
-          }
-          _setCategories(_categories.filter(x => x !== category));
-        }}
-        onAllOptionSelected={() => _setCategories(['All'])}
-      />
+      <div className="flex flex-row w-full">
+        <MultiSelectDropdown
+          values={_categories}
+          name="Category"
+          title="Category"
+          options={allCategories.map(x => ({ text: x, value: x }))}
+          allOption={{ text: 'All', value: 'All' as CategoryWithAll }}
+          onClose={onCategoriesClose}
+          // minWidth={categoryMinWidth}
+          forceWidth={categoryMinWidth}
+          onValueAdded={category => {
+            const newCategories = [..._categories, category];
+            if (category !== 'All' && newCategories.includes('All')) {
+              newCategories.splice(newCategories.indexOf('All'), 1);
+            }
+            _setCategories(newCategories);
+          }}
+          onValueRemoved={category => {
+            if (_categories.length === 1) {
+              if (category === 'All' && _categories[0] === ('All' as Category)) return;
+              _setCategories(['All']);
+              return;
+            }
+            _setCategories(_categories.filter(x => x !== category));
+          }}
+          onAllOptionSelected={() => _setCategories(['All'])}
+        />
+
+        <SwitchToggle
+          label={comicCardTags ? 'shown' : 'hidden'}
+          title="Tags"
+          checked={comicCardTags}
+          onChange={() => setComicCardTags(!comicCardTags)}
+          className="ml-4"
+        />
+      </div>
 
       <div className="flex justify-between">
         <TextInput

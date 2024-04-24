@@ -83,6 +83,7 @@ export type ComicForBrowse = {
   state: 'wip' | 'cancelled' | 'finished';
   userRating: number;
   yourRating?: number;
+  tags?: Tag[];
 };
 
 export type ComicPublishStatus =
@@ -313,13 +314,8 @@ export const browsePageSize = 60;
 export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';
 export const allSortTypes: SortType[] = ['Updated', 'User score', 'Your score', 'Random'];
 
-export type ViewType = 'Tiny card' | 'Simple card' | 'Detailed card' | 'Detailed + tags';
-export const allViewTypes: ViewType[] = [
-  'Tiny card',
-  'Simple card',
-  'Detailed card',
-  'Detailed + tags',
-];
+export type ViewType = 'Tiny card' | 'Simple card';
+export const allViewTypes: ViewType[] = ['Tiny card', 'Simple card'];
 export function isViewType(viewType: string): viewType is ViewType {
   return allViewTypes.includes(viewType as ViewType);
 }
@@ -336,4 +332,5 @@ export type SearchFilterState = {
 export type UIPreferences = {
   theme: 'light' | 'dark';
   viewMode: ViewType;
+  comicCardTags: boolean;
 };

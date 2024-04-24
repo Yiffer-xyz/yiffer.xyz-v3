@@ -62,9 +62,11 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: toastCss },
 ];
 
+const isDev = process.env.NODE_ENV === 'development';
+
 export const meta: MetaFunction = () => [
-  { title: 'Remix Starter' },
-  { property: 'og:title', content: 'Remix Starter' },
+  { title: `Yiffer.xyz${isDev ? ' (dev)' : ''}` },
+  { property: 'og:title', content: `Yiffer.xyz${isDev ? ' (dev)' : ''}` },
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 

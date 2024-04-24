@@ -9,7 +9,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import type { ComicSuggestionVerdict } from '~/types/types';
 import { useUIPreferences } from '~/utils/theme-provider';
-import { getTimeAgo } from './route';
+import { getTimeAgo } from '~/utils/date-utils';
 
 type ComicSuggestionProps = {
   action: DashboardAction;

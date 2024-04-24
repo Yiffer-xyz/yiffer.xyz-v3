@@ -5,9 +5,9 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
-import { getTimeAgo } from './route';
 import Link from '~/ui-components/Link';
 import { MdOpenInNew } from 'react-icons/md';
+import { getTimeAgo } from '~/utils/date-utils';
 
 type ComicProblemProps = {
   action: DashboardAction;

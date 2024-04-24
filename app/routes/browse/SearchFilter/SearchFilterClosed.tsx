@@ -23,7 +23,7 @@ export default function SearchFilterClosed({
   isVisible,
   onHeightChange,
 }: SearchFilterContentProps) {
-  const { viewMode } = useUIPreferences();
+  const { viewMode, comicCardTags } = useUIPreferences();
   const { search, categories, sort, tagIDs } = browseParams;
 
   const { ref, height } = useResizeObserver<HTMLDivElement>();
@@ -81,15 +81,22 @@ export default function SearchFilterClosed({
         </p>
       )}
       {tagsText && (
-        <p>
+        <p className="font-semibold">
           <BsTags className="mr-[2px]" />
-          {tagIDs.length}: <span className="">{tagsText}</span>
+          {tagIDs.length}: <span>{tagsText}</span>
         </p>
       )}
-      <p>
-        <GoSortDesc /> {sort} &nbsp;&nbsp;&nbsp;&nbsp;
-        <MdOutlineRemoveRedEye /> {viewMode}
-      </p>
+      <div className="flex flex-row justify-between">
+        <div>
+          <GoSortDesc /> {sort}
+        </div>
+        <div>
+          <MdOutlineRemoveRedEye /> {viewMode}
+        </div>
+        <div>
+          <BsTags /> {comicCardTags ? 'Shown' : 'Hidden'}
+        </div>
+      </div>
     </div>
   );
 }
