@@ -1,7 +1,13 @@
 import { Link as RemixLink } from '@remix-run/react';
 import type { ComicForBrowse } from '~/types/types';
-import { getTimeAgo } from '../admin.dashboard/route';
 import Link from '~/ui-components/Link';
+import { useUIPreferences } from '~/utils/theme-provider';
+import { IoDocumentOutline } from 'react-icons/io5';
+import { FaRegStar } from 'react-icons/fa';
+import { LuRefreshCcw } from 'react-icons/lu';
+import { getTimeAgoShort } from '~/utils/date-utils';
+import { FaPercent } from 'react-icons/fa6';
+import { useBrowseParams } from './SearchFilter/useBrowseParams';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
@@ -9,10 +15,13 @@ type ComicCardProps = {
 
 export default function ComicCard({ comic }: ComicCardProps) {
   const url = TEMP_CARD_PICS[comic.id % TEMP_CARD_PICS.length];
+  const { viewMode, comicCardTags } = useUIPreferences();
+  const { tagIDs, addTagID } = useBrowseParams();
 
   return (
     <div
-      className="w-[160px] rounded overflow-hidden shadow dark:bg-gray-300 flex flex-col"
+      className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300 flex flex-col
+                  ${comicCardTags ? 'h-fit' : ''}`}
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
@@ -20,16 +29,77 @@ export default function ComicCard({ comic }: ComicCardProps) {
         {/* <img src="https://static-beta.yiffer.xyz/pi/ADADAD.webp" alt="comic thumbnail" /> */}
         <img src={url} alt="comic thumbnail" />
       </RemixLink>
-      <div className="text-center p-1 flex flex-col items-center justify-between h-full">
+
+      <div
+        className={`-mt-5 mx-auto bg-white px-2 pt-[1px] rounded-sm text-sm rounded-b-none
+                    dark:bg-gray-300 dark:font-bold`}
+      >
+        <label>{comic.category}</label>
+      </div>
+
+      <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <Link href={`/${comic.name}`} text={comic.name} normalColor className="text-sm" />
         <Link
           href={`/artist/${comic.artistName}`}
           text={comic.artistName}
           className="text-sm"
         />
-        <p className="text-xs">{comic.numberOfPages} pgs</p>
-        <p className="text-xs">{getTimeAgo(comic.updated)}</p>
-        <p className="text-xs">Etc.</p>
+
+        {viewMode !== 'Minimal' && (
+          <>
+            <div className="flex flex-row justify-evenly mx-auto w-full mt-1">
+              <div className="w-9 flex flex-col items-center" title="Pages">
+                <IoDocumentOutline size={14} className="-mb-0.5" />
+                <label className="text-sm">{comic.numberOfPages}</label>
+              </div>
+              <div
+                className="w-9 flex flex-col items-center"
+                title="Number of stars (popularity)"
+              >
+                <FaRegStar size={14} className="-mb-0.5" />
+                <label className="text-sm">{comic.userRating ?? '99'}</label>
+              </div>
+              <div
+                className="w-9 flex flex-col items-center"
+                title="Average stars per rating, 1-3 (enjoyment)"
+              >
+                <FaPercent size={14} className="-mb-0.5" />
+                <label className="text-sm">{comic.userRating ?? '88'}</label>
+              </div>
+              <div className="w-9 flex flex-col items-center" title="Last updated">
+                <LuRefreshCcw size={14} className="-mb-0.5" />
+                <label className="text-sm">{getTimeAgoShort(comic.updated, false)}</label>
+              </div>
+            </div>
+          </>
+        )}
+
+        {comic.tags?.length && comicCardTags && (
+          <div className="w-full flex flex-row flex-wrap gap-x-1 gap-y-1 items-center justify-center mt-1.5 mb-1">
+            {comic.tags.map(tag => {
+              const isTagFiltered = tagIDs.includes(tag.id);
+              const colorsStyle = isTagFiltered
+                ? 'text-theme1-darker dark:text-theme1-dark dark:border-theme1-dark hover:shadow-none hover:border-gray-900'
+                : 'text-gray-500 dark:text-gray-900 dark:border-gray-500 border-gray-900';
+
+              return (
+                <div
+                  key={tag.id}
+                  onClick={() => addTagID(tag.id)}
+                  role="button"
+                  className={`px-1.5 py-[1px] rounded-full leading-0 cursor-pointer hover:shadow
+                            border border-gray-900  transition-all duration-75 dark:duration-0
+                            w-fit text-gray-500 hover:text-theme1-darker
+                            dark:text-gray-900 dark:hover:text-theme1-dark dark:border-gray-500
+                            hover:border-transparent dark:hover:border-theme1-dark
+                            ${colorsStyle}`}
+                >
+                  <span className="text-xs">{tag.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
