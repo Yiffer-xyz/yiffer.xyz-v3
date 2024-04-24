@@ -14,6 +14,7 @@ export type MultiSelectProps<T> = {
   error?: boolean;
   maxWidth?: number;
   minWidth?: number;
+  forceWidth?: number;
   isFullWidth?: boolean;
   name: string;
   className?: string;
@@ -32,6 +33,7 @@ export default function MultiSelectDropdown<T>({
   error = false,
   maxWidth = 999999,
   minWidth = 0,
+  forceWidth,
   isFullWidth = false,
   name,
   className = '',
@@ -54,13 +56,15 @@ export default function MultiSelectDropdown<T>({
   }, [allOption, options]);
 
   useEffect(() => {
+    if (forceWidth) return;
     tryComputeInitialWidth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (forceWidth) return;
     computUpperWidth();
-  }, [values]);
+  }, [forceWidth, values]);
 
   useEffect(() => {
     setCurrentlyHighlightedIndex(-1);
@@ -108,7 +112,7 @@ export default function MultiSelectDropdown<T>({
   }
 
   const minWidthStyle = useMemo(() => {
-    if (width || isFullWidth) {
+    if (width || isFullWidth || forceWidth) {
       return {};
     }
 
@@ -129,6 +133,9 @@ export default function MultiSelectDropdown<T>({
   }, [isFullWidth, computedMinWidth, minWidth, width, upperPartWidth, values.length]);
 
   const widthStyle = useMemo(() => {
+    if (forceWidth) {
+      return { width: forceWidth };
+    }
     if (isFullWidth) {
       return { width: '100%' };
     }
@@ -136,7 +143,7 @@ export default function MultiSelectDropdown<T>({
       return { width: width };
     }
     return {};
-  }, [isFullWidth, width]);
+  }, [isFullWidth, width, forceWidth]);
 
   function onSelected(clickedValue: T) {
     if (allOption && clickedValue === allOption.value) {
@@ -225,7 +232,7 @@ export default function MultiSelectDropdown<T>({
 
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`border border-0 border-b-2 px-2 after:absolute
+        className={`border-0 border-b-2 px-2 after:absolute
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
           after:border-t-text-light dark:after:border-t-text-dark after:right-3`}
         style={{ ...borderStyle }}
