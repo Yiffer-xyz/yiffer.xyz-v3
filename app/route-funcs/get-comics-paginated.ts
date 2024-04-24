@@ -84,24 +84,22 @@ export async function getComicsPaginated({
     ) AS voteQuery ON (comic.id = voteQuery.comicId) 
   `;
 
-  let includeTagsString = '';
-  if (includeTags) {
-    includeTagsString = `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
-        INNER JOIN keyword ON (keyword.id = ck1.keywordId)`;
-  }
+  const includeTagsJoinString = includeTags
+    ? `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
+       INNER JOIN keyword ON (keyword.id = ck1.keywordId)`
+    : '';
+  const includeTagsConcatString = includeTags
+    ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
+    : '';
 
   const innerComicQuery = `
     SELECT 
       comic.id AS id, comic.name, comic.tag AS category,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
       ${userId ? ', voteQuery.yourVote AS yourRating' : ''}
-      ${
-        includeTags
-          ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
-          : ''
-      }
+      ${includeTagsConcatString}
     FROM comic 
-    ${includeTagsString}
+    ${includeTagsJoinString}
     ${innerJoinKeywordString}
     INNER JOIN artist ON (artist.id = comic.artist) 
     ${userId ? comicVoteQuery : ''} 
@@ -177,9 +175,7 @@ export async function getComicsPaginated({
       }),
     }));
   } else {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    comics = comicsRaw;
+    comics = comicsRaw as ComicForBrowse[];
   }
 
   return {
@@ -211,17 +207,17 @@ export function getFilterQuery({
   if (categories || search || keywordIds || artistId) {
     const queries = [];
     if (keywordIds) {
-      let keywordIdString = 'ckKwFilter.keywordId IN (';
+      let keywordIdString = 'ckFilter.keywordId IN (';
       keywordIds.forEach(kwId => {
         filterQueryParams.push(kwId);
         keywordIdString += '?,';
       });
       keywordIdString = keywordIdString.slice(0, -1) + ')';
 
-      keywordCountString = `HAVING COUNT(DISTINCT ckKwFilter.keywordId) >= ${keywordIds.length}`;
+      keywordCountString = `HAVING COUNT(DISTINCT ckFilter.keywordId) >= ${keywordIds.length}`;
       queries.push(keywordIdString);
       innerJoinKeywordString =
-        'INNER JOIN comickeyword AS ckKwFilter ON (comic.Id = ckKwFilter.comicId)';
+        'INNER JOIN comickeyword AS ckFilter ON (comic.Id = ckFilter.comicId)';
     }
 
     if (categories) {

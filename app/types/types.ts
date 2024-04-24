@@ -314,8 +314,8 @@ export const browsePageSize = 60;
 export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';
 export const allSortTypes: SortType[] = ['Updated', 'User score', 'Your score', 'Random'];
 
-export type ViewType = 'Tiny card' | 'Simple card';
-export const allViewTypes: ViewType[] = ['Tiny card', 'Simple card'];
+export type ViewType = 'Minimal' | 'Standard';
+export const allViewTypes: ViewType[] = ['Minimal', 'Standard'];
 export function isViewType(viewType: string): viewType is ViewType {
   return allViewTypes.includes(viewType as ViewType);
 }
