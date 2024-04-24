@@ -180,7 +180,7 @@ export default function Select<T>({
       {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
       <div // TODO: "selected" from old
         onClick={() => setIsOpen(!isOpen)}
-        className={`border border-0 border-b-2 px-2 after:absolute
+        className={`border-0 border-b-2 px-2 after:absolute
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
           after:border-t-text-light dark:after:border-t-text-dark after:right-3 ${
             value ? '' : 'text-gray-750'
