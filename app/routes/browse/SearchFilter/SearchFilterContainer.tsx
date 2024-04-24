@@ -40,7 +40,7 @@ export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
   }, [browseUtilities]);
 
   const openWidth = useMemo(() => {
-    if (!windowWidth) return CLOSED_SEARCHFILTER_WIDTH;
+    if (!windowWidth) return OPEN_SEARCHFILTER_MAXWIDTH;
     return Math.min(OPEN_SEARCHFILTER_MAXWIDTH, windowWidth * 0.95);
   }, [windowWidth]);
 
@@ -61,7 +61,7 @@ export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
     browseUtilities.setCategories(['All']);
     browseUtilities.setPage(1);
     browseUtilities.setSort('Updated');
-    browseUtilities.setTagIDs([]);
+    browseUtilities.clearTagIDs();
   }
 
   const openClassNames = isOpen ? '' : 'cursor-pointer';

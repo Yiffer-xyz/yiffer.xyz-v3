@@ -110,6 +110,9 @@ export default {
         '80p': '80%',
         '90p': '90%',
       },
+      lineHeight: {
+        '0': '0',
+      },
     },
     fontFamily: {
       sans: ['Mulish', 'sans-serif'],

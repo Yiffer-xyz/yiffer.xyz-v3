@@ -15,10 +15,12 @@ import {
   sortToApiSort,
   useBrowseParams,
 } from './SearchFilter/useBrowseParams';
+import { getUIPrefSession } from '~/utils/theme.server';
 
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const params = parseBrowseParams(url.searchParams);
+  const uiPrefSession = await getUIPrefSession(args.request);
 
   const categories = params.categories.includes('All') ? undefined : params.categories;
 
@@ -30,6 +32,7 @@ export async function loader(args: LoaderFunctionArgs) {
     order: sortToApiSort(params.sort),
     tagIDs: params.tagIDs.length > 0 ? params.tagIDs : undefined,
     categories,
+    includeTags: uiPrefSession.getUiPref().comicCardTags,
   });
   if (comicsRes.err) {
     return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
@@ -112,7 +115,7 @@ export default function BrowsePage() {
         {totalNumComics.toLocaleString('en').replace(',', ' ')} comics
       </p>
 
-      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4">
+      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4">
         {comics
           ? comics.map(comic => <ComicCard comic={comic} key={comic.id} />)
           : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}

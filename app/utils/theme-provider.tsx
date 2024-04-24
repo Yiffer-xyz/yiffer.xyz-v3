@@ -14,6 +14,7 @@ import { isViewType } from '~/types/types';
 const defaultUiPref: UIPreferences = {
   theme: 'light',
   viewMode: 'Simple card',
+  comicCardTags: false,
 };
 
 interface UIPrefContextType {
@@ -83,11 +84,18 @@ export function useUIPreferences() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const setComicCardTags = useCallback((newComicCardTags: boolean) => {
+    context.setUiPref(prev => ({ ...prev, comicCardTags: newComicCardTags }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return {
     theme: context.uiPref.theme,
     setTheme,
     viewMode: context.uiPref.viewMode,
     setViewMode,
+    comicCardTags: context.uiPref.comicCardTags,
+    setComicCardTags,
   };
 }
 
@@ -102,6 +110,9 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
     }
     if (parsed.viewMode && isViewType(parsed.viewMode)) {
       newUIPref.viewMode = parsed.viewMode;
+    }
+    if (parsed.comicCardTags !== undefined) {
+      newUIPref.comicCardTags = parsed.comicCardTags;
     }
     return newUIPref;
   } catch (e) {

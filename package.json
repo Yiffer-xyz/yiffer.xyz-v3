@@ -13,12 +13,12 @@
     "format": "npx prettier --write ."
   },
   "dependencies": {
-    "@cloudflare/pages-plugin-sentry": "^1.1.1",
+    "@cloudflare/pages-plugin-sentry": "^1.1.2",
     "@remix-run/cloudflare": "^2.2.0",
     "@remix-run/cloudflare-pages": "^2.2.0",
     "@remix-run/css-bundle": "^2.2.0",
     "@remix-run/react": "^2.2.0",
-    "@sentry/browser": "^7.47.0",
+    "@sentry/browser": "^7.110.1",
     "@tsndr/cloudflare-worker-jwt": "^2.3.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",

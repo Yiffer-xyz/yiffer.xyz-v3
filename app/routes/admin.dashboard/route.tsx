@@ -9,7 +9,6 @@ import type { ProcessComicProblemBody } from '../api.admin.process-comic-problem
 import type { ProcessComicSuggestionBody } from '../api.admin.process-comic-suggestion';
 import type { ComicSuggestionVerdict } from '~/types/types';
 import type { DashboardAction, DashboardActionType } from '../api.admin.dashboard-data';
-import { formatDistanceToNow } from 'date-fns';
 import type { TagSuggestionAction } from './TagSuggestion';
 import { TagSuggestion } from './TagSuggestion';
 import { ComicUpload } from './ComicUpload';
@@ -348,12 +347,4 @@ export default function Dashboard() {
       })}
     </>
   );
-}
-
-export function getTimeAgo(time: string) {
-  const timeAgo = formatDistanceToNow(new Date(time), {
-    addSuffix: false,
-  });
-
-  return timeAgo;
 }

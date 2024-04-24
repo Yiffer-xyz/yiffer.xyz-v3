@@ -10,7 +10,6 @@ import { makeDbErrObj } from '~/utils/request-helpers';
 export function getAllTagsQuery(): QueryWithParams {
   return {
     query: 'SELECT id, keywordName AS name FROM keyword',
-    errorLogMessage: 'Error getting all tags',
   };
 }
 

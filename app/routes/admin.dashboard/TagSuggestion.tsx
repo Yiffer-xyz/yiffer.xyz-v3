@@ -4,7 +4,7 @@ import Chip from '~/ui-components/Chip';
 import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
-import { getTimeAgo } from './route';
+import { getTimeAgo } from '~/utils/date-utils';
 
 export type TagSuggestionAction = DashboardAction & {
   isAdding: boolean;
