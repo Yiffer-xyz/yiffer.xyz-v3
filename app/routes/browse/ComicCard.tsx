@@ -52,20 +52,24 @@ export default function ComicCard({ comic }: ComicCardProps) {
                 <IoDocumentOutline size={14} className="-mb-0.5" />
                 <label className="text-sm">{comic.numberOfPages}</label>
               </div>
-              <div
-                className="w-9 flex flex-col items-center"
-                title="Number of stars (popularity)"
-              >
-                <FaRegStar size={14} className="-mb-0.5" />
-                <label className="text-sm">{comic.userRating ?? '99'}</label>
-              </div>
-              <div
-                className="w-9 flex flex-col items-center"
-                title="Average stars per rating, 1-3 (enjoyment)"
-              >
-                <FaPercent size={14} className="-mb-0.5" />
-                <label className="text-sm">{comic.userRating ?? '88'}</label>
-              </div>
+              {comic.sumStars > 0 && (
+                <>
+                  <div
+                    className="w-9 flex flex-col items-center"
+                    title="Number of stars (popularity)"
+                  >
+                    <FaRegStar size={14} className="-mb-0.5" />
+                    <label className="text-sm">{comic.sumStars}</label>
+                  </div>
+                  <div
+                    className="w-9 flex flex-col items-center"
+                    title="Average stars per rating, 1-3 (enjoyment)"
+                  >
+                    <FaPercent size={14} className="-mb-0.5" />
+                    <label className="text-sm">{comic.avgStarsPercent}</label>
+                  </div>
+                </>
+              )}
               <div className="w-9 flex flex-col items-center" title="Last updated">
                 <LuRefreshCcw size={14} className="-mb-0.5" />
                 <label className="text-sm">{getTimeAgoShort(comic.updated, false)}</label>

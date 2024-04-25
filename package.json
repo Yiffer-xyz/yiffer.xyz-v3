@@ -55,7 +55,7 @@
     "wrangler": "3.19.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.17.1"
   },
   "packageManager": "yarn@4.0.2"
 }

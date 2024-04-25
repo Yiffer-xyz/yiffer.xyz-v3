@@ -265,24 +265,6 @@ FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));
 
 ------------------------------------------------------
--- COMIC VOTE
-------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comicvote` (
-`userId` INTEGER  NOT NULL,
-`comicId` INTEGER  NOT NULL,
-`vote` INTEGER  NOT NULL,
-`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`userId`, `comicId`),
-FOREIGN KEY (`comicId`)
-REFERENCES `comic` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-FOREIGN KEY (`userId`)
-REFERENCES `user` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE);
-
-------------------------------------------------------
 -- CONTRIBUTION POINTS
 ------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `contributionpoints` (
@@ -396,3 +378,24 @@ CREATE TABLE IF NOT EXISTS `spammableaction` (
 `username` TEXT   NULL DEFAULT NULL,
 `actionType` TEXT NOT NULL,
 PRIMARY KEY (`id`));
+
+------------------------------------------------------
+-- COMIC RATING
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comicrating` (
+`userId` INTEGER  NOT NULL,
+`comicId` INTEGER  NOT NULL,
+`rating` INTEGER  NOT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`userId`, `comicId`),
+FOREIGN KEY (`comicId`)
+REFERENCES `comic` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicrating_unique_user_comic` ON `comicrating` (`userId`, `comicId`);

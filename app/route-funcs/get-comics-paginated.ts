@@ -4,7 +4,10 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type ComicForBrowseDB = Omit<ComicForBrowse, 'tags'> & { tags?: string };
+type ComicForBrowseDB = Omit<ComicForBrowse, 'tags' | 'avgStarsPercent'> & {
+  tags?: string;
+  avgStars: number;
+};
 
 type GetComicsParams = {
   db: D1Database;
@@ -76,12 +79,12 @@ export async function getComicsPaginated({
     paginationQueryString += ' OFFSET ? ';
   }
 
-  const comicVoteQuery = `
+  const yourComicRatingQuery = `
     LEFT JOIN (
-      SELECT comicId, vote AS yourVote 
-      FROM comicvote 
+      SELECT comicId, rating AS yourRating 
+      FROM comicrating 
       WHERE userId = ?
-    ) AS voteQuery ON (comic.id = voteQuery.comicId) 
+    ) AS yourRatingQuery ON (comic.id = yourRatingQuery.comicId) 
   `;
 
   const includeTagsJoinString = includeTags
@@ -96,13 +99,13 @@ export async function getComicsPaginated({
     SELECT 
       comic.id AS id, comic.name, comic.tag AS category,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
-      ${userId ? ', voteQuery.yourVote AS yourRating' : ''}
+      ${userId ? ', yourRatingQuery.yourRating AS yourRating' : ''}
       ${includeTagsConcatString}
     FROM comic 
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
     INNER JOIN artist ON (artist.id = comic.artist) 
-    ${userId ? comicVoteQuery : ''} 
+    ${userId ? yourComicRatingQuery : ''} 
     ${filterQueryString}
     GROUP BY comic.name, comic.id 
     ${keywordCountString} 
@@ -140,13 +143,14 @@ export async function getComicsPaginated({
 
   const query = `
     SELECT cc.id, cc.name, cc.category, cc.artistName, 
-    cc.updated, cc.state, cc.published, cc.numberOfPages, AVG(comicvote.vote) AS userRating, 
+    cc.updated, cc.state, cc.published, cc.numberOfPages, 
+    SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred,
     ${userId ? 'cc.yourRating' : '0 AS yourRating'}
     ${includeTags ? ', cc.tags' : ''}
     FROM (
       ${innerComicQuery}
     ) AS cc 
-    LEFT JOIN comicvote ON (cc.id = comicvote.comicId) 
+    LEFT JOIN comicrating ON (cc.id = comicrating.comicId) 
     GROUP BY name, id 
     ${order === 'userRating' ? orderQueryString + paginationQueryString : ''} 
   `;
@@ -169,13 +173,17 @@ export async function getComicsPaginated({
   if (includeTags) {
     comics = comicsRaw.map(c => ({
       ...c,
+      avgStarsPercent: comicRatingsToPercent(c.sumStars, c.numTimesStarred),
       tags: c.tags?.split(',').map(tag => {
         const [name, id] = tag.split('~');
         return { name, id: parseInt(id, 10) };
       }),
     }));
   } else {
-    comics = comicsRaw as ComicForBrowse[];
+    comics = comicsRaw.map(c => ({
+      ...c,
+      avgStarsPercent: comicRatingsToPercent(c.sumStars, c.numTimesStarred),
+    })) as ComicForBrowse[];
   }
 
   return {
@@ -186,6 +194,11 @@ export async function getComicsPaginated({
       page: Math.ceil((offset ?? 0) / browsePageSize) + 1,
     },
   };
+}
+
+// Return the average as a % of 100, where 1 star = 0%, 2 stars = 50%, 3 stars = 100%
+function comicRatingsToPercent(sumStars: number, numTimesStarred: number) {
+  return Math.round((sumStars / numTimesStarred - 1) * 50);
 }
 
 export function getFilterQuery({

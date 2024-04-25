@@ -53,6 +53,9 @@ export type Comic = {
   publishStatus: ComicPublishStatus;
   category: Category;
   numberOfPages: number;
+  sumStars: number;
+  avgStarsPercent: number;
+  numTimesStarred: number;
   previousComic?: {
     id: number;
     name: string;
@@ -81,7 +84,9 @@ export type ComicForBrowse = {
   published: string;
   numberOfPages: number;
   state: 'wip' | 'cancelled' | 'finished';
-  userRating: number;
+  sumStars: number;
+  avgStarsPercent: number;
+  numTimesStarred: number;
   yourRating?: number;
   tags?: Tag[];
 };
