@@ -13,6 +13,9 @@ type DbComic = {
   numberOfPages: number;
   published?: string;
   updated?: string;
+  avgStars: number;
+  sumStars: number;
+  numTimesStarred: number;
   artistId: number;
   artistName: string;
   artistIsPending: 0 | 1;
@@ -97,6 +100,9 @@ function mergeDbFieldsToComic(
     numberOfPages: dbComic.numberOfPages,
     published: dbComic.published,
     updated: dbComic.updated,
+    avgStarsPercent: dbComic.avgStars ? Math.round((dbComic.avgStars - 1) * 50) : 0,
+    sumStars: dbComic.sumStars,
+    numTimesStarred: dbComic.numTimesStarred,
     artist: {
       id: dbComic.artistId,
       name: dbComic.artistName,
@@ -158,6 +164,9 @@ function getDbComicByFieldQuery(
       numberOfPages,
       published,
       updated,
+      AVG(comicrating.rating) AS avgStars,
+      SUM(comicrating.rating) AS sumStars,
+      COUNT(comicrating.rating) AS numTimesStarred,
       artist.id AS artistId,
       artist.name AS artistName,
       artist.isPending AS artistIsPending,
@@ -178,6 +187,7 @@ function getDbComicByFieldQuery(
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
+    LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
     WHERE comic.${fieldName} = ?
     LIMIT 1`;
 

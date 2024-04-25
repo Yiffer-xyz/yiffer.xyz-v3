@@ -13,6 +13,7 @@ import LiveComic from './LiveComic';
 import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
+import { FaRegStar } from 'react-icons/fa';
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
@@ -110,6 +111,10 @@ export default function ManageComicInner() {
             <>
               <p>Published: {format(new Date(comic.published), 'PPP')}</p>
               <p>Last updated: {format(new Date(comic.updated), 'PPP')}</p>
+              <p>
+                <FaRegStar size={16} className="mb-[5px]" /> {comic.sumStars} ·{' '}
+                {comic.avgStarsPercent}% · {comic.numTimesStarred} ratings
+              </p>
             </>
           )}
         </>
