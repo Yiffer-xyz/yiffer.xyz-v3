@@ -8,6 +8,7 @@ import { LuRefreshCcw } from 'react-icons/lu';
 import { getTimeAgoShort } from '~/utils/date-utils';
 import { FaPercent } from 'react-icons/fa6';
 import { useBrowseParams } from './SearchFilter/useBrowseParams';
+import { differenceInDays } from 'date-fns';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
@@ -18,16 +19,24 @@ export default function ComicCard({ comic }: ComicCardProps) {
   const { viewMode, comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
 
+  const isNewComic = differenceInDays(new Date(), new Date(comic.published)) < 14;
+
   return (
     <div
-      className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300 flex flex-col
+      className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300
+                  flex flex-col relative
                   ${comicCardTags ? 'h-fit' : ''}`}
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
         {/* Swap the below for SFW thumbnail */}
-        {/* <img src="https://static-beta.yiffer.xyz/pi/ADADAD.webp" alt="comic thumbnail" /> */}
-        <img src={url} alt="comic thumbnail" />
+        {/* <img
+          src="https://static-beta.yiffer.xyz/pi/ADADAD.webp"
+          alt="comic thumbnail"
+          style={{ height: 226 }}
+          height={226}
+        /> */}
+        <img src={url} alt="comic thumbnail" style={{ height: 226 }} height={226} />
       </RemixLink>
 
       <div
@@ -36,6 +45,10 @@ export default function ComicCard({ comic }: ComicCardProps) {
       >
         <label>{comic.category}</label>
       </div>
+
+      {comic.state !== 'finished' && <StateCorner state={comic.state} />}
+
+      {isNewComic && <NewCorner />}
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <Link href={`/${comic.name}`} text={comic.name} normalColor className="text-sm" />
@@ -111,6 +124,51 @@ export default function ComicCard({ comic }: ComicCardProps) {
 
 export function SkeletonComicCard() {
   return <div className="w-[100px] h-[300px] rounded bg-gray-500" />;
+}
+
+function StateCorner({ state }: { state: 'cancelled' | 'wip' }) {
+  return (
+    <div className="absolute top-0 left-0">
+      <div
+        className={`border-solid 
+              border-t-[60px] border-r-[60px] border-b-0 border-l-0
+              border-t-white dark:border-t-gray-300 
+              border-r-transparent border-b-transparent border-l-transparent
+              flex items-center justify-center`}
+      >
+        <div
+          className={`absolute h-[84px] w-[84px] -top-[41px] -left-[41px] 
+                          flex items-end justify-center -rotate-45`}
+        >
+          <label className={`font-semibold mb-1 text-sm`}>
+            {state === 'wip' && 'WIP'}
+            {state === 'cancelled' && 'DEAD'}
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewCorner() {
+  return (
+    <div className="absolute top-0 right-0">
+      <div
+        className={`border-solid 
+              border-t-[60px] border-l-[60px] border-b-0 border-r-0
+              border-t-white dark:border-t-gray-300 
+              border-r-transparent border-b-transparent border-l-transparent
+              flex items-center justify-center`}
+      >
+        <div
+          className={`absolute h-[84px] w-[84px] -top-[41px] -right-[41px] 
+                          flex items-end justify-center rotate-45`}
+        >
+          <label className={`font-bold mb-1 text-sm`}>NEW</label>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const TEMP_CARD_PICS = [
