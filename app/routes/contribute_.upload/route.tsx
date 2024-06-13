@@ -26,7 +26,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { ComicImage } from '~/utils/general';
-import { isUsernameUrl, randomString } from '~/utils/general';
+import { isUsernameUrl, padPageNumber, randomString } from '~/utils/general';
 import Button from '~/ui-components/Buttons/Button';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
@@ -34,15 +34,16 @@ import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
-const maxUploadBodySize = 80 * 1024 * 1024; // 80 MB
+const maxUploadBodySize = 100 * 1024 * 1024; // 100MB
 
 export function links() {
   return [{ rel: 'stylesheet', href: cropperCss }];
 }
 
 export default function Upload() {
-  const { artists, comics, user, tags } = useLoaderData<typeof loader>();
-  const [step, setStep] = useState<number | string>(1);
+  const { artists, comics, user, tags, IMAGES_SERVER_URL } =
+    useLoaderData<typeof loader>();
+  const [step, setStep] = useState<number | string>(2);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,13 +57,6 @@ export default function Upload() {
       if (submitFetcher.success) setStep('success');
       if (submitFetcher.isError) setError(submitFetcher.errorMessage);
     },
-  });
-
-  const uploadPagesFetcher = useGoodFetcher({
-    url: '/api/upload-comic-pages',
-    method: 'post',
-    encType: 'multipart/form-data',
-    toastError: true,
   });
 
   useEffect(() => {
@@ -79,7 +73,7 @@ export default function Upload() {
     const filesFormDatas = Array<FormData>();
     let currentFormData = new FormData();
     currentFormData.append(
-      'files',
+      'thumbnail',
       thumbnailFile,
       `thumbnail.${getFileExtension(thumbnailFile.name)}`
     );
@@ -93,14 +87,16 @@ export default function Upload() {
 
       // Split the request into multiple FormDatas/submissions if size is too big.
       if (currentFormDataSize + file.file.size > maxUploadBodySize) {
+        currentFormData.append('hasMore', 'true');
         filesFormDatas.push(currentFormData);
         currentFormData = new FormData();
         currentFormData.append('comicName', comicData.comicName);
+        currentFormData.append('uploadId', uploadId);
         currentFormDataSize = 0;
       }
 
       currentFormData.append(
-        `files`,
+        `pages`,
         file.file,
         pageNumberToPageName(i + 1, file.file.name)
       );
@@ -109,7 +105,14 @@ export default function Upload() {
     filesFormDatas.push(currentFormData);
 
     for (const formData of filesFormDatas) {
-      await uploadPagesFetcher.awaitSubmit(formData);
+      const res = await fetch(`${IMAGES_SERVER_URL}/comic-upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        return { error: 'Error uploading files to server' };
+      }
     }
 
     return {};
@@ -204,7 +207,7 @@ export default function Upload() {
   function fillWithStuff() {
     setComicData({
       ...comicData,
-      comicName: 'Test ' + randomString(12),
+      comicName: 'Test2 ' + randomString(12),
       category: 'MF',
       state: 'finished',
       validation: {
@@ -321,6 +324,7 @@ export async function loader(args: LoaderFunctionArgs) {
     comics,
     tags,
     user,
+    IMAGES_SERVER_URL: args.context.IMAGES_SERVER_URL,
   };
 }
 
@@ -345,8 +349,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 function pageNumberToPageName(pageNum: number, filename: string): string {
-  const pageNumberString: string =
-    pageNum < 100 ? (pageNum < 10 ? '00' + pageNum : '0' + pageNum) : pageNum.toString();
+  const pageNumberString = padPageNumber(pageNum);
   return `${pageNumberString}.${getFileExtension(filename)}`;
 }
 

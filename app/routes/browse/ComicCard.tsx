@@ -12,9 +12,10 @@ import { differenceInDays } from 'date-fns';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
+  pagesPath: string;
 };
 
-export default function ComicCard({ comic }: ComicCardProps) {
+export default function ComicCard({ comic, pagesPath }: ComicCardProps) {
   const url = TEMP_CARD_PICS[comic.id % TEMP_CARD_PICS.length];
   const { viewMode, comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
@@ -36,7 +37,13 @@ export default function ComicCard({ comic }: ComicCardProps) {
           style={{ height: 226 }}
           height={226}
         /> */}
-        <img src={url} alt="comic thumbnail" style={{ height: 226 }} height={226} />
+        {/* <img src={url} alt="comic thumbnail" style={{ height: 226 }} height={226} /> */}
+        <img
+          src={`${pagesPath}/${comic.name}/thumbnail-2x.webp`}
+          alt="comic thumbnail"
+          style={{ height: 226 }}
+          height={226}
+        />
       </RemixLink>
 
       <div

@@ -160,7 +160,7 @@ function getDbComicByFieldQuery(
       comic.name,
       state,
       publishStatus,
-      tag AS category,
+      category,
       numberOfPages,
       published,
       updated,

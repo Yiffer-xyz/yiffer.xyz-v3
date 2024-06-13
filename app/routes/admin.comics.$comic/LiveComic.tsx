@@ -8,7 +8,7 @@ import PageManager from '~/page-components/PageManager/PageManager';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import type { NewArtist, NewComicData } from '~/routes/contribute_.upload/route';
 import type { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
-import type { ComicImage, FieldChange } from '~/utils/general';
+import { padPageNumber, type ComicImage, type FieldChange } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 
@@ -119,7 +119,7 @@ export default function LiveComic({
   const comicPages: ComicImage[] = [];
   for (let i = 0; i < comic.numberOfPages; i++) {
     comicPages.push({
-      url: `${PAGES_PATH}/${comic.name}/00${i + 1}.jpg`,
+      url: `${PAGES_PATH}/${comic.name}/${padPageNumber(i + 1)}.jpg`,
     });
   }
 

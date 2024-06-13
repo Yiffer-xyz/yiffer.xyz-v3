@@ -4,12 +4,13 @@
 export interface Env {
   FRONT_END_URL_BASE: string;
   FRONT_PAGE_URL: string;
+  IMAGES_SERVER_URL: string;
+  PAGES_PATH: string;
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;
   DAILY_SCHEDULE_PUBLISH_COUNT: string;
   SENTRY_DSN: string;
   SENTRY_AUTH_TOKEN: string;
-  PAGES_PATH: string;
   COMICS_BUCKET: R2Bucket;
   DB: D1Database;
 }
@@ -56,6 +57,7 @@ export type Comic = {
   sumStars: number;
   avgStarsPercent: number;
   numTimesStarred: number;
+  // isBookmarked: boolean; // TODO-bookmarks
   previousComic?: {
     id: number;
     name: string;

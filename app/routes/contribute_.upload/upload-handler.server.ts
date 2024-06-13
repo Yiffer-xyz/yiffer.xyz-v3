@@ -145,8 +145,8 @@ async function createComic(
 ): ResultOrErrorPromise<number> {
   const query = `
     INSERT INTO comic
-    (name, cat, tag, state, numberOfPages, artist, publishStatus)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    (name, category, state, numberOfPages, artist, publishStatus)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
   const values = [
     uploadBody.comicName.trim(),
@@ -161,11 +161,20 @@ async function createComic(
   if (result.isError) {
     return makeDbErrObj(result, 'Error inserting comic');
   }
-  // TODO-db: insertid
-  if (!result.insertId) {
-    return makeDbErrObj(result, 'Error inserting comic: no insert ID');
+
+  const newComicIdRes = await queryDb<{ id: number }[]>(
+    db,
+    'SELECT id FROM comic WHERE name = ?',
+    [uploadBody.comicName]
+  );
+  if (newComicIdRes.isError) {
+    return makeDbErrObj(newComicIdRes, 'Error getting new comic id');
   }
-  return { result: result.insertId };
+  if (newComicIdRes.result.length === 0) {
+    return makeDbErrObj(newComicIdRes, 'Error getting new comic id - no result');
+  }
+
+  return { result: newComicIdRes.result[0].id };
 }
 
 async function createArtist(
@@ -188,10 +197,21 @@ async function createArtist(
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error inserting artist');
   }
-  const artistId = dbRes.insertId;
-  if (!artistId) {
-    return makeDbErrObj(dbRes, 'Error inserting artist - no insert id');
+  // const artistId = dbRes.insertId;
+  const getNewArtistQuery = `SELECT id FROM artist WHERE name = ?`;
+  const getNewArtistValues = [newArtist.artistName.trim()];
+  const artistRes = await queryDb<{ id: number }[]>(
+    db,
+    getNewArtistQuery,
+    getNewArtistValues
+  );
+  if (artistRes.isError) {
+    return makeDbErrObj(artistRes, 'Error getting new artist id');
   }
+  if (artistRes.result.length === 0) {
+    return makeDbErrObj(artistRes, 'Error getting new artist id - no result');
+  }
+  const artistId = artistRes.result[0].id;
 
   if (newArtist.links && newArtist.links.length > 0) {
     const err = await createArtistLinks(db, newArtist, artistId);

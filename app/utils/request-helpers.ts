@@ -1,6 +1,10 @@
 import type { TypedResponse } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import type { DBResponse, ExecDBResponse } from '~/utils/database-facade';
+import type {
+  DBResponse,
+  ExecDBResponse,
+  QueryWithParams,
+} from '~/utils/database-facade';
 import { HANDLED_ERR_MSG } from '~/utils/error';
 // import * as Sentry from '@sentry/browser';
 
@@ -24,6 +28,7 @@ export type ApiError = {
   error?: DBResponse<any> | ExecDBResponse;
   logMessage: string;
   context?: { [key: string]: any };
+  dbQueries?: QueryWithParams[];
 };
 
 // Logs and throws an error to be caught by error boundary. Use for server errors.
@@ -45,7 +50,7 @@ export async function processApiError(
 
 // Use this when not wanting to throw an error (when you want
 // to show a nice error message to the user), but still need to log it.
-export function logApiError(
+export async function logApiError(
   prependMessage: string | undefined,
   err: ApiError,
   context?: { [key: string]: any }
@@ -54,8 +59,13 @@ export function logApiError(
     ? prependMessage + ' >> ' + err.logMessage
     : err.logMessage;
 
-  console.log('⛔', fullErrMsg);
-  console.log(err);
+  console.log('⛔');
+  console.log(fullErrMsg);
+  console.log('⛔');
+  console.log(err.context);
+  console.log('⛔');
+  console.log(err.error);
+  console.log('⛔');
 
   const extra: any = {
     ...(err.context || {}),
@@ -63,6 +73,21 @@ export function logApiError(
   };
   if (err.error) {
     extra.dbResponse = err.error;
+  }
+
+  try {
+    await fetch('https://images-srv.testyiffer.xyz/error-log', {
+      // await fetch('http://localhost:8770/error-log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        error: err,
+      }),
+    });
+  } catch (e) {
+    console.log('Error logging error', e);
   }
 
   // Sentry.captureMessage(fullErrMsg, {
@@ -88,6 +113,8 @@ export function makeDbErr(
   message?: string,
   context?: { [key: string]: any }
 ): ApiError {
+  if (!err.isError) throw new Error('makeDbErr called with non-error response');
+
   return {
     error: err,
     logMessage: message ?? 'No log message supplied (bad!)',
@@ -103,11 +130,7 @@ export function makeDbErrObj(
   context?: { [key: string]: any }
 ): { err: ApiError } {
   return {
-    err: {
-      error: err,
-      logMessage: message ?? 'No log message supplied (bad!)',
-      context: context || {},
-    },
+    err: makeDbErr(err, message, context),
   };
 }
 

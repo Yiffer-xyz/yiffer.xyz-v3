@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS comicbookmark;
+DROP TABLE IF EXISTS comicrating;
 DROP TABLE IF EXISTS spammableaction;
 DROP TABLE IF EXISTS resettoken;
 DROP TABLE IF EXISTS keywordsuggestion;

@@ -15,7 +15,12 @@ export default function SuccessMessage({ isLoggedIn }: SuccessMessageProps) {
       {isLoggedIn ? (
         <p>
           You can view the status of your submission at the{' '}
-          <Link href="/contribute/your-contributions" text="your contributions" /> page.
+          <Link
+            href="/contribute/your-contributions"
+            text="your contributions"
+            className="!text-white"
+          />{' '}
+          page.
         </p>
       ) : (
         <p>

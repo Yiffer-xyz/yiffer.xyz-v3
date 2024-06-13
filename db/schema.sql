@@ -122,7 +122,7 @@ REFERENCES `user` (`id`));
 CREATE TABLE IF NOT EXISTS `comic` (
 `id` INTEGER  NOT NULL ,
 `name` TEXT NOT NULL,
-`tag` TEXT CHECK( `tag` IN ('M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I') ) NOT NULL,
+`category` TEXT CHECK( `category` IN ('M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I') ) NOT NULL,
 `numberOfPages` INTEGER NOT NULL,
 `published` TIMESTAMP NULL DEFAULT NULL,
 `updated` TIMESTAMP NULL DEFAULT NULL,
@@ -399,3 +399,23 @@ ON UPDATE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicrating_unique_user_comic` ON `comicrating` (`userId`, `comicId`);
+
+------------------------------------------------------
+-- COMIC BOOKMARK
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comicbookmark` (
+  `userId` INTEGER  NOT NULL,
+  `comicId` INTEGER  NOT NULL,
+  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userId`, `comicId`),
+  FOREIGN KEY (`comicId`)
+  REFERENCES `comic` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
+  FOREIGN KEY (`userId`)
+  REFERENCES `user` (`id`)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicbookmark_unique_user_comic` ON `comicbookmark` (`userId`, `comicId`);

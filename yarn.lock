@@ -1952,6 +1952,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/uuid@npm:^9":
+  version: 9.0.8
+  resolution: "@types/uuid@npm:9.0.8"
+  checksum: b411b93054cb1d4361919579ef3508a1f12bf15b5fdd97337d3d351bece6c921b52b6daeef89b62340fd73fd60da407878432a1af777f40648cbe53a01723489
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/eslint-plugin@npm:^5.59.0":
   version: 5.62.0
   resolution: "@typescript-eslint/eslint-plugin@npm:5.62.0"
@@ -9448,6 +9455,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "uuid@npm:9.0.1"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 1607dd32ac7fc22f2d8f77051e6a64845c9bce5cd3dd8aa0070c074ec73e666a1f63c7b4e0f4bf2bc8b9d59dc85a15e17807446d9d2b17c8485fbc2147b27f9b
+  languageName: node
+  linkType: hard
+
 "uvu@npm:^0.5.0":
   version: 0.5.6
   resolution: "uvu@npm:0.5.6"
@@ -9901,6 +9917,7 @@ __metadata:
     "@types/lodash.debounce": "npm:^4"
     "@types/react": "npm:^18.2.20"
     "@types/react-dom": "npm:^18.2.7"
+    "@types/uuid": "npm:^9"
     bcryptjs: "npm:^2.4.3"
     clsx: "npm:^2.0.0"
     concurrently: "npm:^8.2.2"
@@ -9924,6 +9941,7 @@ __metadata:
     tailwindcss: "npm:^3.4.0"
     typescript: "npm:^5.1.0"
     use-resize-observer: "npm:^9.1.0"
+    uuid: "npm:^9.0.1"
     wrangler: "npm:3.19.0"
   languageName: unknown
   linkType: soft

@@ -149,5 +149,9 @@ export async function loader(args: LoaderFunctionArgs) {
     return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
   }
 
-  return { comic: comicsRes.result, user, PAGES_PATH: args.context.PAGES_PATH };
+  return {
+    comic: comicsRes.result,
+    user,
+    PAGES_PATH: args.context.PAGES_PATH,
+  };
 }

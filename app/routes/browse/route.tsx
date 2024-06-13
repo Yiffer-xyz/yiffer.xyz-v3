@@ -42,13 +42,15 @@ export async function loader(args: LoaderFunctionArgs) {
     comics: comicsRes.result.comics,
     numberOfPages: comicsRes.result.numberOfPages,
     totalNumComics: comicsRes.result.totalNumComics,
+    pagesPath: args.context.PAGES_PATH,
   };
 }
 
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
-  const { comics, numberOfPages, totalNumComics } = useLoaderData<typeof loader>();
+  const { comics, numberOfPages, totalNumComics, pagesPath } =
+    useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
   function onPageChange(newPage: number) {
@@ -117,7 +119,9 @@ export default function BrowsePage() {
 
       <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4">
         {comics
-          ? comics.map(comic => <ComicCard comic={comic} key={comic.id} />)
+          ? comics.map(comic => (
+              <ComicCard comic={comic} key={comic.id} pagesPath={pagesPath} />
+            ))
           : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}
       </div>
     </div>

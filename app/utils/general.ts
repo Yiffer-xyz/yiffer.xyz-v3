@@ -66,3 +66,7 @@ export function isUsernameUrl(str: string): boolean {
 export function boolToInt(bool: boolean): 0 | 1 {
   return bool ? 1 : 0;
 }
+
+export function padPageNumber(pageNumber: number) {
+  return pageNumber.toString().padStart(4, '0');
+}

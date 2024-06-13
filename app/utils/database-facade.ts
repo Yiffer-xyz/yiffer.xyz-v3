@@ -2,6 +2,7 @@ export type DBResponse<T> =
   | {
       isError: true;
       errorMessage: string;
+      queriesWithParams?: QueryWithParams[];
     }
   | {
       isError: false;
@@ -12,6 +13,7 @@ export type DBResponse<T> =
 export type ExecDBResponse = {
   isError: boolean;
   errorMessage?: string;
+  queriesWithParams?: QueryWithParams[];
 };
 
 export type QueryWithParams = {
@@ -55,11 +57,10 @@ export async function queryDbMultiple<T>(
       result: results as T,
     };
   } catch (err: any) {
-    console.error(err);
-    console.log(queriesWithParams);
     return {
       isError: true,
       errorMessage: `QueryDbMultiple err: ${err.message}`,
+      queriesWithParams,
     };
   }
 }
@@ -91,11 +92,10 @@ export async function queryDb<T>(
       };
     }
   } catch (err: any) {
-    console.error(err);
-    console.log({ query, params });
     return {
       isError: true,
       errorMessage: err.message,
+      queriesWithParams: [{ query, params }],
     };
   }
 }
@@ -117,6 +117,7 @@ export async function queryDbExec(
     return {
       isError: true,
       errorMessage: err.message,
+      queriesWithParams: [{ query, params }],
     };
   }
 }

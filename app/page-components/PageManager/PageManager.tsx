@@ -1,5 +1,5 @@
 import { GridContextProvider, GridDropZone, GridItem, swap } from 'react-grid-dnd';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
 import { MdDelete } from 'react-icons/md';
@@ -32,7 +32,10 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
   function onDragEnd(_: string, sourceIndex: number, targetIndex: number) {
     lastDragEndTime.current = Date.now();
     if (sourceIndex === targetIndex) return;
+    console.log('swap!');
+    console.log(files);
     const newFiles = swap(files, sourceIndex, targetIndex);
+    console.log(newFiles);
     onChange(newFiles);
   }
 
@@ -46,13 +49,23 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
     const containerHeight = numberOfRows * (PAGE_CONTAINER_HEIGHT + PAGES_SPACING);
     return { pagesPerRow, containerHeight };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [PAGE_IMG_WIDTH, files.length, width]);
+  }, [
+    PAGE_CONTAINER_HEIGHT,
+    PAGE_IMG_WIDTH,
+    files.length,
+    gridContainerRef.current,
+    width,
+  ]);
 
   function deleteImage(imageIndex: number) {
     const newFiles = [...files];
     newFiles.splice(imageIndex, 1);
     onChange(newFiles);
   }
+
+  useEffect(() => {
+    console.log('files', files);
+  }, [files]);
 
   return (
     <>
@@ -75,7 +88,7 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
           >
             {files.map((file, index) => (
               <GridItem
-                key={file.file?.name || file.url || index}
+                key={file.file?.name ?? file.url ?? index}
                 style={{
                   height: PAGE_CONTAINER_HEIGHT + PAGES_SPACING,
                   width: PAGE_IMG_WIDTH + PAGES_SPACING,

@@ -32,9 +32,9 @@ export async function publishComic(
 ): Promise<ApiError | undefined> {
   const query = `
     UPDATE comic
-    SET publishStatus = "published",
-      published = NOW(),
-      updated = NOW()
+    SET publishStatus = 'published',
+      published = CURRENT_TIMESTAMP,
+      updated = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
   const dbRes = await queryDbExec(db, query, [comicId]);

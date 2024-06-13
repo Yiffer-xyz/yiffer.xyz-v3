@@ -78,14 +78,14 @@ export async function getComicsPaginated({
   if (offset) {
     paginationQueryString += ' OFFSET ? ';
   }
-
-  const yourComicRatingQuery = `
-    LEFT JOIN (
-      SELECT comicId, rating AS yourRating 
-      FROM comicrating 
-      WHERE userId = ?
-    ) AS yourRatingQuery ON (comic.id = yourRatingQuery.comicId) 
-  `;
+  // TODO-bookmarks
+  // const isBookmarkedQuery = `
+  //   LEFT JOIN (
+  //     SELECT comicId, 1 as isBookmarked
+  //     FROM comicbookmark
+  //     WHERE userId = ?
+  //   ) AS isBookmarkedQuery ON (comic.id = isBookmarkedQuery.comicId)
+  // `;
 
   const includeTagsJoinString = includeTags
     ? `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
@@ -95,17 +95,32 @@ export async function getComicsPaginated({
     ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
     : '';
 
+  // TODO-bookmarks
+  // const innerComicQuery = `
+  //   SELECT
+  //     comic.id AS id, comic.name, comic.category,
+  //     artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages
+  //     ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
+  //     ${includeTagsConcatString}
+  //   FROM comic
+  //   ${includeTagsJoinString}
+  //   ${innerJoinKeywordString}
+  //   INNER JOIN artist ON (artist.id = comic.artist)
+  //   ${userId ? isBookmarkedQuery : ''}
+  //   ${filterQueryString}
+  //   GROUP BY comic.name, comic.id
+  //   ${keywordCountString}
+  //   ${order === 'userRating' ? '' : orderQueryString + paginationQueryString}
+
   const innerComicQuery = `
     SELECT 
-      comic.id AS id, comic.name, comic.tag AS category,
+      comic.id AS id, comic.name, comic.category,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
-      ${userId ? ', yourRatingQuery.yourRating AS yourRating' : ''}
       ${includeTagsConcatString}
     FROM comic 
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
     INNER JOIN artist ON (artist.id = comic.artist) 
-    ${userId ? yourComicRatingQuery : ''} 
     ${filterQueryString}
     GROUP BY comic.name, comic.id 
     ${keywordCountString} 
@@ -142,7 +157,7 @@ export async function getComicsPaginated({
   }
 
   const query = `
-    SELECT cc.id, cc.name, cc.category, cc.artistName, 
+    SELECT cc.id, cc.name, cc.category, cc.artistName,
     cc.updated, cc.state, cc.published, cc.numberOfPages, 
     SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred,
     ${userId ? 'cc.yourRating' : '0 AS yourRating'}
@@ -152,7 +167,7 @@ export async function getComicsPaginated({
     ) AS cc 
     LEFT JOIN comicrating ON (cc.id = comicrating.comicId) 
     GROUP BY name, id 
-    ${order === 'userRating' ? orderQueryString + paginationQueryString : ''} 
+    ${orderQueryString} 
   `;
 
   const dbRes = await queryDbMultiple<[ComicForBrowseDB[], { count: number }[]]>(db, [
