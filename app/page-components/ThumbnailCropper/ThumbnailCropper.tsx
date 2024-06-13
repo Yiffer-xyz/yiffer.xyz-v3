@@ -53,7 +53,7 @@ export default function ThumbnailCropper({
     }
     const width = currentCropEvent.detail.width;
     const height = currentCropEvent.detail.height;
-    if (width < 400 || height < 564) {
+    if (width < 480 || height < 564) {
       setIsTooSmall(true);
       setCropResult(undefined);
       return;
@@ -91,7 +91,7 @@ export default function ThumbnailCropper({
                   ref={cropperRef}
                   background={false}
                   viewMode={1}
-                  minCanvasWidth={400}
+                  minCanvasWidth={480}
                   crop={e => onCropAreaChange(e)}
                 />
                 {isTooSmall && isMobile && (
@@ -153,7 +153,7 @@ export default function ThumbnailCropper({
                   <InfoBox variant="error" text={`Too small!`}>
                     {currentCropEvent?.detail && (
                       <p>
-                        minimum 400px, currently{' '}
+                        minimum 480px wide, currently{' '}
                         {Math.floor(currentCropEvent.detail.width)}px.
                       </p>
                     )}
