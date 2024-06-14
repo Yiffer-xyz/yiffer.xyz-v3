@@ -13,6 +13,8 @@ type DbComic = {
   numberOfPages: number;
   published?: string;
   updated?: string;
+  isBookmarked?: boolean;
+  yourStars?: number;
   avgStars: number;
   sumStars: number;
   numTimesStarred: number;
@@ -46,15 +48,24 @@ type DbTag = {
   tagName: string;
 };
 
-export async function getComicByField(
-  db: D1Database,
-  fieldName: 'id' | 'name',
-  fieldValue: string | number,
-  excludeMetadata?: boolean
-): ResultOrNotFoundOrErrorPromise<Comic> {
-  const logCtx = { fieldName, fieldValue, excludeMetadata };
+type GetComicByFieldParams = {
+  db: D1Database;
+  fieldName: 'id' | 'name';
+  fieldValue: string | number;
+  userId?: number;
+  includeMetadata?: boolean;
+};
+
+export async function getComicByField({
+  db,
+  fieldName,
+  fieldValue,
+  userId,
+  includeMetadata = false,
+}: GetComicByFieldParams): ResultOrNotFoundOrErrorPromise<Comic> {
+  const logCtx = { fieldName, fieldValue, includeMetadata };
   const dbStatements: QueryWithParams[] = [
-    getDbComicByFieldQuery(fieldName, fieldValue),
+    getDbComicByFieldQuery(fieldName, fieldValue, userId),
     getLinksByComicFieldQuery(fieldName, fieldValue),
     fieldName === 'id'
       ? getTagsByComicIdQuery(fieldValue as number)
@@ -79,7 +90,8 @@ export async function getComicByField(
     comicRes[0],
     linksRes,
     tagsRes,
-    !!excludeMetadata
+    includeMetadata,
+    userId
   );
 
   return { result: finalComic };
@@ -89,8 +101,13 @@ function mergeDbFieldsToComic(
   dbComic: DbComic,
   dbLinksRows: DbComicLink[],
   dbTagsRows: DbTag[],
-  excludeMetadata: boolean
+  includeMetadata: boolean,
+  userId?: number
 ): Comic {
+  const userFields = userId
+    ? { isBookmarked: !!dbComic.isBookmarked, yourStars: dbComic.yourStars ?? 0 }
+    : {};
+
   const comic: Comic = {
     id: dbComic.id,
     name: dbComic.name,
@@ -103,6 +120,7 @@ function mergeDbFieldsToComic(
     avgStarsPercent: dbComic.avgStars ? Math.round((dbComic.avgStars - 1) * 50) : 0,
     sumStars: dbComic.sumStars,
     numTimesStarred: dbComic.numTimesStarred,
+    ...userFields,
     artist: {
       id: dbComic.artistId,
       name: dbComic.artistName,
@@ -130,7 +148,7 @@ function mergeDbFieldsToComic(
     }
   }
 
-  if (!excludeMetadata) {
+  if (includeMetadata) {
     comic.metadata = {
       timestamp: dbComic.timestamp,
       errorText: dbComic.errorText,
@@ -153,8 +171,20 @@ function mergeDbFieldsToComic(
 
 function getDbComicByFieldQuery(
   fieldName: 'id' | 'name',
-  fieldValue: string | number
+  fieldValue: string | number,
+  userId?: number
 ): QueryWithParams {
+  const isBookmarkedQuery = `
+    LEFT JOIN (
+      SELECT comicId, 1 as isBookmarked
+      FROM comicbookmark
+      WHERE userId = ?
+    ) AS isBookmarkedQuery ON (comic.id = isBookmarkedQuery.comicId)
+  `;
+
+  const userRatingQuery =
+    'LEFT JOIN comicrating AS userCR ON comic.id = userCR.comicId AND userCR.userId = ?';
+
   const comicQuery = `SELECT
       comic.id,
       comic.name,
@@ -183,17 +213,21 @@ function getDbComicByFieldQuery(
       comicmetadata.originalArtistIfRejected,
       comicmetadata.unlistComment,
       comicmetadata.pendingProblemModId
+      ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
+      ${userId ? ', userCR.rating AS yourStars' : ''}
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
     LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
+    ${userId ? isBookmarkedQuery : ''}
+    ${userId ? userRatingQuery : ''}
     WHERE comic.${fieldName} = ?
     LIMIT 1`;
 
   return {
     query: comicQuery,
-    params: [fieldValue],
+    params: userId ? [userId, userId, fieldValue] : [fieldValue],
   };
 }
 

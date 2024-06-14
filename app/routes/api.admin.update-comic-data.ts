@@ -28,7 +28,12 @@ export async function updateComicData(
   db: D1Database,
   changes: ComicDataChanges
 ): Promise<ApiError | undefined> {
-  const comicRes = await getComicByField(db, 'id', changes.comicId);
+  const comicRes = await getComicByField({
+    db,
+    fieldName: 'id',
+    fieldValue: changes.comicId,
+  });
+
   if (comicRes.err) {
     return wrapApiError(comicRes.err, `Could not update comic data`, changes);
   }

@@ -78,14 +78,16 @@ export async function getComicsPaginated({
   if (offset) {
     paginationQueryString += ' OFFSET ? ';
   }
-  // TODO-bookmarks
-  // const isBookmarkedQuery = `
-  //   LEFT JOIN (
-  //     SELECT comicId, 1 as isBookmarked
-  //     FROM comicbookmark
-  //     WHERE userId = ?
-  //   ) AS isBookmarkedQuery ON (comic.id = isBookmarkedQuery.comicId)
-  // `;
+  const isBookmarkedQuery = `
+    LEFT JOIN (
+      SELECT comicId, 1 as isBookmarked
+      FROM comicbookmark
+      WHERE userId = ?
+    ) AS isBookmarkedQuery ON (comic.id = isBookmarkedQuery.comicId)
+  `;
+
+  const yourStarsQuery =
+    'LEFT JOIN comicrating AS userCR ON comic.id = userCR.comicId AND userCR.userId = ?';
 
   const includeTagsJoinString = includeTags
     ? `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
@@ -95,36 +97,23 @@ export async function getComicsPaginated({
     ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
     : '';
 
-  // TODO-bookmarks
-  // const innerComicQuery = `
-  //   SELECT
-  //     comic.id AS id, comic.name, comic.category,
-  //     artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages
-  //     ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
-  //     ${includeTagsConcatString}
-  //   FROM comic
-  //   ${includeTagsJoinString}
-  //   ${innerJoinKeywordString}
-  //   INNER JOIN artist ON (artist.id = comic.artist)
-  //   ${userId ? isBookmarkedQuery : ''}
-  //   ${filterQueryString}
-  //   GROUP BY comic.name, comic.id
-  //   ${keywordCountString}
-  //   ${order === 'userRating' ? '' : orderQueryString + paginationQueryString}
-
   const innerComicQuery = `
-    SELECT 
+    SELECT
       comic.id AS id, comic.name, comic.category,
-      artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages 
+      artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages
+      ${userId ? ', userCR.rating AS yourStars' : ''}
+      ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}
-    FROM comic 
+    FROM comic
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
-    INNER JOIN artist ON (artist.id = comic.artist) 
+    INNER JOIN artist ON (artist.id = comic.artist)
+    ${userId ? yourStarsQuery : ''}
+    ${userId ? isBookmarkedQuery : ''}
     ${filterQueryString}
-    GROUP BY comic.name, comic.id 
-    ${keywordCountString} 
-    ${order === 'userRating' ? '' : orderQueryString + paginationQueryString} 
+    GROUP BY comic.name, comic.id
+    ${keywordCountString}
+    ${order === 'userRating' ? '' : orderQueryString + paginationQueryString}
   `;
 
   const totalCountQuery = isUnfilteredQuery
@@ -143,8 +132,9 @@ export async function getComicsPaginated({
   let queryParams: any[] = [];
   const totalCountQueryParams: any[] = [];
 
+  // For bookmarked and yourStars queries
   if (userId) {
-    queryParams = [userId];
+    queryParams = [userId, userId];
   }
   queryParams.push(...filterQueryParams);
   totalCountQueryParams.push(...filterQueryParams);
@@ -159,8 +149,8 @@ export async function getComicsPaginated({
   const query = `
     SELECT cc.id, cc.name, cc.category, cc.artistName,
     cc.updated, cc.state, cc.published, cc.numberOfPages, 
-    SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred,
-    ${userId ? 'cc.yourRating' : '0 AS yourRating'}
+    SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
+    ${userId ? ', cc.yourStars, cc.isBookmarked ' : ''}
     ${includeTags ? ', cc.tags' : ''}
     FROM (
       ${innerComicQuery}
@@ -252,8 +242,7 @@ export function getFilterQuery({
       const categoryStrings: string[] = [];
       categories.forEach(category => {
         filterQueryParams.push(category);
-        // TODO: In the future, rename this shit, it's so bad
-        categoryStrings.push(' Tag = ? ');
+        categoryStrings.push(' category = ? ');
       });
       queries.push(`(${categoryStrings.join('OR')})`);
     }

@@ -16,11 +16,14 @@ import {
   useBrowseParams,
 } from './SearchFilter/useBrowseParams';
 import { getUIPrefSession } from '~/utils/theme.server';
+import { authLoader } from '~/utils/loaders';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const params = parseBrowseParams(url.searchParams);
   const uiPrefSession = await getUIPrefSession(args.request);
+  const user = await authLoader(args);
 
   const categories = params.categories.includes('All') ? undefined : params.categories;
 
@@ -33,6 +36,7 @@ export async function loader(args: LoaderFunctionArgs) {
     tagIDs: params.tagIDs.length > 0 ? params.tagIDs : undefined,
     categories,
     includeTags: uiPrefSession.getUiPref().comicCardTags,
+    userId: user?.userId,
   });
   if (comicsRes.err) {
     return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
@@ -55,6 +59,14 @@ export default function BrowsePage() {
 
   function onPageChange(newPage: number) {
     setPage(newPage);
+  }
+
+  const toggleBookmarkFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/toggle-bookmark',
+  });
+  function toggleBookmark(comicId: number) {
+    toggleBookmarkFetcher.submit({ comicId });
   }
 
   return (
@@ -117,10 +129,15 @@ export default function BrowsePage() {
         {totalNumComics.toLocaleString('en').replace(',', ' ')} comics
       </p>
 
-      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4">
+      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4 max-w-[1780px] mx-auto pb-20">
         {comics
           ? comics.map(comic => (
-              <ComicCard comic={comic} key={comic.id} pagesPath={pagesPath} />
+              <ComicCard
+                comic={comic}
+                key={comic.id}
+                pagesPath={pagesPath}
+                toggleBookmark={toggleBookmark}
+              />
             ))
           : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}
       </div>

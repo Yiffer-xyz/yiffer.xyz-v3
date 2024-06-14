@@ -141,7 +141,12 @@ export async function loader(args: LoaderFunctionArgs) {
     return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
   }
 
-  const comicsRes = await getComicByField(args.context.DB, 'id', comicId);
+  const comicsRes = await getComicByField({
+    db: args.context.DB,
+    fieldName: 'id',
+    fieldValue: comicId,
+    includeMetadata: true,
+  });
   if (comicsRes.err) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }

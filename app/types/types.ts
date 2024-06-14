@@ -54,10 +54,11 @@ export type Comic = {
   publishStatus: ComicPublishStatus;
   category: Category;
   numberOfPages: number;
+  isBookmarked?: boolean;
+  yourStars?: number;
   sumStars: number;
   avgStarsPercent: number;
   numTimesStarred: number;
-  // isBookmarked: boolean; // TODO-bookmarks
   previousComic?: {
     id: number;
     name: string;
@@ -86,10 +87,11 @@ export type ComicForBrowse = {
   published: string;
   numberOfPages: number;
   state: 'wip' | 'cancelled' | 'finished';
+  yourStars?: number;
+  isBookmarked?: boolean;
   sumStars: number;
   avgStarsPercent: number;
   numTimesStarred: number;
-  yourRating?: number;
   tags?: Tag[];
 };
 

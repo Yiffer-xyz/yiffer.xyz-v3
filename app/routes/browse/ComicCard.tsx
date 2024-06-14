@@ -6,17 +6,18 @@ import { IoDocumentOutline } from 'react-icons/io5';
 import { FaRegStar } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
 import { getTimeAgoShort } from '~/utils/date-utils';
-import { FaPercent } from 'react-icons/fa6';
+import { FaPercent, FaBookmark } from 'react-icons/fa6';
 import { useBrowseParams } from './SearchFilter/useBrowseParams';
 import { differenceInDays } from 'date-fns';
+import clsx from 'clsx';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
   pagesPath: string;
+  toggleBookmark: (comicId: number) => void;
 };
 
-export default function ComicCard({ comic, pagesPath }: ComicCardProps) {
-  const url = TEMP_CARD_PICS[comic.id % TEMP_CARD_PICS.length];
+export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCardProps) {
   const { viewMode, comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
 
@@ -30,14 +31,6 @@ export default function ComicCard({ comic, pagesPath }: ComicCardProps) {
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
-        {/* Swap the below for SFW thumbnail */}
-        {/* <img
-          src="https://static-beta.yiffer.xyz/pi/ADADAD.webp"
-          alt="comic thumbnail"
-          style={{ height: 226 }}
-          height={226}
-        /> */}
-        {/* <img src={url} alt="comic thumbnail" style={{ height: 226 }} height={226} /> */}
         <img
           src={`${pagesPath}/${comic.name}/thumbnail-2x.webp`}
           alt="comic thumbnail"
@@ -58,7 +51,23 @@ export default function ComicCard({ comic, pagesPath }: ComicCardProps) {
       {isNewComic && <NewCorner />}
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
-        <Link href={`/${comic.name}`} text={comic.name} normalColor className="text-sm" />
+        <div>
+          {comic.isBookmarked && (
+            <button className="pr-1.5 group" onClick={() => toggleBookmark(comic.id)}>
+              <FaBookmark
+                size={14}
+                className={`inline-block transition-all text-theme1-primary dark:text-theme1-darker 
+                group-hover:text-theme1-darker2 dark:group-hover:text-theme1-primary`}
+              />
+            </button>
+          )}
+          <Link
+            href={`/${comic.name}`}
+            text={comic.name}
+            normalColor
+            className="text-sm"
+          />
+        </div>
         <Link
           href={`/artist/${comic.artistName}`}
           text={comic.artistName}
@@ -76,10 +85,25 @@ export default function ComicCard({ comic, pagesPath }: ComicCardProps) {
                 <>
                   <div
                     className="w-9 flex flex-col items-center"
-                    title="Number of stars (popularity)"
+                    title={`Number of stars (popularity)${
+                      comic.yourStars ? ' & Your stars' : ''
+                    }`}
                   >
-                    <FaRegStar size={14} className="-mb-0.5" />
-                    <label className="text-sm">{comic.sumStars}</label>
+                    <FaRegStar
+                      size={14}
+                      className={clsx(
+                        '-mb-0.5',
+                        comic.yourStars && 'text-theme1-darker dark:text-theme1-dark'
+                      )}
+                    />
+                    <div className="flex items-center">
+                      <label className="text-sm">{comic.sumStars}</label>
+                      {comic.yourStars && (
+                        <label className="text-sm font-bold ml-1 text-theme1-darker dark:text-theme1-dark">
+                          {comic.yourStars}
+                        </label>
+                      )}
+                    </div>
                   </div>
                   <div
                     className="w-9 flex flex-col items-center"
@@ -177,37 +201,3 @@ function NewCorner() {
     </div>
   );
 }
-
-const TEMP_CARD_PICS = [
-  'https://static.yiffer.xyz/comics/Predators%20of%20Kilimanjaro/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Burning%20Curiosity/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/PhanPhan%20Phantasies%20-%20Chapter%201/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Double%20Trouble/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/The%20Roadwars/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Comic%20Relief/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Undertail%20Love%20or%20be%20Loved/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Beach%20Daze/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Rocket%20Cock/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/The%20Silk%20Sash/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Breeder%20Season/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Night%20Mares%204/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Weekend/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Interns%20Vol%203/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Strapped%20In/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Wishes%203/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Little%20Red%20(Pokilewd)/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Gay%20by%20Play/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Heavy%20Lifting%20(SigmaX)/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Outside%20the%20Box%20Ch.%202/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/The%20Right%20Size/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Loona%20Comic/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/A%20Show%20of%20the%20Ropes/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Movie%20Night%20(Jishinu)/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Business%20Casual/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Not%20So%20Little%20Red%202/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Entangled/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/CinderFrost/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Shedding%20Inhibitions%20-%20Chapter%208/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Table%20For%20Three%202/thumbnail.webp',
-  'https://static.yiffer.xyz/comics/Ancient%20Relic%20Adventure%20-%20%20Chapter%201/thumbnail.webp',
-];

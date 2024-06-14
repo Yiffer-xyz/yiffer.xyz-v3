@@ -9,7 +9,6 @@ import {
   MdArrowForward,
   MdHome,
 } from 'react-icons/md';
-import Button from '~/ui-components/Buttons/Button';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import Link from '~/ui-components/Link';

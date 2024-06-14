@@ -43,6 +43,10 @@ export const colors = {
     darker2: '#00c37a',
     darker3: '#00b56d',
   },
+  themeMiddle: {
+    primary: '#9AEBE7',
+    dark: '#08CCC2',
+  },
   blue: {
     // "strong" because the saturation is high. To be used in DARK mode
     strong: {
