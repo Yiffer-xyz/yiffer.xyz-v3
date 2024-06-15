@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 import { RiCloseLine } from 'react-icons/ri';
+import useWindowSize from '~/utils/useWindowSize';
 
 export type BaseMultiSelectProps<T> = {
   options: { text: string; value: T }[];
@@ -7,7 +9,9 @@ export type BaseMultiSelectProps<T> = {
   title?: string;
   maxWidth?: number;
   initialWidth?: number;
+  reduceWidthBy?: number;
   name: string;
+  includeClearAll?: boolean;
   placeholder?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -26,7 +30,9 @@ export default function MultiSelect<T>({
   equalSingleItemValueFunc,
   maxWidth = 999999,
   initialWidth = 0, // TODO needed?
+  reduceWidthBy = 0,
   name,
+  includeClearAll,
   placeholder = '',
   className = '',
   ...props
@@ -37,6 +43,8 @@ export default function MultiSelect<T>({
   const [width, setWidth] = useState(0);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
   const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
+
+  const { isMobile } = useWindowSize();
 
   useEffect(() => {
     tryComputeWidth();
@@ -120,12 +128,11 @@ export default function MultiSelect<T>({
   }, [initialWidth, minWidth, width]);
 
   const widthStyle = useMemo(() => {
-    return { width: '100%' }; // TODO
     if (width) {
-      return { width: `${width}px` };
+      return { width: `${width - (reduceWidthBy ?? 0)}px` };
     }
-    return {};
-  }, [width]);
+    return { width: '100%' };
+  }, [reduceWidthBy, width]);
 
   async function waitMillisec(millisec: number) {
     return new Promise<void>(resolve => {
@@ -236,11 +243,18 @@ export default function MultiSelect<T>({
           <>
             {value.map(singleVal => (
               <div
-                className="px-2 bg-theme1-primaryTrans h-fit rounded hover:bg-theme1-primaryLessTrans hover:line-through"
+                className={`px-2 bg-theme1-primaryTrans rounded hover:bg-red-trans focus:bg-red-trans
+                  flex flex-row items-center h-8 md:h-fit`}
                 onClick={() => onDeselected(singleVal)}
                 key={JSON.stringify(singleVal)}
               >
                 <p className="">{getTextFromValue(singleVal)}</p>
+
+                {isMobile && (
+                  <span className="">
+                    <IoCloseOutline size={13} className="mt-[1px] -mr-1 ml-0.5" />
+                  </span>
+                )}
               </div>
             ))}
           </>
@@ -261,7 +275,7 @@ export default function MultiSelect<T>({
       </div>
 
       {/* CLEAR CROSS ICON */}
-      {value && value.length > 0 && (
+      {value && value.length > 0 && includeClearAll && (
         <span
           className="absolute right-2 top-4 hover:cursor-pointer"
           onClick={removeAllSelected}
@@ -283,7 +297,7 @@ export default function MultiSelect<T>({
             onClick={() => onSelected(optionValue)}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
-            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap 
+            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap w-fit 
               ${
                 currentlyHighlightedIndex === index
                   ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
@@ -294,14 +308,14 @@ export default function MultiSelect<T>({
             <p>{text}</p>
           </div>
         ))}
-        {/* {options.length === 0 && ( */}
-        <div
-          className="z-40 px-3 whitespace-nowrap text-gray-700 hover:cursor-default"
-          onClick={() => setSearchText('')}
-        >
-          No results
-        </div>
-        {/* )} */}
+        {options.length === 0 && (
+          <div
+            className="z-40 px-3 whitespace-nowrap text-gray-700 hover:cursor-default w-fit"
+            onClick={() => setSearchText('')}
+          >
+            No results
+          </div>
+        )}
       </div>
     </div>
   );

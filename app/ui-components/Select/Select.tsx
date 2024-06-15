@@ -178,7 +178,7 @@ export default function Select<T>({
       onBlur={() => setIsOpen(false)}
     >
       {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
-      <div // TODO: "selected" from old
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className={`border-0 border-b-2 px-2 after:absolute
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
