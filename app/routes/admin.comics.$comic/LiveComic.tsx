@@ -138,10 +138,12 @@ export default function LiveComic({
               isAdminPanel={true}
             />
 
+            <h4>Tags</h4>
             <TagsEditor
               allTags={allTags}
-              comicData={updatedComicData}
-              onUpdate={setUpdatedComicData}
+              tags={updatedComicData.tags}
+              onUpdate={tags => setUpdatedComicData({ ...updatedComicData, tags })}
+              includeClearAll
               className="mt-8 max-w-5xl"
             />
           </>

@@ -3,6 +3,7 @@ import { IoCaretDown } from 'react-icons/io5';
 import { waitMillisec } from '~/utils/general';
 import type { ButtonProps } from './Button';
 import Button from './Button';
+import clsx from 'clsx';
 
 type DropdownButtonProps = {
   options: { text: string; onClick: () => void }[];
@@ -112,7 +113,10 @@ export default function DropdownButton({
   const buttonStyle = width && areChildrenWider ? { width } : {};
 
   return (
-    <div className="relative inline-block text-left" onKeyDown={onKeyDown}>
+    <div
+      className={clsx(`relative inline-block text-left`, props.className)}
+      onKeyDown={onKeyDown}
+    >
       <Button
         {...props}
         text={text}

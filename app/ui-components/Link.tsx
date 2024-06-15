@@ -56,7 +56,7 @@ export default function Link({
       href={href}
       target={newTab ? '_blank' : '_self'}
       rel={newTab ? 'noreferrer' : undefined}
-      className={linkClass}
+      className={`whitespace-nowrap ${linkClass}`}
       style={{ paddingBottom: '1px' }}
     >
       {Icon ? (
@@ -73,7 +73,7 @@ export default function Link({
       to={href}
       target={newTab ? '_blank' : '_self'}
       rel={newTab ? 'noreferrer' : undefined}
-      className={linkClass}
+      className={`whitespace-nowrap ${linkClass}`}
       style={{ paddingBottom: '1px' }}
       prefetch="intent"
       {...props}

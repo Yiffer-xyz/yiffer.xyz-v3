@@ -264,10 +264,12 @@ export default function Upload() {
 
           <Step4Thumbnail comicData={comicData} onUpdate={setComicData} />
 
+          <h4>Tags</h4>
           <TagsEditor
             allTags={tags}
-            comicData={comicData}
-            onUpdate={setComicData}
+            tags={comicData.tags}
+            onUpdate={tags => setComicData({ ...comicData, tags })}
+            includeClearAll
             className="mt-8"
           />
 

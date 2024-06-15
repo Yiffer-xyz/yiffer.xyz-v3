@@ -9,7 +9,6 @@ export type BaseMultiSelectProps<T> = {
   title?: string;
   maxWidth?: number;
   initialWidth?: number;
-  reduceWidthBy?: number;
   name: string;
   includeClearAll?: boolean;
   placeholder?: string;
@@ -30,7 +29,6 @@ export default function MultiSelect<T>({
   equalSingleItemValueFunc,
   maxWidth = 999999,
   initialWidth = 0, // TODO needed?
-  reduceWidthBy = 0,
   name,
   includeClearAll,
   placeholder = '',
@@ -41,6 +39,7 @@ export default function MultiSelect<T>({
   const [searchText, setSearchText] = useState('');
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
+  const [areOptionsFullWidth, setAreOptionsFullWidth] = useState(false);
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
   const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
 
@@ -91,6 +90,7 @@ export default function MultiSelect<T>({
       await waitMillisec(25);
       isFinished = computeWidth();
     }
+    setAreOptionsFullWidth(true);
   }
 
   function computeWidth() {
@@ -129,10 +129,10 @@ export default function MultiSelect<T>({
 
   const widthStyle = useMemo(() => {
     if (width) {
-      return { width: `${width - (reduceWidthBy ?? 0)}px` };
+      return { width };
     }
     return { width: '100%' };
-  }, [reduceWidthBy, width]);
+  }, [width]);
 
   async function waitMillisec(millisec: number) {
     return new Promise<void>(resolve => {
@@ -297,7 +297,8 @@ export default function MultiSelect<T>({
             onClick={() => onSelected(optionValue)}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
-            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap w-fit 
+            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap 
+              ${areOptionsFullWidth ? 'w-full' : 'w-fit'}
               ${
                 currentlyHighlightedIndex === index
                   ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
@@ -310,7 +311,9 @@ export default function MultiSelect<T>({
         ))}
         {options.length === 0 && (
           <div
-            className="z-40 px-3 whitespace-nowrap text-gray-700 hover:cursor-default w-fit"
+            className={`z-40 px-3 whitespace-nowrap text-gray-700 hover:cursor-default ${
+              areOptionsFullWidth ? 'w-full' : 'w-fit'
+            }`}
             onClick={() => setSearchText('')}
           >
             No results

@@ -28,6 +28,10 @@ Pitfall: If you make a route func that's supposed to be a GET route, you must ex
 
 API Routes that are not tied to a single component are still `action`s. These have their own routes starting with `/api/<routename>`, and the files are therefore named `.api.<routename>`. For these, the action function is often slim, only dealing with the request/response un/packing, using a helper function to do the actual work. This is for reusability's sake - other actions can also use this helper function.
 
+### Dates
+
+Unfortunately, sqlite does not support time zones in their dates. Therefore, every date is stored as UTC. When displaying dates, they should be converted to the user's timezone _on the front-end only_. The CF workers run anywhere, so we must treat everything as UTC there (i.e. no `new Date()` -> `toDateString()` etc. in the api). Additionally, when going from back-end to front-end in Remix, dates are serialized as strings. So, in the front-end, whenever a date is encountered, run it through `UTCTimeStrToLocalDate` to get a correct `Date` object. Whenever a date is sent to the back-end, it should be serialized as a string using `localDateToUTCTimeStr`.
+
 ## Error handling
 
 To make logging and tracing(invaluable!) errors as easy as possible, and to force us to catch errors as they arise, there is a system in place. It might take a little getting used to, but it is extremely handy, also for ensuring correct typing. There are quite a few helper types and functions mentioned below, they are all exported from `request-helpers.ts`.

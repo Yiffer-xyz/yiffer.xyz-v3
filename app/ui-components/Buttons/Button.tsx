@@ -15,6 +15,7 @@ export type ButtonProps = {
   onMouseEnter?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onMouseLeave?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
+  disableElevation?: boolean;
 };
 
 export default function Button({
@@ -34,6 +35,7 @@ export default function Button({
   onMouseEnter,
   onMouseLeave,
   onBlur,
+  disableElevation,
   ...props
 }: ButtonProps) {
   let variantClassname = '';
@@ -47,7 +49,7 @@ export default function Button({
   if (variant === 'contained' && color === 'primary') {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
       dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100 dark:focus:bg-blue-strong-100
-      shadow hover:shadow-md focus:shadow-md
+      ${disableElevation ? '' : 'shadow hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 
@@ -66,7 +68,7 @@ export default function Button({
   if (variant === 'contained' && color === 'error') {
     variantClassname += ` bg-red-weak-200 hover:bg-red-weak-100 focus:bg-red-weak-100
       dark:bg-red-strong-200 dark:hover:bg-red-strong-100 dark:focus:bg-red-strong-100
-      shadow hover:shadow-md focus:shadow-md
+      ${disableElevation ? '' : 'shadow hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 

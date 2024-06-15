@@ -6,10 +6,11 @@ import { IoDocumentOutline } from 'react-icons/io5';
 import { FaRegStar } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
 import { getTimeAgoShort } from '~/utils/date-utils';
-import { FaPercent, FaBookmark } from 'react-icons/fa6';
+import { FaBookmark } from 'react-icons/fa6';
 import { useBrowseParams } from './SearchFilter/useBrowseParams';
 import { differenceInDays } from 'date-fns';
 import clsx from 'clsx';
+import TagElement from '~/ui-components/TagElement/TagElement';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
@@ -105,13 +106,13 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
                       )}
                     </div>
                   </div>
-                  <div
+                  {/* <div
                     className="w-9 flex flex-col items-center"
                     title="Average stars per rating, 1-3 (enjoyment)"
                   >
                     <FaPercent size={14} className="-mb-0.5" />
                     <label className="text-sm">{comic.avgStarsPercent}</label>
-                  </div>
+                  </div> */}
                 </>
               )}
               <div className="w-9 flex flex-col items-center" title="Last updated">
@@ -124,28 +125,14 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
 
         {comic.tags?.length && comicCardTags && (
           <div className="w-full flex flex-row flex-wrap gap-x-1 gap-y-1 items-center justify-center mt-1.5 mb-1">
-            {comic.tags.map(tag => {
-              const isTagFiltered = tagIDs.includes(tag.id);
-              const colorsStyle = isTagFiltered
-                ? 'text-theme1-darker dark:text-theme1-dark dark:border-theme1-dark hover:shadow-none hover:border-gray-900'
-                : 'text-gray-500 dark:text-gray-900 dark:border-gray-500 border-gray-900';
-
-              return (
-                <div
-                  key={tag.id}
-                  onClick={() => addTagID(tag.id)}
-                  role="button"
-                  className={`px-1.5 py-[1px] rounded-full leading-0 cursor-pointer hover:shadow
-                            border border-gray-900  transition-all duration-75 dark:duration-0
-                            w-fit text-gray-500 hover:text-theme1-darker
-                            dark:text-gray-900 dark:hover:text-theme1-dark dark:border-gray-500
-                            hover:border-transparent dark:hover:border-theme1-dark
-                            ${colorsStyle}`}
-                >
-                  <span className="text-xs">{tag.name}</span>
-                </div>
-              );
-            })}
+            {comic.tags.map(tag => (
+              <TagElement
+                tag={tag}
+                isActive={tagIDs.includes(tag.id)}
+                onClick={addTagID}
+                key={tag.id}
+              />
+            ))}
           </div>
         )}
       </div>

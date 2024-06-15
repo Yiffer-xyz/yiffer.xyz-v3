@@ -4,9 +4,14 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type ComicForBrowseDB = Omit<ComicForBrowse, 'tags' | 'avgStarsPercent'> & {
+type ComicForBrowseDB = Omit<
+  ComicForBrowse,
+  'tags' | 'avgStarsPercent' | 'updated' | 'published'
+> & {
   tags?: string;
   avgStars: number;
+  updated: string;
+  published: string;
 };
 
 type GetComicsParams = {
@@ -65,10 +70,7 @@ export async function getComicsPaginated({
     !search &&
     !artistId;
 
-  let orderBy = (order ?? 'updated') as string;
-  if (order === 'random') orderBy = 'RANDOM()';
-  if (!['updated', 'userRating', 'yourRating', 'RANDOM()'].includes(orderBy))
-    orderBy = 'updated';
+  const orderBy = orderByParamToDbField(order ?? 'updated');
   const orderQueryString = `ORDER BY ${orderBy} DESC`;
 
   let paginationQueryString = '';
@@ -113,7 +115,8 @@ export async function getComicsPaginated({
     ${filterQueryString}
     GROUP BY comic.name, comic.id
     ${keywordCountString}
-    ${order === 'userRating' ? '' : orderQueryString + paginationQueryString}
+    ${order === 'userRating' ? '' : orderQueryString}
+    ${paginationQueryString}
   `;
 
   const totalCountQuery = isUnfilteredQuery
@@ -173,23 +176,17 @@ export async function getComicsPaginated({
   }
 
   const [comicsRaw, countDbRes] = dbRes.result;
-  let comics: ComicForBrowse[];
 
-  if (includeTags) {
-    comics = comicsRaw.map(c => ({
-      ...c,
-      avgStarsPercent: comicRatingsToPercent(c.sumStars, c.numTimesStarred),
-      tags: c.tags?.split(',').map(tag => {
-        const [name, id] = tag.split('~');
-        return { name, id: parseInt(id, 10) };
-      }),
-    }));
-  } else {
-    comics = comicsRaw.map(c => ({
-      ...c,
-      avgStarsPercent: comicRatingsToPercent(c.sumStars, c.numTimesStarred),
-    })) as ComicForBrowse[];
-  }
+  const comics: ComicForBrowse[] = comicsRaw.map(c => ({
+    ...c,
+    avgStarsPercent: comicRatingsToPercent(c.sumStars, c.numTimesStarred),
+    tags: includeTags
+      ? c.tags?.split(',').map(tag => {
+          const [name, id] = tag.split('~');
+          return { name, id: parseInt(id, 10) };
+        })
+      : undefined,
+  })) as ComicForBrowse[];
 
   return {
     result: {
@@ -266,4 +263,19 @@ export function getFilterQuery({
     keywordCountString,
     innerJoinKeywordString,
   ];
+}
+
+function orderByParamToDbField(orderBy: string) {
+  switch (orderBy) {
+    case 'updated':
+      return 'updated';
+    case 'userRating':
+      return 'sumStars';
+    case 'yourRating':
+      return 'yourStars';
+    case 'random':
+      return 'RANDOM()';
+    default:
+      return 'updated';
+  }
 }
