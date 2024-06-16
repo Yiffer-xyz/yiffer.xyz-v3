@@ -25,6 +25,7 @@
     "date-fns": "^2.30.0",
     "isbot": "^3.6.8",
     "lodash.debounce": "^4.0.8",
+    "pluralize": "^8.0.0",
     "react": "^18.2.0",
     "react-calendar": "^4.6.1",
     "react-cropper": "^2.3.3",
@@ -42,6 +43,7 @@
     "@remix-run/eslint-config": "^2.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/lodash.debounce": "^4",
+    "@types/pluralize": "^0.0.33",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@types/uuid": "^9",
@@ -54,10 +56,10 @@
     "prettier": "^3.1.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.1.0",
-    "wrangler": "3.19.0"
+    "wrangler": "3.60.3"
   },
   "engines": {
     "node": ">=18.17.1"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.2.1"
 }

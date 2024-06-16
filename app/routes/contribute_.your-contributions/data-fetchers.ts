@@ -6,7 +6,8 @@ import type {
   ComicUploadVerdict,
   ContributedComic,
   ContributionStatus,
-  TagSuggestion,
+  ContributionTagSuggestion,
+  TagSuggestionContributionItem,
 } from '~/types/types';
 
 export type DbContributedComic = {
@@ -70,27 +71,54 @@ export function mapDbContributedComics(comics: DbContributedComic[]): Contribute
   return mappedComics;
 }
 
+function numberOrNullToBoolean(value: number | null): boolean | null {
+  return value === 1 ? true : value === 0 ? false : null;
+}
+
 export type DbTagSuggestion = {
+  tagSuggestionGroupId: number;
   comicName: string;
-  status: ContributionStatus;
+  isProcessed: number;
   timestamp: string;
   tagName: string;
   isAdding: boolean;
+  isApproved: number | null;
 };
 
-export function mapDBTagSuggestions(suggestions: DbTagSuggestion[]): TagSuggestion[] {
-  return suggestions.map(dbTagSuggestion => ({
-    comicName: dbTagSuggestion.comicName,
-    status: dbTagSuggestion.status,
-    timestamp: dbTagSuggestion.timestamp,
-    suggestion: `${dbTagSuggestion.isAdding ? 'ADD' : 'REMOVE'} ${
-      dbTagSuggestion.tagName
-    }`,
-    points: dbTagSuggestion.status === 'approved' ? 5 : 0,
-    pointsDescription: undefined,
-    modComment: undefined,
-    type: 'TagSuggestion',
-  }));
+export function mapDBTagSuggestions(
+  suggestions: DbTagSuggestion[]
+): ContributionTagSuggestion[] {
+  // first, group together all suggestions of the same tagSuggestionGroupId:
+  const groupedSuggestions: Record<number, DbTagSuggestion[]> = {};
+  suggestions.forEach(dbTagSuggestion => {
+    if (!groupedSuggestions[dbTagSuggestion.tagSuggestionGroupId]) {
+      groupedSuggestions[dbTagSuggestion.tagSuggestionGroupId] = [];
+    }
+    groupedSuggestions[dbTagSuggestion.tagSuggestionGroupId].push(dbTagSuggestion);
+  });
+
+  const mappedSuggestions: ContributionTagSuggestion[] = [];
+  Object.values(groupedSuggestions).forEach(group => {
+    const isProcessed = group[0].isProcessed === 1;
+    const tags: TagSuggestionContributionItem[] = group.map(dbTagSuggestion => ({
+      tagName: dbTagSuggestion.tagName,
+      isAdding: dbTagSuggestion.isAdding,
+      isApproved: numberOrNullToBoolean(dbTagSuggestion.isApproved),
+    }));
+
+    mappedSuggestions.push({
+      comicName: group[0].comicName,
+      status: isProcessed ? 'processed' : 'pending',
+      timestamp: group[0].timestamp,
+      points:
+        tags.filter(t => t.isApproved).length * CONTRIBUTION_POINTS.tagSuggestion.points,
+      type: 'TagSuggestion',
+      addTags: tags.filter(tag => tag.isAdding),
+      removeTags: tags.filter(tag => !tag.isAdding),
+    });
+  });
+
+  return mappedSuggestions;
 }
 
 export type DbComicProblem = {
@@ -105,7 +133,10 @@ export function mapDBComicProblems(problems: DbComicProblem[]): ComicProblem[] {
     comicName: dbComicProblem.comicName,
     status: dbComicProblem.status,
     timestamp: dbComicProblem.timestamp,
-    points: dbComicProblem.status === 'approved' ? 15 : undefined,
+    points:
+      dbComicProblem.status === 'approved'
+        ? CONTRIBUTION_POINTS.comicProblem.points
+        : undefined,
     pointsDescription: undefined,
     modComment: undefined,
     type: 'ComicProblem',
@@ -159,13 +190,16 @@ export const yourContributedComicsQuery = `SELECT
 
 export const yourTagSuggestionsQuery = `SELECT 
     comic.Name AS comicName,
-    status,
-    timestamp,
+    tagsuggestiongroup.id AS tagSuggestionGroupId,
+    tagsuggestiongroup.isProcessed AS isProcessed,
+    tagsuggestiongroup.timestamp AS timestamp,
     keyword.KeywordName AS tagName,
-    isAdding
-  FROM keywordsuggestion
-  INNER JOIN comic ON (comic.Id = keywordsuggestion.ComicId)
-  INNER JOIN keyword ON (keyword.Id = keywordsuggestion.KeywordId)
+    tagsuggestionitem.isAdding AS isAdding,
+    tagsuggestionitem.isApproved AS isApproved
+  FROM tagsuggestiongroup
+  LEFT JOIN tagsuggestionitem ON (tagsuggestiongroup.id = tagsuggestionitem.tagSuggestionGroupId)
+  INNER JOIN keyword ON (keyword.id = tagsuggestionitem.keywordId)
+  INNER JOIN comic ON (comic.id = tagsuggestiongroup.comicId)
   WHERE userId = ?;
 `;
 

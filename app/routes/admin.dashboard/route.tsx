@@ -7,7 +7,7 @@ import type { AssignActionBody } from '../api.admin.assign-action';
 import type { UnAssignActionBody } from '../api.admin.unassign-action';
 import type { ProcessComicProblemBody } from '../api.admin.process-comic-problem';
 import type { ProcessComicSuggestionBody } from '../api.admin.process-comic-suggestion';
-import type { ComicSuggestionVerdict } from '~/types/types';
+import type { ComicSuggestionVerdict, TagSuggestionItem } from '~/types/types';
 import type { DashboardAction, DashboardActionType } from '../api.admin.dashboard-data';
 import type { TagSuggestionAction } from './TagSuggestion';
 import { TagSuggestion } from './TagSuggestion';
@@ -87,6 +87,9 @@ export default function Dashboard() {
 
   const filteredDashboardItems = useMemo(() => {
     if (!dashboardDataFetcher.data) return [];
+
+    console.log(dashboardDataFetcher.data.filter(x => x.type === 'tagSuggestion'));
+
     return dashboardDataFetcher.data.filter(action => {
       if (
         action.assignedMod &&
@@ -108,20 +111,21 @@ export default function Dashboard() {
     user.userId,
   ]);
 
-  async function processTagSuggestion(action: TagSuggestionAction, isApproved: boolean) {
+  async function processTagSuggestion(
+    action: TagSuggestionAction,
+    processedItems: TagSuggestionItem[]
+  ) {
     if (!action.comicId) return;
 
     const body: ProcessTagSuggestionBody = {
-      isApproved,
-      actionId: action.id,
-      isAdding: action.isAdding,
       comicId: action.comicId,
-      tagId: action.tagId,
+      suggestionGroupId: action.id,
       suggestingUserId: action.user.userId,
+      processedItems,
     };
 
     setLatestSubmittedId(action.id);
-    setLatestSubmittedAction(isApproved ? 'approve-tag' : 'reject-tag');
+    setLatestSubmittedAction('process-tag-suggestion');
     processTagFetcher.submit({ body: JSON.stringify(body) });
   }
 
@@ -266,9 +270,18 @@ export default function Dashboard() {
             {action.type === 'tagSuggestion' && (
               <TagSuggestion
                 action={action as TagSuggestionAction}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
                 onProcessSuggestion={processTagSuggestion}
                 loadingAction={latestSubmittedAction}
-                isLoading={latestSubmittedId === action.id && processTagFetcher.isLoading}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (processTagFetcher.isLoading ||
+                    assignModFetcher.isLoading ||
+                    unassignModFetcher.isLoading)
+                }
                 innerContainerClassName={innerContainerClassName}
               />
             )}

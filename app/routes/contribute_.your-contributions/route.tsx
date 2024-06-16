@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
+import { MdArrowDropDown, MdArrowDropUp, MdCheck, MdClose } from 'react-icons/md';
 import {
   Table,
   TableBody,
@@ -30,9 +30,16 @@ import {
   yourContributedComicsQuery,
   yourTagSuggestionsQuery,
 } from './data-fetchers';
-import type { Contribution, ContributionStatus } from '~/types/types';
+import type {
+  Contribution,
+  ContributionStatus,
+  ContributionTagSuggestion,
+} from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
+import pluralize from 'pluralize';
+import Button from '~/ui-components/Buttons/Button';
+import TagElement from '~/ui-components/TagElement/TagElement';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
@@ -69,7 +76,7 @@ export default function YourContributions() {
             <TableCell>Date</TableCell>
             <TableCell>Points</TableCell>
             <TableCell>Mod comment</TableCell>
-            <TableCell>Contribution Details</TableCell>
+            <TableCell className="text-end">Contribution Details</TableCell>
           </TableHeadRow>
           <TableBody>
             {contributions.map((contribution, index) => (
@@ -96,13 +103,13 @@ export default function YourContributions() {
                   <p className="font-semibold">{contribution.points || '-'}</p>
                   <p className="font-extralight">{contribution.pointsDescription}</p>
                 </TableCell>
-                <TableCell>
-                  <p className="font-extralight">{contribution.modComment || '-'}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-extralight">
-                    {getContributionDetails(contribution)}
+                <TableCell className="max-w-[300px]">
+                  <p className="font-extralight whitespace-pre-wrap">
+                    {contribution.modComment || '-'}
                   </p>
+                </TableCell>
+                <TableCell className="max-w-[300px] flex flex-col items-end">
+                  <ContributionDetails contribution={contribution} />
                 </TableCell>
               </TableRow>
             ))}
@@ -166,41 +173,115 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 }
 
-function getContributionDetails(contribution: Contribution) {
-  switch (contribution.type) {
-    case 'ContributedComic':
-      return (
-        <>
-          <p>Comic: {contribution.comicName}</p>
-          <p>Artist: {contribution.artistName}</p>
-          <p>
-            {contribution.numberOfPages} pages, {contribution.numberOfKeywords} tags
-          </p>
-        </>
-      );
-    case 'ComicProblem':
-      return (
-        <>
-          <p>Comic: {contribution.comicName}</p>
-          <p>Problem: {contribution.problemCategory}</p>
-        </>
-      );
-    case 'ComicSuggestion':
-      return (
-        <>
-          <p>Comic name: {contribution.comicName}</p>
-        </>
-      );
-    case 'TagSuggestion':
-      return (
-        <>
-          <p>Comic: {contribution.comicName}</p>
-          <p>Tag: {contribution.suggestion}</p>
-        </>
-      );
-    default:
-      return '-';
+function ContributionDetails({ contribution }: { contribution: Contribution }) {
+  if (contribution.type === 'ContributedComic') {
+    return (
+      <>
+        <p>Comic: {contribution.comicName}</p>
+        <p>Artist: {contribution.artistName}</p>
+        <p>
+          {contribution.numberOfPages} pages, {contribution.numberOfKeywords} tags
+        </p>
+      </>
+    );
+  } else if (contribution.type === 'ComicProblem') {
+    return (
+      <>
+        <p>Comic: {contribution.comicName}</p>
+        <p>Problem: {contribution.problemCategory}</p>
+      </>
+    );
+  } else if (contribution.type === 'ComicSuggestion') {
+    return (
+      <>
+        <p>Comic name: {contribution.comicName}</p>
+      </>
+    );
+  } else if (contribution.type === 'TagSuggestion') {
+    return <TagSuggestionDetails contribution={contribution} />;
   }
+
+  return '-';
+}
+
+function TagSuggestionDetails({
+  contribution,
+}: {
+  contribution: ContributionTagSuggestion;
+}) {
+  const [isViewingDetails, setIsViewingDetails] = useState(false);
+  const isAdd = contribution.addTags.length > 0;
+  const isRemove = contribution.removeTags.length > 0;
+  const isBoth = isAdd && isRemove;
+
+  let addRemoveString = '';
+  if (isBoth) {
+    addRemoveString = `Add ${pluralize(
+      'tag',
+      contribution.addTags.length,
+      true
+    )}, remove ${pluralize('tag', contribution.removeTags.length, true)}`;
+  } else if (isAdd) {
+    addRemoveString = `Add ${pluralize('tag', contribution.addTags.length, true)}`;
+  } else if (isRemove) {
+    addRemoveString = `Remove ${pluralize('tag', contribution.removeTags.length, true)}`;
+  }
+
+  console.log(contribution);
+
+  return (
+    <>
+      <p>Comic: {contribution.comicName}</p>
+      <p className={isViewingDetails ? 'mb-2' : ''}>{addRemoveString}</p>
+
+      {isViewingDetails && (
+        <>
+          {isAdd && (
+            <div className="flex flex-row flex-wrap justify-end w-full items-center gap-1">
+              <p className="whitespace-pre-wrap text-end mr-1">
+                <b>Add</b>
+              </p>
+              {contribution.addTags.map(tag => (
+                <TagElement
+                  tag={{ name: tag.tagName }}
+                  key={tag.tagName}
+                  approvalState={tag.isApproved === null ? undefined : tag.isApproved}
+                  disableHoverEffects
+                />
+              ))}
+            </div>
+          )}
+
+          {isRemove && (
+            <div
+              className={`flex flex-row flex-wrap justify-end w-full items-center gap-1 ${
+                isAdd && 'mt-2'
+              }`}
+            >
+              <p className="whitespace-pre-wrap text-end mr-1">
+                <b>Remove</b>
+              </p>
+              {contribution.removeTags.map(tag => (
+                <TagElement
+                  tag={{ name: tag.tagName }}
+                  key={tag.tagName}
+                  approvalState={tag.isApproved === null ? undefined : tag.isApproved}
+                  disableHoverEffects
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      <Button
+        text={isViewingDetails ? 'Hide details' : 'Show details'}
+        className={`self-end -mr-3 ${isViewingDetails ? 'mt-1 -mb-1' : '-my-1'}`}
+        variant="naked"
+        onClick={() => setIsViewingDetails(!isViewingDetails)}
+      />
+    </>
+  );
 }
 
 function getContributionName(contribution: Contribution) {
@@ -227,6 +308,8 @@ function getContributionStatusColor(status: ContributionStatus): string {
       return 'text-blue-800 dark:text-blue-300';
     case 'rejected':
       return 'text-red-500 dark:text-red-300';
+    case 'processed':
+      return 'text-teal-500 dark:text-teal-300';
   }
 }
 

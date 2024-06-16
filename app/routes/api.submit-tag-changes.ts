@@ -1,9 +1,11 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
+  makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
 
@@ -52,28 +54,42 @@ export async function submitTagChanges(
   userIP: string
 ): Promise<ApiError | undefined> {
   const logCtx = { userId, userIP, comicId, newTagIDs, removedTagIDs };
-  console.log(logCtx);
-  return;
 
-  // if (stars === 0) {
-  //   const deleteQuery = 'DELETE from comicrating WHERE userId = ? AND comicId = ?';
-  //   const dbRes = await queryDbExec(db, deleteQuery, [userId, comicId]);
-  //   if (dbRes.isError) {
-  //     return makeDbErr(dbRes, 'Error deleting rating', logCtx);
-  //   }
-  //   return;
-  // }
+  const makeGroupQuery = `INSERT INTO tagsuggestiongroup (comicId, userId, userIP) VALUES (?, ?, ?)`;
+  const makeGroupParams = [comicId, userId, userIP];
+  const makeGroupRes = await queryDbExec(db, makeGroupQuery, makeGroupParams);
+  if (makeGroupRes.isError) {
+    return makeDbErr(makeGroupRes, 'Error making tag suggestion group', logCtx);
+  }
 
-  // const upsertQuery = `
-  //   INSERT INTO comicrating (userId, comicId, rating) VALUES (?, ?, ?)
-  //   ON CONFLICT (userId, comicId) DO UPDATE SET rating = ?
-  // `;
-  // const queryParams = [userId, comicId, stars, stars];
+  const getGroupIdQuery = `SELECT id FROM tagsuggestiongroup WHERE comicId = ? AND userId = ? AND userIP = ? ORDER BY id DESC LIMIT 1`;
+  const getGroupIdParams = [comicId, userId, userIP];
+  const getGroupIdRes = await queryDb<{ id: number }[]>(
+    db,
+    getGroupIdQuery,
+    getGroupIdParams
+  );
+  if (getGroupIdRes.isError) {
+    return makeDbErr(getGroupIdRes, 'Error getting tag suggestion group ID', logCtx);
+  }
+  const groupId = getGroupIdRes.result[0].id;
 
-  // console.log(upsertQuery, queryParams);
+  let insertAllItemsQuery =
+    'INSERT INTO tagsuggestionitem (tagSuggestionGroupId, keywordId, isAdding) VALUES ';
+  const insertAllItemsParams: any[] = [];
 
-  // const dbRes = await queryDbExec(db, upsertQuery, queryParams);
-  // if (dbRes.isError) {
-  //   return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
-  // }
+  [...newTagIDs, ...removedTagIDs].forEach(tagId => {
+    insertAllItemsQuery += '(?, ?, ?), ';
+    insertAllItemsParams.push(groupId, tagId, newTagIDs.includes(tagId) ? 1 : 0);
+  });
+  insertAllItemsQuery = insertAllItemsQuery.slice(0, -2);
+
+  const insertAllItemsRes = await queryDbExec(
+    db,
+    insertAllItemsQuery,
+    insertAllItemsParams
+  );
+  if (insertAllItemsRes.isError) {
+    return makeDbErr(insertAllItemsRes, 'Error inserting tag suggestion items', logCtx);
+  }
 }

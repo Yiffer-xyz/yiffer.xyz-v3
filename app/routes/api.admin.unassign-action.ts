@@ -44,6 +44,9 @@ async function unAssignActionToMod(
   if (actionType === 'comicProblem') {
     table = 'comicproblem';
   }
+  if (actionType === 'tagSuggestion') {
+    table = 'tagsuggestiongroup';
+  }
   if (actionType === 'pendingComicProblem') {
     table = 'comicmetadata';
     identifyingColumn = 'comicId';

@@ -163,6 +163,12 @@ export type Tag = {
   name: string;
 };
 
+export type TagSuggestionItem = Tag & {
+  isApproved: boolean | null;
+  isAdding: boolean;
+  tagSuggestionItemId: number;
+};
+
 export type JwtConfig = {
   tokenSecret: string;
   cookie: {
@@ -236,7 +242,7 @@ export type ContributionPointsEntry = {
 
 export type FeedbackType = 'bug' | 'general' | 'support';
 
-export type ContributionStatus = 'pending' | 'approved' | 'rejected';
+export type ContributionStatus = 'pending' | 'approved' | 'rejected' | 'processed';
 
 export interface ContributionBase {
   comicName: string;
@@ -258,9 +264,16 @@ export interface ContributedComic extends ContributionBase {
   numberOfKeywords: number;
 }
 
-export interface TagSuggestion extends ContributionBase {
+export type TagSuggestionContributionItem = {
+  tagName: string;
+  isApproved: boolean | null;
+  isAdding: boolean;
+};
+
+export interface ContributionTagSuggestion extends ContributionBase {
   type: 'TagSuggestion';
-  suggestion: string;
+  addTags: TagSuggestionContributionItem[];
+  removeTags: TagSuggestionContributionItem[];
 }
 
 export interface ComicProblem extends ContributionBase {
@@ -271,7 +284,7 @@ export interface ComicProblem extends ContributionBase {
 export type Contribution =
   | ComicSuggestion
   | ContributedComic
-  | TagSuggestion
+  | ContributionTagSuggestion
   | ComicProblem;
 
 export type AdType = 'card' | 'banner' | 'topSmall';

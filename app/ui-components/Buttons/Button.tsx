@@ -43,8 +43,8 @@ export default function Button({
   const paddingString = noPadding
     ? ''
     : variant === 'contained' || variant === 'naked'
-      ? ' py-1.25 px-3 '
-      : ' py-1 px-2.75 ';
+      ? ' py-[6px] px-3 '
+      : ' py-1 px-[10px] ';
 
   if (variant === 'contained' && color === 'primary') {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
@@ -62,7 +62,7 @@ export default function Button({
   }
 
   if (variant === 'naked' && color === 'primary') {
-    variantClassname += ` bg-transparent dark:text-white text-blue-weak-200 ${paddingString} `;
+    variantClassname += ` bg-transparent dark:text-blue-strong-300 text-blue-weak-200 ${paddingString} `;
   }
 
   if (variant === 'contained' && color === 'error') {
@@ -102,9 +102,7 @@ export default function Button({
   const widthClass = noPadding ? '' : fullWidth ? 'w-full' : 'w-fit';
 
   const fullClassName =
-    `rounded ${
-      noPadding ? '' : 'py-1.5 px-3'
-    } font-bold flex flex-nowrap justify-center ` +
+    `rounded ${paddingString} font-bold flex flex-nowrap justify-center ` +
     `items-center transition-all duration-100 break-all text-sm` +
     ` ${widthClass}` +
     ` ${variantClassname} ${className} `;

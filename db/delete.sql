@@ -1,8 +1,10 @@
 DROP TABLE IF EXISTS comicbookmark;
 DROP TABLE IF EXISTS comicrating;
+DROP TABLE IF EXISTS tagsuggestionitem;
+DROP TABLE IF EXISTS tagsuggestiongroup;
+DROP TABLE IF EXISTS keywordsuggestion; -- old table, no longer in use
 DROP TABLE IF EXISTS spammableaction;
 DROP TABLE IF EXISTS resettoken;
-DROP TABLE IF EXISTS keywordsuggestion;
 DROP TABLE IF EXISTS modapplication;
 DROP TABLE IF EXISTS comiclink;
 DROP TABLE IF EXISTS comicmetadata;

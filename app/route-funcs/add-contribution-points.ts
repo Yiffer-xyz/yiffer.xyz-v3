@@ -5,9 +5,12 @@ import { makeDbErr } from '~/utils/request-helpers';
 
 export async function addContributionPoints(
   db: D1Database,
-  userId: number | null,
-  pointColumn: string
+  userId: number | null | undefined,
+  pointColumn: string,
+  numberOfPoints = 1
 ): Promise<ApiError | undefined> {
+  if (!userId) return;
+
   const yearMonth = format(new Date(), 'yyyy-MM');
   const logCtx = { userId, pointColumn, yearMonth };
 
@@ -34,9 +37,9 @@ export async function addContributionPoints(
     if (existingPoints.length === 0) {
       const insertPointsQuery = `
         INSERT INTO contributionpoints (userId, yearMonth, ${pointColumn})
-        VALUES (?, ?, 1)
+        VALUES (?, ?, ?)
       `;
-      const insertPointsQueryParams = [userId, timeVal];
+      const insertPointsQueryParams = [userId, timeVal, numberOfPoints];
       const insertDbRes = await queryDbExec(
         db,
         insertPointsQuery,
@@ -48,7 +51,7 @@ export async function addContributionPoints(
     } else {
       const updatePointsQuery = `
         UPDATE contributionpoints
-        SET ${pointColumn} = ${pointColumn} + 1
+        SET ${pointColumn} = ${pointColumn} + ${numberOfPoints}
         WHERE userId = ? AND yearMonth = ?
       `;
       const updatePointsQueryParams = [userId, timeVal];

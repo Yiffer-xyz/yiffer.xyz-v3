@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { queryDb } from '~/utils/database-facade';
+import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -9,13 +9,12 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
+import type { TagSuggestionItem } from '~/types/types';
 
 export type ProcessTagSuggestionBody = {
-  isApproved: boolean;
-  actionId: number;
-  isAdding: boolean;
+  suggestionGroupId: number;
   comicId: number;
-  tagId: number;
+  processedItems: TagSuggestionItem[];
   suggestingUserId?: number;
 };
 
@@ -28,11 +27,9 @@ export async function action(args: ActionFunctionArgs) {
   const err = await processTagSuggestion(
     args.context.DB,
     user?.userId as number,
-    fields.isApproved,
-    fields.actionId,
-    fields.isAdding,
+    fields.suggestionGroupId,
     fields.comicId,
-    fields.tagId,
+    fields.processedItems,
     fields.suggestingUserId
   );
 
@@ -47,46 +44,116 @@ export async function action(args: ActionFunctionArgs) {
 async function processTagSuggestion(
   db: D1Database,
   modId: number,
-  isApproved: boolean,
-  actionId: number,
-  isAdding: boolean,
+  suggestionGroupId: number,
   comicId: number,
-  tagId: number,
+  processedItems: TagSuggestionItem[],
   suggestingUserId?: number
 ): Promise<ApiError | undefined> {
-  const updateActionQuery = `UPDATE keywordsuggestion SET status = ?, modId = ? WHERE id = ?`;
-  const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
+  const updateGroupQuery = `UPDATE tagsuggestiongroup SET isProcessed = ?, modId = ? WHERE id = ?`;
+  const updateGroupQueryParams = [1, modId, suggestionGroupId];
 
-  if (isApproved) {
-    let updateTagQuery = undefined;
-    let updateTagQueryParams = undefined;
+  // Fetch all tags to be deleted or added, to see that they're corrently on the comic or present from it
+  const getTagsQuery = `SELECT keywordId FROM comickeyword WHERE comicId = ?`;
+  const getTagsQueryParams = [comicId];
+  const existingTagsQuery = await queryDb<{ keywordId: number }[]>(
+    db,
+    getTagsQuery,
+    getTagsQueryParams
+  );
+  if (existingTagsQuery.isError) {
+    return makeDbErr(
+      existingTagsQuery,
+      'Error getting existing tags in processTagSuggestion'
+    );
+  }
 
-    if (isAdding) {
-      updateTagQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES (?, ?)`;
-      updateTagQueryParams = [comicId, tagId];
-    } else {
-      updateTagQuery = `DELETE FROM comickeyword WHERE comicId = ? AND keywordId = ?`;
-      updateTagQueryParams = [comicId, tagId];
-    }
+  const tagIdsToInsert: number[] = [];
+  const tagIdsToDelete: number[] = [];
 
-    const dbRes = await queryDb(db, updateTagQuery, updateTagQueryParams);
-    if (dbRes.isError) {
-      if (dbRes.errorMessage.includes('UNIQUE constraint failed')) {
-        // If tag already existed on comic, just return silently. It's ok.
+  for (const item of processedItems) {
+    if (!item.isApproved) continue;
+    if (item.isAdding) {
+      if (existingTagsQuery.result.every(t => t.keywordId !== item.id)) {
+        tagIdsToInsert.push(item.id);
       } else {
-        return makeDbErr(dbRes, 'Error updating comickeyword in processTagSuggestion');
+        // Tag already existed on comic
+        item.isApproved = false;
+      }
+    } else {
+      if (existingTagsQuery.result.some(t => t.keywordId === item.id)) {
+        tagIdsToDelete.push(item.id);
+      } else {
+        // Tag was not on comic
+        item.isApproved = false;
       }
     }
   }
 
-  const dbRes = await queryDb(db, updateActionQuery, updateActionQueryParams);
-  if (dbRes.isError) {
-    return makeDbErr(dbRes, 'Error updating keywordsuggestion in processTagSuggestion');
+  // Insert tags
+  if (tagIdsToInsert.length > 0) {
+    const insertTagsQuery = `INSERT INTO comickeyword (comicId, keywordId) VALUES ${tagIdsToInsert
+      .map(() => '(?, ?)')
+      .join(', ')}`;
+    const insertTagsQueryParams = tagIdsToInsert.flatMap(id => [comicId, id]);
+    const insertTagsQueryRes = await queryDb(db, insertTagsQuery, insertTagsQueryParams);
+    if (insertTagsQueryRes.isError) {
+      return makeDbErr(
+        insertTagsQueryRes,
+        'Error inserting tags in processTagSuggestion'
+      );
+    }
   }
 
-  const tableName = isApproved ? 'tagSuggestion' : 'tagSuggestionRejected';
-  const err = await addContributionPoints(db, suggestingUserId ?? null, tableName);
+  // Delete tags
+  if (tagIdsToDelete.length > 0) {
+    const deleteTagsQuery = `DELETE FROM comickeyword WHERE comicId = ? AND keywordId IN (${tagIdsToDelete
+      .map(() => '?')
+      .join(', ')})`;
+    const deleteTagsQueryParams = [comicId, ...tagIdsToDelete];
+    const deleteTagsQueryRes = await queryDb(db, deleteTagsQuery, deleteTagsQueryParams);
+    if (deleteTagsQueryRes.isError) {
+      return makeDbErr(deleteTagsQueryRes, 'Error deleting tags in processTagSuggestion');
+    }
+  }
+
+  // Update tag suggestion items
+  const updateItemsQuery = `UPDATE tagsuggestionitem SET isApproved = ? WHERE id = ?`;
+  const updateItemsQueryRes = await queryDbMultiple(
+    db,
+    processedItems.map(item => ({
+      query: updateItemsQuery,
+      params: [item.isApproved ? 1 : 0, item.tagSuggestionItemId],
+    }))
+  );
+  if (updateItemsQueryRes.isError) {
+    return makeDbErr(
+      updateItemsQueryRes,
+      'Error updating tagsuggestionitem in processTagSuggestion'
+    );
+  }
+
+  // Update group
+  const updateGroupQueryRes = await queryDbExec(
+    db,
+    updateGroupQuery,
+    updateGroupQueryParams
+  );
+  if (updateGroupQueryRes.isError) {
+    return makeDbErr(
+      updateGroupQueryRes,
+      'Error updating tagsuggestiongroup in processTagSuggestion'
+    );
+  }
+
+  // Assign points!
+  const numberOfApprovedItems = processedItems.filter(item => item.isApproved).length;
+  const err = await addContributionPoints(
+    db,
+    suggestingUserId,
+    'tagSuggestion',
+    numberOfApprovedItems
+  );
   if (err) {
-    return wrapApiError(err, `Error adding contribution points`);
+    return wrapApiError(err, 'Error adding contribution points');
   }
 }

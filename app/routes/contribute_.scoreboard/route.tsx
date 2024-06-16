@@ -413,11 +413,18 @@ export function PointInfo({
         </p>
       </div>
       {showInfoAboutUploadedComics && (
-        <p className="mt-4 text-center">
-          Note that even if your comic upload has the status Approved it might still not
-          be available on the site. This is because we queue comics to spread them evenly
-          over time.
-        </p>
+        <>
+          <p className="mt-4 text-center">
+            Note that even if your comic upload has the status Approved it might still not
+            be available on the site. This is because we queue comics to spread them
+            evenly over time.
+          </p>
+          <p className="mt-2 text-center">
+            Sometimes a good tag suggestion might show up as rejected, if someone else
+            beat you to it and the tag was added/removed before your suggestion was
+            processed.
+          </p>
+        </>
       )}
     </>
   );

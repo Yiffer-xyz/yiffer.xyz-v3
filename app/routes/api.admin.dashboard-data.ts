@@ -4,6 +4,7 @@ import type {
   ComicPublishStatus,
   ComicSuggestionVerdict,
   ComicUploadVerdict,
+  TagSuggestionItem,
 } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
@@ -41,28 +42,32 @@ export type DashboardAction = {
   verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
 };
 
-const tagSuggestionsQuery = `SELECT Q1.*, user.username AS modName 
+const tagSuggestionsQuery = `SELECT Q1.*, user.username AS modName
   FROM (
-    SELECT
-        keywordsuggestion.id AS id,
-        keywordsuggestion.keywordId AS keywordId,
-        keyword.KeywordName AS keywordName,
-        comic.name AS comicName,
-        comic.id AS comicId,
-        isAdding,
-        status,
-        keywordsuggestion.timestamp,
-        userId,
-        username,
-        userIP,
-        modId
-      FROM keywordsuggestion
-      INNER JOIN comic ON (comic.id = keywordsuggestion.comicId)
-      INNER JOIN keyword ON (keyword.Id = keywordsuggestion.keywordId)
-      LEFT JOIN user ON (user.id = keywordsuggestion.userId)
+    SELECT 
+      tagsuggestiongroup.id AS tagSuggestionGroupId,
+      tagsuggestionitem.isAdding AS isAdding,
+      tagsuggestionitem.keywordId AS keywordId,
+      tagsuggestionitem.isApproved AS isItemApproved,
+      tagsuggestionitem.id AS tagSuggestionItemId,
+      keyword.keywordName AS keywordName,
+      comic.id AS comicId,
+      comic.name AS comicName,
+      isProcessed,
+      tagsuggestiongroup.timestamp,
+      isProcessed,
+      userId,
+      username,
+      userIP,
+      modId
+    FROM tagsuggestiongroup
+    LEFT JOIN tagsuggestionitem ON (tagsuggestiongroup.id = tagsuggestionitem.tagSuggestionGroupId)
+    INNER JOIN keyword ON (keyword.id = tagsuggestionitem.keywordId)
+    INNER JOIN comic ON (comic.id = tagsuggestiongroup.comicId)
+    LEFT JOIN user ON (user.id = tagsuggestiongroup.userId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-`;
+;`;
 
 const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
   FROM (
@@ -194,48 +199,102 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 type DbTagSuggestion = {
-  id: number;
+  tagSuggestionGroupId: number;
+  tagSuggestionItemId: number;
+  isAdding: number;
   keywordId: number;
   keywordName: string;
-  comicName: string;
   comicId: number;
-  isAdding: number;
-  status: string;
+  comicName: string;
+  isProcessed: number;
+  isItemApproved: number | null;
   timestamp: string;
   userId?: number;
-  username?: string;
   userIP?: string;
+  username?: string;
   modId?: number;
   modName?: string;
 };
 
+type TagSuggestionGroup = {
+  id: number;
+  comicId: number;
+  comicName: string;
+  timestamp: string;
+  userId: number | undefined;
+  userIP: string | undefined;
+  username: string | undefined;
+  modId: number | undefined;
+  modName: string | undefined;
+  isProcessed: boolean;
+  addTags: TagSuggestionItem[];
+  removeTags: TagSuggestionItem[];
+};
+
+function tinyIntOrNullToBool(input: number | null): boolean | null {
+  if (input === null) {
+    return null;
+  }
+  return input === 1;
+}
+
 function mapDbTagSuggestions(input: DbTagSuggestion[]): DashboardAction[] {
-  return input.map(dbTagSugg => {
+  // Group tag suggestions by tagSuggestionGroupId
+  const groupedSuggestions: Map<number, TagSuggestionGroup> = new Map();
+
+  for (const dbTagSugg of input) {
+    let group = groupedSuggestions.get(dbTagSugg.tagSuggestionGroupId);
+    if (!group) {
+      group = {
+        id: dbTagSugg.tagSuggestionGroupId,
+        comicId: dbTagSugg.comicId,
+        comicName: dbTagSugg.comicName,
+        timestamp: dbTagSugg.timestamp,
+        userId: dbTagSugg.userId,
+        userIP: dbTagSugg.userIP,
+        username: dbTagSugg.username,
+        modId: dbTagSugg.modId,
+        modName: dbTagSugg.modName,
+        isProcessed: dbTagSugg.isProcessed === 1,
+        addTags: [],
+        removeTags: [],
+      };
+      groupedSuggestions.set(dbTagSugg.tagSuggestionGroupId, group);
+    }
+
+    const item: TagSuggestionItem = {
+      id: dbTagSugg.keywordId,
+      name: dbTagSugg.keywordName,
+      isApproved: tinyIntOrNullToBool(dbTagSugg.isItemApproved),
+      tagSuggestionItemId: dbTagSugg.tagSuggestionItemId,
+      isAdding: dbTagSugg.isAdding === 1,
+    };
+
+    if (dbTagSugg.isAdding === 1) {
+      group.addTags.push(item);
+    } else {
+      group.removeTags.push(item);
+    }
+  }
+
+  return Array.from(groupedSuggestions.values()).map(group => {
     return {
       type: 'tagSuggestion',
-      id: dbTagSugg.id,
-      primaryField: dbTagSugg.comicName,
-      secondaryField: `${dbTagSugg.isAdding === 1 ? 'ADD' : 'REMOVE'} ${
-        dbTagSugg.keywordName
-      }`,
-      isProcessed: dbTagSugg.status !== 'pending',
-      timestamp: dbTagSugg.timestamp,
-      user: dbTagSugg.userId
-        ? { userId: dbTagSugg.userId, username: dbTagSugg.username }
-        : { ip: dbTagSugg.userIP },
-      verdict:
-        dbTagSugg.status === 'approved'
-          ? 'Approved'
-          : dbTagSugg.status === 'rejected'
-            ? 'Rejected'
-            : undefined,
+      id: group.id,
+      comicId: group.comicId,
+      primaryField: group.comicName,
+      description: getTagSuggestionGroupDescription(group),
+      isProcessed: group.isProcessed,
+      timestamp: group.timestamp,
+      user: group.userId
+        ? { userId: group.userId, username: group.username }
+        : { ip: group.userIP },
       assignedMod:
-        dbTagSugg.modId && dbTagSugg.modName
-          ? { userId: dbTagSugg.modId, username: dbTagSugg.modName }
+        group.modId && group.modName
+          ? { userId: group.modId, username: group.modName }
           : undefined,
-      isAdding: dbTagSugg.isAdding === 1,
-      tagId: dbTagSugg.keywordId,
-      comicId: dbTagSugg.comicId,
+      addTags: group.addTags,
+      removeTags: group.removeTags,
     };
   });
 }
@@ -460,4 +519,24 @@ function mapDbPendingComicProblems(input: DbPendingComicSimple[]): DashboardActi
           : undefined,
     };
   });
+}
+
+function getTagSuggestionGroupDescription(group: TagSuggestionGroup): string {
+  const areBoth = group.addTags.length > 0 && group.removeTags.length > 0;
+  if (areBoth) {
+    return `Add ${group.addTags.length}, Remove ${group.removeTags.length}`;
+  }
+  if (group.addTags.length === 1) {
+    return `Add "${group.addTags[0].name}"`;
+  }
+  if (group.removeTags.length === 1) {
+    return `Remove "${group.removeTags[0].name}"`;
+  }
+  if (group.addTags.length > 0) {
+    return `Add ${group.addTags.length}`;
+  }
+  if (group.removeTags.length > 0) {
+    return `Remove ${group.removeTags.length}`;
+  }
+  return '???';
 }

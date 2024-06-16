@@ -308,37 +308,6 @@ ON DELETE CASCADE
 ON UPDATE CASCADE);
 
 ------------------------------------------------------
--- KEYWORDSUGGESTION
-------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `keywordsuggestion` (
-`id` INTEGER  NOT NULL ,
-`comicId` INTEGER  NOT NULL,
-`keywordId` INTEGER  NOT NULL,
-`isAdding` TINYINTEGER NOT NULL,
-`userId` INTEGER  NULL DEFAULT NULL,
-`userIP` TEXT NULL DEFAULT NULL,
-`status` TEXT CHECK( `status` IN ('pending', 'approved', 'rejected') ) NOT NULL DEFAULT 'pending',
-`modId` INTEGER  NULL DEFAULT NULL,
-`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (`id`),
-FOREIGN KEY (`comicId`)
-REFERENCES `comic` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-FOREIGN KEY (`keywordId`)
-REFERENCES `keyword` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-FOREIGN KEY (`modId`)
-REFERENCES `user` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE,
-FOREIGN KEY (`userId`)
-REFERENCES `user` (`id`)
-ON DELETE CASCADE
-ON UPDATE CASCADE);
-
-------------------------------------------------------
 -- MOD APPLICATION
 ------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `modapplication` (
@@ -419,3 +388,45 @@ CREATE TABLE IF NOT EXISTS `comicbookmark` (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicbookmark_unique_user_comic` ON `comicbookmark` (`userId`, `comicId`);
+
+------------------------------------------------------
+-- TAG SUGGESTION GROUP
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tagsuggestiongroup` (
+`id` INTEGER  NOT NULL,
+`comicId` INTEGER  NOT NULL,
+`userId` INTEGER  NULL DEFAULT NULL,
+`userIP` TEXT NULL DEFAULT NULL,
+`isProcessed` TINYINTEGER  NOT NULL DEFAULT '0',
+`modId` INTEGER  NULL DEFAULT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+FOREIGN KEY (`comicId`)
+REFERENCES `comic` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+FOREIGN KEY (`modId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+------------------------------------------------------
+-- TAG SUGGESTION ITEM
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tagsuggestionitem` (
+`id` INTEGER  NOT NULL,
+`tagSuggestionGroupId` INTEGER  NOT NULL,
+`keywordId` INTEGER  NOT NULL,
+`isAdding` TINYINTEGER NOT NULL,
+`isApproved` TINYINTEGER NULL DEFAULT NULL,
+PRIMARY KEY (`id`),
+FOREIGN KEY (`tagSuggestionGroupId`)
+REFERENCES `tagsuggestiongroup` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`keywordId`)
+REFERENCES `keyword` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
