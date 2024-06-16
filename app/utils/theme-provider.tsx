@@ -13,7 +13,7 @@ import { isViewType } from '~/types/types';
 
 const defaultUiPref: UIPreferences = {
   theme: 'light',
-  viewMode: 'Simple card',
+  viewMode: 'Standard',
   comicCardTags: false,
 };
 

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { MdArrowForward, MdCheck, MdReplay } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -11,6 +11,7 @@ import type { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/typ
 import { padPageNumber, type ComicImage, type FieldChange } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
+import ManagePagesAdmin from './ManagePagesAdmin';
 
 type LiveComicProps = {
   comic: Comic;
@@ -19,6 +20,7 @@ type LiveComicProps = {
   allArtists: ArtistTiny[];
   allTags: Tag[];
   PAGES_PATH: string;
+  IMAGES_SERVER_URL: string;
 };
 
 export default function LiveComic({
@@ -28,6 +30,7 @@ export default function LiveComic({
   allArtists,
   allTags,
   PAGES_PATH,
+  IMAGES_SERVER_URL,
 }: LiveComicProps) {
   const unlistFetcher = useGoodFetcher({
     url: '/api/admin/unlist-comic',
@@ -115,13 +118,6 @@ export default function LiveComic({
 
   const canSave =
     !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.comicName;
-
-  const comicPages: ComicImage[] = [];
-  for (let i = 0; i < comic.numberOfPages; i++) {
-    comicPages.push({
-      url: `${PAGES_PATH}/${comic.name}/${padPageNumber(i + 1)}.jpg`,
-    });
-  }
 
   return (
     <>
@@ -229,11 +225,10 @@ export default function LiveComic({
       <div className="mt-8">
         <h3>Pages</h3>
 
-        <PageManager
-          files={comicPages}
-          onChange={newFiles => {
-            console.log(newFiles);
-          }}
+        <ManagePagesAdmin
+          comic={comic}
+          PAGES_PATH={PAGES_PATH}
+          IMAGES_SERVER_URL={IMAGES_SERVER_URL}
         />
       </div>
 

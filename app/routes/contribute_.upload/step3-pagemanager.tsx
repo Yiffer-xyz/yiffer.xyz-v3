@@ -6,6 +6,7 @@ import PageManager from '~/page-components/PageManager/PageManager';
 import Button from '~/ui-components/Buttons/Button';
 import { MdClear } from 'react-icons/md';
 import FileInput from '~/ui-components/FileInput';
+import InfoBox from '~/ui-components/InfoBox';
 
 type Step3Props = {
   comicData: NewComicData;
@@ -16,13 +17,27 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
   const { isMobile } = useWindowSize();
   const [isClearingPages, setIsClearingPages] = useState(false);
   const [isLoadingFileContents, setIsLoadingFileContents] = useState(false);
+  const [duplicateFilenames, setDuplicateFilenames] = useState<string[]>([]);
 
   async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     if (event.target.files) {
       setIsLoadingFileContents(true);
       const filesWithString = await getFilesWithBase64(event.target.files);
       setIsLoadingFileContents(false);
-      onUpdate({ ...comicData, files: filesWithString });
+
+      const newDuplicateFilenames: string[] = [];
+      // Check for duplicate files
+      for (const file of filesWithString) {
+        if (!file.file?.name) continue;
+        if (comicData.files.some(f => f.file?.name === file.file?.name)) {
+          newDuplicateFilenames.push(file.file?.name);
+        }
+      }
+      setDuplicateFilenames(newDuplicateFilenames);
+      if (newDuplicateFilenames.length > 0) return;
+
+      const newFiles = [...comicData.files, ...filesWithString];
+      onUpdate({ ...comicData, files: newFiles });
     }
   }
 
@@ -30,21 +45,47 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
     <>
       <h4 className="mt-8">Pages</h4>
 
-      {comicData.files.length === 0 && (
-        <FileInput onChange={onFileChange} multiple accept="image/*" />
+      <FileInput onChange={onFileChange} multiple accept="image/*" />
+
+      {duplicateFilenames.length > 0 && (
+        <InfoBox
+          variant="error"
+          text="Some files have the same name as existing files. The latest selection was not added. Offending files:"
+          boldText={false}
+          className="my-2"
+          fitWidth
+        >
+          <p>
+            {duplicateFilenames.map((filename, i) => (
+              <span key={filename}>
+                {filename}
+                {i < duplicateFilenames.length - 1 && ', '}
+              </span>
+            ))}
+          </p>
+          <Button
+            variant="naked"
+            className="!text-white -ml-3 -mb-2"
+            text="Dismiss"
+            onClick={() => {
+              setDuplicateFilenames([]);
+            }}
+          />
+        </InfoBox>
       )}
 
       {(comicData.files.length > 0 || isLoadingFileContents) && (
-        <p className="mb-2">
+        <p className="my-2 text-sm">
           {isMobile ? 'Tap' : 'Click'} an image to see it full size. Make sure the pages
-          are correctly ordered.
+          are correctly ordered. You can add files in multiple batches as long as there
+          are no duplicate file names.
         </p>
       )}
 
       {isLoadingFileContents && <p>Processing files...</p>}
 
       {comicData.files.length > 0 && (
-        <>
+        <div className="mt-4">
           <PageManager
             files={comicData.files}
             onChange={newFiles => onUpdate({ ...comicData, files: newFiles })}
@@ -56,11 +97,10 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
               text="Clear pages"
               onClick={() => setIsClearingPages(true)}
               startIcon={MdClear}
-              className="mt-2"
             />
           )}
           {isClearingPages && (
-            <div className="flex flex-row gap-2 mt-2">
+            <div className="flex flex-row gap-2">
               <Button
                 variant="outlined"
                 onClick={() => setIsClearingPages(false)}
@@ -78,7 +118,7 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
               />
             </div>
           )}
-        </>
+        </div>
       )}
     </>
   );

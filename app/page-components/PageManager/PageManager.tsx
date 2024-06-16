@@ -13,9 +13,20 @@ const PAGES_SPACING = 4;
 type PageManagerProps = {
   files: ComicImage[];
   onChange: (newFiles: ComicImage[]) => void;
+  randomString?: string;
 };
 
-export default function PageManager({ files, onChange }: PageManagerProps) {
+function getImgSource(file: ComicImage, randomString?: string) {
+  if (file.url) {
+    if (randomString) {
+      return `${file.url}?${randomString}`;
+    }
+    return file.url;
+  }
+  return file.base64;
+}
+
+export default function PageManager({ files, onChange, randomString }: PageManagerProps) {
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const { width, isMobile } = useWindowSize();
   const [hoveredPageNum, setHoveredPageNum] = useState<number>();
@@ -70,7 +81,7 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
         variant="outlined"
         onClick={() => setIsHalfSize(!isHalfSize)}
         text={isHalfSize ? 'Larger' : 'Smaller'}
-        className="mb-2"
+        className="mb-4"
       />
 
       <div ref={gridContainerRef}>
@@ -111,7 +122,7 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
                 />
                 <div className="h-full flex flex-col items-center justify-center hover:cursor-move">
                   <img
-                    src={file.url || file.base64}
+                    src={getImgSource(file, randomString)}
                     height={PAGE_IMG_HEIGHT}
                     style={{
                       objectFit: 'cover',
@@ -128,7 +139,9 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
                     <span className="mr-1">
                       <b>{index + 1}</b>
                     </span>
-                    <span className="text-xs">{file.file?.name || file.url}</span>
+                    <span className="text-xs">
+                      {formatPageSource(file.file?.name ?? file.url)}
+                    </span>
                   </p>
                 </div>
               </GridItem>
@@ -151,4 +164,12 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
       )}
     </>
   );
+}
+
+function formatPageSource(pageSource: string | undefined) {
+  if (!pageSource) return '';
+  // Formats urls with xxxxx/0001.jpg to 0001. Otherwise, return the url as is.
+  const match = pageSource.match(/\/(\d{1,4})\./);
+  if (!match) return pageSource;
+  return match[1];
 }

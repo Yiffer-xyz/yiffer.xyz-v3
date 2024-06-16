@@ -31,3 +31,5 @@ export const COMIC_PROBLEM_CATEGORIES = [
     description: `Please describe the issue.`,
   },
 ];
+
+export const MAX_UPLOAD_BODY_SIZE = 100 * 1024 * 1024; // 100MB

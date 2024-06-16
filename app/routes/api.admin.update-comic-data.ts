@@ -94,7 +94,7 @@ export async function updateComicData(
     );
   }
 
-  if (changes.category || changes.artistId || changes.state) {
+  if (changes.category || changes.artistId || changes.state || changes.numberOfPages) {
     dbStatements.push(getUpdateGeneralDetailsQuery(changes));
   }
 
@@ -150,6 +150,10 @@ function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParam
   if (changes.state) {
     updateFieldStr += 'state = ?, ';
     updateFieldValues.push(changes.state);
+  }
+  if (changes.numberOfPages) {
+    updateFieldStr += 'numberOfPages = ?, ';
+    updateFieldValues.push(changes.numberOfPages);
   }
 
   updateFieldStr = updateFieldStr.slice(0, -2);

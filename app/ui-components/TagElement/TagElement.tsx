@@ -20,8 +20,6 @@ export default function TagElement({
   approvalState,
   onClick,
 }: TagProps) {
-  console.log({ approvalState });
-
   const colorsClassName = isActive
     ? `text-theme1-darker dark:text-theme1-dark dark:border-theme1-dark hover:shadow-none hover:border-gray-900`
     : 'text-gray-500 dark:text-gray-900 dark:border-gray-500 border-gray-900';

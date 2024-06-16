@@ -7,9 +7,11 @@ type InfoBoxProps = {
   title?: string;
   showIcon?: boolean;
   closable?: boolean;
+  overrideOnCloseFunc?: () => void;
   boldText?: boolean;
   centerText?: boolean;
   disableElevation?: boolean;
+  fitWidth?: boolean;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -20,10 +22,12 @@ export default function InfoBox({
   title,
   text,
   showIcon = false,
-  closable = false,
+  closable = false, // Shows an X
+  overrideOnCloseFunc, // Works with closable=true, called when X is pressed
   boldText = true,
   centerText = false,
   disableElevation = false,
+  fitWidth = false,
   children,
   className = '',
   style,
@@ -59,6 +63,9 @@ export default function InfoBox({
   if (boldText) {
     fullClassname += ' font-semibold';
   }
+  if (fitWidth) {
+    fullClassname += ' w-fit';
+  }
 
   if (hidden) {
     fullClassname += ' hidden';
@@ -75,11 +82,15 @@ export default function InfoBox({
         {children}
       </div>
       {closable && (
-        <MdCancel
-          size={24}
-          className="cursor-pointer flex-shrink-0 w-5 md:w-auto"
-          onClick={() => setHidden(true)}
-        />
+        <div
+          className="cursor-pointer p-2 -mr-2 flex items-center justify-center"
+          onClick={() => (overrideOnCloseFunc ? overrideOnCloseFunc() : setHidden(true))}
+        >
+          <MdCancel
+            size={18}
+            className="cursor-pointer flex-shrink-0 w-5 md:w-auto mt-1"
+          />
+        </div>
       )}
     </div>
   );

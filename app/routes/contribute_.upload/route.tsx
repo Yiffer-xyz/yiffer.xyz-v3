@@ -26,15 +26,22 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { ComicImage } from '~/utils/general';
-import { isUsernameUrl, padPageNumber, randomString } from '~/utils/general';
+import {
+  generateRandomId,
+  getFileExtension,
+  isUsernameUrl,
+  padPageNumber,
+  pageNumberToPageName,
+  randomString,
+} from '~/utils/general';
 import Button from '~/ui-components/Buttons/Button';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
+import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
-const maxUploadBodySize = 100 * 1024 * 1024; // 100MB
 
 export function links() {
   return [{ rel: 'stylesheet', href: cropperCss }];
@@ -86,7 +93,7 @@ export default function Upload() {
       if (!file.file) return { error: `File error for page ${i + 1}` };
 
       // Split the request into multiple FormDatas/submissions if size is too big.
-      if (currentFormDataSize + file.file.size > maxUploadBodySize) {
+      if (currentFormDataSize + file.file.size > MAX_UPLOAD_BODY_SIZE) {
         currentFormData.append('hasMore', 'true');
         filesFormDatas.push(currentFormData);
         currentFormData = new FormData();
@@ -350,15 +357,6 @@ export async function action(args: ActionFunctionArgs) {
   return createSuccessJson();
 }
 
-function pageNumberToPageName(pageNum: number, filename: string): string {
-  const pageNumberString = padPageNumber(pageNum);
-  return `${pageNumberString}.${getFileExtension(filename)}`;
-}
-
-function getFileExtension(filename: string) {
-  return filename.substring(filename.lastIndexOf('.') + 1).replace('jpeg', 'jpg');
-}
-
 function validateUploadForm(uploadBody: UploadBody): { error?: string } {
   if (!uploadBody.comicName) {
     return { error: 'Comic name is required' };
@@ -390,15 +388,6 @@ function validateUploadForm(uploadBody: UploadBody): { error?: string } {
     }
   }
   return {};
-}
-
-function generateRandomId() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
 }
 
 function createEmptyUploadData(): NewComicData {

@@ -46,7 +46,7 @@ function ErrorBoundaryInner({ error }: { error: any }) {
 
   return (
     <div role="alert">
-      <InfoBox variant="error" showIcon disableElevation className="mx-auto w-fit">
+      <InfoBox variant="error" showIcon disableElevation className="mx-auto" fitWidth>
         Something went wrong in this beloved admin panel of ours :(
       </InfoBox>
 

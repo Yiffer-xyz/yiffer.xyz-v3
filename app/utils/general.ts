@@ -70,3 +70,21 @@ export function boolToInt(bool: boolean): 0 | 1 {
 export function padPageNumber(pageNumber: number) {
   return pageNumber.toString().padStart(4, '0');
 }
+
+export function pageNumberToPageName(pageNum: number, filename: string): string {
+  const pageNumberString = padPageNumber(pageNum);
+  return `${pageNumberString}.${getFileExtension(filename)}`;
+}
+
+export function getFileExtension(filename: string) {
+  return filename.substring(filename.lastIndexOf('.') + 1).replace('jpeg', 'jpg');
+}
+
+export function generateRandomId() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}

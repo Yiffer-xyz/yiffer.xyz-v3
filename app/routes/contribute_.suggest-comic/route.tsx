@@ -212,7 +212,8 @@ export default function Upload() {
                         <InfoBox
                           variant="warning"
                           boldText={false}
-                          className="mt-2 w-fit"
+                          className="mt-2"
+                          fitWidth
                           disableElevation
                         >
                           {similarComics.similarComics.length > 0 && (
@@ -258,7 +259,8 @@ export default function Upload() {
                     <InfoBox
                       text={`A comic with this name already exists in the system. You cannot submit this comic name. If you think this is a different comic with the same name, you can add "(<artistname>)" to the end of the comic's name. Please verify that this is not a duplicate before submitting.`}
                       variant="error"
-                      className="mt-2 w-fit"
+                      className="mt-2"
+                      fitWidth
                       disableElevation
                     />
                   )}
@@ -266,7 +268,8 @@ export default function Upload() {
                     <InfoBox
                       text="A comic with this name has been rejected. You cannot submit this comic name."
                       variant="error"
-                      className="mt-2 w-fit"
+                      className="mt-2"
+                      fitWidth
                       disableElevation
                     />
                   )}

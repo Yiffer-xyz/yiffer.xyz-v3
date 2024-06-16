@@ -19,7 +19,12 @@ import { UTCTimeStrToLocalDate } from '~/utils/date-utils';
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
   const globalContext: GlobalAdminContext = useOutletContext();
-  const { comic: maybeComic, user, PAGES_PATH } = useLoaderData<typeof loader>();
+  const {
+    comic: maybeComic,
+    user,
+    PAGES_PATH,
+    IMAGES_SERVER_URL,
+  } = useLoaderData<typeof loader>();
   if (!maybeComic) {
     return <div>Comic not found</div>;
   }
@@ -128,6 +133,7 @@ export default function ManageComicInner() {
         allArtists={globalContext.artists}
         allTags={globalContext.tags}
         PAGES_PATH={PAGES_PATH}
+        IMAGES_SERVER_URL={IMAGES_SERVER_URL}
       />
     </>
   );
@@ -137,9 +143,12 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const comicParam = args.params.comic as string;
 
+  const PAGES_PATH = args.context.PAGES_PATH;
+  const IMAGES_SERVER_URL = args.context.IMAGES_SERVER_URL;
+
   const comicId = parseInt(comicParam);
   if (isNaN(comicId)) {
-    return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
+    return { comic: null, user, PAGES_PATH, IMAGES_SERVER_URL };
   }
 
   const comicsRes = await getComicByField({
@@ -152,12 +161,13 @@ export async function loader(args: LoaderFunctionArgs) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }
   if (comicsRes.notFound) {
-    return { comic: null, user, PAGES_PATH: args.context.PAGES_PATH };
+    return { comic: null, user, PAGES_PATH, IMAGES_SERVER_URL };
   }
 
   return {
     comic: comicsRes.result,
     user,
-    PAGES_PATH: args.context.PAGES_PATH,
+    PAGES_PATH,
+    IMAGES_SERVER_URL,
   };
 }

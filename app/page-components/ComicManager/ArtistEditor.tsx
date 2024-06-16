@@ -314,7 +314,8 @@ export default function ArtistEditor({
             {isLinksError && (
               <InfoBox
                 variant="error"
-                className="mt-2 w-fit"
+                className="mt-2"
+                fitWidth
                 text='Links must include "http://" or "https://"'
                 showIcon
               />

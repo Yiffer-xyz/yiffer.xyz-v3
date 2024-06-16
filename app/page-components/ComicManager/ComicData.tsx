@@ -148,11 +148,11 @@ export default function ComicDataEditor({
       <h4 className="mt-8">Connected comics</h4>
       {!isAdminPanel && (
         <>
-          <p>
+          <p className="text-sm">
             If this is a standalone comic, leave these fields empty. If it's part of a
             series, fill in the previous and/or next comics.
           </p>
-          <p>
+          <p className="text-sm">
             If you are uploading multiple chapters of a series, you can leave the "next
             comic" empty and only fill in the previous comic for each.
           </p>

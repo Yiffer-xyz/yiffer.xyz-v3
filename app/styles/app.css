@@ -806,8 +806,16 @@ video {
   margin-left: -0.5rem;
 }
 
+.-ml-3 {
+  margin-left: -0.75rem;
+}
+
 .-mr-1 {
   margin-right: -0.25rem;
+}
+
+.-mr-2 {
+  margin-right: -0.5rem;
 }
 
 .-mr-3 {
@@ -1145,6 +1153,10 @@ video {
 
 .w-\[160px\] {
   width: 160px;
+}
+
+.w-\[180px\] {
+  width: 180px;
 }
 
 .w-\[84px\] {
@@ -2284,6 +2296,10 @@ video {
   color: rgb(154 235 231 / var(--tw-text-opacity));
 }
 
+.text-transparent {
+  color: transparent;
+}
+
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -2418,6 +2434,10 @@ video {
   margin-right: 1.25rem;
 }
 
+.file\:w-\[180px\]::file-selector-button {
+  width: 180px;
+}
+
 .file\:rounded::file-selector-button {
   border-radius: 0.25rem;
 }
@@ -2436,9 +2456,14 @@ video {
   padding-right: 2.5rem;
 }
 
-.file\:py-3::file-selector-button {
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+.file\:py-1::file-selector-button {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.file\:py-1\.5::file-selector-button {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
 }
 
 .file\:font-semibold::file-selector-button {

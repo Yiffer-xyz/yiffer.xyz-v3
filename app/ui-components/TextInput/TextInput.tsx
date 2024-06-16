@@ -82,7 +82,7 @@ export default function TextInput({
           autoComplete={autocomplete || undefined}
           placeholder={placeholder}
           disabled={disabled}
-          className={`text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
+          className={`text-text-light dark:text-text-dark bg-transparent border-0 border-b-2 px-2 after:absolute
           disabled:border-gray-800 dark:disabled:border-gray-600 pt-1
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
           after:border-t-text-light dark:after:border-t-text-dark after:right-3
