@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowDropDown, MdArrowDropUp, MdCheck, MdClose } from 'react-icons/md';
+import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
 import {
   Table,
   TableBody,

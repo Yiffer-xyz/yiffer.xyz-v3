@@ -32,10 +32,7 @@ export default function PageManager({ files, onChange }: PageManagerProps) {
   function onDragEnd(_: string, sourceIndex: number, targetIndex: number) {
     lastDragEndTime.current = Date.now();
     if (sourceIndex === targetIndex) return;
-    console.log('swap!');
-    console.log(files);
     const newFiles = swap(files, sourceIndex, targetIndex);
-    console.log(newFiles);
     onChange(newFiles);
   }
 

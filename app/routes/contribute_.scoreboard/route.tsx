@@ -351,14 +351,6 @@ const pInfoColors = {
   },
 };
 
-const enabledClass = `
-    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-primary to-theme2-primary
-  `;
-const disabledClass = `
-    dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
-    text-white bg-gray-700 hover:bg-gray-700 focus:bg-gray-700
-  `;
-
 const nonRejectedUploads = Object.entries(CONTRIBUTION_POINTS.comicUpload)
   .filter(([verdict]) => verdict !== 'rejected' && verdict !== 'rejected-list')
   .map(([_, value]) => ({

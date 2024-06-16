@@ -8,7 +8,6 @@ export type BaseMultiSelectProps<T> = {
   equalSingleItemValueFunc?: (a: T, b: T | undefined) => boolean;
   title?: string;
   maxWidth?: number;
-  initialWidth?: number;
   name: string;
   includeClearAll?: boolean;
   placeholder?: string;
@@ -28,7 +27,6 @@ export default function MultiSelect<T>({
   onChange,
   equalSingleItemValueFunc,
   maxWidth = 999999,
-  initialWidth = 0, // TODO needed?
   name,
   includeClearAll,
   placeholder = '',
@@ -121,11 +119,9 @@ export default function MultiSelect<T>({
     }
     if (minWidth) {
       return { minWidth: `${minWidth + 16}px` };
-    } else if (initialWidth) {
-      return { minWidth: `${initialWidth + 16}px` };
     }
     return {};
-  }, [initialWidth, minWidth, width]);
+  }, [minWidth, width]);
 
   const widthStyle = useMemo(() => {
     if (width) {

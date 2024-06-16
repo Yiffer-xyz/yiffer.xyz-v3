@@ -11,7 +11,6 @@ export type BaseSearchableSelectProps<T> = {
   error?: boolean;
   maxWidth?: number;
   isFullWidth?: boolean;
-  initialWidth?: number;
   placeholder?: string;
   name: string;
   disabled?: boolean;
@@ -36,7 +35,6 @@ export default function SearchableSelect<T>({
   error = false,
   maxWidth = 999999,
   isFullWidth = false,
-  initialWidth = 0, // TODO needed?
   placeholder = '',
   name,
   disabled = false,
@@ -102,11 +100,9 @@ export default function SearchableSelect<T>({
     }
     if (minWidth) {
       return { minWidth: `${minWidth}px` };
-    } else if (initialWidth) {
-      return { minWidth: `${initialWidth}px` };
     }
     return {};
-  }, [initialWidth, isFullWidth, minWidth, width]);
+  }, [isFullWidth, minWidth, width]);
 
   const widthStyle = useMemo(() => {
     if (isFullWidth) {

@@ -27,7 +27,7 @@ export default function Button({
   disabled = false,
   startIcon: StartIcon,
   endIcon: EndIcon,
-  noPadding = false, // TODO: Maybe a temporary hack. It's for IconButton.
+  noPadding = false, // Maybe a temporary hack. It's for IconButton.
   className,
   style = {},
   buttonRef,

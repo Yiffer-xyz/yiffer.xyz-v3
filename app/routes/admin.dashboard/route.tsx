@@ -44,9 +44,6 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const { user } = useLoaderData<typeof loader>();
-  // TODO: The two below are for showing loading states on the buttons.
-  // The first to check the element and the 2nd to check which button was
-  // actually pressed (approve or reject for example)
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
