@@ -1,5 +1,6 @@
 import { useRevalidator } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
+import { IoMdTrash } from 'react-icons/io';
 import { MdArrowForward } from 'react-icons/md';
 import PageManager from '~/page-components/PageManager/PageManager';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
@@ -21,7 +22,6 @@ import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 type UpdatedComicPage = {
   previousPos?: number;
   newPos?: number;
-  isNewPage: boolean;
   isDeleted: boolean;
 };
 
@@ -76,15 +76,6 @@ export default function ManagePagesAdmin({
   async function submitPageChanges() {
     const pagesData: UpdatedComicPage[] = [];
 
-    const needsUpdateNumPages = comicPages.length !== comic.numberOfPages;
-
-    if (needsUpdateNumPages) {
-      const asd = await updateNumberOfPages({
-        body: JSON.stringify({ comicId: comic.id, numberOfPages: comicPages.length }),
-      });
-      console.log('asd done', asd);
-    }
-
     for (let i = 0; i < comicPages.length; i++) {
       const urlOfPageNum = pageNumToUrl(PAGES_PATH, comic.name, i + 1);
       const oldPos = initialPages.findIndex(p => p.url === urlOfPageNum);
@@ -94,7 +85,14 @@ export default function ManagePagesAdmin({
         previousPos: oldPos + 1,
         newPos: newPos === -1 ? undefined : newPos + 1,
         isDeleted: newPos === -1,
-        isNewPage: false,
+      });
+    }
+
+    const needsUpdateNumPages = comicPages.length !== comic.numberOfPages;
+
+    if (needsUpdateNumPages) {
+      await updateNumberOfPages({
+        body: JSON.stringify({ comicId: comic.id, numberOfPages: comicPages.length }),
       });
     }
 
@@ -153,8 +151,6 @@ export default function ManagePagesAdmin({
       }
     }
 
-    console.log('we here..???');
-
     // Reverse the updates
     if (isUploadError) {
       const reverseFormData = new FormData();
@@ -196,7 +192,7 @@ export default function ManagePagesAdmin({
   }
 
   const filesChanged = useMemo(() => {
-    return calculateFilesChanged(comicPages, initialPages);
+    return calculateFilesChanged(initialPages, comicPages, initialPages);
   }, [comicPages, initialPages]);
 
   const [duplicateFilenames, setDuplicateFilenames] = useState<string[]>([]);
@@ -227,10 +223,15 @@ export default function ManagePagesAdmin({
         <div className=" mb-4 mt-2">
           <p className="font-bold">Changes</p>
           <div className="flex flex-row flex-wrap gap-2">
-            {[...filesChanged.sort((a, b) => a.newPos - b.newPos)].map(fc => (
+            {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
               <span className="bg-theme1-primaryTrans p-1 rounded" key={fc.originalPos}>
                 {fc.isNewPage ? (
                   <>New {fc.newPos}</>
+                ) : fc.isDeleted ? (
+                  <>
+                    <IoMdTrash className="mb-1" />
+                    {fc.originalPos}
+                  </>
                 ) : (
                   <>
                     {fc.originalPos} <MdArrowForward /> {fc.newPos}
@@ -335,11 +336,13 @@ export default function ManagePagesAdmin({
 
 type FileChange = {
   originalPos?: number;
-  newPos: number;
+  newPos?: number;
   isNewPage?: boolean;
+  isDeleted?: boolean;
 };
 
 function calculateFilesChanged(
+  originalFiles: { url?: string | undefined }[],
   newFiles: { url?: string | undefined }[],
   files: { url?: string | undefined }[]
 ) {
@@ -361,6 +364,13 @@ function calculateFilesChanged(
     const newPage = newFiles[i];
     if (!newPage.url) {
       filesThatHaveChanged.push({ newPos: i + 1, isNewPage: true });
+    }
+  }
+
+  for (let i = 0; i < originalFiles.length; i++) {
+    const originalPage = originalFiles[i];
+    if (!newFiles.find(f => f.url === originalPage.url)) {
+      filesThatHaveChanged.push({ originalPos: i + 1, isDeleted: true });
     }
   }
 
