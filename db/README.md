@@ -9,10 +9,17 @@ Should make this more easily configurable in the future, of course. Ideas for ho
 
 ### Set up tables and test data
 ⚠️ For interacting with database on cloudflare non-locally, replace `yiffer-local-dev` with `yiffer-d1-test`!
+With the new version of wrangler, commands are local by default. To run against live data, add `--remote` to your commands.
 
-`wrangler d1 execute yiffer-local-dev --file=db/schema.sql --local`
+```sh
+# For local development
+wrangler d1 execute yiffer-local-dev --file=db/schema.sql
+wrangler d1 execute yiffer-local-dev --file=db/testdata.sql
 
-`wrangler d1 execute yiffer-local-dev --file=db/testdata.sql --local`
+# For live testdata on new.testyiffer.xyz
+wrangler d1 execute yiffer-d1-test --file=db/schema.sql --remote
+wrangler d1 execute yiffer-d1-test --file=db/testdata.sql --remote
+```
 
 If you've already got data but want to reset it, `wrangler d1 execute yiffer-local-dev --file=db/delete.sql --local`. This is very flaky/unreliable at the moment, often throwing dumb errors like `table main.XXXX does not exist`. Will figure out something more stable in the future.
 

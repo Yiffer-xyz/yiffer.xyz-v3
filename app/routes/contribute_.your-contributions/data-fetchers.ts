@@ -126,6 +126,7 @@ export type DbComicProblem = {
   status: ContributionStatus;
   timestamp: string;
   problemCategory: string;
+  description: string;
 };
 
 export function mapDBComicProblems(problems: DbComicProblem[]): ComicProblem[] {
@@ -141,6 +142,7 @@ export function mapDBComicProblems(problems: DbComicProblem[]): ComicProblem[] {
     modComment: undefined,
     type: 'ComicProblem',
     problemCategory: dbComicProblem.problemCategory,
+    description: dbComicProblem.description,
   }));
 }
 
@@ -207,7 +209,8 @@ export const yourComicProblemsQuery = `SELECT
     comic.Name AS comicName,
     Status AS status,
     Timestamp AS timestamp,
-    problemCategory
+    problemCategory,
+    description
   FROM comicproblem
   INNER JOIN comic ON (comic.Id = comicproblem.ComicId)
   WHERE UserId = ?;

@@ -33,7 +33,7 @@ export default function ComicInfo({
     toggleBookmark();
   }
 
-  const unfilledColorClass = 'text-gray-750 dark:text-gray-750';
+  const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
   const hoverClass = isLoggedIn
     ? 'group-hover:text-theme1-darker dark:group-hover:text-theme1-darker2'
@@ -48,7 +48,7 @@ export default function ComicInfo({
         ) : (
           <FaRegBookmark
             size={20}
-            className={`text-gray-750 mt-[3px] ${
+            className={`${unfilledColorClass} mt-[3px] ${
               isLoggedIn ? 'group-hover:text-theme1-dark' : ''
             }`}
           />

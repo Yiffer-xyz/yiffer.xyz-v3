@@ -279,6 +279,7 @@ export interface ContributionTagSuggestion extends ContributionBase {
 export interface ComicProblem extends ContributionBase {
   type: 'ComicProblem';
   problemCategory: string;
+  description: string;
 }
 
 export type Contribution =

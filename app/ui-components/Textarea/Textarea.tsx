@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { colors } from 'tailwind.config';
 
 export type BaseTextareaProps = {
-  label: string;
+  label?: string;
   name: string;
   rows?: number;
   placeholder?: string;
@@ -63,7 +63,7 @@ export default function Textarea({
           rows={rows}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full bg-transparent p-1.5 outline-none border border-0 border-b-2 
+          className={`w-full bg-transparent p-1.5 outline-none border-0 border-b-2 
             placeholder-gray-800 dark:placeholder-gray-700 ${borderClass}`}
           style={{
             appearance: 'textfield',

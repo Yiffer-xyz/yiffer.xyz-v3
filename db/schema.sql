@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `comicproblem` (
 `userIP` TEXT NULL DEFAULT NULL,
 `userId` INTEGER  NULL DEFAULT NULL,
 `status` TEXT CHECK( `status` IN ('pending', 'approved', 'rejected')) NOT NULL DEFAULT 'pending',
-`timestamp` TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`),
 FOREIGN KEY (`comicId`)
 REFERENCES `comic` (`id`)
@@ -430,3 +430,7 @@ FOREIGN KEY (`keywordId`)
 REFERENCES `keyword` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+
+  wrangler d1 execute yiffer-d1-test --command="drop table if exists keywordsuggestion"
+

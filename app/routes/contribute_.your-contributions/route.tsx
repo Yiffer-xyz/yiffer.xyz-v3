@@ -31,6 +31,7 @@ import {
   yourTagSuggestionsQuery,
 } from './data-fetchers';
 import type {
+  ComicProblem,
   Contribution,
   ContributionStatus,
   ContributionTagSuggestion,
@@ -185,12 +186,7 @@ function ContributionDetails({ contribution }: { contribution: Contribution }) {
       </>
     );
   } else if (contribution.type === 'ComicProblem') {
-    return (
-      <>
-        <p>Comic: {contribution.comicName}</p>
-        <p>Problem: {contribution.problemCategory}</p>
-      </>
-    );
+    return <ComicProblemDetails contribution={contribution} />;
   } else if (contribution.type === 'ComicSuggestion') {
     return (
       <>
@@ -202,6 +198,30 @@ function ContributionDetails({ contribution }: { contribution: Contribution }) {
   }
 
   return '-';
+}
+
+function ComicProblemDetails({ contribution }: { contribution: ComicProblem }) {
+  const [isViewingDetails, setIsViewingDetails] = useState(false);
+
+  return (
+    <>
+      <p>Comic: {contribution.comicName}</p>
+      <p>Problem: {contribution.problemCategory}</p>
+
+      {isViewingDetails && (
+        <p className="mt-2 font-extralight whitespace-pre-wrap break-all text-right">
+          {contribution.description}
+        </p>
+      )}
+
+      <Button
+        text={isViewingDetails ? 'Hide details' : 'Show details'}
+        className={`self-end -mr-3 ${isViewingDetails ? 'mt-1 -mb-1' : '-my-1'}`}
+        variant="naked"
+        onClick={() => setIsViewingDetails(!isViewingDetails)}
+      />
+    </>
+  );
 }
 
 function TagSuggestionDetails({
@@ -226,8 +246,6 @@ function TagSuggestionDetails({
   } else if (isRemove) {
     addRemoveString = `Remove ${pluralize('tag', contribution.removeTags.length, true)}`;
   }
-
-  console.log(contribution);
 
   return (
     <>

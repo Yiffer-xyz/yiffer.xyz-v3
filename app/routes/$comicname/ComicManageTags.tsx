@@ -11,14 +11,12 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type ComicContributeProps = {
   comic: Comic;
-  isManagingTags: boolean;
   setIsManagingTags: (isManagingTags: boolean) => void;
   isLoggedIn: boolean;
 };
 
 export default function ComicManageTags({
   comic,
-  isManagingTags,
   setIsManagingTags,
   isLoggedIn,
 }: ComicContributeProps) {
@@ -42,11 +40,9 @@ export default function ComicManageTags({
   }
 
   useEffect(() => {
-    if (isManagingTags && !allTags) {
-      fetchAllTags();
-    }
+    if (!allTags) fetchAllTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isManagingTags]);
+  }, []);
 
   const { newTags, removedTags, areChanges } = useMemo(() => {
     const newTags: Tag[] = [];
@@ -83,7 +79,7 @@ export default function ComicManageTags({
 
   if (isSuccess) {
     return (
-      <InfoBox variant="success" className="mt-4">
+      <InfoBox variant="success" className="mt-4" closable overrideOnCloseFunc={onCancel}>
         <p className="font-normal">Thanks for your suggestion!</p>
         {isLoggedIn ? (
           <p className="font-normal">
@@ -102,13 +98,11 @@ export default function ComicManageTags({
             contribution points for it.
           </p>
         )}
-
-        <Button text="Close" className="mt-2" onClick={onCancel} disableElevation />
       </InfoBox>
     );
   }
 
-  return isManagingTags ? (
+  return (
     <TopGradientBox containerClassName="mt-4" innerClassName="p-4 flex flex-col">
       <p className="font-semibold text-lg">Manage tags</p>
       <p className="text-sm mb-2">Your suggestion will be reviewed by mods.</p>
@@ -156,10 +150,11 @@ export default function ComicManageTags({
           text="Submit for review"
           startIcon={MdCheck}
           isLoading={isLoading}
+          disableElevation
           onClick={onSubmit}
           disabled={!areChanges}
         />
       </div>
     </TopGradientBox>
-  ) : null;
+  );
 }

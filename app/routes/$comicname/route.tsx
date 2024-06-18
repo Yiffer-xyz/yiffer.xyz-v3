@@ -12,6 +12,7 @@ import ComicManageTags from './ComicManageTags';
 import DropdownButton from '~/ui-components/Buttons/DropdownButton';
 import { useState } from 'react';
 import { padPageNumber } from '~/utils/general';
+import ComicReportProblem from './ComicReportProblem';
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
@@ -101,7 +102,7 @@ export default function ComicPage() {
 
           <div className="flex flex-row flex-wrap gap-1.5 mt-4">
             {comic.tags.map(tag => (
-              <TagElement tag={tag} key={tag.id} />
+              <TagElement tag={tag} key={tag.id} disableHoverEffects />
             ))}
           </div>
         </div>
@@ -116,7 +117,7 @@ export default function ComicPage() {
           className="mt-4"
           options={[
             { text: 'Add or remove tags', onClick: () => setIsManagingTags(true) },
-            { text: 'Report problem', onClick: () => null },
+            { text: 'Report problem', onClick: () => setIsReportingProblem(true) },
           ]}
         />
       )}
@@ -124,8 +125,15 @@ export default function ComicPage() {
       {isManagingTags && (
         <ComicManageTags
           comic={comic}
-          isManagingTags={isManagingTags}
           setIsManagingTags={setIsManagingTags}
+          isLoggedIn={isLoggedIn}
+        />
+      )}
+
+      {isReportingProblem && (
+        <ComicReportProblem
+          comic={comic}
+          setIsReportingProblem={setIsReportingProblem}
           isLoggedIn={isLoggedIn}
         />
       )}
