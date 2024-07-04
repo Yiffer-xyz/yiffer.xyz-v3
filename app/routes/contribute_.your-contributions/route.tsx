@@ -12,7 +12,6 @@ import {
 import { capitalizeString } from '~/utils/general';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
-import BackToContribute from '~/page-components/BackToContribute';
 import { PointInfo } from '../contribute_.scoreboard/route';
 import type {
   DbComicProblem,
@@ -41,19 +40,22 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import pluralize from 'pluralize';
 import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
   const [showPointInfo, setShowPointInfo] = useState(false);
 
   return (
-    <section className="flex-col">
-      <h1 className="text-center mb-2">Your contributions</h1>
-      <p className="text-center mb-4">
-        <BackToContribute />
-      </p>
+    <div className="container mx-auto pb-8">
+      <h1>Your contributions</h1>
 
-      <p className="text-center">
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Your contributions"
+      />
+
+      <p>
         <button
           onClick={() => setShowPointInfo(!showPointInfo)}
           className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
@@ -70,7 +72,7 @@ export default function YourContributions() {
       {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
 
       {contributions.length > 0 && (
-        <Table horizontalScroll={true} className="mx-auto mt-8">
+        <Table horizontalScroll={true} className="mt-4">
           <TableHeadRow isTableMaxHeight={false}>
             <TableCell>Contribution</TableCell>
             <TableCell>Status</TableCell>
@@ -121,7 +123,7 @@ export default function YourContributions() {
       {contributions.length === 0 && (
         <p className="text-center mt-8">You have no contributions yet.</p>
       )}
-    </section>
+    </div>
   );
 }
 

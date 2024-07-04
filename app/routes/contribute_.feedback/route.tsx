@@ -9,8 +9,8 @@ import TopGradientBox from '~/ui-components/TopGradientBox';
 import { queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
-import BackToContribute from '~/page-components/BackToContribute';
 import type { FeedbackType } from '~/types/types';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export { authLoader as loader };
 
@@ -30,13 +30,15 @@ export default function Feedback() {
   }
 
   return (
-    <section className="container mx-auto justify-items-center">
-      <h1 className="mb-2">Feedback &amp; Support</h1>
-      <p className="mb-4">
-        <BackToContribute />
-      </p>
+    <div className="container mx-auto pb-8">
+      <h1>Feedback &amp; Support</h1>
 
-      <TopGradientBox containerClassName="my-10 mx-auto shadow-lg max-w-2xl">
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Feedback & Support"
+      />
+
+      <TopGradientBox containerClassName="mt-6 shadow-lg max-w-2xl">
         <Form method="post" className="mx-8 py-6">
           <h3>Submit feedback</h3>
           {actionData?.success ? (
@@ -118,7 +120,7 @@ export default function Feedback() {
           )}
         </Form>
       </TopGradientBox>
-    </section>
+    </div>
   );
 }
 

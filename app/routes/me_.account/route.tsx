@@ -26,7 +26,7 @@ export default function AccountPage() {
       <h1>Account settings</h1>
 
       <Breadcrumbs
-        prevRoutes={[{ text: 'Account', href: '/me' }]}
+        prevRoutes={[{ text: 'Me', href: '/me' }]}
         currentRoute="Account settings"
       />
 

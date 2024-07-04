@@ -11,9 +11,11 @@ type Props = {
 };
 
 export default function Breadcrumbs({ currentRoute, prevRoutes, className }: Props) {
+  const prevRoutesWithHome = [{ text: 'Home', href: '/' }, ...prevRoutes];
+
   return (
-    <p className={className}>
-      {prevRoutes.map(route => (
+    <p className={`mb-4 mt-2 ${className}`}>
+      {prevRoutesWithHome.map(route => (
         <>
           <Link href={route.href} text={route.text} key={route.href} /> <MdChevronRight />{' '}
         </>

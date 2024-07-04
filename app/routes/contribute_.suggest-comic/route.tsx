@@ -18,9 +18,9 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { authLoader } from '~/utils/loaders';
-import BackToContribute from '~/page-components/BackToContribute';
 import type { SimilarArtistResponse } from '../api.search-similar-artist';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export async function loader(args: LoaderFunctionArgs) {
   return await authLoader(args);
@@ -154,10 +154,12 @@ export default function Upload() {
 
   return (
     <section className="container mx-auto justify-items-center">
-      <h1 className="mb-2">Suggest a comic</h1>
-      <p className="mb-4">
-        <BackToContribute />
-      </p>
+      <h1>Suggest a comic</h1>
+
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Suggest"
+      />
 
       {actionData?.success ? (
         <InfoBox

@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { RiAccountCircleFill } from 'react-icons/ri';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 
@@ -13,9 +14,12 @@ export default function AccountPage() {
   const user = useLoaderData<typeof loader>();
 
   return (
-    <div className="mx-auto w-fit px-4 pb-8">
-      <h1>Account</h1>
-      <p>
+    <div className="container mx-auto pb-8">
+      <h1>Me</h1>
+
+      <Breadcrumbs prevRoutes={[]} currentRoute="Me" />
+
+      <p className="mt-2">
         <RiAccountCircleFill /> {user?.username}
       </p>
 

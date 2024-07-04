@@ -10,7 +10,6 @@ import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-c
 import { getAllTagsQuery } from '~/route-funcs/get-tags';
 import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
-import BackToContribute from '~/page-components/BackToContribute';
 import Step1 from './step1';
 import Step3Pagemanager from './step3-pagemanager';
 import Step4Thumbnail from './step4-thumbnail';
@@ -39,6 +38,7 @@ import TagsEditor from '~/page-components/ComicManager/Tags';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 
@@ -240,9 +240,10 @@ export default function Upload() {
     <div className="container mx-auto pb-16">
       <h1>Upload a comic</h1>
 
-      <p className="mb-4">
-        <BackToContribute />
-      </p>
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Upload"
+      />
 
       <Button color="error" text="FILL WITH STUFF" onClick={fillWithStuff} />
 

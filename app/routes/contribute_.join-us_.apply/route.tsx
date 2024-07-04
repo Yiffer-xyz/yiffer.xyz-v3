@@ -1,10 +1,8 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowBack } from 'react-icons/md';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
-import Link from '~/ui-components/Link';
 import TextareaUncontrolled from '~/ui-components/Textarea/TextareaUncontrolled';
 import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/ui-components/TopGradientBox';
@@ -19,6 +17,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export default function Apply() {
   const fetcher = useGoodFetcher({
@@ -34,9 +33,14 @@ export default function Apply() {
   return (
     <div className="container mx-auto">
       <h1>Become a mod</h1>
-      <p className="mb-4">
-        <Link href="/contribute/join-us" text="Back" Icon={MdArrowBack} />
-      </p>
+
+      <Breadcrumbs
+        prevRoutes={[
+          { text: 'Contribute', href: '/contribute' },
+          { text: 'Join us', href: '/contribute/join-us' },
+        ]}
+        currentRoute="Apply"
+      />
 
       <p>
         In order to be accepted as a mod, you must have and use a Telegram account. We use

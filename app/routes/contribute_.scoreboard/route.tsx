@@ -21,7 +21,6 @@ import {
   TableRow,
 } from '~/ui-components/Table';
 import Username from '~/ui-components/Username';
-import BackToContribute from '~/page-components/BackToContribute';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type { ContributionPointsEntry, UserType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
@@ -29,6 +28,7 @@ import type { ApiResponse, ResultOrErrorPromise } from '~/utils/request-helpers'
 import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 type CachedPoints = {
   yearMonth: string;
@@ -119,14 +119,13 @@ export default function Scoreboard() {
     ) && !fetcher.isLoading;
 
   return (
-    <div className="container mx-auto justify-items-center">
-      <h1 className="text-center mb-2">Contributions scoreboard</h1>
-      <p className="text-center">
-        <BackToContribute />
-      </p>
-      <p className="mb-4 text-center">
-        <Link href="https://yiffer.xyz/" text="To front page" Icon={MdHome} />
-      </p>
+    <div className="container mx-auto pb-8">
+      <h1>Contributions scoreboard</h1>
+
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Scoreboard"
+      />
 
       <p>
         Points are awarded only when a contribution has been approved or accepted by a
@@ -137,7 +136,7 @@ export default function Scoreboard() {
         plans to change this, but who knows what the future holds?
       </p>
 
-      <p className="text-center">
+      <p className="text-center sm:text-left">
         <button
           onClick={() => setShowPointInfo(!showPointInfo)}
           className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
@@ -153,7 +152,7 @@ export default function Scoreboard() {
 
       {showPointInfo && <PointInfo />}
 
-      <div className="flex flex-col justify-center items-center w-fit mx-auto mt-8">
+      <div className="flex flex-col justify-center sm:justify-normal items-center w-fit mx-auto sm:mx-0 mt-8">
         <Checkbox
           label="Include mods"
           checked={!excludeMods}
@@ -366,7 +365,7 @@ export function PointInfo({
   return (
     <>
       <div
-        className="grid gap-y-1 gap-x-2 mt-4 mx-auto w-fit"
+        className="grid gap-y-1 gap-x-2 mt-4 w-fit"
         style={{ gridTemplateColumns: 'auto auto' }}
       >
         {nonRejectedUploads.map(({ points, text }) => (
@@ -406,14 +405,14 @@ export function PointInfo({
       </div>
       {showInfoAboutUploadedComics && (
         <>
-          <p className="mt-4 text-center">
+          <p className="mt-4">
             Sometimes good suggestions might show up as rejected, if someone else beat you
             to it.
           </p>
-          <p className="mt-2 text-center">
+          <p className="mt-2">
             Note that even if your comic upload has the status Approved it might still not
-            be available on the site. This is because we queue comics to spread them
-            evenly over time.
+            be available on the site. We queue comics to spread their distribution evenly
+            over time.
           </p>
         </>
       )}

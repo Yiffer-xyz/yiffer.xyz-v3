@@ -2,17 +2,19 @@ import { useLoaderData } from '@remix-run/react';
 import { MdArrowForward, MdLogin } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { authLoader } from '~/utils/loaders';
-import BackToContribute from '~/page-components/BackToContribute';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export { authLoader as loader } from '~/utils/loaders';
 
 export default function JoinUs() {
   return (
     <div className="container mx-auto">
-      <h1>Becoming a mod</h1>
-      <p className="mb-4">
-        <BackToContribute />
-      </p>
+      <h1>Join us</h1>
+
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Contribute', href: '/contribute' }]}
+        currentRoute="Join us"
+      />
 
       <p className="mb-4">
         Yiffer.xyz would not be what it is without our wonderful mods.
