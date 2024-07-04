@@ -27,19 +27,21 @@ export default function LinkCard({
     ${className}`;
 
   return (
-    <RemixLink to={href} style={disabled ? { pointerEvents: 'none' } : {}}>
-      <div className={containerClassName}>
-        <p
-          className={`text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
+    <RemixLink
+      to={href}
+      className={containerClassName}
+      style={disabled ? { pointerEvents: 'none' } : {}}
+    >
+      <p
+        className={`text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
             dark:from-blue-strong-300 dark:to-blue-strong-300 font-semibold`}
-        >
-          {title}
-          {includeRightArrow && (
-            <RiArrowRightLine className="inline" style={{ marginLeft: 4 }} />
-          )}
-        </p>
-        {description && <p>{description}</p>}
-      </div>
+      >
+        {title}
+        {includeRightArrow && (
+          <RiArrowRightLine className="inline" style={{ marginLeft: 4 }} />
+        )}
+      </p>
+      {description && <p>{description}</p>}
     </RemixLink>
   );
 }

@@ -1,5 +1,5 @@
 import { GridContextProvider, GridDropZone, GridItem, swap } from 'react-grid-dnd';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
 import { MdDelete } from 'react-icons/md';
@@ -70,10 +70,6 @@ export default function PageManager({ files, onChange, randomString }: PageManag
     newFiles.splice(imageIndex, 1);
     onChange(newFiles);
   }
-
-  useEffect(() => {
-    console.log('files', files);
-  }, [files]);
 
   return (
     <>

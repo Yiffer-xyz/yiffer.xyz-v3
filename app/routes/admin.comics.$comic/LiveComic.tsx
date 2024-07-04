@@ -1,14 +1,13 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { MdArrowForward, MdCheck, MdReplay } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
-import PageManager from '~/page-components/PageManager/PageManager';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import type { NewArtist, NewComicData } from '~/routes/contribute_.upload/route';
 import type { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
-import { padPageNumber, type ComicImage, type FieldChange } from '~/utils/general';
+import type { FieldChange } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ManagePagesAdmin from './ManagePagesAdmin';

@@ -1,4 +1,4 @@
-import cropperCss from 'cropperjs/dist/cropper.min.css';
+import cropperCss from '~/utils/cropper.min.css';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useEffect, useState } from 'react';
@@ -30,7 +30,6 @@ import {
   generateRandomId,
   getFileExtension,
   isUsernameUrl,
-  padPageNumber,
   pageNumberToPageName,
   randomString,
 } from '~/utils/general';

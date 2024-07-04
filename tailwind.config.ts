@@ -14,7 +14,8 @@ export const colors = {
     white: '#fff',
   },
   status: {
-    info1: '#39a6ef',
+    info1: '#36aaf8',
+    info2: '#1f90db',
     error2: '#e2557f',
     warn1: '#ec9e3f',
     warn2: '#fbc164',

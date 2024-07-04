@@ -75,6 +75,8 @@ export default function AccountPage() {
           className="mt-4"
           disabled
         />
+
+        <LinkCard href="/logout" title="Log out" className="mt-4" />
       </div>
     </div>
   );

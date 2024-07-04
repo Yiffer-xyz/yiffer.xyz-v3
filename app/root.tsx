@@ -194,12 +194,6 @@ function Layout({
                 text="Contribute"
                 Icon={RiAddLine}
               />
-              {isLoggedIn && (
-                <a href="/logout" className={navLinkStyle}>
-                  <RiLogoutBoxLine className="inline-block mr-0.5" />
-                  Log out
-                </a>
-              )}
             </>
             {!isLoggedIn && (
               <a href="/login" className={navLinkStyle}>

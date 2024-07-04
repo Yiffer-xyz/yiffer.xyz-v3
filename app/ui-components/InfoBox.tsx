@@ -39,7 +39,7 @@ export default function InfoBox({
 
   switch (variant) {
     case 'info':
-      variantClassname = 'from-status-info1 to-status-info1 ';
+      variantClassname = 'from-status-info2 to-status-info1 ';
       Icon = MdInfo;
       break;
     case 'error':

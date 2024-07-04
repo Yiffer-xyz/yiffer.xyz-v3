@@ -5,7 +5,7 @@ export function getTimeAgo(time: string) {
     addSuffix: false,
   });
 
-  return timeAgo;
+  return timeAgo.replace('about ', '').trim();
 }
 
 export function getTimeAgoShort(time: string, includeSpace = true) {

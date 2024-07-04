@@ -3,6 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import { MdCheck, MdChevronRight, MdClose } from 'react-icons/md';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Button from '~/ui-components/Buttons/Button';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
@@ -21,11 +22,13 @@ export default function AccountPage() {
   const user = useLoaderData<typeof loader>();
 
   return (
-    <div className="w-fit mx-auto px-4">
+    <div className="container mx-auto">
       <h1>Account settings</h1>
-      <p>
-        <Link href="/me" text="Account" /> <MdChevronRight /> Account settings
-      </p>
+
+      <Breadcrumbs
+        prevRoutes={[{ text: 'Account', href: '/me' }]}
+        currentRoute="Account settings"
+      />
 
       <p className="mt-6">
         <span className="font-bold">Username:</span> {user.username}
