@@ -88,7 +88,7 @@ export default function Index() {
         />
 
         <Link
-          href={latestBlog ? `/blog/${latestBlog.id}` : '#'}
+          href={latestBlog ? `/blogs/${latestBlog.id}` : '#'}
           text={`Latest blog: ${latestBlog?.title ?? ''}`}
           IconRight={latestBlog ? RiArrowRightLine : undefined}
         />
