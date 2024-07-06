@@ -8,7 +8,6 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { processApiError } from '~/utils/request-helpers';
 import { useLoaderData } from '@remix-run/react';
 import { getComicsPaginated } from '~/route-funcs/get-comics-paginated';
-import { browsePageSize } from '~/types/types';
 import { colors } from 'tailwind.config';
 import {
   parseBrowseParams,
@@ -18,6 +17,9 @@ import {
 import { getUIPrefSession } from '~/utils/theme.server';
 import { authLoader } from '~/utils/loaders';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import { COMICS_PER_PAGE } from '~/types/constants';
+import { isComic } from '~/utils/general';
+import AdComicCard from './AdComicCard';
 
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
@@ -29,31 +31,33 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const comicsRes = await getComicsPaginated({
     db: args.context.DB,
-    limit: browsePageSize,
-    offset: params.page !== 1 ? (params.page - 1) * browsePageSize : undefined,
+    limit: COMICS_PER_PAGE,
+    offset: params.page !== 1 ? (params.page - 1) * COMICS_PER_PAGE : undefined,
     search: params.search,
     order: sortToApiSort(params.sort),
     tagIDs: params.tagIDs.length > 0 ? params.tagIDs : undefined,
     categories,
     includeTags: uiPrefSession.getUiPref().comicCardTags,
     userId: user?.userId,
+    includeAds: true,
   });
   if (comicsRes.err) {
     return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
   }
 
   return {
-    comics: comicsRes.result.comics,
+    comicsAndAds: comicsRes.result.comicsAndAds,
     numberOfPages: comicsRes.result.numberOfPages,
     totalNumComics: comicsRes.result.totalNumComics,
     pagesPath: args.context.PAGES_PATH,
+    adsPath: args.context.ADS_PATH,
   };
 }
 
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
-  const { comics, numberOfPages, totalNumComics, pagesPath } =
+  const { comicsAndAds, numberOfPages, totalNumComics, pagesPath, adsPath } =
     useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
@@ -130,15 +134,19 @@ export default function BrowsePage() {
       </p>
 
       <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4 max-w-[1780px] mx-auto pb-20">
-        {comics
-          ? comics.map(comic => (
-              <ComicCard
-                comic={comic}
-                key={comic.id}
-                pagesPath={pagesPath}
-                toggleBookmark={toggleBookmark}
-              />
-            ))
+        {comicsAndAds
+          ? comicsAndAds.map(comicOrAd =>
+              isComic(comicOrAd) ? (
+                <ComicCard
+                  comic={comicOrAd}
+                  key={comicOrAd.id}
+                  pagesPath={pagesPath}
+                  toggleBookmark={toggleBookmark}
+                />
+              ) : (
+                <AdComicCard ad={comicOrAd} adsPath={adsPath} key={comicOrAd.renderId} />
+              )
+            )
           : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}
       </div>
     </div>

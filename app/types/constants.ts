@@ -10,6 +10,9 @@ export const COMIC_CARD_MAX_HEIGHT = COMIC_CARD_BASE_HEIGHT * 3;
 export const CARD_AD_MAIN_TEXT_MAX_LENGTH = 25;
 export const CARD_AD_SECONDARY_TEXT_MAX_LENGTH = 60;
 
+export const COMICS_PER_PAGE = 60;
+export const ADS_PER_PAGE = 6; // Will be either this (rare) or this-1 (usually)
+
 export const COMIC_PROBLEM_CATEGORIES = [
   {
     title: 'Update missing',

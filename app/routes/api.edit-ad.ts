@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { type AdType } from '~/types/types';
-import { queryDb, queryDbExec } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
 import {
@@ -13,6 +13,7 @@ import {
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
   CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
 } from '~/types/constants';
+import isAdOwner from '~/route-funcs/is-ad-owner';
 
 export type EditAdFormData = {
   id: string;
@@ -48,14 +49,8 @@ export async function editAd(
   isMod: boolean
 ): Promise<ApiError | undefined> {
   if (!isMod) {
-    const fetchUserQuery = `SELECT userId FROM advertisement WHERE id = ?`;
-    const userRes = await queryDb<{ userId: number }[]>(db, fetchUserQuery, [data.id]);
-
-    if (userRes.isError) return makeDbErr(userRes, 'Error fetching ad');
-    if (userRes.result.length === 0) return { logMessage: 'Ad not found' };
-    if (userRes.result[0].userId !== userId) {
-      return { logMessage: 'Not authorized to edit ad' };
-    }
+    const isOwner = await isAdOwner(db, userId, data.id);
+    if (!isOwner) return { logMessage: 'Not authorized to edit ad' };
   }
 
   const insertQuery = `UPDATE advertisement 

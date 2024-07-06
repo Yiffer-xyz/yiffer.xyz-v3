@@ -355,6 +355,8 @@ export type CardAdForViewing = {
   link: string;
   mainText: string;
   secondaryText?: string;
+  isAnimated: boolean;
+  renderId?: string;
 };
 
 export type Blog = {
@@ -367,8 +369,6 @@ export type Blog = {
   };
   timestamp: string;
 };
-
-export const browsePageSize = 60;
 
 export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';
 export const allSortTypes: SortType[] = ['Updated', 'User score', 'Your score', 'Random'];

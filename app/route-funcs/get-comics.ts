@@ -104,7 +104,6 @@ export function getComicsByArtistFieldQuery(
   return {
     query,
     params: [fieldValue],
-    errorLogMessage: `Error getting artist comics by ${fieldName}`,
   };
 }
 

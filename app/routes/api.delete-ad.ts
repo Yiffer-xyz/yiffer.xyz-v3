@@ -1,6 +1,4 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { differenceInDays } from 'date-fns';
-import { getAdById } from '~/route-funcs/get-ads';
 import isAdOwner from '~/route-funcs/is-ad-owner';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
@@ -21,19 +19,19 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Missing ad ID');
   }
 
-  const err = await deactivateAd(
+  const err = await deleteAd(
     args.context.DB,
     adId.toString(),
     user.userId,
     user.userType !== 'user'
   );
   if (err) {
-    return processApiError('Error in /deactivate-ad', err, { adId, ...user });
+    return processApiError('Error in /delete-ad', err, { adId, ...user });
   }
   return createSuccessJson();
 }
 
-export async function deactivateAd(
+export async function deleteAd(
   db: D1Database,
   adId: string,
   userId: number,
@@ -44,19 +42,9 @@ export async function deactivateAd(
     if (!isOwner) return { logMessage: 'Not authorized to edit ad' };
   }
 
-  const adRes = await getAdById(db, adId);
-  if (adRes.err) return adRes.err;
-  if (adRes.notFound) return { logMessage: 'Ad not found' };
-
-  let newActiveDays = 0;
-  if (adRes.result.ad.lastActivationDate) {
-    newActiveDays =
-      differenceInDays(new Date(), new Date(adRes.result.ad.lastActivationDate)) + 1;
-  }
-
-  const query = `UPDATE advertisement SET status = 'ENDED', numDaysActive = numDaysActive + ?, lastActivationDate = NULL WHERE id = ?`;
-  const params = [newActiveDays, adId];
+  const query = `DELETE FROM advertisement WHERE id = ?`;
+  const params = [adId];
   const dbRes = await queryDbExec(db, query, params);
 
-  if (dbRes.isError) return makeDbErr(dbRes, 'Error deactivating ad');
+  if (dbRes.isError) return makeDbErr(dbRes, 'Error deleting ad');
 }

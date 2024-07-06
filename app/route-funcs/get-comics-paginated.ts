@@ -1,8 +1,12 @@
-import type { ComicForBrowse } from '~/types/types';
-import { browsePageSize } from '~/types/types';
+import { ADS_PER_PAGE, COMICS_PER_PAGE } from '~/types/constants';
+import type { CardAdForViewing, ComicForBrowse } from '~/types/types';
 import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
+
+type DbCardAdForViewing = Omit<CardAdForViewing, 'isAnimated'> & {
+  isAnimated: 0 | 1;
+};
 
 type ComicForBrowseDB = Omit<
   ComicForBrowse,
@@ -25,6 +29,7 @@ type GetComicsParams = {
   order?: 'updated' | 'userRating' | 'yourRating' | 'random';
   artistId?: number;
   includeTags?: boolean;
+  includeAds?: boolean;
 };
 
 export async function getComicsPaginated({
@@ -38,8 +43,9 @@ export async function getComicsPaginated({
   order,
   artistId,
   includeTags,
+  includeAds,
 }: GetComicsParams): ResultOrErrorPromise<{
-  comics: ComicForBrowse[];
+  comicsAndAds: (ComicForBrowse | CardAdForViewing)[];
   numberOfPages: number;
   totalNumComics: number;
   page: number;
@@ -163,13 +169,30 @@ export async function getComicsPaginated({
     ${orderQueryString} 
   `;
 
-  const dbRes = await queryDbMultiple<[ComicForBrowseDB[], { count: number }[]]>(db, [
+  const queries = [
     { query, params: queryParams },
     {
       query: totalCountQuery,
       params: totalCountQueryParams,
     },
-  ]);
+  ];
+
+  if (includeAds) {
+    const adsQueryAndParams = {
+      query: `SELECT id, link, mainText, secondaryText, isAnimated
+        FROM advertisement
+        WHERE adType = 'card' AND status = 'ACTIVE'
+        ORDER BY RANDOM() LIMIT ${COMICS_PER_PAGE} 
+      `,
+      params: [],
+    };
+    queries.push(adsQueryAndParams);
+  }
+
+  const dbRes = await queryDbMultiple<
+    | [ComicForBrowseDB[], { count: number }[]]
+    | [ComicForBrowseDB[], { count: number }[], DbCardAdForViewing[]]
+  >(db, queries);
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comics+count', logCtx);
@@ -188,12 +211,23 @@ export async function getComicsPaginated({
       : undefined,
   })) as ComicForBrowse[];
 
+  let comicsWithAds: (ComicForBrowse | CardAdForViewing)[] = comics;
+  if (includeAds && dbRes.result.length === 3) {
+    comicsWithAds = addAdsToComics(
+      comics,
+      dbRes.result[2].map(ad => ({
+        ...ad,
+        isAnimated: !!ad.isAnimated,
+      }))
+    );
+  }
+
   return {
     result: {
-      comics,
-      numberOfPages: Math.ceil(countDbRes[0].count / browsePageSize),
+      comicsAndAds: comicsWithAds,
+      numberOfPages: Math.ceil(countDbRes[0].count / COMICS_PER_PAGE),
       totalNumComics: countDbRes[0].count,
-      page: Math.ceil((offset ?? 0) / browsePageSize) + 1,
+      page: Math.ceil((offset ?? 0) / COMICS_PER_PAGE) + 1,
     },
   };
 }
@@ -201,6 +235,38 @@ export async function getComicsPaginated({
 // Return the average as a % of 100, where 1 star = 0%, 2 stars = 50%, 3 stars = 100%
 function comicRatingsToPercent(sumStars: number, numTimesStarred: number) {
   return Math.round((sumStars / numTimesStarred - 1) * 50);
+}
+
+function addAdsToComics(
+  comics: ComicForBrowse[],
+  ads: CardAdForViewing[]
+): (ComicForBrowse | CardAdForViewing)[] {
+  const numComicsBetweenAds = Math.ceil(COMICS_PER_PAGE / ADS_PER_PAGE);
+  const comicsWithAds: (ComicForBrowse | CardAdForViewing)[] = [];
+  let adIndex = 0;
+
+  // Mix ads into comic list, starting at index (numComicsBetweenAds +- 2) for variation,
+  // then every numComicsBetweenAds after that.
+
+  const firstAdRandomizer = Math.floor(Math.random() * 5) - 2;
+  const firstAdIndex = numComicsBetweenAds + firstAdRandomizer;
+
+  for (let i = 0; i < comics.length; i++) {
+    if (
+      i === firstAdIndex ||
+      (i > firstAdIndex && (i - firstAdIndex) % numComicsBetweenAds === 0)
+    ) {
+      const ad: CardAdForViewing = {
+        ...ads[adIndex % ads.length],
+        renderId: ads[adIndex % ads.length].renderId + '-' + i,
+      };
+      comicsWithAds.push(ad);
+      adIndex++;
+    }
+    comicsWithAds.push(comics[i]);
+  }
+
+  return comicsWithAds;
 }
 
 export function getFilterQuery({

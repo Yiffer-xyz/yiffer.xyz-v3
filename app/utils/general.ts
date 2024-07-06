@@ -1,3 +1,5 @@
+import type { CardAdForViewing, ComicForBrowse } from '~/types/types';
+
 export function capitalizeString(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -87,4 +89,10 @@ export function generateRandomId() {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+}
+
+export function isComic(
+  comicOrAd: ComicForBrowse | CardAdForViewing
+): comicOrAd is ComicForBrowse {
+  return !!(comicOrAd as ComicForBrowse).name;
 }

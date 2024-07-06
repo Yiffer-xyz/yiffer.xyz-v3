@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useNavigate } from '@remix-run/react';
 import { format } from 'date-fns';
 import { getAdById } from '~/route-funcs/get-ads';
 import AdStatus from '~/ui-components/AdStatus/AdStatus';
@@ -49,10 +49,6 @@ export default function AdvertisingAd() {
   const { adData, notFound, adId, ADS_PATH } = useLoaderData<typeof loader>();
   const [isEditingAd, setIsEditingAd] = useState(false);
   const ad = adData?.ad;
-
-  function deleteAd() {
-    return null;
-  }
 
   function editAd() {
     setIsEditingAd(true);
@@ -108,7 +104,6 @@ export default function AdvertisingAd() {
           {!isEditingAd && (
             <AdTopInfo
               ad={ad}
-              deleteAd={deleteAd}
               editAd={editAd}
               setUpPayment={setUpPayment}
               reactivateAd={reactivateAd}
@@ -287,24 +282,33 @@ function AdEditing({
 
 function AdTopInfo({
   ad,
-  deleteAd,
   editAd,
   setUpPayment,
   reactivateAd,
 }: {
   ad: Advertisement;
   editAd: () => void;
-  deleteAd: () => void;
   setUpPayment: () => void;
   reactivateAd: () => void;
 }) {
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const deactivateAdFetcher = useGoodFetcher({
     url: '/api/deactivate-ad',
     method: 'post',
     toastSuccessMessage: 'Ad deactivated',
     onFinish: () => setIsDeactivating(false),
+  });
+
+  const deleteAdFetcher = useGoodFetcher({
+    url: '/api/delete-ad',
+    method: 'post',
+    toastSuccessMessage: 'Ad deleted',
+    onFinish: () => {
+      console.log('YO I FINISHED?!??!?!?!??!?!');
+    },
   });
 
   if (isDeactivating) {
@@ -329,6 +333,27 @@ function AdTopInfo({
     );
   }
 
+  if (isDeleting) {
+    return (
+      <div className="bg-red-moreTrans p-4 w-fit flex flex-col gap-2">
+        <h3>Delete ad?</h3>
+        <p>Are you sure you want to delete this ad?</p>
+        <div className="flex flex-row gap-4 mt-1">
+          <Button onClick={() => setIsDeleting(false)} text="No - keep ad" />
+          <LoadingButton
+            onClick={() => {
+              deleteAdFetcher.submit({ id: ad.id });
+              navigate('/advertising/dashboard');
+            }}
+            text="Yes - delete ad"
+            color="error"
+            isLoading={deleteAdFetcher.isLoading}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-theme1-primaryTrans p-4 w-fit flex flex-col gap-2">
       <p>
@@ -343,7 +368,7 @@ function AdTopInfo({
             change occurs.
           </p>
 
-          <Button onClick={deleteAd} text="Delete ad" color="error" />
+          <Button onClick={() => setIsDeleting(true)} text="Delete ad" color="error" />
         </>
       )}
 
