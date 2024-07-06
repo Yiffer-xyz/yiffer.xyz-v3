@@ -34,14 +34,6 @@ h4 {
   }
 }
 
-/* nav > div {
-  max-width: 80%;
-}
-@media only screen and (max-width: 800px) {
-  nav > div {
-    max-width: 100%;
-  }
-} */
 svg {
   display: inline-block;
   margin-bottom: 2px;

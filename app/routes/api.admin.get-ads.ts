@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { getAllAds } from '~/route-funcs/get-ads';
+import { getAds } from '~/route-funcs/get-ads';
 import type { AdStatus, AdType } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
@@ -21,7 +21,11 @@ export async function action(args: ActionFunctionArgs) {
   if (!formTypeFilter) return create400Json('Missing adTypeFilter');
   const typeFilter = formTypeFilter.toString().split(',') as AdType[];
 
-  const adsRes = await getAllAds(args.context.DB, statusFilter, typeFilter);
+  const adsRes = await getAds({
+    db: args.context.DB,
+    statusFilter,
+    typeFilter,
+  });
 
   if (adsRes.err) {
     return processApiError('Error in /get-ads', adsRes.err);

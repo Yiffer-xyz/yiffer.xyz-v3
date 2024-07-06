@@ -22,6 +22,7 @@ type ToastFetcherArgs = {
   url?: string;
   method?: FormMethod;
   onFinish?: () => void;
+  onError?: (error: string) => void;
   toastSuccessMessage?: string;
   preventToastClose?: boolean;
   toastError?: boolean;
@@ -59,6 +60,7 @@ export function useGoodFetcher<T = void>({
   url,
   method = 'get',
   onFinish,
+  onError,
   toastSuccessMessage,
   preventToastClose = false,
   toastError = true, // TODO: Probably flip this
@@ -90,9 +92,6 @@ export function useGoodFetcher<T = void>({
     if (didJustFinish) {
       fetchingStateRef.current = 'not-started';
       setHasFetchedOnce(true);
-      if (onFinish) {
-        onFinish();
-      }
 
       if (fetcher.data) {
         if (toastSuccessMessage && fetcher.data.success) {
@@ -100,6 +99,13 @@ export function useGoodFetcher<T = void>({
         } else if (toastError && fetcher.data.error) {
           showErrorToast(fetcher.data.error, theme);
         }
+      }
+
+      if (onFinish && !fetcher.data?.error) {
+        onFinish();
+      }
+      if (onError && fetcher.data?.error) {
+        onError(fetcher.data.error);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

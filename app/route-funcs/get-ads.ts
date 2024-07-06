@@ -1,3 +1,4 @@
+import { differenceInDays } from 'date-fns';
 import type { AdStatus, AdType, Advertisement } from '~/types/types';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type {
@@ -12,25 +13,58 @@ type DbAd = Omit<Advertisement, 'user'> & {
   email: string;
 };
 
-export async function getAllAds(
-  db: D1Database,
-  statusFilter: AdStatus[],
-  typeFilter: AdType[]
-): ResultOrErrorPromise<Advertisement[]> {
+type GetAdsProps = {
+  db: D1Database;
+  statusFilter?: AdStatus[];
+  typeFilter?: AdType[];
+  userId?: number;
+};
+
+export async function getAds({
+  db,
+  statusFilter,
+  typeFilter,
+  userId,
+}: GetAdsProps): ResultOrErrorPromise<Advertisement[]> {
   const logCtx = { statusFilter, typeFilter };
 
-  const getAdsQuery = `
+  let getAdsQuery = `
     SELECT
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
-      username, email, status, filetype, expiryDate, createdDate, advertiserNotes,
-      clicks, adminNotes, correctionNote
+      username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
+      clicks, adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive
     FROM advertisement
-    INNER JOIN user ON (user.id = advertisement.userId)
-    WHERE status IN (${statusFilter.map(() => '?').join(',')})
-      AND adType IN (${typeFilter.map(() => '?').join(',')})
-  `;
+    INNER JOIN user ON (user.id = advertisement.userId)`;
 
-  const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, [...statusFilter, ...typeFilter]);
+  const params: any[] = [];
+
+  let statusFilterStr = '';
+  let typeFilterStr = '';
+
+  if (statusFilter && statusFilter.length > 0) {
+    statusFilterStr = `status IN (${statusFilter.map(() => '?').join(',')})`;
+    params.push(...statusFilter);
+  }
+
+  if (typeFilter && typeFilter.length > 0) {
+    typeFilterStr = `adType IN (${typeFilter.map(() => '?').join(',')})`;
+    params.push(...typeFilter);
+  }
+
+  const userIdFilterStr = userId ? 'advertisement.userId = ?' : '';
+  if (userId) params.push(userId);
+
+  const whereClause = [statusFilterStr, typeFilterStr, userIdFilterStr]
+    .filter(Boolean)
+    .join(' AND ');
+
+  if (whereClause) {
+    getAdsQuery += ` WHERE ${whereClause}`;
+  }
+
+  console.log(getAdsQuery);
+
+  const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, params);
 
   if (adsRes.isError) {
     return makeDbErrObj(adsRes, 'Could not get ads', logCtx);
@@ -51,8 +85,8 @@ export async function getAdById(
   const getAdQuery = `
     SELECT
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
-      username, email, status, filetype, expiryDate, createdDate, advertiserNotes,
-      clicks, adminNotes, correctionNote
+      username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
+      clicks, adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive
     FROM advertisement
     INNER JOIN user ON (user.id = advertisement.userId)
     WHERE advertisement.id = ?
@@ -90,6 +124,14 @@ export async function getAdById(
 }
 
 function DbAdToFullAd(ad: DbAd): Advertisement {
+  let totalDaysActive = ad.numDaysActive;
+  if (ad.status === 'ACTIVE' && ad.lastActivationDate) {
+    const today = new Date();
+    const lastActivationDate = new Date(ad.lastActivationDate);
+    const currentlyActiveDays = differenceInDays(today, lastActivationDate);
+    totalDaysActive += currentlyActiveDays + 1;
+  }
+
   return {
     id: ad.id,
     adType: ad.adType,
@@ -103,12 +145,15 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
       email: ad.email,
     },
     status: ad.status,
-    filetype: ad.filetype,
+    isAnimated: ad.isAnimated,
     expiryDate: ad.expiryDate,
     createdDate: ad.createdDate,
     advertiserNotes: ad.advertiserNotes,
     clicks: ad.clicks,
     adminNotes: ad.adminNotes,
     correctionNote: ad.correctionNote,
+    freeTrialState: ad.freeTrialState,
+    lastActivationDate: ad.lastActivationDate,
+    numDaysActive: totalDaysActive,
   };
 }

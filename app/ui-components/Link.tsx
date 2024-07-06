@@ -6,7 +6,7 @@ type LinkProps = {
   text: string;
   newTab?: boolean;
   isInsideParagraph?: boolean;
-  normalColor?: boolean;
+  color?: 'link' | 'text' | 'white';
   Icon?: React.ElementType;
   IconRight?: React.ElementType;
   showRightArrow?: boolean;
@@ -19,7 +19,7 @@ export default function Link({
   text,
   newTab,
   isInsideParagraph = false,
-  normalColor = false,
+  color = 'link',
   Icon,
   IconRight,
   iconMargin = 4,
@@ -27,14 +27,19 @@ export default function Link({
   className,
   ...props
 }: LinkProps) {
-  const colorClass = normalColor
-    ? `text-light dark:text-dark from-text-light to-text-light
-    dark:from-text-dark dark:to-text-dark`
-    : `text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
+  let colorClass = `text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
     dark:from-blue-strong-300 dark:to-blue-strong-300`;
+  if (color === 'text') {
+    colorClass = `text-light dark:text-dark from-text-light to-text-light
+    dark:from-text-dark dark:to-text-dark`;
+  }
+  if (color === 'white') {
+    colorClass = `!text-dark dark:text-dark from-text-dark to-text-dark
+    dark:from-text-dark dark:to-text-dark`;
+  }
 
   const linkClass = `
-    w-fit h-fit font-semibold bg-gradient-to-r 
+    w-fit h-fit font-semibold bg-gradient-to-r
     ${colorClass} 
     bg-no-repeat focus:no-underline cursor-pointer
     ${className}
@@ -48,7 +53,7 @@ export default function Link({
     pClass += ' leading-none';
   }
 
-  // NOTE that there are a few lines regarding links in `main.css`.
+  // ℹ️ NOTE that there are a few lines regarding links in `main.css`.
   // These special things are not supported in tailwind yet.
 
   const InnerLinkComponent = href.includes('http') ? (
@@ -63,7 +68,9 @@ export default function Link({
         <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
       ) : undefined}
       {text}
-      {showRightArrow && <RiArrowRightLine style={{ marginLeft: iconMargin }} />}
+      {showRightArrow && (
+        <RiArrowRightLine style={{ marginLeft: iconMargin, marginBottom: 3 }} />
+      )}
       {!showRightArrow && IconRight ? (
         <IconRight style={{ marginLeft: iconMargin }} />
       ) : undefined}
@@ -82,7 +89,9 @@ export default function Link({
         <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
       ) : undefined}
       {text}
-      {showRightArrow && <RiArrowRightLine style={{ marginLeft: iconMargin }} />}
+      {showRightArrow && (
+        <RiArrowRightLine style={{ marginLeft: iconMargin, marginBottom: 3 }} />
+      )}
       {!showRightArrow && IconRight ? (
         <IconRight style={{ marginLeft: iconMargin }} />
       ) : undefined}

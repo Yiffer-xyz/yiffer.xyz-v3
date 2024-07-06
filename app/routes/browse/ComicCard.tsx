@@ -65,7 +65,7 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
           <Link
             href={`/${comic.name}`}
             text={comic.name}
-            normalColor
+            color="text"
             className="text-sm"
           />
         </div>

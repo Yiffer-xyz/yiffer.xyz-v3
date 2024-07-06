@@ -30,13 +30,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS `idx_user_unique_username` ON `user` (`Usernam
 CREATE TABLE IF NOT EXISTS `advertisement` (
 `id` TEXT  NOT NULL,
 `adType` TEXT CHECK( `adType` IN ('card', 'banner', 'topSmall') ) NOT NULL,
-`adName` TEXT   NULL DEFAULT NULL,
-`status` TEXT CHECK( `status` IN ('PENDING', 'ACTIVE', 'ENDED', 'CANCELLED', 'NEEDS CORRECTION', 'AWAITING PAYMENT', 'ACTIVE BUT PENDING') ) NOT NULL DEFAULT 'pending',
+`adName` TEXT NOT NULL,
+`status` TEXT CHECK( `status` IN ('PENDING', 'ACTIVE', 'ENDED', 'NEEDS CORRECTION', 'AWAITING PAYMENT') ) NOT NULL DEFAULT 'PENDING',
 `link` TEXT  NOT NULL,
 `mainText` TEXT   NULL DEFAULT NULL,
 `secondaryText` TEXT   NULL DEFAULT NULL,
 `userId` INTEGER  NULL DEFAULT NULL,
-`filetype` TEXT CHECK( `filetype` IN ('png', 'gif', 'jpg', 'webp', 'webm') )  NOT NULL,
+`isAnimated` TEXT TINYINTEGER  NOT NULL,
 `expiryDate` DATE NULL DEFAULT NULL,
 `createdDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `advertiserNotes` TEXT  NULL DEFAULT NULL,
@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS `advertisement` (
 `adminNotes` TEXT   NULL DEFAULT NULL,
 `correctionNote` TEXT   NULL DEFAULT NULL,
 `isConverted` TINYINTEGER  NOT NULL DEFAULT '0',
+`freeTrialState` TEXT CHECK( `freeTrialState` IN ('requested', 'granted', 'denied') ) NULL DEFAULT NULL,
+`lastActivationDate` TIMESTAMP NULL DEFAULT NULL,
+`numDaysActive` INTEGER NOT NULL DEFAULT '0',
 PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));

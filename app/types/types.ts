@@ -6,6 +6,7 @@ export interface Env {
   FRONT_PAGE_URL: string;
   IMAGES_SERVER_URL: string;
   PAGES_PATH: string;
+  ADS_PATH: string;
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;
   DAILY_SCHEDULE_PUBLISH_COUNT: string;
@@ -293,16 +294,42 @@ export type AdStatus =
   | 'PENDING'
   | 'ACTIVE'
   | 'ENDED'
-  | 'CANCELLED'
   | 'NEEDS CORRECTION'
-  | 'AWAITING PAYMENT'
-  | 'ACTIVE BUT PENDING';
+  | 'AWAITING PAYMENT';
+
+export type AdFreeTrialState = 'requested' | 'granted' | 'denied';
+export enum AdFreeTrialStateEnum {
+  Requested = 'requested',
+  Granted = 'granted',
+  Denied = 'denied',
+}
+
+export type AdvertisementInfo = {
+  name: AdType;
+  title: string;
+  description: string;
+  freeTrialOffered: boolean;
+  hasTexts: boolean;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+  idealDimensions?: {
+    width: number;
+    height: number;
+  };
+  pricesForMonts: {
+    1: number;
+    4: number;
+    12: number;
+  };
+};
 
 // TODO-db: Make userId and clicks not nullable
 export type Advertisement = {
   id: string;
   adType: AdType;
-  adName?: string;
+  adName: string;
   link: string;
   mainText?: string;
   secondaryText?: string;
@@ -312,13 +339,23 @@ export type Advertisement = {
     email: string;
   };
   status: AdStatus;
-  filetype: 'png' | 'gif' | 'jpg' | 'webp' | 'webm';
+  isAnimated: boolean;
   expiryDate?: string;
   createdDate: string;
   advertiserNotes?: string;
   clicks: number;
   adminNotes?: string;
   correctionNote?: string;
+  freeTrialState?: 'requested' | 'granted' | 'denied';
+  lastActivationDate?: string;
+  numDaysActive: number;
+};
+
+export type CardAdForViewing = {
+  id: string;
+  link: string;
+  mainText: string;
+  secondaryText?: string;
 };
 
 export type Blog = {
@@ -357,3 +394,5 @@ export type UIPreferences = {
   viewMode: ViewType;
   comicCardTags: boolean;
 };
+
+export type AdPaymentMethod = 'now' | 'free-trial';

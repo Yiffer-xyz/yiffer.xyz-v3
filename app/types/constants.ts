@@ -1,4 +1,14 @@
+import type { AdvertisementInfo } from './types';
+
 export const EMAIL_ENDPOINT = 'https://api.postmarkapp.com/email';
+
+export const COMIC_CARD_BASE_WIDTH = 160;
+export const COMIC_CARD_BASE_HEIGHT = 226;
+export const COMIC_CARD_MAX_WIDTH = COMIC_CARD_BASE_WIDTH * 3;
+export const COMIC_CARD_MAX_HEIGHT = COMIC_CARD_BASE_HEIGHT * 3;
+
+export const CARD_AD_MAIN_TEXT_MAX_LENGTH = 25;
+export const CARD_AD_SECONDARY_TEXT_MAX_LENGTH = 60;
 
 export const COMIC_PROBLEM_CATEGORIES = [
   {
@@ -29,3 +39,62 @@ export const COMIC_PROBLEM_CATEGORIES = [
 ];
 
 export const MAX_UPLOAD_BODY_SIZE = 100 * 1024 * 1024; // 100MB
+
+export const ADVERTISEMENTS: AdvertisementInfo[] = [
+  {
+    name: 'card',
+    title: 'Comic card',
+    description: 'Shows up in the list of comics on the main browse page.',
+    freeTrialOffered: true,
+    hasTexts: true,
+    dimensions: {
+      width: COMIC_CARD_MAX_WIDTH,
+      height: COMIC_CARD_MAX_HEIGHT,
+    },
+    pricesForMonts: {
+      1: 14,
+      4: 48, // 12 per month
+      12: 120, // 10 per month
+    },
+  },
+  {
+    name: 'banner',
+    title: 'Banner above comics',
+    description: 'Wide banner at the top when viewing a comic.',
+    freeTrialOffered: true,
+    hasTexts: false,
+    dimensions: {
+      width: 728,
+      height: 90,
+    },
+    idealDimensions: {
+      width: 728 * 2,
+      height: 90 * 2,
+    },
+    pricesForMonts: {
+      1: 18,
+      4: 64, // 16 per month
+      12: 168, // 14 per month
+    },
+  },
+  {
+    name: 'topSmall',
+    title: 'Browse top banner',
+    description: 'Semi-wide banner at the top of the main browse page',
+    freeTrialOffered: true,
+    hasTexts: false,
+    dimensions: {
+      width: 300,
+      height: 90,
+    },
+    idealDimensions: {
+      width: 300 * 2,
+      height: 90 * 2,
+    },
+    pricesForMonts: {
+      1: 20,
+      4: 68, // 17 per month
+      12: 168, // 14 per month
+    },
+  },
+];
