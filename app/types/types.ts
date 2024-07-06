@@ -12,7 +12,6 @@ export interface Env {
   DAILY_SCHEDULE_PUBLISH_COUNT: string;
   SENTRY_DSN: string;
   SENTRY_AUTH_TOKEN: string;
-  COMICS_BUCKET: R2Bucket;
   DB: D1Database;
 }
 
