@@ -1,4 +1,6 @@
 import { Link as RemixLink } from '@remix-run/react';
+import { useMemo } from 'react';
+import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import type { CardAdForViewing } from '~/types/types';
 import Link from '~/ui-components/Link';
 import { useUIPreferences } from '~/utils/theme-provider';
@@ -10,6 +12,8 @@ type AdComicCardProps = {
 
 export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
   const { comicCardTags } = useUIPreferences();
+  const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
+  const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
   return (
     <div
@@ -20,8 +24,16 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
     >
       <RemixLink to={ad.link} target="_blank">
         <picture style={{ height: 226 }}>
-          <source srcSet={`${adsPath}/${ad.id}-3x.webp`} type="image/webp" height={226} />
-          <img src={`${adsPath}/${ad.id}-3x.jpg`} alt="Advertisement" height={226} />
+          <source
+            srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp`}
+            type="image/webp"
+            height={226}
+          />
+          <img
+            src={`${adsPath}/${ad.id}-${multiplier}x.jpg`}
+            alt="Advertisement"
+            height={226}
+          />
         </picture>
       </RemixLink>
 

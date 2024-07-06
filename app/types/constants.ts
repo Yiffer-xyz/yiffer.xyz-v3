@@ -47,7 +47,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     description: 'Shows up in the list of comics on the main browse page.',
     freeTrialOffered: true,
     hasTexts: true,
-    dimensions: {
+    minDimensions: {
       width: COMIC_CARD_MAX_WIDTH,
       height: COMIC_CARD_MAX_HEIGHT,
     },
@@ -63,7 +63,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     description: 'Wide banner at the top when viewing a comic.',
     freeTrialOffered: true,
     hasTexts: false,
-    dimensions: {
+    minDimensions: {
       width: 728,
       height: 90,
     },
@@ -83,7 +83,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     description: 'Semi-wide banner at the top of the main browse page',
     freeTrialOffered: true,
     hasTexts: false,
-    dimensions: {
+    minDimensions: {
       width: 300,
       height: 90,
     },

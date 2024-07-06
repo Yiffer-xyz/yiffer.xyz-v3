@@ -309,7 +309,7 @@ export type AdvertisementInfo = {
   description: string;
   freeTrialOffered: boolean;
   hasTexts: boolean;
-  dimensions: {
+  minDimensions: {
     width: number;
     height: number;
   };

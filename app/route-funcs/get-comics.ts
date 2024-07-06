@@ -35,10 +35,7 @@ export function getAllComicNamesAndIDsQuery(options?: {
     query += ` AND publishStatus != 'unlisted' `;
   }
 
-  return {
-    query,
-    errorLogMessage: 'Error getting all comic names and IDs',
-  };
+  return { query };
 }
 
 export function mapDBComicTiny(

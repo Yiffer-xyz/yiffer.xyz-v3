@@ -18,13 +18,13 @@ export default function Advertising() {
 
       <div className="flex flex-row flex-wrap gap-4 mt-4">
         <LinkCard
-          href="/advertising-dashboard"
+          href="/advertising/dashboard"
           title="Advertising dashboard"
           includeRightArrow
         />
 
         <LinkCard
-          href="/advertising-apply"
+          href="/advertising/apply"
           title="Apply for advertisement"
           includeRightArrow
         />

@@ -1,6 +1,6 @@
 import cropperCss from '~/utils/cropper.min.css';
 import { useState } from 'react';
-import type { AdvertisementInfo } from '~/types/types';
+import type { AdType, AdvertisementInfo } from '~/types/types';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { getFileExtension, randomString, type ComicImage } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
@@ -40,12 +40,13 @@ export default function AdvertisingApply() {
     method: 'post',
   });
 
-  async function submitFile(adId: string, file: File): Promise<boolean> {
+  async function submitFile(adId: string, file: File, adType: AdType): Promise<boolean> {
     setFileSubmitErr(undefined);
     const formData = new FormData();
 
     formData.append('adFile', file, `id.${getFileExtension(file.name)}`);
     formData.append('adId', adId);
+    formData.append('adType', adType);
 
     const res = await fetch(`${IMAGES_SERVER_URL}/submit-ad`, {
       method: 'POST',
@@ -67,7 +68,7 @@ export default function AdvertisingApply() {
     setIsLoading(true);
     const id = randomString(6);
 
-    const isSubmitOk = await submitFile(id, file.file);
+    const isSubmitOk = await submitFile(id, file.file, adType.name);
     if (!isSubmitOk) {
       setIsLoading(false);
       return;
@@ -108,7 +109,7 @@ export default function AdvertisingApply() {
           boldText={false}
         >
           <Link
-            href="/advertising-dashboard"
+            href="/advertising/dashboard"
             text="Go to advertising dashboard"
             showRightArrow
             color="white"

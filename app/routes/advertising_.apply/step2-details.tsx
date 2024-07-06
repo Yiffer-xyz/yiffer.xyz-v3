@@ -82,7 +82,7 @@ export default function Step2Details({
 
       const file = filesWithString[0];
       if (file.file?.type && file.file.type.startsWith('image/')) {
-        const acceptedDimensions = [adType.dimensions];
+        const acceptedDimensions = [adType.minDimensions];
         if (adType.idealDimensions) acceptedDimensions.push(adType.idealDimensions);
 
         const isCorrectDimensions = await isImageCorrectDimensions({
@@ -240,22 +240,27 @@ export default function Step2Details({
           )}
 
           <p className="font-bold mt-12">File</p>
-          {adType.idealDimensions && (
+          {adType.idealDimensions ? (
+            <>
+              <p className="text-sm">
+                Ideal dimensions: {adType.idealDimensions.width} x{' '}
+                {adType.idealDimensions.height} or more
+              </p>
+              <p className="text-sm">
+                Min dimensions: {adType.minDimensions.width} x{' '}
+                {adType.minDimensions.height}
+              </p>
+              <p className="text-sm">
+                Submitting non-ideal dimensions will lead to a lower quality appearance on
+                most screens.
+              </p>
+            </>
+          ) : (
             <p className="text-sm">
-              Ideal dimensions: {adType.idealDimensions.width} x{' '}
-              {adType.idealDimensions.height}
+              Min dimensions: {adType.minDimensions.width} x {adType.minDimensions.height}
             </p>
           )}
-          <p className="text-sm">
-            {adType.idealDimensions ? 'Also accepted' : 'Dimensions'}:{' '}
-            {adType.dimensions.width} x {adType.dimensions.height}
-          </p>
-          {adType.idealDimensions && (
-            <p className="text-sm">
-              Submitting non-ideal dimensions will lead to a lower quality appearance on
-              high resolution screens.
-            </p>
-          )}
+
           <p className="text-sm">Images can be cropped after upload.</p>
 
           <FileInput
@@ -279,6 +284,9 @@ export default function Step2Details({
 
           {fileToCrop && (
             <ThumbnailCropper
+              minHeight={adType.minDimensions.height}
+              minWidth={adType.minDimensions.width}
+              idealWidth={adType.idealDimensions?.width}
               image={fileToCrop}
               onClose={onCropCancel}
               onComplete={onCropFinished}

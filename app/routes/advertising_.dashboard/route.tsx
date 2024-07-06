@@ -63,7 +63,7 @@ export default function Advertising() {
                 <TableRow key={ad.id}>
                   <TableCell>
                     <Link
-                      href={`/advertising/${ad.id}`}
+                      href={`/advertising/dashboard/${ad.id}`}
                       text={ad.adName}
                       showRightArrow
                       className="whitespace-pre-wrap break-word"

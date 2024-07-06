@@ -11,6 +11,8 @@ import { useBrowseParams } from './SearchFilter/useBrowseParams';
 import { differenceInDays } from 'date-fns';
 import clsx from 'clsx';
 import TagElement from '~/ui-components/TagElement/TagElement';
+import { useDevicePixelRatio } from 'use-device-pixel-ratio';
+import { useMemo } from 'react';
 
 type ComicCardProps = {
   comic: ComicForBrowse;
@@ -21,6 +23,8 @@ type ComicCardProps = {
 export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCardProps) {
   const { viewMode, comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
+  const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
+  const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
   const isNewComic = differenceInDays(new Date(), new Date(comic.published)) < 14;
 
@@ -33,7 +37,7 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
     >
       <RemixLink to={`/${comic.name}`}>
         <img
-          src={`${pagesPath}/${comic.name}/thumbnail-2x.webp`}
+          src={`${pagesPath}/${comic.name}/thumbnail-${multiplier}x.webp`}
           alt="comic thumbnail"
           style={{ height: 226 }}
           height={226}

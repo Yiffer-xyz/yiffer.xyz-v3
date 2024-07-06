@@ -9,11 +9,17 @@ import InfoBox from '~/ui-components/InfoBox';
 
 export interface ThumbnailCropperProps {
   image: ComicImage;
+  minWidth: number;
+  minHeight: number;
+  idealWidth?: number;
   onComplete: (croppedThumbnail: ComicImage) => void;
   onClose: () => void;
 }
 
 export default function ThumbnailCropper({
+  minHeight,
+  minWidth,
+  idealWidth,
   onClose,
   onComplete,
   image,
@@ -23,10 +29,13 @@ export default function ThumbnailCropper({
     null
   );
   const [isTooSmall, setIsTooSmall] = useState(false);
+  const [isSmallerThanIdeal, setIsSmallerThanIdeal] = useState(false);
   const [cropResult, setCropResult] = useState<ComicImage>();
 
   const { isMobile, isLgUp, isXlUp, isMdUp } = useWindowSize();
   const [mobileStep, setMobileStep] = useState(1);
+
+  const aspectRatio = minWidth / minHeight;
 
   const step1Width = useMemo(() => {
     if (isXlUp) return 500;
@@ -44,6 +53,7 @@ export default function ThumbnailCropper({
 
   function onCropAreaChange(e: Cropper.CropEvent) {
     setIsTooSmall(false);
+    setIsSmallerThanIdeal(false);
     setCurrentCropEvent(e);
   }
 
@@ -52,11 +62,13 @@ export default function ThumbnailCropper({
       return;
     }
     const width = currentCropEvent.detail.width;
-    const height = currentCropEvent.detail.height;
-    if (width < 480 || height < 564) {
+    if (width < minWidth) {
       setIsTooSmall(true);
       setCropResult(undefined);
       return;
+    }
+    if (idealWidth && width < idealWidth) {
+      setIsSmallerThanIdeal(true);
     }
 
     setIsTooSmall(false);
@@ -77,21 +89,23 @@ export default function ThumbnailCropper({
     <>
       <div className="fixed inset-0 z-10 bg-black bg-opacity-50 dark:bg-opacity-80" />
       <div className="fixed inset-0 z-20 flex items-center justify-center mx-4">
-        <div className="bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 w-full lg:max-w-4xl xl:max-w-5xl flex flex-col">
+        <div className="bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 w-auto sm:w-full lg:max-w-4xl xl:max-w-5xl flex flex-col">
           {!isMobile && <p className="text-xl mb-2 text-center">Crop thumbnail</p>}
           <div className="flex flex-col sm:flex-row">
             {(!isMobile || mobileStep === 1) && (
               <div className="flex flex-col items-center w-full sm:w-1/2 gap-2">
-                <p>Crop image</p>
+                <p>
+                  <b>Crop image</b>
+                </p>
                 <Cropper
                   src={image.base64}
                   style={{ height: step1Height, width: step1Width }}
-                  aspectRatio={400 / 564}
+                  aspectRatio={aspectRatio}
                   guides={false}
                   ref={cropperRef}
                   background={false}
                   viewMode={1}
-                  minCanvasWidth={480}
+                  minCanvasWidth={200}
                   crop={e => onCropAreaChange(e)}
                 />
                 {isTooSmall && isMobile && (
@@ -100,13 +114,21 @@ export default function ThumbnailCropper({
                     centerText
                     text={`Too small!`}
                     style={{ width: step1Width }}
-                  />
+                  >
+                    {currentCropEvent?.detail && (
+                      <p>
+                        minimum {minWidth}px wide, currently{' '}
+                        {Math.floor(currentCropEvent.detail.width)}px.
+                      </p>
+                    )}
+                  </InfoBox>
                 )}
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={onCrop}
                   text="Crop"
+                  className="mt-1 mb-0.5"
                   style={{ width: step1Width }}
                 />
                 <Button
@@ -121,7 +143,9 @@ export default function ThumbnailCropper({
 
             {(!isMobile || mobileStep === 2) && (
               <div className="flex flex-col items-center gap-2 w-full sm:w-1/2">
-                <p>Preview and confirm</p>
+                <p>
+                  <b>Preview and confirm</b>
+                </p>
                 {cropResult && (
                   <>
                     <img
@@ -129,6 +153,26 @@ export default function ThumbnailCropper({
                       alt="cropped"
                       style={{ width: step2Width }}
                     />
+
+                    {isSmallerThanIdeal && idealWidth && currentCropEvent?.detail && (
+                      <InfoBox
+                        variant="warning"
+                        className="my-2"
+                        disableElevation
+                        style={{ width: step2Width }}
+                      >
+                        <p>Smaller than ideal!</p>
+                        <p className="mt-4">
+                          Recommended width is {idealWidth}px, currently{' '}
+                          {Math.floor(currentCropEvent.detail.width)}px.
+                        </p>
+                        <p className="mt-4">
+                          You can still submit, but on most phones and laptops your ad
+                          will appear in slightly lower quality.
+                        </p>
+                      </InfoBox>
+                    )}
+
                     {isMobile && (
                       <Button
                         variant="outlined"
@@ -139,6 +183,7 @@ export default function ThumbnailCropper({
                         style={{ width: step2Width }}
                       />
                     )}
+
                     <Button
                       variant="contained"
                       color="primary"
@@ -153,7 +198,7 @@ export default function ThumbnailCropper({
                   <InfoBox variant="error" text={`Too small!`}>
                     {currentCropEvent?.detail && (
                       <p>
-                        minimum 480px wide, currently{' '}
+                        minimum {minWidth}px wide, currently{' '}
                         {Math.floor(currentCropEvent.detail.width)}px.
                       </p>
                     )}

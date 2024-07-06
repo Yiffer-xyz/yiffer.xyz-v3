@@ -11,9 +11,9 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
 import AdComicCard from '../browse/AdComicCard';
 import { ADVERTISEMENTS } from '~/types/constants';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Advertisement } from '~/types/types';
-import Step2Details from '../advertising-apply/step2-details';
+import Step2Details from '../advertising_.apply/step2-details';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
@@ -66,6 +66,26 @@ export default function AdvertisingAd() {
     return null;
   }
 
+  const displayedAd = useMemo(() => {
+    if (!ad) return null;
+
+    if (ad.adType === 'card') {
+      // @ts-ignore
+      return <AdComicCard ad={ad} adsPath={ADS_PATH} />;
+    }
+    const width = ad.adType === 'banner' ? 364 : 300;
+    const height = ad.adType === 'banner' ? 45 : 90;
+    return (
+      <img
+        src={`${ADS_PATH}/${ad.id}-2x.jpg`}
+        style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
+        width={width}
+        height={height}
+        alt="Ad"
+      />
+    );
+  }, [ad, ADS_PATH]);
+
   const shouldShowPayments = ad && (adData.payments.length > 0 || ad.status === 'ACTIVE');
 
   return (
@@ -76,7 +96,7 @@ export default function AdvertisingAd() {
         prevRoutes={[
           { text: 'Me', href: '/me' },
           { text: 'Advertising', href: '/advertising' },
-          { text: 'Dashboard', href: '/advertising-dashboard' },
+          { text: 'Dashboard', href: '/advertising/dashboard' },
         ]}
         currentRoute={adData?.ad?.adName ?? adId ?? 'Ad'}
       />
@@ -165,12 +185,7 @@ export default function AdvertisingAd() {
                   </TableBody>
                 </Table>
 
-                {ad.isAnimated ? (
-                  <>animated not supported yet</>
-                ) : (
-                  // @ts-ignore
-                  <AdComicCard ad={ad} adsPath={ADS_PATH} />
-                )}
+                {ad.isAnimated ? <>animated not supported yet</> : displayedAd}
               </div>
             </>
           )}
@@ -323,7 +338,7 @@ function AdTopInfo({
       {ad.status === 'PENDING' && (
         <>
           <p>
-            This ad is awaiting admin approval. Once it is approved, you will be able to
+            This ad is awaiting admin approval. Once it's approved, you will be able to
             pay to activate it. You will receive an email notification when this status
             change occurs.
           </p>

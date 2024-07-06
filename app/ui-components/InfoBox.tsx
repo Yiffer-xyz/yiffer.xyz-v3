@@ -30,7 +30,7 @@ export default function InfoBox({
   fitWidth = false,
   children,
   className = '',
-  style,
+  style = {},
   ...props
 }: InfoBoxProps) {
   const [hidden, setHidden] = useState(false);
@@ -74,7 +74,7 @@ export default function InfoBox({
   const textClassName = centerText ? 'text-center' : '';
 
   return (
-    <div className={fullClassname} {...props}>
+    <div className={fullClassname} {...props} style={style}>
       {showIcon && <Icon size={36} className="-ml-2 flex-shrink-0 w-8 md:w-auto" />}
       <div className={`${textClassName} flex flex-col flex-grow`}>
         {title ? <p className="text-xl">{title}</p> : undefined}

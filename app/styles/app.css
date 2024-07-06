@@ -843,6 +843,14 @@ video {
   margin-top: -1.25rem;
 }
 
+.mb-0 {
+  margin-bottom: 0px;
+}
+
+.mb-0\.5 {
+  margin-bottom: 0.125rem;
+}
+
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -1178,6 +1186,10 @@ video {
 
 .w-\[84px\] {
   width: 84px;
+}
+
+.w-auto {
+  width: auto;
 }
 
 .w-fit {
@@ -3467,6 +3479,10 @@ h1 {
   .sm\:w-fit {
     width: -moz-fit-content;
     width: fit-content;
+  }
+
+  .sm\:w-full {
+    width: 100%;
   }
 
   .sm\:max-w-\[440px\] {
