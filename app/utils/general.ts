@@ -1,4 +1,4 @@
-import type { CardAdForViewing, ComicForBrowse } from '~/types/types';
+import type { AdForViewing, ComicForBrowse } from '~/types/types';
 
 export function capitalizeString(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -10,9 +10,10 @@ export async function waitMillisec(millisec: number) {
   });
 }
 
+const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
 export function randomString(i: number): string {
   let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
   for (let j = 0; j < i; j++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -92,7 +93,7 @@ export function generateRandomId() {
 }
 
 export function isComic(
-  comicOrAd: ComicForBrowse | CardAdForViewing
+  comicOrAd: ComicForBrowse | AdForViewing
 ): comicOrAd is ComicForBrowse {
   return !!(comicOrAd as ComicForBrowse).name;
 }

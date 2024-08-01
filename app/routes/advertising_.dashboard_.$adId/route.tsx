@@ -307,9 +307,13 @@ function AdTopInfo({
     method: 'post',
     toastSuccessMessage: 'Ad deleted',
     onFinish: () => {
-      console.log('YO I FINISHED?!??!?!?!??!?!');
+      navigate('/advertising/dashboard');
     },
   });
+
+  async function confirmDeleteAd() {
+    await deleteAdFetcher.awaitSubmit({ id: ad.id });
+  }
 
   if (isDeactivating) {
     return (
@@ -341,10 +345,7 @@ function AdTopInfo({
         <div className="flex flex-row gap-4 mt-1">
           <Button onClick={() => setIsDeleting(false)} text="No - keep ad" />
           <LoadingButton
-            onClick={() => {
-              deleteAdFetcher.submit({ id: ad.id });
-              navigate('/advertising/dashboard');
-            }}
+            onClick={confirmDeleteAd}
             text="Yes - delete ad"
             color="error"
             isLoading={deleteAdFetcher.isLoading}

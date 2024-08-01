@@ -350,10 +350,11 @@ export type Advertisement = {
   numDaysActive: number;
 };
 
-export type CardAdForViewing = {
+export type AdForViewing = {
   id: string;
   link: string;
-  mainText: string;
+  adType: AdType;
+  mainText?: string;
   secondaryText?: string;
   isAnimated: boolean;
   renderId?: string;

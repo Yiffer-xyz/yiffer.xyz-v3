@@ -20,6 +20,8 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { COMICS_PER_PAGE } from '~/types/constants';
 import { isComic } from '~/utils/general';
 import AdComicCard from './AdComicCard';
+import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
+import Ad from '~/ui-components/Ad/Ad';
 
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
@@ -29,7 +31,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const categories = params.categories.includes('All') ? undefined : params.categories;
 
-  const comicsRes = await getComicsPaginated({
+  const comicsResPromise = getComicsPaginated({
     db: args.context.DB,
     limit: COMICS_PER_PAGE,
     offset: params.page !== 1 ? (params.page - 1) * COMICS_PER_PAGE : undefined,
@@ -41,14 +43,22 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user?.userId,
     includeAds: true,
   });
+  const adPromise = getAdForViewing({ db: args.context.DB, adType: 'topSmall' });
+
+  const [comicsRes, adRes] = await Promise.all([comicsResPromise, adPromise]);
+
   if (comicsRes.err) {
     return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
+  }
+  if (adRes.err) {
+    return processApiError('Error getting ad, getAdForViewing', adRes.err);
   }
 
   return {
     comicsAndAds: comicsRes.result.comicsAndAds,
     numberOfPages: comicsRes.result.numberOfPages,
     totalNumComics: comicsRes.result.totalNumComics,
+    topAd: adRes.result,
     pagesPath: args.context.PAGES_PATH,
     adsPath: args.context.ADS_PATH,
   };
@@ -57,7 +67,7 @@ export async function loader(args: LoaderFunctionArgs) {
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
-  const { comicsAndAds, numberOfPages, totalNumComics, pagesPath, adsPath } =
+  const { comicsAndAds, numberOfPages, totalNumComics, pagesPath, adsPath, topAd } =
     useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
@@ -85,26 +95,7 @@ export default function BrowsePage() {
         Yiffer.xyz
       </h1>
 
-      <a
-        href="https://nrk.no"
-        target="_blank"
-        rel="noreferrer"
-        className="block w-fit mx-auto mt-4"
-      >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          height={90}
-          width={300}
-          className="rounded"
-          style={{ height: 90, width: 300 }}
-        >
-          <source src="https://static-beta.yiffer.xyz/pi/IEIWXK.webm" type="video/webm" />
-          <source src="https://static-beta.yiffer.xyz/pi/IEIWXK.mp4" type="video/mp4" />
-        </video>
-      </a>
+      {topAd && <Ad ad={topAd} adsPath={adsPath} className="mx-auto mt-4 w-fit block" />}
 
       <div className="flex flex-col gap-1 justify-center items-center mt-4">
         <Link

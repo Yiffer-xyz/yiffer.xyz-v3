@@ -11,7 +11,7 @@ export default function Advertising() {
 
   const [searchText, setSearchText] = useState('');
   const [selectedAd, setSelectedAd] = useState<Advertisement>();
-  const [statusFilter, setStatusFilter] = useState<AdStatus[]>(['PENDING']);
+  const [statusFilter, setStatusFilter] = useState<AdStatus[]>(['PENDING', 'ACTIVE']);
   const [adTypeFilter, setAdTypeFilter] = useState<AdType[]>([
     'banner',
     'card',

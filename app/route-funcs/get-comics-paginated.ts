@@ -1,10 +1,10 @@
 import { ADS_PER_PAGE, COMICS_PER_PAGE } from '~/types/constants';
-import type { CardAdForViewing, ComicForBrowse } from '~/types/types';
+import type { AdForViewing, ComicForBrowse } from '~/types/types';
 import { queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbCardAdForViewing = Omit<CardAdForViewing, 'isAnimated'> & {
+type DbCardAdForViewing = Omit<AdForViewing, 'isAnimated'> & {
   isAnimated: 0 | 1;
 };
 
@@ -45,7 +45,7 @@ export async function getComicsPaginated({
   includeTags,
   includeAds,
 }: GetComicsParams): ResultOrErrorPromise<{
-  comicsAndAds: (ComicForBrowse | CardAdForViewing)[];
+  comicsAndAds: (ComicForBrowse | AdForViewing)[];
   numberOfPages: number;
   totalNumComics: number;
   page: number;
@@ -211,8 +211,8 @@ export async function getComicsPaginated({
       : undefined,
   })) as ComicForBrowse[];
 
-  let comicsWithAds: (ComicForBrowse | CardAdForViewing)[] = comics;
-  if (includeAds && dbRes.result.length === 3) {
+  let comicsWithAds: (ComicForBrowse | AdForViewing)[] = comics;
+  if (includeAds && dbRes.result.length === 3 && dbRes.result[2].length > 0) {
     comicsWithAds = addAdsToComics(
       comics,
       dbRes.result[2].map(ad => ({
@@ -239,10 +239,10 @@ function comicRatingsToPercent(sumStars: number, numTimesStarred: number) {
 
 function addAdsToComics(
   comics: ComicForBrowse[],
-  ads: CardAdForViewing[]
-): (ComicForBrowse | CardAdForViewing)[] {
+  ads: AdForViewing[]
+): (ComicForBrowse | AdForViewing)[] {
   const numComicsBetweenAds = Math.ceil(COMICS_PER_PAGE / ADS_PER_PAGE);
-  const comicsWithAds: (ComicForBrowse | CardAdForViewing)[] = [];
+  const comicsWithAds: (ComicForBrowse | AdForViewing)[] = [];
   let adIndex = 0;
 
   // Mix ads into comic list, starting at index (numComicsBetweenAds +- 2) for variation,
@@ -256,7 +256,7 @@ function addAdsToComics(
       i === firstAdIndex ||
       (i > firstAdIndex && (i - firstAdIndex) % numComicsBetweenAds === 0)
     ) {
-      const ad: CardAdForViewing = {
+      const ad: AdForViewing = {
         ...ads[adIndex % ads.length],
         renderId: ads[adIndex % ads.length].renderId + '-' + i,
       };

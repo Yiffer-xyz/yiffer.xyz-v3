@@ -1,12 +1,12 @@
-import { Link as RemixLink } from '@remix-run/react';
 import { useMemo } from 'react';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
-import type { CardAdForViewing } from '~/types/types';
+import type { AdForViewing } from '~/types/types';
 import Link from '~/ui-components/Link';
 import { useUIPreferences } from '~/utils/theme-provider';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type AdComicCardProps = {
-  ad: CardAdForViewing;
+  ad: AdForViewing;
   adsPath: string;
 };
 
@@ -15,6 +15,15 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
+  const logClickFetcher = useGoodFetcher({
+    url: '/api/log-click',
+    method: 'post',
+  });
+
+  function onClick() {
+    logClickFetcher.submit({ adId: ad.id });
+  }
+
   return (
     <div
       className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300
@@ -22,7 +31,7 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
                   ${comicCardTags ? 'h-fit' : ''}`}
       key={ad.id}
     >
-      <RemixLink to={ad.link} target="_blank">
+      <a href={ad.link} target="_blank" rel="noreferrer" onClick={onClick}>
         <picture style={{ height: 226 }}>
           <source
             srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp`}
@@ -35,7 +44,7 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
             height={226}
           />
         </picture>
-      </RemixLink>
+      </a>
 
       <AdCorner />
 
@@ -43,7 +52,7 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
         <div>
           <Link
             href={ad.link}
-            text={ad.mainText}
+            text={ad.mainText ?? ''}
             color="text"
             className="text-sm"
             newTab

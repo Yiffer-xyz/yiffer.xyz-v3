@@ -62,8 +62,6 @@ export async function getAds({
     getAdsQuery += ` WHERE ${whereClause}`;
   }
 
-  console.log(getAdsQuery);
-
   const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, params);
 
   if (adsRes.isError) {
