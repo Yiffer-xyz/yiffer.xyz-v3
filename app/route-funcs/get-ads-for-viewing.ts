@@ -2,6 +2,7 @@ import type { AdForViewing, AdType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
+import { logAdImpression } from './log-ad-impression';
 
 export async function getAdForViewing({
   db,
@@ -26,5 +27,10 @@ export async function getAdForViewing({
     return makeDbErrObj(adsRes, 'Could not get ads', logCtx);
   }
 
-  return { result: adsRes.result.length ? adsRes.result[0] : null };
+  if (adsRes.result.length === 0) {
+    return { result: null };
+  }
+
+  logAdImpression({ db, adId: adsRes.result[0].id, isServerSide: true });
+  return { result: adsRes.result[0] };
 }

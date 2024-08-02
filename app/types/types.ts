@@ -343,6 +343,10 @@ export type Advertisement = {
   createdDate: string;
   advertiserNotes?: string;
   clicks: number;
+  impressions: number;
+  impressionsSrv: number;
+  clickRate: number;
+  clickRateSrv: number;
   adminNotes?: string;
   correctionNote?: string;
   freeTrialState?: 'requested' | 'granted' | 'denied';

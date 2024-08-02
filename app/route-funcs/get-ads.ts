@@ -33,7 +33,9 @@ export async function getAds({
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks
+      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
+      COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
+      COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
     FROM advertisement
     INNER JOIN user ON (user.id = advertisement.userId)
     LEFT JOIN advertisementdayclick ON (advertisementdayclick.adId = advertisement.id)`;
@@ -97,7 +99,9 @@ export async function getAdById({
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks
+      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
+      COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
+      COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
     FROM advertisement
     INNER JOIN user ON (user.id = advertisement.userId)
     LEFT JOIN advertisementdayclick ON (advertisementdayclick.adId = advertisement.id)
@@ -184,6 +188,15 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     createdDate: ad.createdDate,
     advertiserNotes: ad.advertiserNotes,
     clicks: ad.clicks,
+    impressions: ad.impressions,
+    clickRate: Math.round(
+      (ad.impressions === 0 || ad.clicks === 0 ? 0 : ad.clicks / ad.impressions) * 100
+    ),
+    impressionsSrv: ad.impressionsSrv,
+    clickRateSrv: Math.round(
+      (ad.impressionsSrv === 0 || ad.clicks === 0 ? 0 : ad.clicks / ad.impressionsSrv) *
+        100
+    ),
     adminNotes: ad.adminNotes,
     correctionNote: ad.correctionNote,
     freeTrialState: ad.freeTrialState,

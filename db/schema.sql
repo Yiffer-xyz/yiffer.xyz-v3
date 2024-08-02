@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS `advertisementdayclick` (
 `adId` TEXT NOT NULL,
 `date` DATE NOT NULL,
 `clicks` INTEGER  NOT NULL DEFAULT '0',
+`impressions` INTEGER  NOT NULL DEFAULT '0',
+`impressionsSrv` INTEGER  NOT NULL DEFAULT '0',
 PRIMARY KEY (`adId`, `date`),
 FOREIGN KEY (`adId`)
 REFERENCES `advertisement` (`id`)
