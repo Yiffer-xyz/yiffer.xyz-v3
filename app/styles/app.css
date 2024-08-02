@@ -3098,6 +3098,11 @@ h1 {
   background-color: rgb(93 241 186 / var(--tw-bg-opacity));
 }
 
+.dark\:bg-gray-100:is(.dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 34 36 / var(--tw-bg-opacity));
+}
+
 .dark\:bg-opacity-80:is(.dark *) {
   --tw-bg-opacity: 0.8;
 }

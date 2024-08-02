@@ -32,9 +32,11 @@ export async function getAds({
     SELECT
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
-      clicks, adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive
+      adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
+      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks
     FROM advertisement
-    INNER JOIN user ON (user.id = advertisement.userId)`;
+    INNER JOIN user ON (user.id = advertisement.userId)
+    LEFT JOIN advertisementdayclick ON (advertisementdayclick.adId = advertisement.id)`;
 
   const params: any[] = [];
 
@@ -62,6 +64,8 @@ export async function getAds({
     getAdsQuery += ` WHERE ${whereClause}`;
   }
 
+  getAdsQuery += ' GROUP BY advertisement.id';
+
   const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, params);
 
   if (adsRes.isError) {
@@ -71,12 +75,20 @@ export async function getAds({
   return { result: adsRes.result.map(DbAdToFullAd) };
 }
 
-export async function getAdById(
-  db: D1Database,
-  adId: string
-): ResultOrNotFoundOrErrorPromise<{
+type GetAdByIdProps = {
+  db: D1Database;
+  adId: string;
+  includeDetailedStats?: boolean;
+};
+
+export async function getAdById({
+  db,
+  adId,
+  includeDetailedStats,
+}: GetAdByIdProps): ResultOrNotFoundOrErrorPromise<{
   ad: Advertisement;
   payments: { amount: number; registeredDate: string }[];
+  clicks: { date: string; clicks: number }[];
 }> {
   const logCtx = { adId };
 
@@ -84,30 +96,53 @@ export async function getAdById(
     SELECT
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
-      clicks, adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive
+      adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
+      COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks
     FROM advertisement
     INNER JOIN user ON (user.id = advertisement.userId)
+    LEFT JOIN advertisementdayclick ON (advertisementdayclick.adId = advertisement.id)
     WHERE advertisement.id = ?
+    GROUP BY advertisement.id
   `;
 
   const getAdPaymentsQuery =
     'SELECT amount, registeredDate FROM advertisementpayment WHERE adId = ?';
 
-  const dbRes = await queryDbMultiple<
-    [DbAd[], { amount: number; registeredDate: string }[]]
-  >(db, [
-    { query: getAdQuery, params: [adId] },
-    {
-      query: getAdPaymentsQuery,
-      params: [adId],
-    },
-  ]);
+  const getClickStatsQuery =
+    'SELECT date, clicks FROM advertisementdayclick WHERE adId = ?';
 
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
+  let adRes: DbAd[] = [];
+  let payments: { amount: number; registeredDate: string }[] = [];
+  let clicks: { date: string; clicks: number }[] = [];
+
+  if (includeDetailedStats) {
+    const queries = [
+      { query: getAdQuery, params: [adId] },
+      { query: getAdPaymentsQuery, params: [adId] },
+      { query: getClickStatsQuery, params: [adId] },
+    ];
+
+    const dbRes = await queryDbMultiple<
+      [
+        DbAd[],
+        { amount: number; registeredDate: string }[],
+        { date: string; clicks: number }[],
+      ]
+    >(db, queries);
+
+    if (dbRes.isError) {
+      return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
+    }
+
+    [adRes, payments, clicks] = dbRes.result;
+  } else {
+    const dbRes = await queryDb<DbAd[]>(db, getAdQuery, [adId]);
+    if (dbRes.isError) {
+      return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
+    }
+
+    adRes = dbRes.result;
   }
-
-  const [adRes, adPaymentsRes] = dbRes.result;
 
   if (adRes.length === 0) {
     return { notFound: true };
@@ -116,7 +151,8 @@ export async function getAdById(
   return {
     result: {
       ad: DbAdToFullAd(adRes[0]),
-      payments: adPaymentsRes,
+      payments,
+      clicks,
     },
   };
 }

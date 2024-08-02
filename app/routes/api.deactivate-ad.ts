@@ -44,7 +44,7 @@ export async function deactivateAd(
     if (!isOwner) return { logMessage: 'Not authorized to edit ad' };
   }
 
-  const adRes = await getAdById(db, adId);
+  const adRes = await getAdById({ db, adId });
   if (adRes.err) return adRes.err;
   if (adRes.notFound) return { logMessage: 'Ad not found' };
 

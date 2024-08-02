@@ -19,11 +19,16 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { capitalizeString } from '~/utils/general';
+import AdClickStats from './AdClickStats';
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
-  const adRes = await getAdById(args.context.DB, args.params.adId!);
+  const adRes = await getAdById({
+    adId: args.params.adId!,
+    db: args.context.DB,
+    includeDetailedStats: true,
+  });
 
   const returnObj = { adId: args.params.adId, ADS_PATH: args.context.ADS_PATH };
 
@@ -200,11 +205,12 @@ export default function AdvertisingAd() {
 
           <div className="mt-6">
             <h3>Engagement</h3>
-            {adData.ad.clicks > 0 ? (
-              <p>todo clicks</p>
+            {adData.clicks.length >= 2 ? (
+              <AdClickStats clickStats={adData.clicks} />
             ) : (
               <p>
-                Once your ad starts getting clicks, you can see daily engagement here.
+                Once your ad has been getting clicks for at least two days, you'll see
+                daily engagement here.
               </p>
             )}
           </div>
