@@ -807,6 +807,10 @@ video {
   margin-left: -0.25rem;
 }
 
+.-ml-10 {
+  margin-left: -2.5rem;
+}
+
 .-ml-2 {
   margin-left: -0.5rem;
 }
@@ -979,6 +983,10 @@ video {
   margin-top: 0.5rem;
 }
 
+.mt-2\.5 {
+  margin-top: 0.625rem;
+}
+
 .mt-3 {
   margin-top: 0.75rem;
 }
@@ -1013,10 +1021,6 @@ video {
 
 .mt-\[3px\] {
   margin-top: 3px;
-}
-
-.-ml-10 {
-  margin-left: -2.5rem;
 }
 
 .box-content {

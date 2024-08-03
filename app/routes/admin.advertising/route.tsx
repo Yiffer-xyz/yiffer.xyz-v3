@@ -162,6 +162,7 @@ export default function Advertising() {
             onChange={setSearchText}
             name="search"
             label="Id, username, or email"
+            className="max-w-xs"
           />
 
           <div className="flex flex-col gap-2 w-fit max-w-full mt-6">

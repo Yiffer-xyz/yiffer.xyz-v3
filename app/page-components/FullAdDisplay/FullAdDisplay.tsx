@@ -1,23 +1,37 @@
 import { format } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import AdClickStats from '~/routes/advertising_.dashboard_.$adId/AdClickStats';
+import type { EditAdFormData } from '~/routes/api.edit-ad';
 import AdComicCard from '~/routes/browse/AdComicCard';
 import { ADVERTISEMENTS } from '~/types/constants';
-import type { AdvertisementFullData } from '~/types/types';
+import { allAdStatuses } from '~/types/types';
+import type { Advertisement, AdvertisementFullData } from '~/types/types';
 import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
+import Button from '~/ui-components/Buttons/Button';
+import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Link from '~/ui-components/Link';
+import Select from '~/ui-components/Select/Select';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
+import TextInput from '~/ui-components/TextInput/TextInput';
 import { capitalizeString } from '~/utils/general';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type Props = {
   adData: AdvertisementFullData;
   adsPath: string;
-  detailedTableStats?: boolean;
+  showAdminFeatures?: boolean;
 };
 
-export default function FullAdDisplay({ adData, adsPath, detailedTableStats }: Props) {
+export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Props) {
   const ad = adData?.ad;
+  const [updatedAd, setUpdatedAd] = useState<Advertisement>({ ...ad });
   const shouldShowPayments = ad && (adData.payments.length > 0 || ad.status === 'ACTIVE');
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  const isChanged = useMemo(() => {
+    return updatedAd.link !== ad.link || updatedAd.status !== ad.status;
+  }, [updatedAd, ad]);
 
   const displayedAd = useMemo(() => {
     if (!ad) return null;
@@ -38,9 +52,65 @@ export default function FullAdDisplay({ adData, adsPath, detailedTableStats }: P
     );
   }, [ad, adsPath]);
 
+  const updateAdFetcher = useGoodFetcher({
+    url: '/api/edit-ad',
+    method: 'post',
+    toastError: true,
+    toastSuccessMessage: 'Ad updated',
+    onFinish: () => {
+      setIsEditing(false);
+    },
+  });
+
+  function onSaveChanges() {
+    // Most of these fields aren't needed, but it's easier than changing the body type.
+    const body: EditAdFormData = {
+      adName: updatedAd.adName,
+      adType: updatedAd.adType,
+      id: updatedAd.id,
+      link: updatedAd.link,
+      mainText: updatedAd.mainText ?? null,
+      secondaryText: updatedAd.secondaryText ?? null,
+      notesComments: updatedAd.advertiserNotes ?? null,
+      status: updatedAd.status !== ad.status ? updatedAd.status : null,
+    };
+
+    updateAdFetcher.submit({ body: JSON.stringify(body) });
+  }
+
   return (
     <>
-      <h3 className="mt-4 mb-1">Details</h3>
+      <div className="flex flex-row items-center">
+        <h3 className="mt-4 mb-1">Details</h3>
+        {showAdminFeatures && (
+          <div className="ml-4 mt-2.5 h-fit flex flex-row gap-2">
+            {!isEditing ? (
+              <Button
+                text="Edit"
+                variant="outlined"
+                className="h-fit"
+                onClick={() => setIsEditing(true)}
+              />
+            ) : (
+              <>
+                <Button
+                  text="Cancel"
+                  variant="outlined"
+                  className="h-fit"
+                  onClick={() => setIsEditing(false)}
+                />
+                <LoadingButton
+                  text="Save"
+                  className="h-fit"
+                  onClick={onSaveChanges}
+                  disabled={!isChanged}
+                  isLoading={updateAdFetcher.isLoading}
+                />
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-row flex-wrap gap-x-8 gap-y-4">
         <Table>
@@ -59,18 +129,42 @@ export default function FullAdDisplay({ adData, adsPath, detailedTableStats }: P
                 {ADVERTISEMENTS.find(a => a.name === ad.adType)?.title}
               </TableCell>
             </TableRow>
-            {detailedTableStats && (
+            {showAdminFeatures && (
               <TableRow>
                 <TableCell className="font-semibold">Status</TableCell>
                 <TableCell>
-                  <AdStatusText status={ad.status} />
+                  {isEditing ? (
+                    <>
+                      <Select
+                        options={allAdStatuses.map(status => ({
+                          value: status,
+                          text: capitalizeString(status),
+                        }))}
+                        value={updatedAd.status}
+                        name="status"
+                        onChange={newStatus =>
+                          setUpdatedAd({ ...updatedAd, status: newStatus })
+                        }
+                      />
+                    </>
+                  ) : (
+                    <AdStatusText status={ad.status} />
+                  )}
                 </TableCell>
               </TableRow>
             )}
             <TableRow>
               <TableCell className="font-semibold">Link</TableCell>
               <TableCell>
-                <Link href={ad.link} text={ad.link} newTab />
+                {isEditing ? (
+                  <TextInput
+                    value={updatedAd.link}
+                    name="link"
+                    onChange={newText => setUpdatedAd({ ...updatedAd, link: newText })}
+                  />
+                ) : (
+                  <Link href={ad.link} text={ad.link} newTab />
+                )}
               </TableCell>
             </TableRow>
             {ad.freeTrialState && (
@@ -107,7 +201,7 @@ export default function FullAdDisplay({ adData, adsPath, detailedTableStats }: P
                 <TableCell>{ad.numDaysActive}</TableCell>
               </TableRow>
             )}
-            {detailedTableStats && (
+            {showAdminFeatures && (
               <>
                 <TableRow>
                   <TableCell className="font-semibold">Clicks</TableCell>

@@ -1,9 +1,10 @@
 import { MdClear } from 'react-icons/md';
+import type { HTMLAttributes } from 'react';
 import { useMemo } from 'react';
 import { colors } from 'tailwind.config';
 
 export type BaseTextInputProps = {
-  label: string;
+  label?: string;
   name: string;
   type?: 'text' | 'password';
   autocomplete?: string;
@@ -13,7 +14,7 @@ export type BaseTextInputProps = {
   helperText?: string;
   errorText?: string;
   error?: boolean;
-  className?: string;
+  className?: HTMLAttributes<HTMLDivElement>['className'];
   style?: React.CSSProperties;
 };
 
@@ -61,7 +62,7 @@ export default function TextInput({
 
   return (
     <div
-      className={`flex flex-col pt-3 h-9 leading-9 box-content relative ${className}`}
+      className={`flex flex-col ${label ? 'pt-3' : ''} h-9 leading-9 box-content relative ${className}`}
       {...props}
     >
       {label && (

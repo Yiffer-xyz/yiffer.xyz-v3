@@ -14,7 +14,7 @@ export default function ManageAd() {
       <h1>Ad: {adData.ad.id}</h1>
       <Link href="/admin/advertising" text="Back" Icon={MdArrowBack} />
 
-      <FullAdDisplay adData={adData} adsPath={adsPath} detailedTableStats />
+      <FullAdDisplay adData={adData} adsPath={adsPath} showAdminFeatures />
     </>
   );
 }
