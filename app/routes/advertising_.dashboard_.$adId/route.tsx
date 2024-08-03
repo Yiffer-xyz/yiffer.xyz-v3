@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import { format } from 'date-fns';
 import { getAdById } from '~/route-funcs/get-ads';
-import AdStatus from '~/ui-components/AdStatus/AdStatus';
+import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Button from '~/ui-components/Buttons/Button';
 import Link from '~/ui-components/Link';
@@ -364,7 +364,7 @@ function AdTopInfo({
   return (
     <div className="bg-theme1-primaryTrans p-4 w-fit flex flex-col gap-2">
       <p>
-        <b>Status</b>: <AdStatus status={ad.status} />
+        <b>Status</b>: <AdStatusText status={ad.status} />
       </p>
 
       {ad.status === 'PENDING' && (

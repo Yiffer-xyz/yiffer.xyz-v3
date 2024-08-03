@@ -1,4 +1,4 @@
-import AdStatus from '~/ui-components/AdStatus/AdStatus';
+import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
 import { MdArrowForward } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 
@@ -24,7 +24,7 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         <p className="font-bold mt-2 -mb-1">Process</p>
         <p>
           <b>1:</b> Submit your ad with its media and information for review in the next
-          step. Your ad will get the <AdStatus status="PENDING" /> status.
+          step. Your ad will get the <AdStatusText status="PENDING" /> status.
         </p>
         <p>
           <b>2:</b> Our admin team will review your ad. This is to ensure that it matches
@@ -32,13 +32,13 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         </p>
         <p>
           <b>3:</b> If your ad is accepted, it will receive the{' '}
-          <AdStatus status="AWAITING PAYMENT" /> status, and you will receive an email
+          <AdStatusText status="AWAITING PAYMENT" /> status, and you will receive an email
           notification.{' '}
         </p>
         <p>
           <b>4:</b> You can then go to the advertising dashboard and set up recurring
           payments for your ad via credit card. Once completed, your ad will receive the{' '}
-          <AdStatus status="ACTIVE" /> status. You can make changes to your ad while it is
+          <AdStatusText status="ACTIVE" /> status. You can make changes to your ad while it is
           active. Until the subscription is cancelled, your ad will renew automatically
           every month.
         </p>
@@ -56,9 +56,9 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         </p>
         <p>
           You will receive an email notification stating what needs to be fixed, and your
-          ad will get the <AdStatus status="NEEDS CORRECTION" /> status. You can then go
+          ad will get the <AdStatusText status="NEEDS CORRECTION" /> status. You can then go
           to your advertising dashboard and update your ad, and re-submit it for review.
-          It will once again get the <AdStatus status="PENDING" /> status and follow the
+          It will once again get the <AdStatusText status="PENDING" /> status and follow the
           normal flow from step 2 above.
         </p>
       </div>

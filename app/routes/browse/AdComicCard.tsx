@@ -8,9 +8,10 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 type AdComicCardProps = {
   ad: AdForViewing;
   adsPath: string;
+  minimal?: boolean;
 };
 
-export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
+export default function AdComicCard({ ad, adsPath, minimal }: AdComicCardProps) {
   const { comicCardTags } = useUIPreferences();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
@@ -21,45 +22,53 @@ export default function AdComicCard({ ad, adsPath }: AdComicCardProps) {
   });
 
   function onClick() {
+    if (minimal) return;
     logClickFetcher.submit({ adId: ad.id });
   }
 
+  const height = minimal ? 113 : 226;
+  const widthClassName = minimal ? 'w-[80px]' : 'w-[160px]';
+
   return (
     <div
-      className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300
-                  flex flex-col relative
-                  ${comicCardTags ? 'h-fit' : ''}`}
+      className={`${widthClassName} rounded overflow-hidden bg-white dark:bg-gray-300
+                  flex flex-col relative ${minimal ? '' : 'shadow'}
+                  ${comicCardTags || minimal ? 'h-fit' : ''}`}
       key={ad.id}
     >
       <a href={ad.link} target="_blank" rel="noreferrer" onClick={onClick}>
-        <picture style={{ height: 226 }}>
+        <picture style={{ height }}>
           <source
             srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp`}
             type="image/webp"
-            height={226}
+            height={height}
           />
           <img
             src={`${adsPath}/${ad.id}-${multiplier}x.jpg`}
             alt="Advertisement"
-            height={226}
+            height={height}
           />
         </picture>
       </a>
 
-      <AdCorner />
+      {!minimal && (
+        <>
+          <AdCorner />
 
-      <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
-        <div>
-          <Link
-            href={ad.link}
-            text={ad.mainText ?? ''}
-            color="text"
-            className="text-sm"
-            newTab
-          />
-        </div>
-        {ad.secondaryText && <p className="text-sm">{ad.secondaryText}</p>}
-      </div>
+          <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
+            <div>
+              <Link
+                href={ad.link}
+                text={ad.mainText ?? ''}
+                color="text"
+                className="text-sm"
+                newTab
+              />
+            </div>
+            {ad.secondaryText && <p className="text-sm">{ad.secondaryText}</p>}
+          </div>
+        </>
+      )}
     </div>
   );
 }

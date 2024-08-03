@@ -1,5 +1,4 @@
-import { useMemo, type HTMLAttributes } from 'react';
-import { useDevicePixelRatio } from 'use-device-pixel-ratio';
+import { type HTMLAttributes } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
 import type { AdForViewing } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
@@ -7,13 +6,12 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 type Props = {
   ad: AdForViewing;
   adsPath: string;
+  excludeClickLogging?: boolean;
   className?: HTMLAttributes<HTMLAnchorElement>['className'];
 };
 
-export default function Ad({ ad, adsPath, className }: Props) {
+export default function Ad({ ad, adsPath, className, excludeClickLogging }: Props) {
   const fullAd = ADVERTISEMENTS.find(fullAd => fullAd.name === ad.adType);
-  const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
-  const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
   const logClickFetcher = useGoodFetcher({
     url: '/api/log-click',
@@ -23,6 +21,7 @@ export default function Ad({ ad, adsPath, className }: Props) {
   if (!fullAd) return null;
 
   function onClick() {
+    if (excludeClickLogging) return;
     logClickFetcher.submit({ adId: ad.id });
   }
 
@@ -38,14 +37,14 @@ export default function Ad({ ad, adsPath, className }: Props) {
     >
       <picture style={{ width, height }}>
         <source
-          srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp`}
+          srcSet={`${adsPath}/${ad.id}-2x.webp`}
           type="image/webp"
           width={width}
           height={height}
         />
         <img
-          src={`${adsPath}/${ad.id}-${multiplier}x.jpg`}
-          alt="Advertisement"
+          src={`${adsPath}/${ad.id}-2x.jpg`}
+          alt="illustration"
           width={width}
           height={height}
         />

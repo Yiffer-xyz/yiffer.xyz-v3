@@ -171,7 +171,7 @@ export default function Select<T>({
     <div
       onKeyDown={onKeyDown}
       className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
-        relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
+        relative w-fit outline-none h-9 leading-9 box-content ${className} ${title ? 'pt-3' : ''}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
       tabIndex={0}

@@ -173,7 +173,7 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
           />
           <SidebarLink
             href="/admin/advertising"
-            text="🚧 Advertising"
+            text="Ads"
             isSelected={isRoute('advertising')}
           />
           <SidebarLink

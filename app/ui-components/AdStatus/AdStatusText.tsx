@@ -47,15 +47,23 @@ function statusToColors(status: AdStatus): {
   }
 }
 
-export default function AdStatus({ status }: { status: AdStatus }) {
+export default function AdStatusText({
+  status,
+  small,
+}: {
+  status: AdStatus;
+  small?: boolean;
+}) {
   const { textColor, backgroundColor, text } = useMemo(
     () => statusToColors(status),
     [status]
   );
 
+  const paddingClass = small ? 'py-[1px] px-[2px]' : 'py-[2px] px-1';
+
   return (
     <span
-      className="border-2 border-solid py-[2px] px-1 rounded"
+      className={`border-2 border-solid ${paddingClass} rounded ${small ? 'text-xs' : 'text-sm'} h-fit`}
       style={{ color: 'black', borderColor: textColor, backgroundColor }}
     >
       {text.toUpperCase()}

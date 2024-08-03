@@ -163,11 +163,12 @@ export async function getAdById({
 
 function DbAdToFullAd(ad: DbAd): Advertisement {
   let totalDaysActive = ad.numDaysActive;
+  let currentDaysActive = 0;
   if (ad.status === 'ACTIVE' && ad.lastActivationDate) {
     const today = new Date();
     const lastActivationDate = new Date(ad.lastActivationDate);
-    const currentlyActiveDays = differenceInDays(today, lastActivationDate);
-    totalDaysActive += currentlyActiveDays + 1;
+    currentDaysActive = differenceInDays(today, lastActivationDate);
+    totalDaysActive += currentDaysActive + 1;
   }
 
   return {
@@ -202,5 +203,8 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     freeTrialState: ad.freeTrialState,
     lastActivationDate: ad.lastActivationDate,
     numDaysActive: totalDaysActive,
+    currentDaysActive,
+    clicksPerDayActive:
+      totalDaysActive === 0 ? 0 : Math.round(10 * (ad.clicks / totalDaysActive)) / 10,
   };
 }

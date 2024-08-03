@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
-import AdStatus from '~/ui-components/AdStatus/AdStatus';
+import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
 import {
   Table,
   TableBody,
@@ -70,7 +70,7 @@ export default function Advertising() {
                     />
                   </TableCell>
                   <TableCell>
-                    <AdStatus status={ad.status} />
+                    <AdStatusText status={ad.status} />
                   </TableCell>
                   <TableCell>{ad.clicks}</TableCell>
                 </TableRow>
