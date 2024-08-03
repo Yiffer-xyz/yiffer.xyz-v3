@@ -1,3 +1,4 @@
+import type { HTMLAttributes } from 'react';
 import { useMemo } from 'react';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import type { AdForViewing } from '~/types/types';
@@ -9,9 +10,15 @@ type AdComicCardProps = {
   ad: AdForViewing;
   adsPath: string;
   minimal?: boolean;
+  className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
-export default function AdComicCard({ ad, adsPath, minimal }: AdComicCardProps) {
+export default function AdComicCard({
+  ad,
+  adsPath,
+  minimal,
+  className,
+}: AdComicCardProps) {
   const { comicCardTags } = useUIPreferences();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
@@ -33,7 +40,7 @@ export default function AdComicCard({ ad, adsPath, minimal }: AdComicCardProps) 
     <div
       className={`${widthClassName} rounded overflow-hidden bg-white dark:bg-gray-300
                   flex flex-col relative ${minimal ? '' : 'shadow'}
-                  ${comicCardTags || minimal ? 'h-fit' : ''}`}
+                  ${comicCardTags || minimal ? 'h-fit' : ''} ${className}`}
       key={ad.id}
     >
       <a href={ad.link} target="_blank" rel="noreferrer" onClick={onClick}>

@@ -1,25 +1,20 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
-import { format } from 'date-fns';
 import { getAdById } from '~/route-funcs/get-ads';
 import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Button from '~/ui-components/Buttons/Button';
-import Link from '~/ui-components/Link';
-import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
-import AdComicCard from '../browse/AdComicCard';
 import { ADVERTISEMENTS } from '~/types/constants';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { Advertisement } from '~/types/types';
 import Step2Details from '../advertising_.apply/step2-details';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
-import { capitalizeString } from '~/utils/general';
-import AdClickStats from './AdClickStats';
+import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
@@ -30,7 +25,7 @@ export async function loader(args: LoaderFunctionArgs) {
     includeDetailedStats: true,
   });
 
-  const returnObj = { adId: args.params.adId, ADS_PATH: args.context.ADS_PATH };
+  const returnObj = { adId: args.params.adId, adsPath: args.context.ADS_PATH };
 
   if (adRes.err) {
     return processApiError('Error getting ad for advertising>ad', adRes.err, {
@@ -51,7 +46,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function AdvertisingAd() {
-  const { adData, notFound, adId, ADS_PATH } = useLoaderData<typeof loader>();
+  const { adData, notFound, adId, adsPath } = useLoaderData<typeof loader>();
   const [isEditingAd, setIsEditingAd] = useState(false);
   const ad = adData?.ad;
 
@@ -66,28 +61,6 @@ export default function AdvertisingAd() {
   function reactivateAd() {
     return null;
   }
-
-  const displayedAd = useMemo(() => {
-    if (!ad) return null;
-
-    if (ad.adType === 'card') {
-      // @ts-ignore
-      return <AdComicCard ad={ad} adsPath={ADS_PATH} />;
-    }
-    const width = ad.adType === 'banner' ? 364 : 300;
-    const height = ad.adType === 'banner' ? 45 : 90;
-    return (
-      <img
-        src={`${ADS_PATH}/${ad.id}-2x.jpg`}
-        style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
-        width={width}
-        height={height}
-        alt="Ad"
-      />
-    );
-  }, [ad, ADS_PATH]);
-
-  const shouldShowPayments = ad && (adData.payments.length > 0 || ad.status === 'ACTIVE');
 
   return (
     <div className="container mx-auto pb-8">
@@ -115,105 +88,15 @@ export default function AdvertisingAd() {
             />
           )}
 
-          {isEditingAd ? (
+          {isEditingAd && (
             <AdEditing
               ad={ad}
               onCancel={() => setIsEditingAd(false)}
               onFinish={() => setIsEditingAd(false)}
             />
-          ) : (
-            <>
-              <h3 className="mt-4 mb-1">Details</h3>
-
-              <div className="flex flex-row flex-wrap gap-x-8 gap-y-4">
-                <Table>
-                  <TableBody>
-                    <TableRow includeBorderTop>
-                      <TableCell className="font-semibold">Name</TableCell>
-                      <TableCell>{ad.adName}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-semibold">ID</TableCell>
-                      <TableCell>{ad.id}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-semibold">Type</TableCell>
-                      <TableCell>
-                        {ADVERTISEMENTS.find(a => a.name === ad.adType)?.title}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-semibold">Link</TableCell>
-                      <TableCell>
-                        <Link href={ad.link} text={ad.link} newTab />
-                      </TableCell>
-                    </TableRow>
-                    {ad.freeTrialState && (
-                      <TableRow>
-                        <TableCell className="font-semibold">Free trial</TableCell>
-                        <TableCell>{capitalizeString(ad.freeTrialState)}</TableCell>
-                      </TableRow>
-                    )}
-                    {ad.mainText && (
-                      <TableRow>
-                        <TableCell className="font-semibold">Main text</TableCell>
-                        <TableCell>{ad.mainText}</TableCell>
-                      </TableRow>
-                    )}
-                    {ad.secondaryText && (
-                      <TableRow>
-                        <TableCell className="font-semibold">Secondary text</TableCell>
-                        <TableCell>{ad.secondaryText}</TableCell>
-                      </TableRow>
-                    )}
-                    {ad.expiryDate && (
-                      <TableRow>
-                        <TableCell className="font-semibold">Expiry date</TableCell>
-                        <TableCell>{format(new Date(ad.expiryDate), 'PPP')}</TableCell>
-                      </TableRow>
-                    )}
-                    <TableRow>
-                      <TableCell className="font-semibold">Created</TableCell>
-                      <TableCell>{format(new Date(ad.createdDate), 'PPP')}</TableCell>
-                    </TableRow>
-                    {ad.numDaysActive > 0 && (
-                      <TableRow>
-                        <TableCell className="font-semibold">Days active</TableCell>
-                        <TableCell>{ad.numDaysActive}</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-
-                {ad.isAnimated ? <>animated not supported yet</> : displayedAd}
-              </div>
-            </>
           )}
 
-          {shouldShowPayments && (
-            <div className="mt-6">
-              <h3>Payments</h3>
-              {adData.payments.length > 0 ? (
-                adData.payments.map(payment => (
-                  <p key={payment.registeredDate}>{JSON.stringify(payment)}</p>
-                ))
-              ) : (
-                <p>There are no registered payments for this ad.</p>
-              )}
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h3>Engagement</h3>
-            {adData.clicks.length >= 2 ? (
-              <AdClickStats clickStats={adData.clicks} />
-            ) : (
-              <p>
-                Once your ad has been getting clicks for at least two days, you'll see
-                daily engagement here.
-              </p>
-            )}
-          </div>
+          <FullAdDisplay adData={adData} adsPath={adsPath} />
         </>
       )}
     </div>

@@ -363,6 +363,12 @@ export type Advertisement = {
   numDaysActive: number;
 };
 
+export type AdvertisementFullData = {
+  ad: Advertisement;
+  payments: { amount: number; registeredDate: string }[];
+  clicks: { date: string; clicks: number }[];
+};
+
 export type AdForViewing = {
   id: string;
   link: string;

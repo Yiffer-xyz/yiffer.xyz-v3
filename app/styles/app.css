@@ -1015,6 +1015,10 @@ video {
   margin-top: 3px;
 }
 
+.-ml-10 {
+  margin-left: -2.5rem;
+}
+
 .box-content {
   box-sizing: content-box;
 }
@@ -1184,6 +1188,10 @@ video {
   width: 180px;
 }
 
+.w-\[80px\] {
+  width: 80px;
+}
+
 .w-\[84px\] {
   width: 84px;
 }
@@ -1199,18 +1207,6 @@ video {
 
 .w-full {
   width: 100%;
-}
-
-.w-\[80px\] {
-  width: 80px;
-}
-
-.w-\[120px\] {
-  width: 120px;
-}
-
-.w-\[300px\] {
-  width: 300px;
 }
 
 .min-w-40 {

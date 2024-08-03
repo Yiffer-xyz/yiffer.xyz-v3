@@ -1,5 +1,10 @@
 import { differenceInDays } from 'date-fns';
-import type { AdStatus, AdType, Advertisement } from '~/types/types';
+import type {
+  AdStatus,
+  AdType,
+  Advertisement,
+  AdvertisementFullData,
+} from '~/types/types';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type {
   ResultOrErrorPromise,
@@ -87,11 +92,7 @@ export async function getAdById({
   db,
   adId,
   includeDetailedStats,
-}: GetAdByIdProps): ResultOrNotFoundOrErrorPromise<{
-  ad: Advertisement;
-  payments: { amount: number; registeredDate: string }[];
-  clicks: { date: string; clicks: number }[];
-}> {
+}: GetAdByIdProps): ResultOrNotFoundOrErrorPromise<AdvertisementFullData> {
   const logCtx = { adId };
 
   const getAdQuery = `

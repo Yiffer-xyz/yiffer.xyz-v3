@@ -4,26 +4,28 @@ import { processApiError } from '~/utils/request-helpers';
 import { getAdById } from '~/route-funcs/get-ads';
 import Link from '~/ui-components/Link';
 import { MdArrowBack } from 'react-icons/md';
+import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 
 export default function ManageAd() {
-  const { ad, payments } = useLoaderData<typeof loader>();
+  const { adData, adsPath } = useLoaderData<typeof loader>();
 
   return (
     <>
-      <h1>Ad: {ad.id}</h1>
+      <h1>Ad: {adData.ad.id}</h1>
       <Link href="/admin/advertising" text="Back" Icon={MdArrowBack} />
-      <p className="font-bold my-4">ℹ️ See the figma prototype.</p>
 
-      <pre>{JSON.stringify(ad, null, 2)}</pre>
-      <p>Payments</p>
-      <pre>{JSON.stringify(payments, null, 2)}</pre>
+      <FullAdDisplay adData={adData} adsPath={adsPath} detailedTableStats />
     </>
   );
 }
 
 export async function loader(args: LoaderFunctionArgs) {
   const adId = args.params.ad as string;
-  const adRes = await getAdById({ adId, db: args.context.DB });
+  const adRes = await getAdById({
+    adId,
+    db: args.context.DB,
+    includeDetailedStats: true,
+  });
 
   if (adRes.err) {
     return processApiError('Error getting ad for admin>advertising>ad', adRes.err);
@@ -32,5 +34,5 @@ export async function loader(args: LoaderFunctionArgs) {
     throw new Response('Ad not found', { status: 404 });
   }
 
-  return adRes.result;
+  return { adData: adRes.result, adsPath: args.context.ADS_PATH };
 }

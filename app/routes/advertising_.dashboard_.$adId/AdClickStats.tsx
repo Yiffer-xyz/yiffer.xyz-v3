@@ -22,7 +22,12 @@ export default function AdClickStats({
   const graphWidth = isMobile ? 340 : width && width < 1030 ? 500 : 800;
 
   return (
-    <LineChart width={graphWidth} height={400} data={processedData} className="mt-2">
+    <LineChart
+      width={graphWidth}
+      height={400}
+      data={processedData}
+      className="mt-2 -ml-10"
+    >
       <XAxis
         dataKey="date"
         type="number"
