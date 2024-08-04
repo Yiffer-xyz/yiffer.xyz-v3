@@ -86,7 +86,7 @@ export async function loader(args: LoaderFunctionArgs) {
     },
     {
       query: `SELECT
-        COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' || status = 'ENDED'
+        COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' OR status = 'ENDED'
         GROUP BY status, adType`,
     },
     {

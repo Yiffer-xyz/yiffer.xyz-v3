@@ -269,7 +269,7 @@ function addAdsToComics(
   return comicsWithAds;
 }
 
-export function getFilterQuery({
+function getFilterQuery({
   categories,
   keywordIds,
   search,

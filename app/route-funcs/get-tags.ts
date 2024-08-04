@@ -31,6 +31,36 @@ export async function getAllTagNames(db: D1Database): ResultOrErrorPromise<strin
   return { result: dbRes.result.map(tag => tag.name) };
 }
 
+export async function getTagsWithUsageCount(db: D1Database): ResultOrErrorPromise<
+  {
+    tag: Tag;
+    count: number;
+  }[]
+> {
+  const tagCountQuery = `
+    SELECT keyword.id, keyword.keywordName AS name, COUNT(comicKeyword.keywordId) AS count
+    FROM keyword
+    LEFT JOIN comicKeyword ON keyword.id = comicKeyword.keywordId
+    GROUP BY keyword.id
+    ORDER BY count DESC
+  `;
+
+  const dbRes = await queryDb<{ id: number; name: string; count: number }[]>(
+    db,
+    tagCountQuery
+  );
+  if (dbRes.isError || !dbRes.result) {
+    return makeDbErrObj(dbRes, 'Error getting tags with usage count');
+  }
+
+  return {
+    result: dbRes.result.map(row => ({
+      tag: { id: row.id, name: row.name },
+      count: row.count,
+    })),
+  };
+}
+
 export async function getTagById(
   db: D1Database,
   tagId: number

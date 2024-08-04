@@ -5,7 +5,7 @@ import { colors } from 'tailwind.config';
 
 export type BaseTextInputProps = {
   label?: string;
-  name: string;
+  name?: string;
   type?: 'text' | 'password';
   autocomplete?: string;
   placeholder?: string;

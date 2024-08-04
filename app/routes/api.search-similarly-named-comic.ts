@@ -6,7 +6,7 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import stringDistance from '~/utils/string-distance';
-import { getAllComicNamesAndIDs } from '../route-funcs/get-comics';
+import { getComicNamesAndIDs } from '../route-funcs/get-comics';
 
 export type SimilarComicResponse = {
   similarComics: string[];
@@ -59,7 +59,7 @@ export async function getSimilarlyNamedComics(
     exactMatchRejectedComic: undefined,
   };
 
-  const allComicsTinyRes = await getAllComicNamesAndIDs(db, {
+  const allComicsTinyRes = await getComicNamesAndIDs(db, {
     includeRejectedList: true,
     includeUnlisted: true,
   });

@@ -121,7 +121,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 const validateTelegramUsername = (username: string) =>
-  /^([a-zA-Z0-9_]){5,32}$/.test(username);
+  /^([a-zA-Z0-9_]){4,32}$/.test(username);
 
 export async function action(args: ActionFunctionArgs) {
   const db = args.context.DB;

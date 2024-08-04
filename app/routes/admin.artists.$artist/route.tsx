@@ -14,6 +14,7 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
+import ComicAdminLink from '~/ui-components/ComicAdminLink/ComicAdminLink';
 
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();
@@ -172,29 +173,7 @@ export default function ManageArtist() {
       <h4 className="mt-2">Comics</h4>
       <div className="flex flex-wrap gap-x-3 gap-y-2 mb-6">
         {comics.length ? (
-          comics.map(comic => (
-            <div
-              className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3"
-              key={comic.id}
-            >
-              <p>{comic.name}</p>
-              <div className="flex flex-row gap-3">
-                {comic.publishStatus === 'published' && (
-                  <Link
-                    href={`/${comic.name}`}
-                    text="Live"
-                    newTab
-                    IconRight={MdOpenInNew}
-                  />
-                )}
-                <Link
-                  href={`/admin/comics/${comic.id}`}
-                  text="Admin"
-                  IconRight={MdArrowForward}
-                />
-              </div>
-            </div>
-          ))
+          comics.map(comic => <ComicAdminLink comic={comic} key={comic.id} />)
         ) : (
           <p>This artist has no comics that are uploaded, pending, or live.</p>
         )}

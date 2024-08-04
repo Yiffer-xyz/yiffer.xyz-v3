@@ -163,7 +163,7 @@ function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean })
           />
           <SidebarLink
             href="/admin/tags"
-            text="🚧 Tag manager"
+            text="Tag manager"
             isSelected={isRoute('tags')}
           />
           <SidebarLink

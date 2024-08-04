@@ -1,44 +1,111 @@
-import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
-import { useEffect, useState } from 'react';
+import {
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useOutletContext,
+} from '@remix-run/react';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Tag } from '~/types/types';
 import type { GlobalAdminContext } from '../admin';
+import Button from '~/ui-components/Buttons/Button';
+import { MdAdd } from 'react-icons/md';
+import { getTagsWithUsageCount } from '~/route-funcs/get-tags';
+import { processApiError } from '~/utils/request-helpers';
+import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
+import Link from '~/ui-components/Link';
+import { capitalizeString } from '~/utils/general';
 
 export default function ManageTags() {
+  const globalContext: GlobalAdminContext = useOutletContext();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { tagsWithCounts } = useLoaderData<typeof loader>();
 
   const [selectedTag, setSelectedTag] = useState<Tag>();
 
-  const globalContext: GlobalAdminContext = useOutletContext();
+  const isCreating = pathname.includes('/new');
+  const hasSelected = /\/tags\/\d+/.test(pathname);
 
   const tagOptions = globalContext.tags.map(tag => ({
     value: tag,
     text: tag.name,
   }));
 
-  // update url on selected tag change
-  useEffect(() => {
-    if (!selectedTag) return;
-    navigate(`/admin/tags/${selectedTag.id}`);
-  }, [selectedTag, navigate]);
-
   return (
     <>
       <h1>Tag manager</h1>
 
-      <p className="font-bold my-4">ℹ️ See the figma prototype.</p>
+      {!isCreating && (
+        <>
+          <Button
+            text="Create new tag"
+            startIcon={MdAdd}
+            variant="outlined"
+            className="mb-4 mt-4"
+            onClick={() => {
+              setSelectedTag(undefined);
+              navigate('/admin/tags/new');
+            }}
+          />
 
-      <SearchableSelect
-        options={tagOptions}
-        value={selectedTag}
-        onChange={setSelectedTag}
-        onValueCleared={() => setSelectedTag(undefined)}
-        title="Select tag"
-        name="tag"
-        className="mb-8"
-      />
+          <SearchableSelect
+            options={tagOptions}
+            value={selectedTag}
+            clearOnFocus
+            onChange={newTag => {
+              setSelectedTag(newTag);
+              navigate(`/admin/tags/${newTag.id}`);
+            }}
+            onValueCleared={() => {
+              setSelectedTag(undefined);
+            }}
+            title="Find tag"
+            name="tag"
+            className="mb-6 mt-6"
+          />
+        </>
+      )}
 
       <Outlet context={globalContext} />
+
+      {!isCreating && (
+        <div className={hasSelected ? 'mt-10' : ''}>
+          <p className="font-semibold mb-2">All tags, ordered by usage</p>
+          <Table className="border-gray-borderLight border-t">
+            <TableBody>
+              {tagsWithCounts.map(({ count, tag }) => (
+                <TableRow key={tag.id}>
+                  <TableCell>{count}</TableCell>
+                  <TableCell>
+                    <Link
+                      showRightArrow
+                      text={capitalizeString(tag.name)}
+                      href={`/admin/tags/${tag.id}`}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </>
   );
+}
+
+export async function loader(args: LoaderFunctionArgs) {
+  const tagsWithCountsRes = await getTagsWithUsageCount(args.context.DB);
+  if (tagsWithCountsRes.err) {
+    return processApiError(
+      'Error getting tags with counts in admin/tags',
+      tagsWithCountsRes.err
+    );
+  }
+
+  return {
+    tagsWithCounts: tagsWithCountsRes.result,
+  };
 }

@@ -8,11 +8,12 @@ type keyValOptions<T> = { text: string; value: T };
 export type BaseSearchableSelectProps<T> = {
   options: { text: string; value: T }[];
   title?: string;
+  clearOnFocus?: boolean;
   error?: boolean;
   maxWidth?: number;
   isFullWidth?: boolean;
   placeholder?: string;
-  name: string;
+  name?: string;
   disabled?: boolean;
   mobileCompact?: boolean;
   equalValueFunc?: (a: T, b: T | undefined) => boolean;
@@ -31,6 +32,7 @@ export default function SearchableSelect<T>({
   title = '',
   value,
   onValueCleared,
+  clearOnFocus,
   onChange,
   error = false,
   maxWidth = 999999,
@@ -200,6 +202,9 @@ export default function SearchableSelect<T>({
   function onFilledInputActivated() {
     onValueCleared();
     setIsOpen(true);
+    if (clearOnFocus) {
+      setSearchText('');
+    }
   }
 
   const convertedValue = useMemo(() => {
