@@ -125,6 +125,7 @@ export default function Step2Details({
 
   const canSubmit = useMemo(() => {
     if (!adType || !link || !adName) return false;
+    if (!selectedFile && isNewAd) return false;
     if (adType.name === 'card') {
       if (!mainText || mainText.length < 2) return false;
       if (
@@ -136,7 +137,7 @@ export default function Step2Details({
     }
 
     return true;
-  }, [adType, link, adName, mainText, secondaryText]);
+  }, [adType, link, adName, selectedFile, isNewAd, mainText, secondaryText]);
 
   return (
     <>
@@ -204,10 +205,11 @@ export default function Step2Details({
             onChange={setLink}
             name="link"
             className="mt-6"
+            helperText='Must start with "http://" or "https://"'
           />
 
           <TextInput
-            label="Ad name (just for your own sake, to keep track)"
+            label="Ad name (for your own sake, to keep track)"
             placeholder="My first ad"
             value={adName}
             onChange={setAdName}

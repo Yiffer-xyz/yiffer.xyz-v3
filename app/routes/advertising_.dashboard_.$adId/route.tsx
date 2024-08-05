@@ -318,7 +318,10 @@ function AdTopInfo({
             change occurs.
           </p>
 
-          <Button onClick={() => setIsDeleting(true)} text="Delete ad" color="error" />
+          <div className="flex flex-row gap-3">
+            <Button onClick={editAd} text="Edit ad" />
+            <Button onClick={() => setIsDeleting(true)} text="Delete ad" color="error" />
+          </div>
         </>
       )}
 

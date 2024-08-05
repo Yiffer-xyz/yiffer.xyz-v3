@@ -1,3 +1,9 @@
+import type { EditAdFormData } from '~/routes/api.edit-ad';
+import type { SubmitAdFormData } from '~/routes/api.submit-ad';
+import {
+  CARD_AD_MAIN_TEXT_MAX_LENGTH,
+  CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
+} from '~/types/constants';
 import type { AdForViewing, ComicForBrowse } from '~/types/types';
 
 export function capitalizeString(str: string): string {
@@ -100,4 +106,31 @@ export function isComic(
   comicOrAd: ComicForBrowse | AdForViewing
 ): comicOrAd is ComicForBrowse {
   return !!(comicOrAd as ComicForBrowse).name;
+}
+
+export function validateAdData(data: SubmitAdFormData | EditAdFormData): {
+  error: string | null;
+} {
+  if (!data.adType || !data.link || !data.adName || !data.id) {
+    return { error: 'Missing fields' };
+  }
+  if (!data.link.includes('http://') && !data.link.includes('https://')) {
+    return { error: 'Link must start with http:// or https://' };
+  }
+  if (data.adType === 'card') {
+    if (!data.mainText) {
+      return { error: 'Missing main text' };
+    }
+    if (data.mainText.length > CARD_AD_MAIN_TEXT_MAX_LENGTH) {
+      return { error: `Main text too long` };
+    }
+    if (
+      data.secondaryText &&
+      data.secondaryText.length > CARD_AD_SECONDARY_TEXT_MAX_LENGTH
+    ) {
+      return { error: `Secondary text too long` };
+    }
+  }
+
+  return { error: null };
 }

@@ -38,9 +38,9 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         <p>
           <b>4:</b> You can then go to the advertising dashboard and set up recurring
           payments for your ad via credit card. Once completed, your ad will receive the{' '}
-          <AdStatusText status="ACTIVE" /> status. You can make changes to your ad while it is
-          active. Until the subscription is cancelled, your ad will renew automatically
-          every month.
+          <AdStatusText status="ACTIVE" /> status. You can make changes to your ad while
+          it is active. Until the subscription is cancelled, your ad will renew
+          automatically every month.
         </p>
         <p>
           <b>5:</b> To cancel your ad, simply go to the advertising dashboard and cancel
@@ -56,10 +56,10 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         </p>
         <p>
           You will receive an email notification stating what needs to be fixed, and your
-          ad will get the <AdStatusText status="NEEDS CORRECTION" /> status. You can then go
-          to your advertising dashboard and update your ad, and re-submit it for review.
-          It will once again get the <AdStatusText status="PENDING" /> status and follow the
-          normal flow from step 2 above.
+          ad will get the <AdStatusText status="NEEDS CORRECTION" /> status. You can then
+          go to your advertising dashboard and update your ad, and re-submit it for
+          review. It will once again get the <AdStatusText status="PENDING" /> status and
+          follow the normal flow from step 2 above.
         </p>
       </div>
 

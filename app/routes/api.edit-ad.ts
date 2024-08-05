@@ -9,14 +9,11 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
-import {
-  CARD_AD_MAIN_TEXT_MAX_LENGTH,
-  CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
-} from '~/types/constants';
 import isAdOwner from '~/route-funcs/is-ad-owner';
 import { getAdById } from '~/route-funcs/get-ads';
 import { differenceInDays } from 'date-fns';
 import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
+import { validateAdData } from '~/utils/general';
 
 export type EditAdFormData = {
   id: string;
@@ -138,26 +135,4 @@ export async function editAd(
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating ad');
   }
-}
-
-function validateAdData(data: EditAdFormData): { error: string | null } {
-  if (!data.adType || !data.link || !data.adName || !data.id) {
-    return { error: 'Missing fields' };
-  }
-  if (data.adType === 'card') {
-    if (!data.mainText) {
-      return { error: 'Missing main text' };
-    }
-    if (data.mainText.length > CARD_AD_MAIN_TEXT_MAX_LENGTH) {
-      return { error: `Main text too long` };
-    }
-    if (
-      data.secondaryText &&
-      data.secondaryText.length > CARD_AD_SECONDARY_TEXT_MAX_LENGTH
-    ) {
-      return { error: `Secondary text too long` };
-    }
-  }
-
-  return { error: null };
 }
