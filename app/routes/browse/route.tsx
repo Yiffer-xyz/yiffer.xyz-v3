@@ -19,9 +19,9 @@ import { authLoader } from '~/utils/loaders';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { COMICS_PER_PAGE } from '~/types/constants';
 import { isComic } from '~/utils/general';
-import AdComicCard from './AdComicCard';
+import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
-import Ad from '~/ui-components/Ad/Ad';
+import Ad from '~/ui-components/Advertising/Ad';
 
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);

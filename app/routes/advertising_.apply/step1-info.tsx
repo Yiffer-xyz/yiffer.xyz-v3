@@ -1,4 +1,4 @@
-import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
+import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import { MdArrowForward } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 

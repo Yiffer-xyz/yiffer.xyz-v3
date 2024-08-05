@@ -13,7 +13,7 @@ import Select from '~/ui-components/Select/Select';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { capitalizeFirstRestLower } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import AdminAdCard from './AdminAdCard';
+import AdListCard from '../../ui-components/Advertising/AdListCard';
 
 export async function loader(args: LoaderFunctionArgs) {
   return { adsPath: args.context.ADS_PATH };
@@ -167,7 +167,13 @@ export default function Advertising() {
 
           <div className="flex flex-col gap-2 w-fit max-w-full mt-6">
             {filteredAds?.map(ad => (
-              <AdminAdCard ad={ad} adsPath={adsPath} key={ad.id} />
+              <AdListCard
+                ad={ad}
+                adMediaPath={adsPath}
+                frontendAdsPath="/admin/advertising"
+                showFullAdminData
+                key={ad.id}
+              />
             ))}
           </div>
         </>

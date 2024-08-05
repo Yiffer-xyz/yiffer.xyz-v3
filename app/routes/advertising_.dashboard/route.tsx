@@ -1,18 +1,10 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import Link from '~/ui-components/Link';
-import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeadRow,
-  TableRow,
-} from '~/ui-components/Table';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { getAds } from '~/route-funcs/get-ads';
 import { processApiError } from '~/utils/request-helpers';
+import AdListCard from '../../ui-components/Advertising/AdListCard';
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
@@ -32,11 +24,12 @@ export async function loader(args: LoaderFunctionArgs) {
 
   return {
     ads: ads.result,
+    adsPath: args.context.ADS_PATH,
   };
 }
 
 export default function Advertising() {
-  const { ads } = useLoaderData<typeof loader>();
+  const { ads, adsPath } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto">
@@ -51,33 +44,16 @@ export default function Advertising() {
       />
 
       {ads.length > 0 ? (
-        <>
-          <Table horizontalScroll>
-            <TableHeadRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Clicks</TableCell>
-            </TableHeadRow>
-            <TableBody>
-              {ads.map(ad => (
-                <TableRow key={ad.id}>
-                  <TableCell>
-                    <Link
-                      href={`/advertising/dashboard/${ad.id}`}
-                      text={ad.adName}
-                      showRightArrow
-                      className="whitespace-pre-wrap break-word"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <AdStatusText status={ad.status} />
-                  </TableCell>
-                  <TableCell>{ad.clicks}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </>
+        <div className="flex flex-col gap-2 w-fit max-w-full mt-2">
+          {ads.map(ad => (
+            <AdListCard
+              ad={ad}
+              adMediaPath={adsPath}
+              frontendAdsPath="/advertising/dashboard"
+              key={ad.id}
+            />
+          ))}
+        </div>
       ) : (
         <p>No ads found</p>
       )}

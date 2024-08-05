@@ -45,9 +45,16 @@ export default function AdComicCard({
       className={`${widthClassName} rounded overflow-hidden bg-white dark:bg-gray-300
                   flex flex-col relative ${minimal ? '' : 'shadow'}
                   ${comicCardTags || minimal ? 'h-fit' : ''} ${className}`}
+      style={{ minHeight: height }}
       key={ad.id}
     >
-      <a href={ad.link} target="_blank" rel="noreferrer" onClick={onClick}>
+      <a
+        href={ad.link}
+        target="_blank"
+        rel="noreferrer"
+        onClick={onClick}
+        style={{ height }}
+      >
         <picture style={{ height }}>
           <source
             srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp${queryStr}`}

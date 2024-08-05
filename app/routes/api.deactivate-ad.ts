@@ -54,7 +54,8 @@ export async function deactivateAd(
       differenceInDays(new Date(), new Date(adRes.result.ad.lastActivationDate)) + 1;
   }
 
-  const query = `UPDATE advertisement SET status = 'ENDED', numDaysActive = numDaysActive + ?, lastActivationDate = NULL WHERE id = ?`;
+  const query = `UPDATE advertisement
+    SET status = 'ENDED', numDaysActive = numDaysActive + ?, lastActivationDate = NULL WHERE id = ?`;
   const params = [newActiveDays, adId];
   const dbRes = await queryDbExec(db, query, params);
 

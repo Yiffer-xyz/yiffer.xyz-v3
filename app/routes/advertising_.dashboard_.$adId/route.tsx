@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import cropperCss from '~/utils/cropper.min.css';
 import { getAdById } from '~/route-funcs/get-ads';
-import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
+import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Button from '~/ui-components/Buttons/Button';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';

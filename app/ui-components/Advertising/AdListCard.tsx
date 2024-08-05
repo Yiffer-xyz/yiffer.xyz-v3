@@ -1,20 +1,25 @@
 import type { Advertisement } from '~/types/types';
-import Ad from '~/ui-components/Ad/Ad';
-import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
+import Ad from '~/ui-components/Advertising/Ad';
+import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import Link from '~/ui-components/Link';
 import { capitalizeFirstRestLower } from '~/utils/general';
-import AdComicCard from '../browse/AdComicCard';
+import AdComicCard from './AdComicCard';
 
-export default function AdminAdCard({
+export default function AdListCard({
   ad,
-  adsPath,
+  adMediaPath,
+  frontendAdsPath,
+  showFullAdminData,
 }: {
   ad: Advertisement;
-  adsPath: string;
+  adMediaPath: string;
+  frontendAdsPath: string;
+  showFullAdminData?: boolean;
 }) {
-  const bgColor = ad.isChangedWhileActive
-    ? 'bg-theme1-primaryTrans'
-    : 'bg-white dark:bg-gray-300';
+  const bgColor =
+    showFullAdminData && ad.isChangedWhileActive
+      ? 'bg-theme1-primaryTrans'
+      : 'bg-white dark:bg-gray-300';
 
   return (
     <div
@@ -22,19 +27,19 @@ export default function AdminAdCard({
         gap-6 justify-between ${bgColor}`}
       key={ad.id}
     >
-      <div className="flex flex-col gap-y-1">
+      <div className="flex flex-col gap-y-1 justify-between">
         <div className="w-full flex flex-row justify-between items-center gap-6">
           <Link
-            href={`/admin/advertising/${ad.id}`}
+            href={`${frontendAdsPath}/${ad.id}`}
             text={`${ad.adName}`}
             showRightArrow
             className="whitespace-pre-wrap"
           />
 
-          <AdStatusText status={ad.status} small />
+          <AdStatusText status={ad.status} small={showFullAdminData} />
         </div>
 
-        {ad.isChangedWhileActive && (
+        {ad.isChangedWhileActive && showFullAdminData && (
           <span className="font-bold">
             <p>Edited while active, needs review</p>
           </span>
@@ -50,7 +55,7 @@ export default function AdminAdCard({
           </p>
         </div>
 
-        {ad.clicks > 0 && (
+        {ad.clicks > 0 && showFullAdminData && (
           <p className="text-sm">
             <span className="font-semibold">{ad.clicksPerDayActive}</span> per day ・{' '}
             {ad.clicks} total ・ <span className="font-semibold">{ad.clickRateSrv}%</span>{' '}
@@ -58,20 +63,27 @@ export default function AdminAdCard({
           </p>
         )}
 
+        {ad.clicks > 0 && !showFullAdminData && (
+          <p className="text-sm">{ad.clicks} clicks</p>
+        )}
+
         <Link href={ad.link} newTab className="text-sm" text={ad.link} />
 
-        <p className="text-sm break-all">
-          {ad.user.username} ・ {ad.user.email} ・ {ad.id}
-        </p>
+        {showFullAdminData && (
+          <p className="text-sm break-all">
+            {ad.user.username} ・ {ad.user.email} ・ {ad.id}
+          </p>
+        )}
       </div>
+
       {(ad.adType === 'banner' || ad.adType === 'topSmall') && (
         <div style={{ width: 300 }}>
-          <Ad ad={ad} adsPath={adsPath} bypassCache />
+          <Ad ad={ad} adsPath={adMediaPath} bypassCache />
         </div>
       )}
 
       {ad.adType === 'card' && (
-        <AdComicCard ad={ad} minimal adsPath={adsPath} bypassCache />
+        <AdComicCard ad={ad} minimal adsPath={adMediaPath} bypassCache />
       )}
     </div>
   );
