@@ -1,5 +1,6 @@
 import { EMAIL_ENDPOINT } from '~/types/constants';
 import type { ApiError } from './request-helpers';
+import type { AdType } from '~/types/types';
 
 type PostmarkEmail = {
   To: string;
@@ -73,6 +74,38 @@ export function createPasswordResetEmail(
     To: recipient,
     From: `${EmailAccountSenders.account}@yiffer.xyz`,
     Subject: 'Password reset - Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}
+
+export function createAdStatusChangedEmail({
+  adName,
+  adType,
+  adOwnerName,
+  adId,
+  newAdStatus,
+  frontEndUrlBase,
+}: {
+  adName: string;
+  adType: AdType;
+  adOwnerName: string;
+  adId: string;
+  newAdStatus: string;
+  frontEndUrlBase: string;
+}) {
+  const html = `
+    <p>An ad of type <strong>${adType}</strong> has changed status to: <strong>${newAdStatus}</strong></p>
+    <p>Ad name: ${adName}</p>
+    <p>Ad ID: ${adId}</p>
+    <p>Owner: ${adOwnerName}</p>
+    <p><a href="${frontEndUrlBase}/admin/advertising/${adId}">View in admin panel</a></p>
+  `;
+
+  return {
+    To: 'advertising@yiffer.xyz',
+    From: 'advertising@yiffer.xyz',
+    Subject: newAdStatus === 'PENDING' ? `New ad!` : `Ad changed: ${newAdStatus}`,
     HtmlBody: html,
     MessageStream: 'outbound',
   };

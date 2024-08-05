@@ -85,8 +85,6 @@ export default function Dashboard() {
   const filteredDashboardItems = useMemo(() => {
     if (!dashboardDataFetcher.data) return [];
 
-    console.log(dashboardDataFetcher.data.filter(x => x.type === 'tagSuggestion'));
-
     return dashboardDataFetcher.data.filter(action => {
       if (
         action.assignedMod &&

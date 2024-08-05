@@ -13,7 +13,7 @@ import Link from '~/ui-components/Link';
 import Select from '~/ui-components/Select/Select';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import TextInput from '~/ui-components/TextInput/TextInput';
-import { capitalizeString } from '~/utils/general';
+import { capitalizeString, randomString } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type Props = {
@@ -33,24 +33,26 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
     return updatedAd.link !== ad.link || updatedAd.status !== ad.status;
   }, [updatedAd, ad]);
 
+  const queryStr = `?q=${randomString(3)}`;
+
   const displayedAd = useMemo(() => {
     if (!ad) return null;
 
     if (ad.adType === 'card') {
-      return <AdComicCard ad={ad} adsPath={adsPath} className="h-fit" />;
+      return <AdComicCard ad={ad} adsPath={adsPath} className="h-fit" bypassCache />;
     }
     const width = ad.adType === 'banner' ? 364 : 300;
     const height = ad.adType === 'banner' ? 45 : 90;
     return (
       <img
-        src={`${adsPath}/${ad.id}-2x.jpg`}
+        src={`${adsPath}/${ad.id}-2x.jpg${queryStr}`}
         style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
         width={width}
         height={height}
         alt="Ad"
       />
     );
-  }, [ad, adsPath]);
+  }, [ad, adsPath, queryStr]);
 
   const updateAdFetcher = useGoodFetcher({
     url: '/api/edit-ad',

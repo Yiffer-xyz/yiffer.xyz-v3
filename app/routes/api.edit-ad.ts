@@ -16,6 +16,7 @@ import {
 import isAdOwner from '~/route-funcs/is-ad-owner';
 import { getAdById } from '~/route-funcs/get-ads';
 import { differenceInDays } from 'date-fns';
+import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 
 export type EditAdFormData = {
   id: string;
@@ -26,6 +27,7 @@ export type EditAdFormData = {
   secondaryText?: string | null;
   notesComments?: string | null;
   status?: AdStatus | null;
+  wasMediaChanged?: boolean;
 };
 
 export async function action(args: ActionFunctionArgs) {
@@ -39,11 +41,14 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await editAd(
+    args.context.FRONT_END_URL_BASE,
+    args.context.POSTMARK_TOKEN,
     args.context.DB,
     body,
     user.userId,
     user.userType !== 'user',
-    body.status
+    body.status,
+    body.wasMediaChanged
   );
   if (err) {
     return processApiError('Error in /edit-ad', err, { ...body, ...user });
@@ -52,11 +57,14 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function editAd(
+  frontEndUrlBase: string,
+  postmarkToken: string,
   db: D1Database,
   data: EditAdFormData,
   userId: number,
   isMod: boolean,
-  status?: AdStatus | null
+  status?: AdStatus | null,
+  wasMediaChanged?: boolean
 ): Promise<ApiError | undefined> {
   if (!isMod) {
     const isOwner = await isAdOwner(db, userId, data.id);
@@ -68,24 +76,52 @@ export async function editAd(
   if (adRes.err) return adRes.err;
   if (adRes.notFound) return { logMessage: 'Ad not found' };
 
+  const existingAd = adRes.result.ad;
+
+  const shouldPutInActiveChangedState =
+    existingAd.status === 'ACTIVE' &&
+    !isMod &&
+    (wasMediaChanged ||
+      existingAd.link !== data.link ||
+      existingAd.mainText !== data.mainText ||
+      existingAd.secondaryText !== data.secondaryText);
+
+  if (shouldPutInActiveChangedState) {
+    await sendEmail(
+      createAdStatusChangedEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        adOwnerName: existingAd.user.username,
+        adType: data.adType,
+        newAdStatus: 'ACTIVE but CHANGED',
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
   const maybeStatusStr = status ? `, status = ?` : '';
 
   const maybeActivationStr =
     status === 'ACTIVE' ? `, lastActivationDate = CURRENT_TIMESTAMP` : '';
 
+  const maybeActiveChangedStr = shouldPutInActiveChangedState
+    ? ', isChangedWhileActive = 1'
+    : '';
+
   let maybeDeactivationStr = '';
   if (status === 'ENDED') {
     let newActiveDays = 0;
-    if (adRes.result.ad.lastActivationDate) {
+    if (existingAd.lastActivationDate) {
       newActiveDays =
-        differenceInDays(new Date(), new Date(adRes.result.ad.lastActivationDate)) + 1;
+        differenceInDays(new Date(), new Date(existingAd.lastActivationDate)) + 1;
     }
     maybeDeactivationStr = `, numDaysActive = numDaysActive + ${newActiveDays}, lastActivationDate = NULL`;
   }
 
   const insertQuery = `UPDATE advertisement 
     SET adName=?, link=?, mainText=?, secondaryText=?, advertiserNotes=?
-    ${maybeStatusStr} ${maybeActivationStr} ${maybeDeactivationStr}
+    ${maybeStatusStr} ${maybeActivationStr} ${maybeActiveChangedStr} ${maybeDeactivationStr}
     WHERE id = ?`;
 
   const insertParams = [

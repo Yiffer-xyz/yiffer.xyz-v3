@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
+import cropperCss from '~/utils/cropper.min.css';
 import { getAdById } from '~/route-funcs/get-ads';
 import AdStatusText from '~/ui-components/AdStatus/AdStatusText';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
@@ -8,13 +9,18 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
 import { ADVERTISEMENTS } from '~/types/constants';
 import { useState } from 'react';
-import type { Advertisement } from '~/types/types';
+import type { AdType, Advertisement } from '~/types/types';
 import Step2Details from '../advertising_.apply/step2-details';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
+import { getFileExtension, type ComicImage } from '~/utils/general';
+
+export function links() {
+  return [{ rel: 'stylesheet', href: cropperCss }];
+}
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
@@ -35,18 +41,25 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   if (adRes.notFound) {
-    return { ...returnObj, adData: null, notFound: true };
+    return {
+      ...returnObj,
+      adData: null,
+      notFound: true,
+      imagesServerUrl: args.context.IMAGES_SERVER_URL,
+    };
   }
 
   return {
     ...returnObj,
     notFound: false,
     adData: adRes.result,
+    imagesServerUrl: args.context.IMAGES_SERVER_URL,
   };
 }
 
 export default function AdvertisingAd() {
-  const { adData, notFound, adId, adsPath } = useLoaderData<typeof loader>();
+  const { adData, notFound, adId, adsPath, imagesServerUrl } =
+    useLoaderData<typeof loader>();
   const [isEditingAd, setIsEditingAd] = useState(false);
   const ad = adData?.ad;
 
@@ -93,6 +106,7 @@ export default function AdvertisingAd() {
               ad={ad}
               onCancel={() => setIsEditingAd(false)}
               onFinish={() => setIsEditingAd(false)}
+              imagesServerUrl={imagesServerUrl}
             />
           )}
 
@@ -107,13 +121,19 @@ function AdEditing({
   ad,
   onCancel,
   onFinish,
+  imagesServerUrl,
 }: {
   ad: Advertisement;
   onCancel: () => void;
   onFinish: () => void;
+  imagesServerUrl: string;
 }) {
   const [newAd, setNewAd] = useState({ ...ad });
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<ComicImage | undefined>();
+  const [croppedFile, setCroppedFile] = useState<ComicImage | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileSubmitErr, setFileSubmitErr] = useState<string | undefined>();
   const fullAdType = ADVERTISEMENTS.find(a => a.name === newAd.adType);
 
   const submitFetcher = useGoodFetcher({
@@ -125,8 +145,20 @@ function AdEditing({
     onError: setError,
   });
 
-  function onSubmitChanges() {
+  async function onSubmitChanges() {
+    const file = croppedFile ?? selectedFile;
     setError(null);
+
+    console.log(file);
+
+    if (file?.file) {
+      setIsSubmitting(true);
+      const isSubmitOk = await submitFile(newAd.id, file.file, newAd.adType);
+      if (!isSubmitOk) {
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     const body: EditAdFormData = {
       adName: newAd.adName,
@@ -136,9 +168,37 @@ function AdEditing({
       notesComments: newAd.advertiserNotes,
       mainText: newAd.mainText ?? null,
       secondaryText: newAd.secondaryText ?? null,
+      wasMediaChanged: !!file?.file,
     };
 
+    console.log(body);
+
     submitFetcher.submit({ body: JSON.stringify(body) });
+    setIsSubmitting(false);
+  }
+
+  async function submitFile(adId: string, file: File, adType: AdType): Promise<boolean> {
+    setFileSubmitErr(undefined);
+    const formData = new FormData();
+
+    formData.append('adFile', file, `id.${getFileExtension(file.name)}`);
+    formData.append('adId', adId);
+    formData.append('adType', adType);
+
+    console.log(formData);
+
+    const res = await fetch(`${imagesServerUrl}/submit-ad`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      setFileSubmitErr(`Error submitting file: ${text}`);
+      return false;
+    }
+
+    return true;
   }
 
   return (
@@ -158,12 +218,12 @@ function AdEditing({
         setSecondaryText={val => setNewAd(newAd => ({ ...newAd, secondaryText: val }))}
         notesComments={newAd.advertiserNotes}
         setNotesComments={val => setNewAd(newAd => ({ ...newAd, advertiserNotes: val }))}
-        isSubmitting={submitFetcher.isLoading}
+        isSubmitting={submitFetcher.isLoading || isSubmitting}
         onBack={onCancel}
         onSubmit={onSubmitChanges}
-        submitError={error}
-        setCroppedFile={() => null}
-        setSelectedFile={() => null}
+        setCroppedFile={setCroppedFile}
+        setSelectedFile={setSelectedFile}
+        submitError={fileSubmitErr ?? error}
       />
     </TopGradientBox>
   );

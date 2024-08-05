@@ -12,10 +12,11 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbAd = Omit<Advertisement, 'user'> & {
+type DbAd = Omit<Advertisement, 'user' | 'isChangedWhileActive'> & {
   userId: number;
   username: string;
   email: string;
+  isChangedWhileActive: 0 | 1;
 };
 
 type GetAdsProps = {
@@ -38,6 +39,7 @@ export async function getAds({
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
+      isChangedWhileActive,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -100,6 +102,7 @@ export async function getAdById({
       advertisement.id, adType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
+      isChangedWhileActive,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -207,5 +210,6 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     currentDaysActive,
     clicksPerDayActive:
       totalDaysActive === 0 ? 0 : Math.round(10 * (ad.clicks / totalDaysActive)) / 10,
+    isChangedWhileActive: ad.isChangedWhileActive === 1,
   };
 }

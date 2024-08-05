@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { AdFreeTrialStateEnum, type AdType } from '~/types/types';
+import { AdFreeTrialStateEnum } from '~/types/types';
+import type { UserSession, AdType } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -13,6 +14,7 @@ import {
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
   CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
 } from '~/types/constants';
+import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 
 export type SubmitAdFormData = {
   id: string;
@@ -36,17 +38,26 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json(error);
   }
 
-  const err = await submitAd(args.context.DB, body, user.userId);
+  const err = await submitAd(
+    args.context.DB,
+    args.context.FRONT_END_URL_BASE,
+    args.context.POSTMARK_TOKEN,
+    body,
+    user
+  );
   if (err) {
     return processApiError('Error in /submit-ad', err, { ...body, ...user });
   }
+
   return createSuccessJson();
 }
 
 export async function submitAd(
   db: D1Database,
+  frontEndUrlBase: string,
+  postmarkToken: string,
   data: SubmitAdFormData,
-  userId: number
+  user: UserSession
 ): Promise<ApiError | undefined> {
   const insertQuery = `INSERT INTO advertisement 
     (id, adType, adName, link, mainText, secondaryText, userId, isAnimated, advertiserNotes, freeTrialState)
@@ -59,7 +70,7 @@ export async function submitAd(
     data.link,
     data.mainText ?? null,
     data.secondaryText ?? null,
-    userId,
+    user.userId,
     data.isAnimated,
     data.notesComments,
     data.isRequestingTrial ? AdFreeTrialStateEnum.Requested : null,
@@ -69,6 +80,18 @@ export async function submitAd(
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating ad');
   }
+
+  await sendEmail(
+    createAdStatusChangedEmail({
+      adId: data.id,
+      adName: data.adName,
+      adOwnerName: user.username,
+      adType: data.adType,
+      newAdStatus: 'PENDING',
+      frontEndUrlBase,
+    }),
+    postmarkToken
+  );
 }
 
 function validateAdData(data: SubmitAdFormData): { error: string | null } {

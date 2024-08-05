@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import type { AdForViewing } from '~/types/types';
 import Link from '~/ui-components/Link';
+import { randomString } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
@@ -10,6 +11,7 @@ type AdComicCardProps = {
   ad: AdForViewing;
   adsPath: string;
   minimal?: boolean;
+  bypassCache?: boolean;
   className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
@@ -17,6 +19,7 @@ export default function AdComicCard({
   ad,
   adsPath,
   minimal,
+  bypassCache,
   className,
 }: AdComicCardProps) {
   const { comicCardTags } = useUIPreferences();
@@ -35,6 +38,7 @@ export default function AdComicCard({
 
   const height = minimal ? 113 : 226;
   const widthClassName = minimal ? 'w-[80px]' : 'w-[160px]';
+  const queryStr = bypassCache ? `?q=${randomString(3)}` : '';
 
   return (
     <div
@@ -46,12 +50,12 @@ export default function AdComicCard({
       <a href={ad.link} target="_blank" rel="noreferrer" onClick={onClick}>
         <picture style={{ height }}>
           <source
-            srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp`}
+            srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp${queryStr}`}
             type="image/webp"
             height={height}
           />
           <img
-            src={`${adsPath}/${ad.id}-${multiplier}x.jpg`}
+            src={`${adsPath}/${ad.id}-${multiplier}x.jpg${queryStr}`}
             alt="Advertisement"
             height={height}
           />

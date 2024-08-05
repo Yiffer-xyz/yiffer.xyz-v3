@@ -94,7 +94,7 @@ export function useGoodFetcher<T = void>({
       setHasFetchedOnce(true);
 
       if (fetcher.data) {
-        if (toastSuccessMessage && fetcher.data.success) {
+        if (toastSuccessMessage && fetcher.data.success && !fetcher.data.error) {
           showSuccessToast(toastSuccessMessage, preventToastClose, theme);
         } else if (toastError && fetcher.data.error) {
           showErrorToast(fetcher.data.error, theme);

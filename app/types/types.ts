@@ -361,6 +361,7 @@ export type Advertisement = {
   lastActivationDate?: string;
   currentDaysActive: number;
   numDaysActive: number;
+  isChangedWhileActive: boolean;
 };
 
 export type AdvertisementFullData = {

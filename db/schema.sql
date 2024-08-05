@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `advertisement` (
 `freeTrialState` TEXT CHECK( `freeTrialState` IN ('requested', 'granted', 'denied') ) NULL DEFAULT NULL,
 `lastActivationDate` TIMESTAMP NULL DEFAULT NULL,
 `numDaysActive` INTEGER NOT NULL DEFAULT '0',
+`isChangedWhileActive` TINYINTEGER  NOT NULL DEFAULT '0',
 PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));
