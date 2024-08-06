@@ -2,11 +2,10 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useState } from 'react';
-import { MdCheck, MdChevronRight, MdClose } from 'react-icons/md';
+import { MdCheck, MdClose } from 'react-icons/md';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Button from '~/ui-components/Buttons/Button';
 import InfoBox from '~/ui-components/InfoBox';
-import Link from '~/ui-components/Link';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { capitalizeString } from '~/utils/general';
@@ -53,7 +52,7 @@ export default function AccountPage() {
         There's not too much interesting going on on this page right now, but keep your
         eyes peeled!
         <br />
-        We've got some neat customization options coming soon!
+        We've got some neat customization options coming soon.
       </p>
     </div>
   );

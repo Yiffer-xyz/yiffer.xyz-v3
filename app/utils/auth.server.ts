@@ -7,6 +7,7 @@ import type { ApiError } from './request-helpers';
 import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 import bcrypt from 'bcryptjs';
+import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {
@@ -159,6 +160,8 @@ async function authenticate(
   if (!isPasswordValid) {
     return { errorMessage: 'Username does not exist or wrong password' };
   }
+
+  updateUserLastActionTime({ db, userId: user.id });
 
   return {
     user: {

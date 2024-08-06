@@ -202,6 +202,8 @@ export type User = {
   createdTime: string;
   isBanned: boolean;
   banReason?: string;
+  banTime?: string;
+  lastActionTime?: string;
   modNotes?: string;
 };
 

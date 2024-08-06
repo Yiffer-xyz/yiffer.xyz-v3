@@ -11,7 +11,8 @@ export async function searchUsers(
   searchText: string
 ): ResultOrErrorPromise<User[]> {
   const searchQuery = `
-    SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes
+    SELECT id, username, email, userType, createdTime, isBanned, banReason,
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes
     FROM user
     WHERE username LIKE ? OR email LIKE ?
   `;
@@ -37,7 +38,8 @@ export async function getUserById(
   userId: number
 ): ResultOrErrorPromise<User> {
   const userQuery = `
-    SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes
+    SELECT id, username, email, userType, createdTime, isBanned, banReason, 
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes
     FROM user
     WHERE id = ?
     LIMIT 1
@@ -59,7 +61,8 @@ export async function getUserByEmail(
   email: string
 ): ResultOrNotFoundOrErrorPromise<User> {
   const userQuery = `
-    SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes
+    SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes,
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime
     FROM user
     WHERE email = ?
     LIMIT 1
