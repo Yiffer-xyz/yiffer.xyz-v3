@@ -12,6 +12,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
+import { LuRefreshCcw } from 'react-icons/lu';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
 
@@ -124,6 +125,7 @@ export default function PendingComics() {
             isLoading={recalculateFetcher.isLoading}
             onClick={() => recalculateFetcher.submit()}
             text="Recalculate publishing queue positions"
+            startIcon={LuRefreshCcw}
           />
           <p className="text-sm mb-4">
             In case some comics are missing placement or something else is wrong

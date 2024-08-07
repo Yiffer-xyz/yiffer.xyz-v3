@@ -52,7 +52,7 @@ export default function LiveComic({
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
   const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
-  const [imagesServerRenameFailed, setImagesServerRenameFailed] = useState(false);
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
 
   useEffect(() => {
     setComicDataChanges(
@@ -103,6 +103,7 @@ export default function LiveComic({
     }
 
     if (body.name) {
+      setIsUpdatingName(true);
       const response = await fetch(`${IMAGES_SERVER_URL}/rename-comic`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,11 +116,13 @@ export default function LiveComic({
 
       if (!response.ok) {
         showErrorToast('Failed to rename comic pages', theme);
+        setIsUpdatingName(false);
         return;
       }
     }
 
     await saveChangesFetcher.awaitSubmit({ body: JSON.stringify(body) });
+    setIsUpdatingName(false);
   }
 
   function unlistComic() {
@@ -227,7 +230,7 @@ export default function LiveComic({
               />
               <LoadingButton
                 text="Save changes"
-                isLoading={saveChangesFetcher.isLoading}
+                isLoading={saveChangesFetcher.isLoading || isUpdatingName}
                 onClick={saveComicDataChanges}
                 startIcon={MdCheck}
                 disabled={!canSave}
@@ -305,6 +308,7 @@ export type ComicDataChanges = {
   tagIds?: number[];
   category?: string;
   state?: string;
+  numberOfPages?: number;
   previousComicId?: number | null;
   nextComicId?: number | null;
 };

@@ -18,6 +18,7 @@ import {
 } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
+import RecalculateNumPages from './RecalculateNumPages';
 
 type UpdatedComicPage = {
   previousPos?: number;
@@ -219,29 +220,14 @@ export default function ManagePagesAdmin({
 
   return (
     <>
-      {filesChanged.length > 0 && (
-        <div className=" mb-4 mt-2">
-          <p className="font-bold">Changes</p>
-          <div className="flex flex-row flex-wrap gap-2">
-            {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
-              <span className="bg-theme1-primaryTrans p-1 rounded" key={fc.originalPos}>
-                {fc.isNewPage ? (
-                  <>New {fc.newPos}</>
-                ) : fc.isDeleted ? (
-                  <>
-                    <IoMdTrash className="mb-1" />
-                    {fc.originalPos}
-                  </>
-                ) : (
-                  <>
-                    {fc.originalPos} <MdArrowForward /> {fc.newPos}
-                  </>
-                )}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+      <p className="font-semibold mt-1">Recalculate number of pages</p>
+      <p className="mb-1">
+        If there are pages not showing up, or seemingly broken pages at some spoit in the
+        comic, try fixing it through the button below.
+      </p>
+      <RecalculateNumPages comic={comic} imagesServerUrl={IMAGES_SERVER_URL} />
+
+      <p className="font-semibold mt-4 mb-1">Add pages</p>
 
       <div className="flex flex-row gap-4 items-center mb-2">
         <FileInput onChange={onFileChange} multiple accept="image/*" />
@@ -298,11 +284,37 @@ export default function ManagePagesAdmin({
         />
       )}
 
-      <p className="text-sm mb-4">
+      <p className="font-semibold mt-4">
+        Manage pages{filesChanged.length > 0 ? ' (unsaved changes)' : ''}
+      </p>
+      <p className="text-sm mb-2">
         Click an image to see it full size. You can add files in multiple batches as long
         as there are no duplicate file names. You can drop files onto the file selector
         button.
       </p>
+
+      {filesChanged.length > 0 && (
+        <div className=" mb-4 mt-2">
+          <div className="flex flex-row flex-wrap gap-2">
+            {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
+              <span className="bg-theme1-primaryTrans p-1 rounded" key={fc.originalPos}>
+                {fc.isNewPage ? (
+                  <>New {fc.newPos}</>
+                ) : fc.isDeleted ? (
+                  <>
+                    <IoMdTrash className="mb-1" />
+                    {fc.originalPos}
+                  </>
+                ) : (
+                  <>
+                    {fc.originalPos} <MdArrowForward /> {fc.newPos}
+                  </>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <PageManager
         files={comicPages}
