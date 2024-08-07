@@ -8,9 +8,10 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import type { NewArtist, NewComicData } from '~/routes/contribute_.upload/route';
 import type { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
 import type { FieldChange } from '~/utils/general';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ManagePagesAdmin from './ManagePagesAdmin';
+import { useUIPreferences } from '~/utils/theme-provider';
 
 type LiveComicProps = {
   comic: Comic;
@@ -44,12 +45,14 @@ export default function LiveComic({
     onFinish: () => setNeedsUpdate(true),
   });
   const { isMobile } = useWindowSize();
+  const { theme } = useUIPreferences();
 
   const [isUnlisting, setIsUnlisting] = useState(false);
   const [unlistComment, setUnlistComment] = useState('');
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
   const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
+  const [imagesServerRenameFailed, setImagesServerRenameFailed] = useState(false);
 
   useEffect(() => {
     setComicDataChanges(
@@ -96,6 +99,23 @@ export default function LiveComic({
         body.previousComicId = change.newDataValue;
       } else if (change.field === 'Next comic') {
         body.nextComicId = change.newDataValue;
+      }
+    }
+
+    if (body.name) {
+      const response = await fetch(`${IMAGES_SERVER_URL}/rename-comic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prevComicName: comic.name,
+          newComicName: body.name,
+          numPages: comic.numberOfPages,
+        }),
+      });
+
+      if (!response.ok) {
+        showErrorToast('Failed to rename comic pages', theme);
+        return;
       }
     }
 

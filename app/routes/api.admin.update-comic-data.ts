@@ -48,16 +48,10 @@ export async function updateComicData(
   const dbStatements: QueryWithParams[] = [];
 
   if (changes.name) {
-    // IMPLEMENT WHEN STORAGE IS IN PLACE.
-    // const err = await updateComicName(
-    //   db,
-    //   changes.comicId,
-    //   existingComic.name,
-    //   changes.name
-    // );
-    // if (err) {
-    //   return wrapApiError(err, 'Could not update comic name', changes);
-    // }
+    dbStatements.push({
+      query: `UPDATE comic SET name = ? WHERE id = ?`,
+      params: [changes.name, changes.comicId],
+    });
   }
 
   if (changes.nextComicId !== undefined) {
@@ -160,18 +154,6 @@ function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParam
   return {
     query: updateQuery,
     params: updateFieldValues,
-  };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function updateComicName(
-  db: D1Database,
-  comicId: number,
-  oldName: string,
-  newName: string
-): Promise<ApiError | undefined> {
-  return {
-    logMessage: 'Not implemented!',
   };
 }
 

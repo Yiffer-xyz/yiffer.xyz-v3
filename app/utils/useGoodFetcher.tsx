@@ -111,24 +111,24 @@ export function useGoodFetcher<T = void>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.state]);
 
-  useEffect(() => {
-    // The component can unmount before the state has gone 'idle'
-    // (which can happen when revalidation automatically happens after)
-    // a post, during which it'll be 'loading' and then whichever component
-    // using useGoodFetcher unmounts because of changes.
-    // If this happens and we should've toasted, do so!
-    // 🚨Weakness! If the component (intentionally) unmounts this way but
-    // the fetch result is an ERROR, this will still toast success.
-    // This, however, seems to be a bad situation. On errors, either crash
-    // and let an error boundary catch, or keep whatever form it is open without
-    // unmounting it.
-    return () => {
-      if (fetchingStateRef.current === 'is-fetching' && toastSuccessMessage) {
-        showSuccessToast(toastSuccessMessage, preventToastClose, theme);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toastSuccessMessage, theme]);
+  // useEffect(() => {
+  //   // The component can unmount before the state has gone 'idle'
+  //   // (which can happen when revalidation automatically happens after)
+  //   // a post, during which it'll be 'loading' and then whichever component
+  //   // using useGoodFetcher unmounts because of changes.
+  //   // If this happens and we should've toasted, do so!
+  //   // 🚨 Weakness! If the component (intentionally) unmounts this way but
+  //   // the fetch result is an ERROR, this will still toast success.
+  //   // This, however, seems to be a bad situation. On errors, either crash
+  //   // and let an error boundary catch, or keep whatever form it is open without
+  //   // unmounting it.
+  //   return () => {
+  //     if (fetchingStateRef.current === 'is-fetching' && toastSuccessMessage) {
+  //       showSuccessToast(toastSuccessMessage, preventToastClose, theme);
+  //     }
+  //   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [toastSuccessMessage, theme]);
 
   useEffect(() => {
     if (fetchGetOnLoad && method === 'get') {
