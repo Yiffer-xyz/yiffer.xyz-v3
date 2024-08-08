@@ -108,7 +108,10 @@ export default function PageManager({ files, onChange, randomString }: PageManag
                 onDragStart={() => (isDragging.current = true)}
               >
                 <IconButton
-                  onClick={() => deleteImage(index)}
+                  onClick={e => {
+                    deleteImage(index);
+                    e.stopPropagation();
+                  }}
                   icon={MdDelete}
                   color="error"
                   className={`

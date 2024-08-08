@@ -1,7 +1,7 @@
 import { useRevalidator } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import { IoMdTrash } from 'react-icons/io';
-import { MdArrowForward } from 'react-icons/md';
+import { MdArrowDownward, MdArrowUpward } from 'react-icons/md';
 import PageManager from '~/page-components/PageManager/PageManager';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import type { Comic } from '~/types/types';
@@ -24,6 +24,14 @@ type UpdatedComicPage = {
   previousPos?: number;
   newPos?: number;
   isDeleted: boolean;
+};
+
+type FileChangeRange = {
+  firstOriginal: number;
+  lastOriginal: number;
+  firstNew: number;
+  lastNew: number;
+  changes: FileChange[];
 };
 
 type ManagePagesAdminProps = {
@@ -296,7 +304,8 @@ export default function ManagePagesAdmin({
       {filesChanged.length > 0 && (
         <div className=" mb-4 mt-2">
           <div className="flex flex-row flex-wrap gap-2">
-            {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
+            <FileChangesDisplay changes={filesChanged} />
+            {/* {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
               <span className="bg-theme1-primaryTrans p-1 rounded" key={fc.originalPos}>
                 {fc.isNewPage ? (
                   <>New {fc.newPos}</>
@@ -311,7 +320,7 @@ export default function ManagePagesAdmin({
                   </>
                 )}
               </span>
-            ))}
+            ))} */}
           </div>
         </div>
       )}
@@ -386,9 +395,116 @@ function calculateFilesChanged(
     }
   }
 
-  return filesThatHaveChanged;
+  console.log(combineSequentialFileChanges(filesThatHaveChanged));
+
+  // return filesThatHaveChanged;
+  return combineSequentialFileChanges(filesThatHaveChanged);
 }
 
 function pageNumToUrl(pagesPath: string, comicName: string, pageNum: number) {
   return `${pagesPath}/${comicName}/${padPageNumber(pageNum)}.jpg`;
+}
+
+function combineSequentialFileChanges(
+  changes: FileChange[]
+): (FileChange | FileChangeRange)[] {
+  const result: (FileChange | FileChangeRange)[] = [];
+  let rangeStartIdx = 0;
+
+  while (rangeStartIdx < changes.length) {
+    const currentRange = [changes[rangeStartIdx]];
+    let rangeEndIdx = rangeStartIdx + 1;
+
+    while (
+      rangeEndIdx < changes.length &&
+      changes[rangeEndIdx].originalPos !== undefined &&
+      changes[rangeEndIdx].newPos !== undefined &&
+      changes[rangeEndIdx - 1].originalPos !== undefined &&
+      changes[rangeEndIdx - 1].newPos !== undefined &&
+      changes[rangeEndIdx].originalPos! - changes[rangeEndIdx - 1].originalPos! ===
+        changes[rangeEndIdx].newPos! - changes[rangeEndIdx - 1].newPos!
+    ) {
+      currentRange.push(changes[rangeEndIdx]);
+      rangeEndIdx++;
+    }
+
+    if (currentRange.length > 1) {
+      result.push({
+        firstOriginal: currentRange[0].originalPos!,
+        lastOriginal: currentRange[currentRange.length - 1].originalPos!,
+        firstNew: currentRange[0].newPos!,
+        lastNew: currentRange[currentRange.length - 1].newPos!,
+        changes: currentRange,
+      });
+    } else {
+      result.push(currentRange[0]);
+    }
+
+    rangeStartIdx = rangeEndIdx;
+  }
+
+  return result;
+}
+
+function isFileChangeRange(x: any): x is FileChangeRange {
+  return 'firstOriginal' in x;
+}
+
+function FileChangesDisplay({ changes }: { changes: (FileChange | FileChangeRange)[] }) {
+  const sorted = changes.sort((a, b) => {
+    if (isFileChangeRange(a) && isFileChangeRange(b)) {
+      return a.firstOriginal - b.firstOriginal;
+    }
+    if (isFileChangeRange(a) && !isFileChangeRange(b)) {
+      return a.firstOriginal - (b.originalPos ?? b.newPos ?? 0);
+    }
+    if (isFileChangeRange(b) && !isFileChangeRange(a)) {
+      return (a.originalPos ?? a.newPos ?? 0) - b.firstOriginal;
+    }
+    if (!isFileChangeRange(a) && !isFileChangeRange(b)) {
+      return (a.originalPos ?? a.newPos ?? 0) - (b.originalPos ?? b.newPos ?? 0);
+    }
+    return 0;
+  });
+
+  return sorted.map(changeOrRange => {
+    if (isFileChangeRange(changeOrRange)) {
+      const isUp = changeOrRange.firstNew > changeOrRange.firstOriginal;
+      return (
+        <span
+          className="bg-theme1-primaryTrans p-1 rounded"
+          key={changeOrRange.firstOriginal}
+        >
+          {changeOrRange.firstOriginal}..{changeOrRange.lastOriginal}{' '}
+          {isUp ? <MdArrowUpward /> : <MdArrowDownward />} {changeOrRange.firstNew}..
+          {changeOrRange.lastNew}
+        </span>
+      );
+    }
+
+    const isUp =
+      changeOrRange.newPos && changeOrRange.originalPos
+        ? changeOrRange.newPos > changeOrRange.originalPos
+        : false;
+    return (
+      <span
+        className="bg-theme1-primaryTrans p-1 rounded"
+        key={changeOrRange.originalPos}
+      >
+        {changeOrRange.isNewPage ? (
+          <>New {changeOrRange.newPos}</>
+        ) : changeOrRange.isDeleted ? (
+          <>
+            <IoMdTrash className="mb-1" />
+            {changeOrRange.originalPos}
+          </>
+        ) : (
+          <>
+            {changeOrRange.originalPos} {isUp ? <MdArrowUpward /> : <MdArrowDownward />}{' '}
+            {changeOrRange.newPos}
+          </>
+        )}
+      </span>
+    );
+  });
 }
