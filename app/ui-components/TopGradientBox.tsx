@@ -1,6 +1,8 @@
+import type { HTMLAttributes } from 'react';
+
 type TopGradientBoxProps = {
-  containerClassName?: string;
-  innerClassName?: string;
+  containerClassName?: HTMLAttributes<HTMLDivElement>['className'];
+  innerClassName?: HTMLAttributes<HTMLDivElement>['className'];
   children: React.ReactNode;
 };
 

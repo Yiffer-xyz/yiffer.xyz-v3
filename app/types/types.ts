@@ -402,6 +402,8 @@ export function isViewType(viewType: string): viewType is ViewType {
   return allViewTypes.includes(viewType as ViewType);
 }
 
+export type PageDisplay = 'Fit height' | 'Fit width' | 'Full size' | 'Tiny';
+
 export type SearchFilterState = {
   isAllCategories: boolean;
   categories: Category[];
@@ -415,6 +417,8 @@ export type UIPreferences = {
   theme: 'light' | 'dark';
   viewMode: ViewType;
   comicCardTags: boolean;
+  comicPageDisplay: PageDisplay;
+  comicPageReverseOrder: boolean;
 };
 
 export type AdPaymentMethod = 'now' | 'free-trial';

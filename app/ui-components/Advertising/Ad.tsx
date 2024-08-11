@@ -41,7 +41,7 @@ export default function Ad({
       href={ad.link}
       target="_blank"
       rel="noreferrer"
-      className={className}
+      className={`block w-fit ${className ?? ''}`}
       onClick={onClick}
     >
       <picture style={{ width, height }}>

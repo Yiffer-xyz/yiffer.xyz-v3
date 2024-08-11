@@ -8,13 +8,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { UIPreferences, ViewType } from '~/types/types';
+import type { PageDisplay, UIPreferences, ViewType } from '~/types/types';
 import { isViewType } from '~/types/types';
 
 const defaultUiPref: UIPreferences = {
   theme: 'light',
   viewMode: 'Standard',
   comicCardTags: false,
+  comicPageDisplay: 'Fit width',
+  comicPageReverseOrder: false,
 };
 
 interface UIPrefContextType {
@@ -89,6 +91,18 @@ export function useUIPreferences() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const setPageDisplayAndReverseOrder = useCallback(
+    ({ newDisplay, isReversed }: { newDisplay?: PageDisplay; isReversed?: boolean }) => {
+      context.setUiPref(prev => ({
+        ...prev,
+        comicPageDisplay: newDisplay ?? prev.comicPageDisplay,
+        comicPageReverseOrder: isReversed ?? prev.comicPageReverseOrder,
+      }));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
   return {
     theme: context.uiPref.theme,
     setTheme,
@@ -96,6 +110,9 @@ export function useUIPreferences() {
     setViewMode,
     comicCardTags: context.uiPref.comicCardTags,
     setComicCardTags,
+    comicPageDisplay: context.uiPref.comicPageDisplay,
+    comicPageReverseOrder: context.uiPref.comicPageReverseOrder,
+    setPageDisplayAndReverseOrder,
   };
 }
 
@@ -114,6 +131,16 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
     if (parsed.comicCardTags !== undefined) {
       newUIPref.comicCardTags = parsed.comicCardTags;
     }
+    if (
+      parsed.comicPageDisplay &&
+      ['Fit height', 'Fit width', 'Full size', 'Tiny'].includes(parsed.comicPageDisplay)
+    ) {
+      newUIPref.comicPageDisplay = parsed.comicPageDisplay;
+    }
+    if (parsed.comicPageReverseOrder !== undefined) {
+      newUIPref.comicPageReverseOrder = parsed.comicPageReverseOrder;
+    }
+
     return newUIPref;
   } catch (e) {
     return defaultUiPref;

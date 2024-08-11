@@ -59,7 +59,12 @@ export default function ComicReportProblem({
 
   if (isSuccess) {
     return (
-      <InfoBox variant="success" className="mt-4" closable overrideOnCloseFunc={onCancel}>
+      <InfoBox
+        variant="success"
+        className="mt-4 w-fit md:w-[728px]"
+        closable
+        overrideOnCloseFunc={onCancel}
+      >
         <p className="font-normal">Thanks for your report!</p>
         {isLoggedIn ? (
           <p className="font-normal">
@@ -83,7 +88,10 @@ export default function ComicReportProblem({
   }
 
   return (
-    <TopGradientBox containerClassName="mt-4" innerClassName="p-4 flex flex-col">
+    <TopGradientBox
+      containerClassName="mt-4 max-w-2xl md:max-w-none md:w-[728px]"
+      innerClassName="p-4 flex flex-col"
+    >
       <p className="font-semibold text-lg">Report problem</p>
       <p className="text-sm mb-2">Your suggestion will be reviewed by mods.</p>
       {!isLoggedIn && (

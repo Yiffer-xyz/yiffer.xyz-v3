@@ -11,9 +11,12 @@ type ComicStatsProps = {
 
 export default function ComicStats({ comic }: ComicStatsProps) {
   return (
-    <div className="flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 md:text-base pl-3">
+    <div
+      className={`flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 md:text-base pl-3
+      md:flex-row md:gap-6 md:pl-0 md:w-fit md:mt-5`}
+    >
       <div className="flex flex-row items-center gap-1.5">
-        <IoStar className="text-theme1-dark mt-[2px]" />
+        <IoStar className="text-gray-600 dark:text-gray-700 mt-[2px]" />
         <p>
           {comic.sumStars
             ? `${comic.sumStars} (avg ${roundToOneDecimal(

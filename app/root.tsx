@@ -24,7 +24,6 @@ import {
   RiAccountCircleLine,
   RiAddLine,
   RiLoginBoxLine,
-  RiLogoutBoxLine,
   RiSettings3Line,
 } from 'react-icons/ri';
 import Link from './ui-components/Link';

@@ -79,7 +79,12 @@ export default function ComicManageTags({
 
   if (isSuccess) {
     return (
-      <InfoBox variant="success" className="mt-4" closable overrideOnCloseFunc={onCancel}>
+      <InfoBox
+        variant="success"
+        className="mt-4 w-fit md:w-[728px]"
+        closable
+        overrideOnCloseFunc={onCancel}
+      >
         <p className="font-normal">Thanks for your suggestion!</p>
         {isLoggedIn ? (
           <p className="font-normal">
@@ -103,7 +108,10 @@ export default function ComicManageTags({
   }
 
   return (
-    <TopGradientBox containerClassName="mt-4" innerClassName="p-4 flex flex-col">
+    <TopGradientBox
+      containerClassName="mt-4 max-w-4xl md:w-[728px]"
+      innerClassName="p-4 flex flex-col"
+    >
       <p className="font-semibold text-lg">Manage tags</p>
       <p className="text-sm mb-2">Your suggestion will be reviewed by mods.</p>
       {!isLoggedIn && (

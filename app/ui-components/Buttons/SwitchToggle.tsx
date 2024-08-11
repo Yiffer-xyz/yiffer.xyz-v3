@@ -1,9 +1,11 @@
+import type { HTMLAttributes } from 'react';
+
 type SwitchToggleProps = {
   label: string;
   title?: string;
   checked?: boolean;
   onChange: (checked: boolean) => void;
-  className?: string;
+  className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
 export default function SwitchToggle({
@@ -14,7 +16,7 @@ export default function SwitchToggle({
   className = '',
 }: SwitchToggleProps) {
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
+    <div className={`flex flex-col gap-2 w-fit ${className}`}>
       {title && <label className="text-sm">{title}</label>}
 
       <label className={`inline-flex items-center cursor-pointer`}>

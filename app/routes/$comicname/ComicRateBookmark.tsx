@@ -10,7 +10,7 @@ type ComicInfoProps = {
   isLoggedIn: boolean;
 };
 
-export default function ComicInfo({
+export default function ComicRateBookmark({
   comic,
   updateStars,
   toggleBookmark,
