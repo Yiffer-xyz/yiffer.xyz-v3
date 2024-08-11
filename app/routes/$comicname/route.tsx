@@ -117,7 +117,6 @@ export default function ComicPage() {
   // always match until the window size potentially changes. Then, on the second render, update
   // the style to use the pixel values.
   useEffect(() => {
-    console.log(display);
     setStyle(displayToPageStyle(display, false));
   }, [display]);
 

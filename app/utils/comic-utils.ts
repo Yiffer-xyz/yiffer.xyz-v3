@@ -19,7 +19,7 @@ export function displayToPageStyle(display: PageDisplay, serverSafe = false) {
   if (display === 'Fit height') {
     return {
       width: 'auto',
-      maxHeight: useWindowDim ? document.body.clientHeight + 'px' : '100vh',
+      maxHeight: useWindowDim ? window.innerHeight + 'px' : '100vh',
       maxWidth: '100%',
     };
   }
