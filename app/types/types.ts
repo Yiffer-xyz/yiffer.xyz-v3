@@ -402,7 +402,7 @@ export function isViewType(viewType: string): viewType is ViewType {
   return allViewTypes.includes(viewType as ViewType);
 }
 
-export type PageDisplay = 'Fit height' | 'Fit width' | 'Full size' | 'Tiny';
+export type PageDisplay = 'Fit' | 'Fit height' | 'Fit width' | 'Full size' | 'Tiny';
 
 export type SearchFilterState = {
   isAllCategories: boolean;
@@ -413,12 +413,17 @@ export type SearchFilterState = {
   viewType: ViewType;
 };
 
+export type ComicDisplayOptions = {
+  display: PageDisplay;
+  reverseOrder: boolean;
+  clickToToggleDisplay: boolean;
+};
+
 export type UIPreferences = {
   theme: 'light' | 'dark';
   viewMode: ViewType;
   comicCardTags: boolean;
-  comicPageDisplay: PageDisplay;
-  comicPageReverseOrder: boolean;
+  comicDisplayOptions: ComicDisplayOptions;
 };
 
 export type AdPaymentMethod = 'now' | 'free-trial';

@@ -154,7 +154,7 @@ export default function DropdownButton({
             <div
               key={index}
               className={`
-                  block w-full text-left px-4 py-2 text-sm cursor-pointer whitespace-nowrap
+                  block w-full text-left px-3 py-2 text-sm cursor-pointer whitespace-nowrap
                   font-semibold text-blue-weak-100 dark:text-text-dark
                   ${
                     index === currentlyHighlightedIndex

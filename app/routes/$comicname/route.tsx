@@ -10,17 +10,14 @@ import Link from '~/ui-components/Link';
 import ComicStats from './ComicStats';
 import ComicManageTags from './ComicManageTags';
 import DropdownButton from '~/ui-components/Buttons/DropdownButton';
-import { useEffect, useState } from 'react';
-import { padPageNumber } from '~/utils/general';
 import ComicReportProblem from './ComicReportProblem';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
-import type { PageDisplay, AdForViewing, Comic } from '~/types/types';
-import ComicDisplayOptions from './ComicDisplayOptions';
-import { useUIPreferences } from '~/utils/theme-provider';
-import { displayToPageStyle } from '~/utils/comic-utils';
+import type { AdForViewing, Comic } from '~/types/types';
+import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
+import { useState } from 'react';
 
 type LoaderData = {
   comic: Comic | null;
@@ -74,16 +71,8 @@ export default function ComicPage() {
   const { comic, notFound, pagesPath, isLoggedIn, ad, adsPath } =
     useLoaderData<typeof loader>();
 
-  const { comicPageReverseOrder: reverseOrderCache, comicPageDisplay } =
-    useUIPreferences();
-
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [isReportingProblem, setIsReportingProblem] = useState(false);
-  const [isReverseOrderLocal, setIsReverseOrderLocal] = useState<boolean | null>(null);
-  const [displayLocal, setDisplayLocal] = useState<PageDisplay | null>(null);
-
-  const isReverseOrder = isReverseOrderLocal ?? reverseOrderCache;
-  const display = displayLocal ?? comicPageDisplay;
 
   const updateYourStarsFetcher = useGoodFetcher({
     method: 'post',
@@ -107,18 +96,6 @@ export default function ComicPage() {
       comicId: comic!.id,
     });
   }
-
-  const [style, setStyle] = useState(displayToPageStyle(comicPageDisplay, true));
-
-  // There are slight differences between SSR and how we want it to look on the client.
-  // Namely, on the client we sometimes want specific pixel values for the width and height,
-  // so that the images don't jump around if the screen size changes. We can't get these values
-  // on the server, however, so there and on first client load, use percentages, which should
-  // always match until the window size potentially changes. Then, on the second render, update
-  // the style to use the pixel values.
-  useEffect(() => {
-    setStyle(displayToPageStyle(display, false));
-  }, [display]);
 
   if (notFound || !comic) {
     return <div>Comic not found</div>;
@@ -186,26 +163,9 @@ export default function ComicPage() {
         />
       )}
 
-      <ComicDisplayOptions
-        isReverseOrder={isReverseOrder}
-        setIsReverseOrder={setIsReverseOrderLocal}
-        display={display}
-        setDisplay={setDisplayLocal}
-      />
-
-      {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
-
-      <div className="gap-4 mt-4 flex flex-col items-center w-full">
-        {Array.from({ length: comic.numberOfPages }, (_, i) => (
-          <img
-            key={i}
-            src={`${pagesPath}/${comic.name}/${padPageNumber(isReverseOrder ? comic.numberOfPages - i : i + 1)}.jpg`}
-            alt={`Page ${i + 1}`}
-            className="comicPage"
-            style={style}
-          />
-        ))}
-      </div>
+      <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
+        {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
+      </DisplayOptionsAndPages>
 
       <Button
         text="To top"

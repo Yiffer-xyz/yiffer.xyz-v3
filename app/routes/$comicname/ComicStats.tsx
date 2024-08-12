@@ -27,14 +27,14 @@ export default function ComicStats({ comic }: ComicStatsProps) {
       </div>
 
       {comic.published && (
-        <div className="flex flex-row items-center gap-1.5">
+        <div className="flex flex-row items-center gap-1.5" title="Published">
           <AiOutlinePlus className="mt-[1.5px]" />
           <p>{format(UTCTimeStrToLocalDate(comic.published), 'PP')}</p>
         </div>
       )}
 
-      {comic.updated && (
-        <div className="flex flex-row items-center gap-1.5">
+      {comic.updated && comic.updated !== comic.published && (
+        <div className="flex flex-row items-center gap-1.5" title="Updated">
           <LuRefreshCcw className="mt-[3px] mr-[1px]" size={13} />
           <p>{format(UTCTimeStrToLocalDate(comic.updated), 'PP')}</p>
         </div>

@@ -15,8 +15,11 @@ const defaultUiPref: UIPreferences = {
   theme: 'light',
   viewMode: 'Standard',
   comicCardTags: false,
-  comicPageDisplay: 'Fit width',
-  comicPageReverseOrder: false,
+  comicDisplayOptions: {
+    display: 'Fit',
+    reverseOrder: false,
+    clickToToggleDisplay: false,
+  },
 };
 
 interface UIPrefContextType {
@@ -91,12 +94,24 @@ export function useUIPreferences() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const setPageDisplayAndReverseOrder = useCallback(
-    ({ newDisplay, isReversed }: { newDisplay?: PageDisplay; isReversed?: boolean }) => {
+  const setComicDisplayOptions = useCallback(
+    ({
+      display,
+      isReversed,
+      clickToToggleDisplay,
+    }: {
+      display?: PageDisplay;
+      isReversed?: boolean;
+      clickToToggleDisplay?: boolean;
+    }) => {
       context.setUiPref(prev => ({
         ...prev,
-        comicPageDisplay: newDisplay ?? prev.comicPageDisplay,
-        comicPageReverseOrder: isReversed ?? prev.comicPageReverseOrder,
+        comicDisplayOptions: {
+          display: display ?? prev.comicDisplayOptions.display,
+          reverseOrder: isReversed ?? prev.comicDisplayOptions.reverseOrder,
+          clickToToggleDisplay:
+            clickToToggleDisplay ?? prev.comicDisplayOptions.clickToToggleDisplay,
+        },
       }));
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,9 +125,8 @@ export function useUIPreferences() {
     setViewMode,
     comicCardTags: context.uiPref.comicCardTags,
     setComicCardTags,
-    comicPageDisplay: context.uiPref.comicPageDisplay,
-    comicPageReverseOrder: context.uiPref.comicPageReverseOrder,
-    setPageDisplayAndReverseOrder,
+    comicDisplayOptions: context.uiPref.comicDisplayOptions,
+    setComicDisplayOptions,
   };
 }
 
@@ -131,14 +145,23 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
     if (parsed.comicCardTags !== undefined) {
       newUIPref.comicCardTags = parsed.comicCardTags;
     }
-    if (
-      parsed.comicPageDisplay &&
-      ['Fit height', 'Fit width', 'Full size', 'Tiny'].includes(parsed.comicPageDisplay)
-    ) {
-      newUIPref.comicPageDisplay = parsed.comicPageDisplay;
-    }
-    if (parsed.comicPageReverseOrder !== undefined) {
-      newUIPref.comicPageReverseOrder = parsed.comicPageReverseOrder;
+    if (parsed.comicDisplayOptions) {
+      if (
+        parsed.comicDisplayOptions.display &&
+        ['Fit', 'Fit height', 'Fit width', 'Full size', 'Tiny'].includes(
+          parsed.comicDisplayOptions.display
+        )
+      ) {
+        newUIPref.comicDisplayOptions.display = parsed.comicDisplayOptions.display;
+      }
+      if (parsed.comicDisplayOptions.reverseOrder !== undefined) {
+        newUIPref.comicDisplayOptions.reverseOrder =
+          parsed.comicDisplayOptions.reverseOrder;
+      }
+      if (parsed.comicDisplayOptions.clickToToggleDisplay !== undefined) {
+        newUIPref.comicDisplayOptions.clickToToggleDisplay =
+          parsed.comicDisplayOptions.clickToToggleDisplay;
+      }
     }
 
     return newUIPref;
