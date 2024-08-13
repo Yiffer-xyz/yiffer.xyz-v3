@@ -49,7 +49,7 @@ export function links() {
 export default function Upload() {
   const { artists, comics, user, tags, IMAGES_SERVER_URL } =
     useLoaderData<typeof loader>();
-  const [step, setStep] = useState<number | string>(2);
+  const [step, setStep] = useState<number | string>(1);
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -271,13 +271,14 @@ export default function Upload() {
 
           <Step4Thumbnail comicData={comicData} onUpdate={setComicData} />
 
-          <h4>Tags</h4>
+          <h4 className="mt-8">Tags</h4>
           <TagsEditor
             allTags={tags}
             tags={comicData.tags}
             onUpdate={tags => setComicData({ ...comicData, tags })}
             includeClearAll
-            className="mt-8"
+            className="mt-1"
+            title=""
           />
 
           <h4 className="mt-8">Finish</h4>

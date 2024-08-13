@@ -28,6 +28,7 @@ type GetComicsParams = {
   search?: string;
   order?: 'updated' | 'userRating' | 'yourRating' | 'random';
   artistId?: number;
+  artistName?: string;
   includeTags?: boolean;
   includeAds?: boolean;
 };
@@ -42,6 +43,7 @@ export async function getComicsPaginated({
   search,
   order,
   artistId,
+  artistName,
   includeTags,
   includeAds,
 }: GetComicsParams): ResultOrErrorPromise<{
@@ -61,6 +63,7 @@ export async function getComicsPaginated({
     search,
     order,
     artistId,
+    artistName,
   };
 
   const [
@@ -70,11 +73,14 @@ export async function getComicsPaginated({
     innerJoinKeywordString,
   ] = getFilterQuery({ categories, keywordIds: tagIDs, search, artistId });
 
+  console.log(filterQueryParams);
+
   const isUnfilteredQuery =
     (!categories || categories.length === 0) &&
     (!tagIDs || tagIDs.length === 0) &&
     !search &&
-    !artistId;
+    !artistId &&
+    !artistName;
 
   const orderBy = orderByParamToDbField(order ?? 'updated');
   const orderQueryString = `ORDER BY ${orderBy} DESC`;
@@ -113,9 +119,9 @@ export async function getComicsPaginated({
       ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}
     FROM comic
+    INNER JOIN artist ON (artist.id = comic.artist)
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
-    INNER JOIN artist ON (artist.id = comic.artist)
     ${userId ? yourStarsQuery : ''}
     ${userId ? isBookmarkedQuery : ''}
     ${filterQueryString}
@@ -155,6 +161,12 @@ export async function getComicsPaginated({
     queryParams.push(offset);
   }
 
+  let artistNameFilterString = '';
+  if (artistName) {
+    artistNameFilterString = 'WHERE cc.artistName = ?';
+    queryParams.push(artistName);
+  }
+
   const query = `
     SELECT cc.id, cc.name, cc.category, cc.artistName,
     cc.updated, cc.state, cc.published, cc.numberOfPages, 
@@ -165,6 +177,7 @@ export async function getComicsPaginated({
       ${innerComicQuery}
     ) AS cc 
     LEFT JOIN comicrating ON (cc.id = comicrating.comicId) 
+    ${artistNameFilterString}
     GROUP BY name, id 
     ${orderQueryString} 
   `;

@@ -1,12 +1,14 @@
 import MultiSelect from '~/ui-components/MultiSelect/MultiSelect';
 import type { Tag } from '~/types/types';
+import type { HTMLAttributes } from 'react';
 
 type TagsEditorProps = {
   allTags: Tag[];
   tags: Tag[];
   onUpdate: (newTags: Tag[]) => void;
   includeClearAll?: boolean;
-  className?: string;
+  title?: string;
+  className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
 export default function TagsEditor({
@@ -14,6 +16,7 @@ export default function TagsEditor({
   tags,
   onUpdate,
   includeClearAll,
+  title = 'Tags',
   className = '',
 }: TagsEditorProps) {
   const tagOptions = allTags.map(tag => ({ value: tag, text: tag.name }));
@@ -22,7 +25,7 @@ export default function TagsEditor({
     <div className={className}>
       <MultiSelect
         name="tags"
-        title="Tags"
+        title={title}
         options={tagOptions}
         value={tags}
         onChange={newTags => onUpdate(newTags)}

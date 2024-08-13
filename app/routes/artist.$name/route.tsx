@@ -1,29 +1,48 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getArtistAndComicsByField } from '~/route-funcs/get-artist';
-import type { Artist, ComicTiny } from '~/types/types';
+import type { Artist, ComicForBrowse } from '~/types/types';
 import { processApiError } from '~/utils/request-helpers';
+import ArtistLinks from './ArtistLinks';
+import { authLoader } from '~/utils/loaders';
+import ComicCard from '../browse/ComicCard';
 
 export async function loader(args: LoaderFunctionArgs): Promise<{
   artist?: Artist;
-  comics: ComicTiny[];
+  comics: ComicForBrowse[];
   notFound?: boolean;
   queriedArtistName: string;
+  pagesPath: string;
 }> {
+  const user = await authLoader(args);
   const artistName = args.params.name;
-  if (!artistName) return { notFound: true, comics: [], queriedArtistName: '' };
+  if (!artistName)
+    return {
+      notFound: true,
+      comics: [],
+      queriedArtistName: '',
+      pagesPath: args.context.PAGES_PATH,
+    };
 
   const combinedRes = await getArtistAndComicsByField(
     args.context.DB,
     'name',
-    artistName
+    artistName,
+    user?.userId
   );
+
+  console.log(combinedRes);
 
   if (combinedRes.err) {
     return processApiError('Error getting artist+comics', combinedRes.err);
   }
   if (combinedRes.notFound) {
-    return { notFound: true, comics: [], queriedArtistName: artistName };
+    return {
+      notFound: true,
+      comics: [],
+      queriedArtistName: artistName,
+      pagesPath: args.context.PAGES_PATH,
+    };
   }
 
   return {
@@ -31,34 +50,44 @@ export async function loader(args: LoaderFunctionArgs): Promise<{
     comics: combinedRes.result.comics,
     notFound: false,
     queriedArtistName: artistName,
+    pagesPath: args.context.PAGES_PATH,
   };
 }
 
 export default function ArtistPage() {
-  const { artist, comics, notFound, queriedArtistName } = useLoaderData<typeof loader>();
+  const { artist, comics, notFound, queriedArtistName, pagesPath } =
+    useLoaderData<typeof loader>();
 
   return (
-    <div>
-      <h1>Artist: {artist?.name ?? queriedArtistName}</h1>
+    <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
+      <h1 className="text-3xl md:text-4xl">
+        Artist: {artist?.name ?? queriedArtistName}
+      </h1>
 
-      {!notFound && (
+      {!notFound && artist && (
         <>
-          <pre>
-            <code>{JSON.stringify(artist, null, 2)}</code>
-          </pre>
+          <ArtistLinks artist={artist} />
 
-          <h2>
-            Comics: These should def be more complete than the ComicTiny type,
-            <br /> so we can show a proper ComicCard.
-            <br /> I just quickly reused an existing function. Expand or replace it, TODO!
-          </h2>
-          <pre>
-            <code>{JSON.stringify(comics, null, 2)}</code>
-          </pre>
+          <div className="mt-6 w-fit">
+            {comics.length > 0 ? (
+              <div className="flex flex-row flex-wrap justify-center gap-4">
+                {comics.map(comic => (
+                  <ComicCard
+                    key={comic.id}
+                    comic={comic}
+                    showStaticTags
+                    pagesPath={pagesPath}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p>No comics found.</p>
+            )}
+          </div>
         </>
       )}
 
-      {notFound && <p>No artist exists with name "{queriedArtistName}".</p>}
+      {notFound && <p className="mt-6">There is no artist with this name.</p>}
     </div>
   );
 }

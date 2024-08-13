@@ -195,18 +195,18 @@ export default function DisplayOptionsAndPages({
           ))}
         </div>
 
-        <SwitchToggle
-          label="Reverse page order"
-          onChange={onChangeReverseOrder}
-          checked={currentIsReverseOrder}
-          className="mt-1"
-        />
-
-        <div className="flex flex-row items-center gap-0.5 mt-1">
+        <div className="flex flex-row flex-wrap gap-x-8 gap-y-1">
           <SwitchToggle
             label="Tap pages to cycle display"
             onChange={onChangeClickToToggleDisplay}
             checked={currentClickToToggleDisplay}
+            className="mt-1"
+          />
+          <SwitchToggle
+            label="Reverse page order"
+            onChange={onChangeReverseOrder}
+            checked={currentIsReverseOrder}
+            className="mt-1"
           />
         </div>
 

@@ -17,10 +17,16 @@ import { useMemo } from 'react';
 type ComicCardProps = {
   comic: ComicForBrowse;
   pagesPath: string;
-  toggleBookmark: (comicId: number) => void;
+  showStaticTags?: boolean;
+  toggleBookmark?: (comicId: number) => void;
 };
 
-export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCardProps) {
+export default function ComicCard({
+  comic,
+  pagesPath,
+  showStaticTags,
+  toggleBookmark,
+}: ComicCardProps) {
   const { viewMode, comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
@@ -28,11 +34,13 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
 
   const isNewComic = differenceInDays(new Date(), new Date(comic.published)) < 14;
 
+  const showTags = comicCardTags || showStaticTags;
+
   return (
     <div
       className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300
                   flex flex-col relative
-                  ${comicCardTags ? 'h-fit' : ''}`}
+                  ${showTags ? 'h-fit' : ''}`}
       key={comic.id}
     >
       <RemixLink to={`/${comic.name}`}>
@@ -57,7 +65,7 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <div>
-          {comic.isBookmarked && (
+          {comic.isBookmarked && toggleBookmark && (
             <button className="pr-1.5 group" onClick={() => toggleBookmark(comic.id)}>
               <FaBookmark
                 size={14}
@@ -127,13 +135,14 @@ export default function ComicCard({ comic, pagesPath, toggleBookmark }: ComicCar
           </>
         )}
 
-        {comic.tags?.length && comicCardTags && (
+        {showTags && comic.tags?.length && (
           <div className="w-full flex flex-row flex-wrap gap-x-1 gap-y-1 items-center justify-center mt-1.5 mb-1">
             {comic.tags.map(tag => (
               <TagElement
                 tag={tag}
-                isActive={tagIDs.includes(tag.id)}
-                onClick={addTagID}
+                isActive={!showStaticTags && tagIDs.includes(tag.id)}
+                onClick={tagId => !showStaticTags && addTagID(tagId)}
+                disableHoverEffects={showStaticTags}
                 key={tag.id}
               />
             ))}

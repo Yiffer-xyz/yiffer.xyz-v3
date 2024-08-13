@@ -1,9 +1,9 @@
-import type { Artist, ComicTiny } from '~/types/types';
+import type { Artist, ComicForBrowse } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
-import { queryDb, queryDbMultiple } from '~/utils/database-facade';
+import { queryDb } from '~/utils/database-facade';
 import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
-import { makeDbErrObj } from '~/utils/request-helpers';
-import { addStateToComicNames, getComicsByArtistFieldQuery } from './get-comics';
+import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
+import { getComicsPaginated } from './get-comics-paginated';
 
 type DbArtist = {
   id: number;
@@ -19,17 +19,28 @@ type DbArtist = {
 export async function getArtistAndComicsByField(
   db: D1Database,
   fieldName: 'id' | 'name',
-  fieldValue: string | number
+  fieldValue: string | number,
+  userId: number | undefined
 ): ResultOrNotFoundOrErrorPromise<{
   artist: Artist;
-  comics: ComicTiny[];
+  comics: ComicForBrowse[];
 }> {
-  const dbStatements = [
-    getArtistByFieldQuery(fieldName, fieldValue),
-    getComicsByArtistFieldQuery(fieldName, fieldValue),
-  ];
+  const { query, params } = getArtistByFieldQuery(fieldName, fieldValue);
 
-  const dbRes = await queryDbMultiple<[DbArtist[], ComicTiny[]]>(db, dbStatements);
+  const dbResPromise = queryDb<DbArtist[]>(db, query, params);
+
+  const comicsPromise = getComicsPaginated({
+    db,
+    artistId: fieldName === 'id' ? parseInt(fieldValue.toString()) : undefined,
+    artistName: fieldName === 'name' ? fieldValue.toString() : undefined,
+    includeAds: false,
+    includeTags: true,
+    order: 'updated',
+    userId,
+  });
+
+  const [dbRes, comicsRes] = await Promise.all([dbResPromise, comicsPromise]);
+
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting artist and comics by field', {
       fieldName,
@@ -37,14 +48,18 @@ export async function getArtistAndComicsByField(
     });
   }
 
-  if (dbRes.result[0].length === 0) {
+  if (dbRes.result.length === 0 || dbRes.result[0].id === null) {
     return { notFound: true };
+  }
+
+  if (comicsRes.err) {
+    return processApiError('Error getting comics, get-artist', comicsRes.err);
   }
 
   return {
     result: {
-      artist: dbArtistToArtist(dbRes.result[0][0]),
-      comics: addStateToComicNames(dbRes.result[1]),
+      artist: dbArtistToArtist(dbRes.result[0]),
+      comics: comicsRes.result.comicsAndAds as ComicForBrowse[],
     },
   };
 }

@@ -45,9 +45,9 @@ export default function Step1({ onNext }: Step1Props) {
 
       <h2 className="mt-4">Checklist</h2>
       <p>
-        <u>All</u> uploaded pages uploaded must be publicly visible. A comic with some of
-        its pages exclusive to subscription services (eg. Patreon, Subscribestar) will be
-        rejected.
+        <u>All</u> uploaded pages uploaded must be publicly available. A comic with some
+        of its pages exclusive to subscription services (eg. Patreon, Subscribestar) will
+        be rejected.
       </p>
       <Checkbox
         label="I confirm that the pages are publicly available"

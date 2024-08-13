@@ -225,7 +225,8 @@ export default function MultiSelect<T>({
     <div
       onKeyDown={onKeyDown}
       className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
-        relative w-fit h-fit min-h-9 outline-none leading-9 pt-5 box-content ${className} ${borderClassname}`}
+        relative w-fit h-fit min-h-9 outline-none leading-9 box-content
+        ${title ? 'pt-5' : ''} ${className} ${borderClassname}`}
       style={{
         ...minWidthStyle,
         ...widthStyle,
