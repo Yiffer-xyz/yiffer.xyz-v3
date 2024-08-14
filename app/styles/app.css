@@ -810,6 +810,10 @@ h1 {
   margin-bottom: 2rem;
 }
 
+.\!mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+
 .-mb-0 {
   margin-bottom: -0px;
 }
@@ -1831,6 +1835,11 @@ h1 {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
+.bg-red-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--tw-bg-opacity));
 }
 
 .bg-opacity-30 {
@@ -3609,6 +3618,14 @@ h1 {
 }
 
 @media (min-width: 768px) {
+  .md\:absolute {
+    position: absolute;
+  }
+
+  .md\:right-0 {
+    right: 0px;
+  }
+
   .md\:mb-4 {
     margin-bottom: 1rem;
   }
@@ -3650,9 +3667,12 @@ h1 {
     width: auto;
   }
 
-  .md\:w-fit {
-    width: -moz-fit-content;
-    width: fit-content;
+  .md\:w-\[150px\] {
+    width: 150px;
+  }
+
+  .md\:w-\[144px\] {
+    width: 144px;
   }
 
   .md\:max-w-none {
@@ -3675,10 +3695,6 @@ h1 {
     align-items: center;
   }
 
-  .md\:gap-6 {
-    gap: 1.5rem;
-  }
-
   .md\:p-5 {
     padding: 1.25rem;
   }
@@ -3692,8 +3708,8 @@ h1 {
     padding-left: 0px;
   }
 
-  .md\:text-center {
-    text-align: center;
+  .md\:pr-\[144px\] {
+    padding-right: 144px;
   }
 
   .md\:text-4xl {
@@ -3709,11 +3725,6 @@ h1 {
   .md\:text-7xl {
     font-size: 4.5rem;
     line-height: 1;
-  }
-
-  .md\:text-base {
-    font-size: 1rem;
-    line-height: 1.5rem;
   }
 
   .md\:text-lg {

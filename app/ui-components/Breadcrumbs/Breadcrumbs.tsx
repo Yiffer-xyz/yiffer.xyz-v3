@@ -14,7 +14,7 @@ export default function Breadcrumbs({ currentRoute, prevRoutes, className }: Pro
   const prevRoutesWithHome = [{ text: 'Home', href: '/' }, ...prevRoutes];
 
   return (
-    <p className={`mb-4 mt-2 ${className}`}>
+    <div className={`mb-4 mt-2 ${className}`}>
       {prevRoutesWithHome.map(route => (
         <>
           <Link href={route.href} text={route.text} key={route.href} /> <MdChevronRight />{' '}
@@ -22,6 +22,6 @@ export default function Breadcrumbs({ currentRoute, prevRoutes, className }: Pro
       ))}
 
       {currentRoute}
-    </p>
+    </div>
   );
 }

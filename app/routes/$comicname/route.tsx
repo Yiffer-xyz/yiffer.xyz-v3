@@ -18,57 +18,12 @@ import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
 import { useState } from 'react';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
-type LoaderData = {
-  comic: Comic | null;
-  ad: AdForViewing | null;
-  notFound: boolean;
-  isLoggedIn: boolean;
-  pagesPath: string;
-  adsPath: string;
-};
-
-export async function loader(args: LoaderFunctionArgs) {
-  const user = await authLoader(args);
-
-  const res: LoaderData = {
-    comic: null,
-    ad: null,
-    notFound: false,
-    isLoggedIn: !!user,
-    pagesPath: args.context.PAGES_PATH,
-    adsPath: args.context.ADS_PATH,
-  };
-
-  const adPromise = getAdForViewing({ adType: 'banner', db: args.context.DB });
-
-  const comicPromise = getComicByField({
-    db: args.context.DB,
-    fieldName: 'name',
-    fieldValue: args.params.comicname as string,
-    userId: user?.userId,
-  });
-
-  const [adRes, comicRes] = await Promise.all([adPromise, comicPromise]);
-
-  if (comicRes.err) {
-    return processApiError('Error getting comic in /comic', comicRes.err);
-  }
-  if (adRes.err) {
-    return processApiError('Error getting ad in /comic', adRes.err);
-  }
-  if (comicRes.notFound) {
-    res.notFound = true;
-    return res;
-  }
-
-  res.comic = comicRes.result;
-  res.ad = adRes.result;
-  return res;
-}
+export const desktopStatsWidth = 144;
 
 export default function ComicPage() {
-  const { comic, notFound, pagesPath, isLoggedIn, ad, adsPath } =
+  const { comic, queriedComicName, notFound, pagesPath, isLoggedIn, ad, adsPath } =
     useLoaderData<typeof loader>();
 
   const [isManagingTags, setIsManagingTags] = useState(false);
@@ -97,82 +52,156 @@ export default function ComicPage() {
     });
   }
 
-  if (notFound || !comic) {
-    return <div>Comic not found</div>;
-  }
+  const comicNotFound = notFound || !comic || comic.name === null;
 
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
-      <div>
-        <h1 className="text-3xl md:text-4xl">{comic.name}</h1>
-        <p className="mt-1 md:text-center md:text-lg">
-          by{' '}
-          <Link
-            href={`/artist/${comic.artist.name}`}
-            text={comic.artist.name}
-            isInsideParagraph
-          />
-        </p>
+      <div className="md:w-[728px]">
+        <h1 className="text-3xl md:text-4xl break-all">
+          {comic?.name ?? queriedComicName}
+        </h1>
+        {!comicNotFound && (
+          <p className="mt-1 md:text-lg">
+            by{' '}
+            <Link
+              href={`/artist/${comic.artist.name}`}
+              text={comic.artist.name}
+              isInsideParagraph
+            />
+          </p>
+        )}
+
+        <Breadcrumbs
+          currentRoute={comic?.name ?? queriedComicName}
+          prevRoutes={[{ text: 'Browse', href: '/browse' }]}
+          className="!mb-1"
+        />
       </div>
 
-      <div className="flex flex-row md:flex-col justify-between md:w-[728px]">
-        <div className="flex flex-col md:items-center">
-          <ComicRateBookmark
-            comic={comic}
-            updateStars={updateStars}
-            toggleBookmark={toggleBookmark}
-            isLoggedIn={isLoggedIn}
-          />
+      {!comicNotFound && (
+        <>
+          <div className="md:w-[728px]">
+            <div className="flex flex-row justify-between relative">
+              <div className="flex flex-col">
+                <ComicRateBookmark
+                  comic={comic}
+                  updateStars={updateStars}
+                  toggleBookmark={toggleBookmark}
+                  isLoggedIn={isLoggedIn}
+                  className="flex"
+                />
 
-          <div className="flex flex-row flex-wrap gap-1.5 mt-4">
-            {comic.tags.map(tag => (
-              <TagElement tag={tag} key={tag.id} disableHoverEffects />
-            ))}
+                <div className="flex flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px]">
+                  {comic.tags.map(tag => (
+                    <TagElement tag={tag} key={tag.id} disableHoverEffects />
+                  ))}
+                </div>
+              </div>
+
+              <ComicStats comic={comic} />
+            </div>
+
+            {!isManagingTags && !isReportingProblem && (
+              <div className="mt-6 w-full">
+                <DropdownButton
+                  text="Contribute"
+                  style={{ width: 154 }}
+                  options={[
+                    {
+                      text: 'Add or remove tags',
+                      onClick: () => setIsManagingTags(true),
+                    },
+                    {
+                      text: 'Report problem',
+                      onClick: () => setIsReportingProblem(true),
+                    },
+                  ]}
+                />
+              </div>
+            )}
+
+            {isManagingTags && (
+              <ComicManageTags
+                comic={comic}
+                setIsManagingTags={setIsManagingTags}
+                isLoggedIn={isLoggedIn}
+              />
+            )}
+
+            {isReportingProblem && (
+              <ComicReportProblem
+                comic={comic}
+                setIsReportingProblem={setIsReportingProblem}
+                isLoggedIn={isLoggedIn}
+              />
+            )}
           </div>
-        </div>
 
-        <ComicStats comic={comic} />
-      </div>
+          <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
+            {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
+          </DisplayOptionsAndPages>
 
-      {!isManagingTags && !isReportingProblem && (
-        <div className="md:w-[728px] mt-4 md:mt-5">
-          <DropdownButton
-            text="Contribute"
-            style={{ width: 140 }}
-            options={[
-              { text: 'Add or remove tags', onClick: () => setIsManagingTags(true) },
-              { text: 'Report problem', onClick: () => setIsReportingProblem(true) },
-            ]}
+          <Button
+            text="To top"
+            className="mt-6 mx-auto"
+            startIcon={MdArrowUpward}
+            onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
           />
-        </div>
+        </>
       )}
 
-      {isManagingTags && (
-        <ComicManageTags
-          comic={comic}
-          setIsManagingTags={setIsManagingTags}
-          isLoggedIn={isLoggedIn}
-        />
-      )}
-
-      {isReportingProblem && (
-        <ComicReportProblem
-          comic={comic}
-          setIsReportingProblem={setIsReportingProblem}
-          isLoggedIn={isLoggedIn}
-        />
-      )}
-
-      <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
-        {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
-      </DisplayOptionsAndPages>
-
-      <Button
-        text="To top"
-        className="mt-6 mx-auto"
-        startIcon={MdArrowUpward}
-        onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
-      />
+      {comicNotFound && <p className="mt-6">Comic not found.</p>}
     </div>
   );
+}
+
+type LoaderData = {
+  comic: Comic | null;
+  ad: AdForViewing | null;
+  notFound: boolean;
+  isLoggedIn: boolean;
+  pagesPath: string;
+  adsPath: string;
+  queriedComicName: string;
+};
+
+export async function loader(args: LoaderFunctionArgs) {
+  const user = await authLoader(args);
+  const comicName = args.params.comicname as string;
+
+  const res: LoaderData = {
+    comic: null,
+    ad: null,
+    notFound: false,
+    isLoggedIn: !!user,
+    pagesPath: args.context.PAGES_PATH,
+    adsPath: args.context.ADS_PATH,
+    queriedComicName: comicName,
+  };
+
+  const adPromise = getAdForViewing({ adType: 'banner', db: args.context.DB });
+
+  const comicPromise = getComicByField({
+    db: args.context.DB,
+    fieldName: 'name',
+    fieldValue: comicName,
+    userId: user?.userId,
+  });
+
+  const [adRes, comicRes] = await Promise.all([adPromise, comicPromise]);
+
+  if (comicRes.err) {
+    return processApiError('Error getting comic in /comic', comicRes.err);
+  }
+  if (adRes.err) {
+    return processApiError('Error getting ad in /comic', adRes.err);
+  }
+  if (comicRes.notFound) {
+    res.notFound = true;
+    return res;
+  }
+
+  res.comic = comicRes.result;
+  res.ad = adRes.result;
+  return res;
 }

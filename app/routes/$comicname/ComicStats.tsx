@@ -1,19 +1,23 @@
 import { format } from 'date-fns';
+import { type HTMLAttributes } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import { IoDocumentOutline, IoStar } from 'react-icons/io5';
 import { LuRefreshCcw } from 'react-icons/lu';
 import type { Comic } from '~/types/types';
 import { UTCTimeStrToLocalDate } from '~/utils/date-utils';
+import { desktopStatsWidth } from './route';
 
 type ComicStatsProps = {
   comic: Comic;
+  className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
-export default function ComicStats({ comic }: ComicStatsProps) {
+export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
   return (
     <div
-      className={`flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 md:text-base pl-3
-      md:flex-row md:gap-6 md:pl-0 md:w-fit md:mt-5`}
+      className={`flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 pl-3 
+        md:pl-0 md:absolute md:right-0 ${className}`}
+      style={{ width: desktopStatsWidth }}
     >
       <div className="flex flex-row items-center gap-1.5">
         <IoStar className="text-gray-600 dark:text-gray-700 mt-[2px]" />

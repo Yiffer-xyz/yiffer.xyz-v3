@@ -8,6 +8,7 @@ type ComicInfoProps = {
   updateStars: (stars: number) => void;
   toggleBookmark: () => void;
   isLoggedIn: boolean;
+  className?: string;
 };
 
 export default function ComicRateBookmark({
@@ -15,6 +16,7 @@ export default function ComicRateBookmark({
   updateStars,
   toggleBookmark,
   isLoggedIn,
+  className = '',
 }: ComicInfoProps) {
   const yourStars = comic.yourStars ?? 0;
 
@@ -40,7 +42,7 @@ export default function ComicRateBookmark({
     : '';
 
   return (
-    <div className="mt-2 flex flex-row items-center">
+    <div className={`flex flex-row items-center ${className}`}>
       {/* Bookmark */}
       <button onClick={onToggleBookmark} className="p-2 -ml-2 group">
         {comic.isBookmarked ? (
