@@ -101,7 +101,11 @@ export default function ManagePagesAdmin({
 
     if (needsUpdateNumPages) {
       await updateNumberOfPages({
-        body: JSON.stringify({ comicId: comic.id, numberOfPages: comicPages.length }),
+        body: JSON.stringify({
+          comicId: comic.id,
+          numberOfPages: comicPages.length,
+          updateUpdatedTime: true,
+        }),
       });
     }
 

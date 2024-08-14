@@ -311,6 +311,7 @@ export type ComicDataChanges = {
   numberOfPages?: number;
   previousComicId?: number | null;
   nextComicId?: number | null;
+  updateUpdatedTime?: boolean;
 };
 
 function setupInitialUpdatedComic(comic: Comic): NewComicData {
