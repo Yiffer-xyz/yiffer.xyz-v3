@@ -6,6 +6,7 @@ import { processApiError } from '~/utils/request-helpers';
 import ArtistLinks from './ArtistLinks';
 import { authLoader } from '~/utils/loaders';
 import ComicCard from '../browse/ComicCard';
+import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
 export async function loader(args: LoaderFunctionArgs): Promise<{
   artist?: Artist;
@@ -60,14 +61,21 @@ export default function ArtistPage() {
 
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
-      <h1 className="text-3xl md:text-4xl">
-        Artist: {artist?.name ?? queriedArtistName}
-      </h1>
+      <div className="md:w-[728px]">
+        <h1 className="text-3xl md:text-4xl">
+          Artist: {artist?.name ?? queriedArtistName}
+        </h1>
+
+        <Breadcrumbs
+          currentRoute={artist?.name ?? queriedArtistName}
+          prevRoutes={[{ text: 'Browse', href: '/browse' }]}
+        />
+
+        {!notFound && artist && <ArtistLinks artist={artist} pagesPath={pagesPath} />}
+      </div>
 
       {!notFound && artist && (
         <>
-          <ArtistLinks artist={artist} />
-
           <div className="mt-6 w-fit">
             {comics.length > 0 ? (
               <div className="flex flex-row flex-wrap justify-center gap-4">
@@ -87,7 +95,7 @@ export default function ArtistPage() {
         </>
       )}
 
-      {notFound && <p className="mt-6">There is no artist with this name.</p>}
+      {notFound && <p className="mt-6">Artist not found.</p>}
     </div>
   );
 }
