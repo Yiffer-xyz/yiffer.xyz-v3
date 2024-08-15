@@ -23,7 +23,7 @@ import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 export const desktopStatsWidth = 144;
 
 export default function ComicPage() {
-  const { comic, queriedComicName, notFound, pagesPath, isLoggedIn, ad, adsPath } =
+  const { comic, queriedComicName, notFound, pagesPath, isLoggedIn, ad, adsPath, isMod } =
     useLoaderData<typeof loader>();
 
   const [isManagingTags, setIsManagingTags] = useState(false);
@@ -76,6 +76,16 @@ export default function ComicPage() {
           prevRoutes={[{ text: 'Browse', href: '/browse' }]}
           className="!mb-1"
         />
+
+        {isMod && (
+          <div className="mt-2.5 mb-1">
+            <Link
+              href={`/admin/comics/${comic?.id}`}
+              text="Edit comic in mod panel"
+              showRightArrow
+            />
+          </div>
+        )}
       </div>
 
       {!comicNotFound && (
@@ -163,6 +173,7 @@ type LoaderData = {
   pagesPath: string;
   adsPath: string;
   queriedComicName: string;
+  isMod: boolean;
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -177,6 +188,7 @@ export async function loader(args: LoaderFunctionArgs) {
     pagesPath: args.context.PAGES_PATH,
     adsPath: args.context.ADS_PATH,
     queriedComicName: comicName,
+    isMod: user?.userType === 'admin' || user?.userType === 'moderator',
   };
 
   const adPromise = getAdForViewing({ adType: 'banner', db: args.context.DB });

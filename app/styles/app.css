@@ -1078,6 +1078,10 @@ h1 {
   margin-top: 3px;
 }
 
+.mb-1\.5 {
+  margin-bottom: 0.375rem;
+}
+
 .box-content {
   box-sizing: content-box;
 }

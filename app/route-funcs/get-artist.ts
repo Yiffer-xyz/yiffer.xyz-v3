@@ -20,7 +20,7 @@ export async function getArtistAndComicsByField(
   db: D1Database,
   fieldName: 'id' | 'name',
   fieldValue: string | number,
-  userId: number | undefined
+  userId?: number | undefined
 ): ResultOrNotFoundOrErrorPromise<{
   artist: Artist;
   comics: ComicForBrowse[];
