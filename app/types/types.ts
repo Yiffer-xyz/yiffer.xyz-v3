@@ -85,6 +85,7 @@ export type ComicForBrowse = {
   artistName: string;
   updated: string;
   published: string;
+  publishStatus: ComicPublishStatus;
   numberOfPages: number;
   state: 'wip' | 'cancelled' | 'finished';
   yourStars?: number;

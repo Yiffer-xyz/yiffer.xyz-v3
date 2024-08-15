@@ -64,7 +64,7 @@ export default function ComicCard({
       {isNewComic && <NewCorner />}
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
-        <div>
+        <div className="leading-5 pt-0.5 pb-1">
           {comic.isBookmarked && toggleBookmark && (
             <button className="pr-1.5 group" onClick={() => toggleBookmark(comic.id)}>
               <FaBookmark
@@ -78,7 +78,7 @@ export default function ComicCard({
             href={`/${comic.name}`}
             text={comic.name}
             color="text"
-            className="text-sm"
+            className="text-sm leading-0"
           />
         </div>
         <Link

@@ -113,7 +113,7 @@ export async function getComicsPaginated({
 
   const innerComicQuery = `
     SELECT
-      comic.id AS id, comic.name, comic.category,
+      comic.id AS id, comic.name, comic.category, comic.publishStatus,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages
       ${userId ? ', userCR.rating AS yourStars' : ''}
       ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}

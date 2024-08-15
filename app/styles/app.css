@@ -1837,9 +1837,9 @@ h1 {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
-.bg-red-100 {
+.bg-red-300 {
   --tw-bg-opacity: 1;
-  background-color: rgb(254 226 226 / var(--tw-bg-opacity));
+  background-color: rgb(252 165 165 / var(--tw-bg-opacity));
 }
 
 .bg-opacity-30 {
@@ -2235,6 +2235,18 @@ h1 {
   padding-top: 5px;
 }
 
+.pb-1 {
+  padding-bottom: 0.25rem;
+}
+
+.pt-0 {
+  padding-top: 0px;
+}
+
+.pt-0\.5 {
+  padding-top: 0.125rem;
+}
+
 .text-left {
   text-align: left;
 }
@@ -2325,6 +2337,14 @@ h1 {
 
 .leading-none {
   line-height: 1;
+}
+
+.leading-\[18px\] {
+  line-height: 18px;
+}
+
+.leading-5 {
+  line-height: 1.25rem;
 }
 
 .\!text-white {
@@ -2494,6 +2514,16 @@ h1 {
 .text-yellow-600 {
   --tw-text-opacity: 1;
   color: rgb(202 138 4 / var(--tw-text-opacity));
+}
+
+.\!text-theme1-darker {
+  --tw-text-opacity: 1 !important;
+  color: rgb(8 204 194 / var(--tw-text-opacity)) !important;
+}
+
+.text-theme1-darker2 {
+  --tw-text-opacity: 1;
+  color: rgb(2 193 183 / var(--tw-text-opacity));
 }
 
 .placeholder-gray-800::-moz-placeholder {
@@ -3665,14 +3695,6 @@ h1 {
 
   .md\:w-auto {
     width: auto;
-  }
-
-  .md\:w-\[150px\] {
-    width: 150px;
-  }
-
-  .md\:w-\[144px\] {
-    width: 144px;
   }
 
   .md\:max-w-none {

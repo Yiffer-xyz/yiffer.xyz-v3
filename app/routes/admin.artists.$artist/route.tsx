@@ -162,8 +162,7 @@ export default function ManageArtist() {
                 href={`/artist/${artist.name}`}
                 className="ml-2"
                 text="View live artist page"
-                IconRight={MdOpenInNew}
-                newTab
+                showRightArrow
               />
             </p>
           )}
