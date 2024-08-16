@@ -10,14 +10,15 @@
     "dev": "concurrently \"npm run tailwindcss\" \"remix dev --manual -c \\\"npm run start\\\"\"",
     "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public --d1 DB=fac2fded-f9ec-4aaf-84f2-c3b37b3e0305",
     "typecheck": "tsc",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "upgrade-remix": "upgrade-remix"
   },
   "dependencies": {
     "@cloudflare/pages-plugin-sentry": "^1.1.1",
-    "@remix-run/cloudflare": "^2.2.0",
-    "@remix-run/cloudflare-pages": "^2.2.0",
-    "@remix-run/css-bundle": "^2.2.0",
-    "@remix-run/react": "^2.2.0",
+    "@remix-run/cloudflare": "2.11.2",
+    "@remix-run/cloudflare-pages": "2.11.2",
+    "@remix-run/css-bundle": "2.11.2",
+    "@remix-run/react": "2.11.2",
     "@sentry/browser": "^7.47.0",
     "@tsndr/cloudflare-worker-jwt": "^2.3.0",
     "bcryptjs": "^2.4.3",
@@ -41,8 +42,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230518.0",
-    "@remix-run/dev": "^2.2.0",
-    "@remix-run/eslint-config": "^2.2.0",
+    "@remix-run/dev": "2.11.2",
+    "@remix-run/eslint-config": "2.11.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/lodash.debounce": "^4",
     "@types/pluralize": "^0.0.33",
@@ -58,6 +59,7 @@
     "prettier": "^3.1.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.1.0",
+    "upgrade-remix": "^0.6.2",
     "wrangler": "3.60.3"
   },
   "engines": {
