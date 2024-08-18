@@ -14,7 +14,6 @@ import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
-import { UTCTimeStrToLocalDate } from '~/utils/date-utils';
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();
@@ -115,8 +114,8 @@ export default function ManageComicInner() {
           </p>
           {comic.published && comic.updated && (
             <>
-              <p>Published: {format(UTCTimeStrToLocalDate(comic.published), 'PPP')}</p>
-              <p>Last updated: {format(UTCTimeStrToLocalDate(comic.updated), 'PPP')}</p>
+              <p>Published: {format(comic.published, 'PPP')}</p>
+              <p>Last updated: {format(comic.updated, 'PPP')}</p>
               <p>
                 <FaRegStar size={16} className="mb-[5px]" /> {comic.sumStars} ·{' '}
                 {comic.avgStarsPercent}% · {comic.numTimesStarred} ratings

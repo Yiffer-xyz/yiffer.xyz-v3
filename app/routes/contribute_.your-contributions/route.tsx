@@ -40,7 +40,7 @@ import pluralize from 'pluralize';
 import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
@@ -127,7 +127,7 @@ export default function YourContributions() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);
 
   const dbStatements: QueryWithParams[] = [

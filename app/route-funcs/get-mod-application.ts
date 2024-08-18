@@ -3,6 +3,10 @@ import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
+type DbModApplication = Omit<ModApplication, 'timestamp'> & {
+  timestamp: string;
+};
+
 export async function getAllModApplications(
   db: D1Database
 ): ResultOrErrorPromise<ModApplication[]> {
@@ -15,12 +19,17 @@ export async function getAllModApplications(
       user.username
     FROM modapplication INNER JOIN user ON (user.id = modapplication.userId)`;
 
-  const dbRes = await queryDb<ModApplication[]>(db, query);
+  const dbRes = await queryDb<DbModApplication[]>(db, query);
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting mod applications');
   }
 
-  return { result: dbRes.result };
+  const applications = dbRes.result.map(app => ({
+    ...app,
+    timestamp: new Date(app.timestamp),
+  }));
+
+  return { result: applications };
 }
 
 export async function getModApplicationForUser(
@@ -39,10 +48,15 @@ export async function getModApplicationForUser(
     LIMIT 1`;
 
   const queryParams = [userId];
-  const dbRes = await queryDb<ModApplication[]>(db, query, queryParams);
+  const dbRes = await queryDb<DbModApplication[]>(db, query, queryParams);
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting mod applications for user', { userId });
   }
 
-  return { result: dbRes.result.length > 0 ? dbRes.result[0] : null };
+  const applicationOrNull =
+    dbRes.result.length > 0
+      ? { ...dbRes.result[0], timestamp: new Date(dbRes.result[0].timestamp) }
+      : null;
+
+  return { result: applicationOrNull };
 }

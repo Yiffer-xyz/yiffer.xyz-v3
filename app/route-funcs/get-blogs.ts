@@ -3,7 +3,11 @@ import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbBlog = Omit<Blog, 'authorUser'> & { userId: number; username: string };
+type DbBlog = Omit<Blog, 'authorUser' | 'timestamp'> & {
+  userId: number;
+  username: string;
+  timestamp: string;
+};
 
 export async function getLatestBlog(
   db: D1Database
@@ -72,7 +76,7 @@ function dbBlogToBlog(dbBlog: DbBlog): Blog {
     id: dbBlog.id,
     title: dbBlog.title,
     content: dbBlog.content,
-    timestamp: dbBlog.timestamp,
+    timestamp: new Date(dbBlog.timestamp),
     authorUser: {
       id: dbBlog.userId,
       username: dbBlog.username,

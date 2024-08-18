@@ -6,6 +6,13 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
+type DbUser = Omit<User, 'createdTime' | 'banTime' | 'lastActionTime' | 'isBanned'> & {
+  createdTime: string;
+  banTime: string;
+  lastActionTime: string;
+  isBanned: 0 | 1;
+};
+
 export async function searchUsers(
   db: D1Database,
   searchText: string
@@ -17,7 +24,7 @@ export async function searchUsers(
     WHERE username LIKE ? OR email LIKE ?
   `;
 
-  const dbRes = await queryDb<User[]>(db, searchQuery, [
+  const dbRes = await queryDb<DbUser[]>(db, searchQuery, [
     `%${searchText}%`,
     `%${searchText}%`,
   ]);
@@ -25,11 +32,7 @@ export async function searchUsers(
     return makeDbErrObj(dbRes, 'Error in user search', { searchText });
   }
 
-  const users: User[] = dbRes.result.map(user => ({
-    ...user,
-    isBanned: !!user.isBanned,
-  }));
-
+  const users: User[] = dbRes.result.map(dbUserToUser);
   return { result: users };
 }
 
@@ -45,13 +48,12 @@ export async function getUserById(
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<User[]>(db, userQuery, [userId]);
+  const dbRes = await queryDb<DbUser[]>(db, userQuery, [userId]);
   if (dbRes.isError || !dbRes.result || dbRes.result.length === 0) {
     return makeDbErrObj(dbRes, 'Error getting user', { userId });
   }
 
-  const user = dbRes.result[0];
-  user.isBanned = !!user.isBanned;
+  const user = dbUserToUser(dbRes.result[0]);
 
   return { result: user };
 }
@@ -68,7 +70,7 @@ export async function getUserByEmail(
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<User[]>(db, userQuery, [email]);
+  const dbRes = await queryDb<DbUser[]>(db, userQuery, [email]);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting user', { email });
   }
@@ -76,8 +78,17 @@ export async function getUserByEmail(
     return { notFound: true };
   }
 
-  const user = dbRes.result[0];
-  user.isBanned = !!user.isBanned;
+  const user = dbUserToUser(dbRes.result[0]);
 
   return { result: user };
+}
+
+function dbUserToUser(user: DbUser): User {
+  return {
+    ...user,
+    isBanned: !!user.isBanned,
+    createdTime: new Date(user.createdTime),
+    banTime: user.banTime ? new Date(user.banTime) : undefined,
+    lastActionTime: user.lastActionTime ? new Date(user.lastActionTime) : undefined,
+  };
 }

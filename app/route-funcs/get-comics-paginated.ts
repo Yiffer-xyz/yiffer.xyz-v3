@@ -10,12 +10,13 @@ type DbCardAdForViewing = Omit<AdForViewing, 'isAnimated'> & {
 
 type ComicForBrowseDB = Omit<
   ComicForBrowse,
-  'tags' | 'avgStarsPercent' | 'updated' | 'published'
+  'tags' | 'avgStarsPercent' | 'updated' | 'published' | 'isBookmarked'
 > & {
   tags?: string;
   avgStars: number;
   updated: string;
   published: string;
+  isBookmarked: 0 | 1;
 };
 
 type GetComicsParams = {
@@ -224,6 +225,7 @@ export async function getComicsPaginated({
       : undefined,
     published: new Date(c.published),
     updated: new Date(c.updated),
+    isBookmarked: c.isBookmarked === 1,
   })) as ComicForBrowse[];
 
   let comicsWithAds: (ComicForBrowse | AdForViewing)[] = comics;

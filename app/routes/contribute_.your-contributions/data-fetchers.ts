@@ -58,7 +58,7 @@ export function mapDbContributedComics(comics: DbContributedComic[]): Contribute
       comicName: comicName,
       artistName: artistName,
       status: publishStatusToContributionStatus(dbComic.publishStatus),
-      timestamp: dbComic.timestamp,
+      timestamp: new Date(dbComic.timestamp),
       points,
       pointsDescription: description,
       modComment: dbComic.modComment,
@@ -102,14 +102,14 @@ export function mapDBTagSuggestions(
     const isProcessed = group[0].isProcessed === 1;
     const tags: TagSuggestionContributionItem[] = group.map(dbTagSuggestion => ({
       tagName: dbTagSuggestion.tagName,
-      isAdding: dbTagSuggestion.isAdding,
+      isAdding: !!dbTagSuggestion.isAdding,
       isApproved: numberOrNullToBoolean(dbTagSuggestion.isApproved),
     }));
 
     mappedSuggestions.push({
       comicName: group[0].comicName,
       status: isProcessed ? 'processed' : 'pending',
-      timestamp: group[0].timestamp,
+      timestamp: new Date(group[0].timestamp),
       points:
         tags.filter(t => t.isApproved).length * CONTRIBUTION_POINTS.tagSuggestion.points,
       type: 'TagSuggestion',
@@ -133,7 +133,7 @@ export function mapDBComicProblems(problems: DbComicProblem[]): ComicProblem[] {
   return problems.map(dbComicProblem => ({
     comicName: dbComicProblem.comicName,
     status: dbComicProblem.status,
-    timestamp: dbComicProblem.timestamp,
+    timestamp: new Date(dbComicProblem.timestamp),
     points:
       dbComicProblem.status === 'approved'
         ? CONTRIBUTION_POINTS.comicProblem.points
@@ -160,7 +160,7 @@ export function mapDbComicSuggestions(
   return suggestions.map(dbComicSuggestion => ({
     comicName: dbComicSuggestion.comicName,
     status: dbComicSuggestion.status,
-    timestamp: dbComicSuggestion.timestamp,
+    timestamp: new Date(dbComicSuggestion.timestamp),
     points: dbComicSuggestion.verdict
       ? CONTRIBUTION_POINTS.comicSuggestion[dbComicSuggestion.verdict].points
       : 0,

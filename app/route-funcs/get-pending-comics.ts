@@ -1,13 +1,18 @@
-import type { DbPendingComic } from '~/types/types';
+import type { PendingComic } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
+
+type DbPendingComic = Omit<PendingComic, 'timestamp' | 'publishDate'> & {
+  timestamp: string;
+  publishDate: string;
+};
 
 export async function getPendingComics(
   db: D1Database,
   scheduledOnly?: boolean,
   topAmount?: number
-): ResultOrErrorPromise<DbPendingComic[]> {
+): ResultOrErrorPromise<PendingComic[]> {
   const pendingComicsQuery = `
     SELECT Q2.*, user.username AS scheduleModName FROM (
       SELECT Q1.*, user.username AS reviewerModName 
@@ -54,5 +59,12 @@ export async function getPendingComics(
       topAmount,
     });
   }
-  return { result: dbRes.result };
+
+  const comics = dbRes.result.map(comic => ({
+    ...comic,
+    timestamp: new Date(comic.timestamp),
+    publishDate: comic.publishDate ? new Date(comic.publishDate) : undefined,
+  }));
+
+  return { result: comics };
 }

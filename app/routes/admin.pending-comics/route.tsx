@@ -7,7 +7,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import LoadingIconButton from '~/ui-components/Buttons/LoadingIconButton';
 import Link from '~/ui-components/Link';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
-import type { DbPendingComic } from '~/types/types';
+import type { PendingComic } from '~/types/types';
 import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
@@ -258,7 +258,7 @@ export const loader = unstable_defineLoader(async args => {
   };
 });
 
-function getBgColor(pendingComic: DbPendingComic) {
+function getBgColor(pendingComic: PendingComic) {
   if (pendingComic.publishStatus === 'scheduled') {
     return 'bg-theme1-primaryMoreTrans dark:bg-theme1-primaryTrans';
   }
@@ -269,6 +269,6 @@ function getBgColor(pendingComic: DbPendingComic) {
   return 'bg-white dark:bg-gray-300';
 }
 
-function isProblematic(pendingComic: DbPendingComic): boolean {
+function isProblematic(pendingComic: PendingComic): boolean {
   return !!pendingComic.errorText || pendingComic.numberOfTags === 0;
 }

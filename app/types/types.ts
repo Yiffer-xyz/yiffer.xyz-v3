@@ -73,8 +73,8 @@ export type Comic = {
     isPending: boolean;
   };
   tags: Tag[];
-  published?: string;
-  updated?: string;
+  published?: Date;
+  updated?: Date;
   metadata?: ComicMetadata;
 };
 
@@ -113,16 +113,16 @@ export type ComicTiny = {
   temp_published?: string; // TODO: Remove when thumbnails have been fixed
 };
 
-export type DbPendingComic = {
+export type PendingComic = {
   comicName: string;
   comicId: number;
   publishStatus: ComicPublishStatus;
   artistName: string;
   numberOfTags: number;
-  timestamp: string;
+  timestamp: Date;
   errorText?: string;
   pendingProblemModId?: number;
-  publishDate?: string;
+  publishDate?: Date;
   publishingQueuePos?: number;
   uploadUserId?: number;
   uploadUserIP?: string;
@@ -144,9 +144,9 @@ export type ComicUploadVerdict =
   | 'rejected-list';
 
 export type ComicMetadata = {
-  timestamp: string;
+  timestamp: Date;
   errorText?: string;
-  publishDate?: string;
+  publishDate?: Date;
   modId?: number;
   modComment?: string;
   verdict?: ComicUploadVerdict;
@@ -200,18 +200,18 @@ export type User = {
   username: string;
   email: string;
   userType: 'admin' | 'moderator' | 'user';
-  createdTime: string;
+  createdTime: Date;
   isBanned: boolean;
   banReason?: string;
-  banTime?: string;
-  lastActionTime?: string;
+  banTime?: Date;
+  lastActionTime?: Date;
   modNotes?: string;
 };
 
 export type ModApplication = {
   id: number;
   userId: number;
-  timestamp: string;
+  timestamp: Date;
   telegramUsername: string;
   username: string;
   notes: string;
@@ -250,7 +250,7 @@ export type ContributionStatus = 'pending' | 'approved' | 'rejected' | 'processe
 export interface ContributionBase {
   comicName: string;
   status: ContributionStatus;
-  timestamp: string;
+  timestamp: Date;
   points?: number;
   pointsDescription?: string;
   modComment?: string;
@@ -349,8 +349,8 @@ export type Advertisement = {
   };
   status: AdStatus;
   isAnimated: boolean;
-  expiryDate?: string;
-  createdDate: string;
+  expiryDate?: Date;
+  createdDate: Date;
   advertiserNotes?: string;
   clicks: number;
   impressions: number;
@@ -361,7 +361,7 @@ export type Advertisement = {
   adminNotes?: string;
   correctionNote?: string;
   freeTrialState?: 'requested' | 'granted' | 'denied';
-  lastActivationDate?: string;
+  lastActivationDate?: Date;
   currentDaysActive: number;
   numDaysActive: number;
   isChangedWhileActive: boolean;
@@ -369,8 +369,8 @@ export type Advertisement = {
 
 export type AdvertisementFullData = {
   ad: Advertisement;
-  payments: { amount: number; registeredDate: string }[];
-  clicks: { date: string; clicks: number }[];
+  payments: { amount: number; registeredDate: Date }[];
+  clicks: { date: Date; clicks: number }[];
 };
 
 export type AdForViewing = {
@@ -391,7 +391,7 @@ export type Blog = {
     id: number;
     username: string;
   };
-  timestamp: string;
+  timestamp: Date;
 };
 
 export type SortType = 'Updated' | 'User score' | 'Your score' | 'Random';

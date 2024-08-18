@@ -12,11 +12,17 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbAd = Omit<Advertisement, 'user' | 'isChangedWhileActive'> & {
+type DbAd = Omit<
+  Advertisement,
+  'user' | 'isChangedWhileActive' | 'expiryDate' | 'createdDate' | 'lastActivationDate'
+> & {
   userId: number;
   username: string;
   email: string;
   isChangedWhileActive: 0 | 1;
+  expiryDate: string;
+  createdDate: string;
+  lastActivationDate: string;
 };
 
 type GetAdsProps = {
@@ -156,11 +162,20 @@ export async function getAdById({
     return { notFound: true };
   }
 
+  const paymentsMapped = payments.map(({ amount, registeredDate }) => ({
+    amount,
+    registeredDate: new Date(registeredDate),
+  }));
+  const clicksMapped = clicks.map(({ date, clicks }) => ({
+    date: new Date(date),
+    clicks,
+  }));
+
   return {
     result: {
       ad: DbAdToFullAd(adRes[0]),
-      payments,
-      clicks,
+      payments: paymentsMapped,
+      clicks: clicksMapped,
     },
   };
 }
@@ -189,8 +204,8 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     },
     status: ad.status,
     isAnimated: ad.isAnimated,
-    expiryDate: ad.expiryDate,
-    createdDate: ad.createdDate,
+    expiryDate: ad.expiryDate ? new Date(ad.expiryDate) : undefined,
+    createdDate: new Date(ad.createdDate),
     advertiserNotes: ad.advertiserNotes,
     clicks: ad.clicks,
     impressions: ad.impressions,
@@ -205,7 +220,9 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     adminNotes: ad.adminNotes,
     correctionNote: ad.correctionNote,
     freeTrialState: ad.freeTrialState,
-    lastActivationDate: ad.lastActivationDate,
+    lastActivationDate: ad.lastActivationDate
+      ? new Date(ad.lastActivationDate)
+      : undefined,
     numDaysActive: totalDaysActive,
     currentDaysActive,
     clicksPerDayActive:

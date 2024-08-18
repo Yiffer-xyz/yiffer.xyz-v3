@@ -115,8 +115,8 @@ function mergeDbFieldsToComic(
     publishStatus: dbComic.publishStatus,
     category: dbComic.category,
     numberOfPages: dbComic.numberOfPages,
-    published: dbComic.published,
-    updated: dbComic.updated,
+    published: dbComic.published ? new Date(dbComic.published) : undefined,
+    updated: dbComic.updated ? new Date(dbComic.updated) : undefined,
     avgStarsPercent: dbComic.avgStars ? Math.round((dbComic.avgStars - 1) * 50) : 0,
     sumStars: dbComic.sumStars,
     numTimesStarred: dbComic.numTimesStarred,
@@ -150,9 +150,9 @@ function mergeDbFieldsToComic(
 
   if (includeMetadata) {
     comic.metadata = {
-      timestamp: dbComic.timestamp,
+      timestamp: new Date(dbComic.timestamp),
       errorText: dbComic.errorText,
-      publishDate: dbComic.publishDate,
+      publishDate: dbComic.publishDate ? new Date(dbComic.publishDate) : undefined,
       modId: dbComic.modId,
       modComment: dbComic.modComment,
       verdict: dbComic.verdict,
