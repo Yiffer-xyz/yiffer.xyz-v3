@@ -17,19 +17,9 @@ export async function getUIPrefSession(request: Request) {
 
   return {
     getUiPref: function (): UIPreferences {
-      // const rawUiPref = session.get('ui-pref');
-      // const parsedUiPref = parseUIPreferences(rawUiPref);
-      // return parsedUiPref;
-      return {
-        comicCardTags: false,
-        comicDisplayOptions: {
-          clickToToggleDisplay: false,
-          display: 'Fit',
-          reverseOrder: false,
-        },
-        theme: 'light',
-        viewMode: 'Standard',
-      };
+      const rawUiPref = session.get('ui-pref');
+      const parsedUiPref = parseUIPreferences(rawUiPref);
+      return parsedUiPref;
     },
     setUiPref: function (uiPref: UIPreferences) {
       return session.set('ui-pref', JSON.stringify(uiPref));

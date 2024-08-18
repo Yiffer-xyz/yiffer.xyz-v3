@@ -14,6 +14,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
 import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
+import { areArraysEqual } from '~/utils/general';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -122,6 +123,7 @@ export default function SearchFilterContent({
     _setCategories(categories);
   }, [categories]);
   function onCategoriesClose() {
+    if (areArraysEqual(_categories, categories)) return;
     setCategories(_categories);
   }
 
@@ -147,7 +149,7 @@ export default function SearchFilterContent({
           options={allCategories.map(x => ({ text: x, value: x }))}
           allOption={{ text: 'All', value: 'All' as CategoryWithAll }}
           onClose={onCategoriesClose}
-          // minWidth={categoryMinWidth}
+          minWidth={categoryMinWidth}
           forceWidth={categoryMinWidth}
           onValueAdded={category => {
             const newCategories = [..._categories, category];

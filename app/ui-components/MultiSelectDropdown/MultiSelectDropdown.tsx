@@ -39,6 +39,7 @@ export default function MultiSelectDropdown<T>({
   className = '',
   ...props
 }: MultiSelectProps<T>) {
+  const prevIsOpen = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [computedMinWidth, setComputedMinWidth] = useState(0);
   const [shouldAddRightPadding, setShouldAddRightPadding] = useState(false);
@@ -68,7 +69,10 @@ export default function MultiSelectDropdown<T>({
 
   useEffect(() => {
     setCurrentlyHighlightedIndex(-1);
-    if (!isOpen) onClose();
+    if (prevIsOpen.current && !isOpen) {
+      onClose();
+    }
+    prevIsOpen.current = isOpen;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 

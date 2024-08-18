@@ -134,3 +134,7 @@ export function validateAdData(data: SubmitAdFormData | EditAdFormData): {
 
   return { error: null };
 }
+
+export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
+  return arr1.length === arr2.length && arr1.every((val, i) => val === arr2[i]);
+}

@@ -74,8 +74,6 @@ export async function getComicsPaginated({
     innerJoinKeywordString,
   ] = getFilterQuery({ categories, keywordIds: tagIDs, search, artistId });
 
-  console.log(filterQueryParams);
-
   const isUnfilteredQuery =
     (!categories || categories.length === 0) &&
     (!tagIDs || tagIDs.length === 0) &&

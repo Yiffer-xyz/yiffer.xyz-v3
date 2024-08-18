@@ -153,7 +153,6 @@ export default function DisplayOptionsAndPages({
       <div className="flex flex-col gap-1.5 mt-6 mb-7 md:mt-5 md:mb-4 md:w-[728px]">
         <div className="flex flex-row items-center">
           <p className="font-semibold">Display options</p>
-          {/* <QuestionTooltip text="lasdkamsdlkmaskldma sdklasdmlkasd" className="ml-1" /> */}
           <IconButton
             icon={MdQuestionMark}
             variant="naked"
