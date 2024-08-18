@@ -7,7 +7,7 @@ export async function loader(args: ActionFunctionArgs) {
   if (isNaN(comicId)) {
     return createSuccessJson([]);
   }
-  const tagsRes = await getComicTags(args.context.DB, comicId);
+  const tagsRes = await getComicTags(args.context.cloudflare.env.DB, comicId);
 
   if (tagsRes.err) {
     return processApiError('Error in /api/comics/:id/tags', tagsRes.err);

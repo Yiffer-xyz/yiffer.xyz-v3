@@ -15,7 +15,7 @@ export async function action(args: ActionFunctionArgs) {
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
   const err = await unAssignActionToMod(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     fields.actionId,
     fields.actionType
   );

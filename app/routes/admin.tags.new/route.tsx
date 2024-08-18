@@ -111,7 +111,7 @@ export async function action(args: ActionFunctionArgs) {
   const query = 'INSERT INTO keyword (keywordName) VALUES (?)';
   const params = [tagName];
 
-  const dbRes = await queryDbExec(args.context.DB, query, params);
+  const dbRes = await queryDbExec(args.context.cloudflare.env.DB, query, params);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating tag', { tagName });
   }

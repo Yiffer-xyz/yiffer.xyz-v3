@@ -10,7 +10,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const ads = await getAds({
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     userId: user.userId,
   });
 
@@ -24,7 +24,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   return {
     ads: ads.result,
-    adsPath: args.context.ADS_PATH,
+    adsPath: args.context.cloudflare.env.ADS_PATH,
   };
 }
 

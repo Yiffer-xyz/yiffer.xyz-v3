@@ -36,9 +36,9 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await submitAd(
-    args.context.DB,
-    args.context.FRONT_END_URL_BASE,
-    args.context.POSTMARK_TOKEN,
+    args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.FRONT_END_URL_BASE,
+    args.context.cloudflare.env.POSTMARK_TOKEN,
     body,
     user
   );

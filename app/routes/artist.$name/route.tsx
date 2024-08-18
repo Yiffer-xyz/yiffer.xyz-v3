@@ -81,7 +81,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
     notFound: false,
     comics: [],
     queriedArtistName: artistName ?? '',
-    pagesPath: args.context.PAGES_PATH,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
     isMod: user?.userType === 'admin' || user?.userType === 'moderator',
   };
 
@@ -91,7 +91,7 @@ export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
   }
 
   const combinedRes = await getArtistAndComicsByField(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     'name',
     artistName,
     user?.userId

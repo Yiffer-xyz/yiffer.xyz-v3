@@ -9,6 +9,7 @@ body {
 }
 h1 {
   font-size: 3rem;
+  line-height: 1.2;
 }
 h2 {
   font-size: 1.75rem;
@@ -56,4 +57,12 @@ ul li:before {
 }
 ul.spaced > li {
   margin-bottom: 0.5rem;
+}
+
+.tooltip {
+  @apply invisible absolute;
+}
+
+.has-tooltip:hover .tooltip {
+  @apply visible z-50;
 }

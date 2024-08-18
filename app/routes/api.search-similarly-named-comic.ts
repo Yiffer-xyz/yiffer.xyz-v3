@@ -21,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   const excludeName = body.get('excludeName');
 
   const comicsRes = await getSimilarlyNamedComics(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     comicName,
     excludeName ? excludeName.toString() : undefined
   );

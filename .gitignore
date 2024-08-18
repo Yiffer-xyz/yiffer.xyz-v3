@@ -1,16 +1,16 @@
-/.wrangler/state
-/.wrangler/tmp
-/.vscode
+node_modules
+/.cache
+/build
+.env
 .dev.vars
+.wrangler
+/.vscode
 .DS_Store
 /.fleet
 /.idea
 /.yarn
 functions/metafile.js.json
 functions/version.txt
-
-node_modules
-
 /.cache
 /functions/\[\[path\]\].js
 /functions/\[\[path\]\].js.map
@@ -19,4 +19,3 @@ functions/metafile.server.json
 functions/version.txt
 functions/metafile.css.json
 /public/build
-.dev.vars

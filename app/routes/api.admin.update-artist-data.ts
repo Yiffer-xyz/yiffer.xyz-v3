@@ -27,7 +27,7 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('patreonName cannot be a URL');
   }
 
-  const err = await updateArtistData(args.context.DB, body);
+  const err = await updateArtistData(args.context.cloudflare.env.DB, body);
   if (err) {
     return processApiError('Errir in /update-artist-data', err);
   }

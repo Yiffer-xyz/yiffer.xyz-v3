@@ -19,7 +19,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formComicId) return create400Json('Missing comicId');
 
   const err = await scheduleComic(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     user.userId
   );

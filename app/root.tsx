@@ -5,30 +5,30 @@ import type {
 } from '@remix-run/cloudflare';
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import type { UserSession } from './types/types';
 import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
-import styles from './styles/app.css';
-import rootStyles from './styles/main.css';
 import clsx from 'clsx';
-import toastCss from 'react-toastify/dist/ReactToastify.css';
+import toastCss from 'react-toastify/dist/ReactToastify.css?url';
 import { getUIPrefSession } from './utils/theme.server';
-import { getUserSession } from './utils/auth.server';
 import {
   RiAccountCircleLine,
   RiAddLine,
   RiLoginBoxLine,
   RiSettings3Line,
 } from 'react-icons/ri';
-import Link from './ui-components/Link';
 import { MdLightbulbOutline } from 'react-icons/md';
+import Link from './ui-components/Link';
 import { ToastContainer } from 'react-toastify';
+import { UserSession } from './types/types';
+import './tailwind.css';
+import './main.css';
+import { getUserSession } from './utils/auth.server';
+
 // import * as Sentry from '@sentry/browser';
 
 // Sentry.init({
@@ -48,8 +48,6 @@ export const links: LinksFunction = () => [
     href: 'favicon.png',
     type: 'image/png',
   },
-  { rel: 'stylesheet', href: styles },
-  { rel: 'stylesheet', href: rootStyles },
   {
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Mulish:wght@300;600&display=swap',
@@ -64,19 +62,22 @@ export const links: LinksFunction = () => [
 const isDev = process.env.NODE_ENV === 'development';
 
 export const meta: MetaFunction = () => [
-  { title: `Yiffer.xyz${isDev ? ' (dev)' : ''}` },
-  { property: 'og:title', content: `Yiffer.xyz${isDev ? ' (dev)' : ''}` },
+  { title: `${isDev ? '🚧dev ' : ''}Yiffer.xyz` },
+  { property: 'og:title', content: `${isDev ? '🚧dev ' : ''}Yiffer.xyz` },
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const uiPrefSession = await getUIPrefSession(request);
-  const userSession = await getUserSession(request, context.JWT_CONFIG_STR);
+  const userSession = await getUserSession(
+    request,
+    context.cloudflare.env.JWT_CONFIG_STR
+  );
 
   const data = {
     uiPref: uiPrefSession.getUiPref(),
     user: userSession,
-    frontPageUrl: context.FRONT_PAGE_URL,
+    frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
   };
   return data;
 }
@@ -110,12 +111,6 @@ function App() {
         <ScrollRestoration />
         <ToastContainer />
         <Scripts />
-        <LiveReload />
-        {/* <script
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
-          }}
-        /> */}
       </body>
     </html>
   );
@@ -131,9 +126,9 @@ function Layout({
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
+
   const isLoggedIn = !!user;
   const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
-
   const darkNavLinkColorStyle = 'dark:text-blue-strong-300';
   const navLinkStyle = `text-gray-200 font-semibold bg-none text-sm ${darkNavLinkColorStyle}`;
 
@@ -202,12 +197,12 @@ function Layout({
             )}
           </div>
 
-          <div
+          <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             className="text-gray-200 cursor-pointer dark:text-blue-strong-300"
           >
             <MdLightbulbOutline className="mb-1" />
-          </div>
+          </button>
         </div>
       </nav>
 

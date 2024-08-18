@@ -31,7 +31,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await toggleArtistBan(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formArtistId.toString()),
     formIsBanned === 'true',
     user.userId

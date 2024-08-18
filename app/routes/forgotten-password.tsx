@@ -96,9 +96,9 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await resetPassword(
-    args.context.DB,
-    args.context.POSTMARK_TOKEN,
-    args.context.FRONT_END_URL_BASE,
+    args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.POSTMARK_TOKEN,
+    args.context.cloudflare.env.FRONT_END_URL_BASE,
     email
   );
 

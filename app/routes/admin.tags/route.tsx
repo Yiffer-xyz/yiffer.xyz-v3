@@ -97,7 +97,7 @@ export default function ManageTags() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const tagsWithCountsRes = await getTagsWithUsageCount(args.context.DB);
+  const tagsWithCountsRes = await getTagsWithUsageCount(args.context.cloudflare.env.DB);
   if (tagsWithCountsRes.err) {
     return processApiError(
       'Error getting tags with counts in admin/tags',

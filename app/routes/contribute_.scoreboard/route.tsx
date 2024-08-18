@@ -229,7 +229,7 @@ export default function Scoreboard() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const scoresRes = await getTopScores(args.context.DB, undefined, false);
+  const scoresRes = await getTopScores(args.context.cloudflare.env.DB, undefined, false);
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
@@ -243,7 +243,7 @@ export async function action(
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const yearMonthStr = yearMonth.toString();
   const res = await getTopScores(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     yearMonthStr === 'all-time' ? undefined : yearMonthStr,
     excludeMods === 'true'
   );

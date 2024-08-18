@@ -312,7 +312,7 @@ export type ArtistDataChanges = {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  const db = args.context.DB;
+  const db = args.context.cloudflare.env.DB;
   const artistParam = args.params.artist as string;
   const artistId = parseInt(artistParam);
 

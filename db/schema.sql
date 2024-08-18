@@ -437,7 +437,3 @@ FOREIGN KEY (`keywordId`)
 REFERENCES `keyword` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
-
-
-  wrangler d1 execute yiffer-d1-test --command="drop table if exists keywordsuggestion"
-

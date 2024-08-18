@@ -3,7 +3,7 @@ import { getAllTags } from '~/route-funcs/get-tags';
 import { createSuccessJson, processApiError } from '~/utils/request-helpers';
 
 export async function loader(args: ActionFunctionArgs) {
-  const tagsRes = await getAllTags(args.context.DB);
+  const tagsRes = await getAllTags(args.context.cloudflare.env.DB);
 
   if (tagsRes.err) {
     return processApiError('Error in /tags', tagsRes.err);

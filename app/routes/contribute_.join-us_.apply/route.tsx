@@ -109,7 +109,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const existingApplicationRes = await getModApplicationForUser(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     user.userId
   );
 
@@ -124,7 +124,7 @@ const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){4,32}$/.test(username);
 
 export async function action(args: ActionFunctionArgs) {
-  const db = args.context.DB;
+  const db = args.context.cloudflare.env.DB;
   const reqBody = await args.request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
 

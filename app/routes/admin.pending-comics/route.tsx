@@ -244,7 +244,7 @@ export default function PendingComics() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const dbRes = await getPendingComics(args.context.DB);
+  const dbRes = await getPendingComics(args.context.cloudflare.env.DB);
 
   if (dbRes.err) {
     return processApiError('Error getting pending comics in mod panel', dbRes.err);
@@ -252,7 +252,9 @@ export async function loader(args: LoaderFunctionArgs) {
 
   return {
     pendingComics: dbRes.result,
-    dailySchedulePublishCount: parseInt(args.context.DAILY_SCHEDULE_PUBLISH_COUNT),
+    dailySchedulePublishCount: parseInt(
+      args.context.cloudflare.env.DAILY_SCHEDULE_PUBLISH_COUNT
+    ),
   };
 }
 

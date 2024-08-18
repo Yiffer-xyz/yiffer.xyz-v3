@@ -22,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formUnlistComment) return create400Json('Missing comment');
 
   const err = await unlistComic(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     formUnlistComment.toString()
   );

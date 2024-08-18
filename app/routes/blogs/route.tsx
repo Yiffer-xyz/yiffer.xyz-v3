@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import useWindowSize from '~/utils/useWindowSize';
 
 export async function loader(args: LoaderFunctionArgs) {
-  const allBlogsRes = await getAllBlogs(args.context.DB);
+  const allBlogsRes = await getAllBlogs(args.context.cloudflare.env.DB);
 
   if (allBlogsRes.err) {
     return processApiError('Error getting all blogs in /blogs loader', allBlogsRes.err);

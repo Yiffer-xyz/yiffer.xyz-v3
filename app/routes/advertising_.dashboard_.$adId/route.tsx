@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
-import cropperCss from '~/utils/cropper.min.css';
+import '~/utils/cropper.min.css';
 import { getAdById } from '~/route-funcs/get-ads';
 import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
@@ -27,11 +27,14 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const adRes = await getAdById({
     adId: args.params.adId!,
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     includeDetailedStats: true,
   });
 
-  const returnObj = { adId: args.params.adId, adsPath: args.context.ADS_PATH };
+  const returnObj = {
+    adId: args.params.adId,
+    adsPath: args.context.cloudflare.env.ADS_PATH,
+  };
 
   if (adRes.err) {
     return processApiError('Error getting ad for advertising>ad', adRes.err, {
@@ -45,7 +48,7 @@ export async function loader(args: LoaderFunctionArgs) {
       ...returnObj,
       adData: null,
       notFound: true,
-      imagesServerUrl: args.context.IMAGES_SERVER_URL,
+      imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
     };
   }
 
@@ -53,7 +56,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ...returnObj,
     notFound: false,
     adData: adRes.result,
-    imagesServerUrl: args.context.IMAGES_SERVER_URL,
+    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
 }
 

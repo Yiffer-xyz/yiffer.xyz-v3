@@ -118,9 +118,9 @@ export async function action(args: ActionFunctionArgs) {
     username,
     email,
     password,
-    args.context.DB,
-    args.context.JWT_CONFIG_STR,
-    args.context.POSTMARK_TOKEN
+    args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.JWT_CONFIG_STR,
+    args.context.cloudflare.env.POSTMARK_TOKEN
   );
 
   if (err) {

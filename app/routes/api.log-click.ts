@@ -14,7 +14,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formAdId) return create400Json('Missing adId');
   const adId = formAdId.toString();
 
-  const err = await logAdClick(args.context.DB, adId);
+  const err = await logAdClick(args.context.cloudflare.env.DB, adId);
   if (err) {
     return processApiError('Error in /log-click (ad)', err, { comicId: adId });
   }

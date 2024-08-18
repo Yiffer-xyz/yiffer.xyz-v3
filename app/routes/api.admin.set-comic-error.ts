@@ -17,7 +17,7 @@ export async function action(args: ActionFunctionArgs) {
   if (errorText === '') errorText = null;
 
   const comicId = parseInt(formComicId.toString());
-  const err = await setComicError(args.context.DB, comicId, errorText);
+  const err = await setComicError(args.context.cloudflare.env.DB, comicId, errorText);
   if (err) {
     return processApiError('Error in /set-comic-error', err, { comicId, errorText });
   }

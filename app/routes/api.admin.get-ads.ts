@@ -22,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
   const typeFilter = formTypeFilter.toString().split(',') as AdType[];
 
   const adsRes = await getAds({
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     statusFilter,
     typeFilter,
   });

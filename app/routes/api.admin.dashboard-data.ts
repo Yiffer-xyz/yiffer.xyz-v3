@@ -174,7 +174,7 @@ export async function loader(args: LoaderFunctionArgs) {
       DbComicSuggestion[],
       DbPendingComicSimple[],
     ]
-  >(args.context.DB, dataFetchStatements);
+  >(args.context.cloudflare.env.DB, dataFetchStatements);
 
   if (dbResList.isError) {
     return processApiError(

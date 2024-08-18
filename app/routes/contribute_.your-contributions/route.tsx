@@ -151,7 +151,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const dbRes = await queryDbMultiple<
     [DbContributedComic[], DbTagSuggestion[], DbComicProblem[], DbComicSuggestion[]]
-  >(args.context.DB, dbStatements);
+  >(args.context.cloudflare.env.DB, dbStatements);
 
   if (dbRes.isError) {
     return processApiError(

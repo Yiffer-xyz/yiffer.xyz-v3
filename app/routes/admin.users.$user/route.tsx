@@ -21,7 +21,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
 
-  const userRes = await getUserById(args.context.DB, userId);
+  const userRes = await getUserById(args.context.cloudflare.env.DB, userId);
 
   if (userRes.err) {
     return processApiError('Error getting user for admin>users', userRes.err);

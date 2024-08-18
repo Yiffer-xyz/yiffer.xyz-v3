@@ -21,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await moveComicInQueue(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     formMoveDirection === 'up' ? -1 : 1
   );

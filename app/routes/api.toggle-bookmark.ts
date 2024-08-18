@@ -19,7 +19,11 @@ export async function action(args: ActionFunctionArgs) {
   const comicId = parseInt(formComicId.toString());
   if (isNaN(comicId)) return create400Json('Invalid comicId');
 
-  const err = await toggleComicBookmark(args.context.DB, user.userId, comicId);
+  const err = await toggleComicBookmark(
+    args.context.cloudflare.env.DB,
+    user.userId,
+    comicId
+  );
   if (err) {
     return processApiError('Error in /toggle-bookmark', err);
   }

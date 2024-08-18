@@ -11,7 +11,10 @@ export async function action(args: ActionFunctionArgs) {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return new Response('Missing comicId', { status: 400 });
 
-  const err = await rejectComic(args.context.DB, parseInt(formComicId.toString()));
+  const err = await rejectComic(
+    args.context.cloudflare.env.DB,
+    parseInt(formComicId.toString())
+  );
 
   if (err) {
     return processApiError('Error in /reject-pending-comic', err);

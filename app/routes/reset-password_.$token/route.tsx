@@ -99,7 +99,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const { err, errorMessage } = await resetPasswordByLink(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     resetToken,
     password
   );

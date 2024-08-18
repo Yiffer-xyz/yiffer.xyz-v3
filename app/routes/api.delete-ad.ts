@@ -20,7 +20,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await deleteAd(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     adId.toString(),
     user.userId,
     user.userType !== 'user'

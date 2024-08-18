@@ -21,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await activateAd(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     adId.toString(),
     user.userId,
     user.userType !== 'user'

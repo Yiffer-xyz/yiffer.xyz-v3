@@ -6,16 +6,4 @@
   --toastify-toast-width: fit-content;
 }
 
-h1 {
-  line-height: 1.2;
-}
-
-.tooltip {
-  @apply invisible absolute;
-}
-
-.has-tooltip:hover .tooltip {
-  @apply visible z-50;
-}
-
 @tailwind utilities;

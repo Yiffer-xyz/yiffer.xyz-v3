@@ -1,4 +1,4 @@
-import cropperCss from '~/utils/cropper.min.css';
+import '~/utils/cropper.min.css';
 import { useState } from 'react';
 import type { AdType, AdvertisementInfo } from '~/types/types';
 import TopGradientBox from '~/ui-components/TopGradientBox';
@@ -157,8 +157,8 @@ export default function AdvertisingApply() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  // const db = args.context.DB;
+  // const db = args.context.cloudflare.env.DB;
   return {
-    IMAGES_SERVER_URL: args.context.IMAGES_SERVER_URL,
+    IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
 }

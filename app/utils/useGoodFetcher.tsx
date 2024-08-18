@@ -205,7 +205,7 @@ export function showSuccessToast(
   theme: string | null
 ) {
   toast.success(message, {
-    position: toast.POSITION.TOP_RIGHT,
+    position: 'top-right',
     theme: theme === 'dark' ? 'dark' : 'light',
     className(context?) {
       return context?.defaultClassName + ' dark:bg-gray-300';
@@ -222,7 +222,7 @@ export function showSuccessToast(
 
 export function showErrorToast(message: string, theme: string | null) {
   toast.error(message, {
-    position: toast.POSITION.TOP_RIGHT,
+    position: 'top-right',
     theme: theme === 'dark' ? 'dark' : 'light',
     className(context?) {
       return context?.defaultClassName + ' dark:bg-gray-300';

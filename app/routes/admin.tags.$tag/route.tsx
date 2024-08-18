@@ -120,7 +120,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const tagParam = args.params.tag as string;
   const tagId = parseInt(tagParam);
 
-  const tagRes = await getTagById(args.context.DB, tagId);
+  const tagRes = await getTagById(args.context.cloudflare.env.DB, tagId);
 
   if (tagRes.err) {
     return processApiError('Error getting tag for admin>tags', tagRes.err);
@@ -131,7 +131,7 @@ export async function loader(args: LoaderFunctionArgs) {
     });
   }
 
-  const comicsRes = await getComicNamesAndIDs(args.context.DB, {
+  const comicsRes = await getComicNamesAndIDs(args.context.cloudflare.env.DB, {
     includeRejectedList: true,
     includeUnlisted: true,
     modifyNameIncludeType: true,
@@ -158,7 +158,7 @@ export async function action(args: ActionFunctionArgs) {
     const deleteTagLinkQuery = 'DELETE FROM comicKeyword WHERE keywordId = ?';
     const deleteTagQuery = 'DELETE FROM keyword WHERE id = ?';
     const params = [tagId];
-    const dbRes = await queryDbMultiple(args.context.DB, [
+    const dbRes = await queryDbMultiple(args.context.cloudflare.env.DB, [
       { query: deleteTagLinkQuery, params },
       { query: deleteTagQuery, params },
     ]);
@@ -173,7 +173,7 @@ export async function action(args: ActionFunctionArgs) {
     const fixedName = formNewName.toString().trim().toLowerCase();
     const query = 'UPDATE keyword SET keywordName = ? WHERE id = ?';
     const params = [fixedName, tagId];
-    const dbRes = await queryDbExec(args.context.DB, query, params);
+    const dbRes = await queryDbExec(args.context.cloudflare.env.DB, query, params);
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error updating tag name', { formNewName });
     }

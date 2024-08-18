@@ -27,10 +27,7 @@ export function getAllArtistsQuery(options: {
     query += ' AND IsBanned = 0';
   }
 
-  return {
-    query,
-    errorLogMessage: 'Error getting all artists',
-  };
+  return { query };
 }
 
 export function mapArtistTiny(

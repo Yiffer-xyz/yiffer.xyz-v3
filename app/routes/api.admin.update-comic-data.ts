@@ -17,7 +17,7 @@ export async function action(args: ActionFunctionArgs) {
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ComicDataChanges;
 
-  const err = await updateComicData(args.context.DB, body);
+  const err = await updateComicData(args.context.cloudflare.env.DB, body);
   if (err) {
     return processApiError(`Error in /update-comic-data`, err, body);
   }

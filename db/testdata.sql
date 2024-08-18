@@ -3,7 +3,6 @@ DELETE FROM modapplication;
 DELETE FROM contributionpoints;
 DELETE FROM comicmetadata;
 DELETE FROM comicproblem;
-DELETE FROM keywordsuggestion;
 DELETE FROM comicsuggestion;
 DELETE FROM comickeyword;
 DELETE FROM comiclink;
@@ -1240,20 +1239,6 @@ INSERT INTO keyword (Id, KeywordName) VALUES (197, 'gadgetzan');
 INSERT INTO keyword (Id, KeywordName) VALUES (198, 'undercity');
 INSERT INTO keyword (Id, KeywordName) VALUES (199, 'gnomeregan');
 INSERT INTO keyword (Id, KeywordName) VALUES (200, 'silvermoon');
-
--- KEYWORDSUGGESTION
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (1, 1, 1, 1, NULL, 'pending', NULL, '2024-02-01 14:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (2, 2, 1, NULL, '127.0.0.1', 'pending', NULL, '2024-02-02 13:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (2, 3, 1, 1, NULL, 'pending', NULL, '2024-02-02 15:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (6, 4, 1, NULL, '33.44.55.66', 'pending', NULL, '2024-02-03 18:30:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (14, 5, 1, 1, NULL, 'pending', NULL, '2024-02-01 11:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (44, 6, 1, 1, 1, 'rejected', 2, '2024-01-30 03:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (21, 7, 1, 1, 1, 'approved', 1, '2024-02-03 17:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (22, 8, 1, 1, 1, 'pending', NULL, '2024-02-03 17:00:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (23, 9, 1, 1, 1, 'pending', NULL, '2024-02-03 17:01:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (24, 10, 1, 1, 1, 'pending', NULL, '2024-02-03 17:02:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (25, 11, 1, 1, 1, 'pending', NULL, '2024-02-03 17:03:00');
-INSERT INTO keywordsuggestion (comicId, keywordId, isAdding, userId, userIP, status, modId, timestamp) VALUES (26, 12, 1, 1, 1, 'pending', NULL, '2024-02-03 17:04:00');
 
 INSERT INTO comicsuggestion (name, artistName, description, userId, userIP, status, verdict, modComment, modId, timestamp)
 VALUES ('The Great Adventure', 'Braeburned', 'A great adventure blah blah description', 20, NULL, 'pending', NULL, NULL, NULL, '2024-02-01 14:00:00');

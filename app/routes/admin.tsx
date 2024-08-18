@@ -66,7 +66,7 @@ export async function loader(args: LoaderFunctionArgs) {
   ];
 
   const dbRes = await queryDbMultiple<[ArtistTiny[], DbComicTiny[], Tag[]]>(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     dbStatements
   );
 

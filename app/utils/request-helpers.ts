@@ -5,7 +5,7 @@ import type {
   ExecDBResponse,
   QueryWithParams,
 } from '~/utils/database-facade';
-import { HANDLED_ERR_MSG } from '~/utils/error';
+import { HANDLED_ERR_MSG } from './error';
 // import * as Sentry from '@sentry/browser';
 
 export type ResultOrErrorPromise<T> = Promise<

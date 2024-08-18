@@ -28,7 +28,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await submitComicProblem(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     body.comicId,
     body.problemTitle,
     body.problemDescription,

@@ -37,7 +37,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const err = await processAnyUpload(
     user.userId,
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     comicName.toString(),
     undefined,

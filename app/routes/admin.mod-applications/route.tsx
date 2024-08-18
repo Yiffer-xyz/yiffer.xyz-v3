@@ -4,7 +4,7 @@ import { getAllModApplications } from '~/route-funcs/get-mod-application';
 import { processApiError } from '~/utils/request-helpers';
 
 export async function loader(args: LoaderFunctionArgs) {
-  const applicationsRes = await getAllModApplications(args.context.DB);
+  const applicationsRes = await getAllModApplications(args.context.cloudflare.env.DB);
   if (applicationsRes.err) {
     return processApiError(
       'Error getting mod applications in admin route',

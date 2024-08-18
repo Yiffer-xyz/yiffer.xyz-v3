@@ -1,6 +1,6 @@
 import { createCookieSessionStorage } from '@remix-run/cloudflare';
 import type { UIPreferences } from '~/types/types';
-import { parseUIPreferences } from '~/utils/theme-provider';
+import { parseUIPreferences } from './theme-provider';
 
 const uiPrefStorage = createCookieSessionStorage({
   cookie: {
@@ -17,9 +17,19 @@ export async function getUIPrefSession(request: Request) {
 
   return {
     getUiPref: function (): UIPreferences {
-      const rawUiPref = session.get('ui-pref');
-      const parsedUiPref = parseUIPreferences(rawUiPref);
-      return parsedUiPref;
+      // const rawUiPref = session.get('ui-pref');
+      // const parsedUiPref = parseUIPreferences(rawUiPref);
+      // return parsedUiPref;
+      return {
+        comicCardTags: false,
+        comicDisplayOptions: {
+          clickToToggleDisplay: false,
+          display: 'Fit',
+          reverseOrder: false,
+        },
+        theme: 'light',
+        viewMode: 'Standard',
+      };
     },
     setUiPref: function (uiPref: UIPreferences) {
       return session.set('ui-pref', JSON.stringify(uiPref));

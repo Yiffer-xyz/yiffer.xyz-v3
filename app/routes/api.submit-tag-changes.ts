@@ -31,7 +31,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const err = await submitTagChanges(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     body.comicId,
     body.newTagIDs,
     body.removedTagIDs,

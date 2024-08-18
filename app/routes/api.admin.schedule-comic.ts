@@ -21,7 +21,7 @@ export async function action(args: ActionFunctionArgs) {
   if (!formPublishDate) return create400Json('Missing publishDate');
 
   const err = await scheduleComic(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     formPublishDate.toString(),
     user.userId

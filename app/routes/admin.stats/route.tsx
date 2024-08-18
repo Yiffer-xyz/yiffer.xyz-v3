@@ -151,7 +151,7 @@ export async function loader(args: LoaderFunctionArgs) {
         year: number;
       }[],
     ]
-  >(args.context.DB, dbStatements);
+  >(args.context.cloudflare.env.DB, dbStatements);
 
   if (dbRes.isError) {
     return await processApiError(

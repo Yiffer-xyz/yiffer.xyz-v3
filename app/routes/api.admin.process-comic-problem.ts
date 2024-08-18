@@ -19,7 +19,7 @@ export async function action(args: ActionFunctionArgs) {
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
   const err = await processComicProblem(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     fields.isApproved,
     fields.actionId,
     user!.userId,

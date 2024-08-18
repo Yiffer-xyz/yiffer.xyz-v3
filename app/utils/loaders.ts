@@ -8,7 +8,10 @@ import { processApiError } from './request-helpers';
 // but can also be exported directly if a route needs no other loader.
 // Like this: export { authLoader as loader }
 export async function authLoader(args: LoaderFunctionArgs) {
-  const userSession = await getUserSession(args.request, args.context.JWT_CONFIG_STR);
+  const userSession = await getUserSession(
+    args.request,
+    args.context.cloudflare.env.JWT_CONFIG_STR
+  );
   return userSession;
 }
 
@@ -16,7 +19,7 @@ export async function fullUserLoader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   if (!user) throw redirect('/');
 
-  const fullUserRes = await getUserById(args.context.DB, user.userId);
+  const fullUserRes = await getUserById(args.context.cloudflare.env.DB, user.userId);
   if (fullUserRes.err) {
     return processApiError('Error getting user in userLoader', fullUserRes.err);
   }

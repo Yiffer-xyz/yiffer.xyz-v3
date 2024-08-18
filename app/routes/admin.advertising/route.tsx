@@ -16,7 +16,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
 
 export async function loader(args: LoaderFunctionArgs) {
-  return { adsPath: args.context.ADS_PATH };
+  return { adsPath: args.context.cloudflare.env.ADS_PATH };
 }
 
 export default function Advertising() {

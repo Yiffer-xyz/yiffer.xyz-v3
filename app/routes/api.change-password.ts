@@ -32,7 +32,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const { friendlyErrorMsg } = await changePassword(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     user?.userId,
     currentPassword,
     password

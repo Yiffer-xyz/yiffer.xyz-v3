@@ -90,8 +90,8 @@ export async function action(args: ActionFunctionArgs) {
   const { err, redirect, errorMessage } = await login(
     username,
     password,
-    args.context.DB,
-    args.context.JWT_CONFIG_STR
+    args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.JWT_CONFIG_STR
   );
 
   if (err) {

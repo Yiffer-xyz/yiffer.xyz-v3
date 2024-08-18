@@ -1,4 +1,4 @@
-import cropperCss from '~/utils/cropper.min.css';
+import '~/utils/cropper.min.css';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useEffect, useState } from 'react';
@@ -305,7 +305,7 @@ export default function Upload() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const db = args.context.DB;
+  const db = args.context.cloudflare.env.DB;
 
   const dbStatements: QueryWithParams[] = [
     getAllArtistsQuery({ includePending: true, modifyNameIncludeType: true }),
@@ -334,7 +334,7 @@ export async function loader(args: LoaderFunctionArgs) {
     comics,
     tags,
     user,
-    IMAGES_SERVER_URL: args.context.IMAGES_SERVER_URL,
+    IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
 }
 
@@ -346,7 +346,7 @@ export async function action(args: ActionFunctionArgs) {
   if (error) return create400Json(error);
 
   const err = await processUpload(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     body,
     user,
     args.request.headers.get('CF-Connecting-IP') || 'unknown'

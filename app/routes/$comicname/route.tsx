@@ -185,16 +185,19 @@ export async function loader(args: LoaderFunctionArgs) {
     ad: null,
     notFound: false,
     isLoggedIn: !!user,
-    pagesPath: args.context.PAGES_PATH,
-    adsPath: args.context.ADS_PATH,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
+    adsPath: args.context.cloudflare.env.ADS_PATH,
     queriedComicName: comicName,
     isMod: user?.userType === 'admin' || user?.userType === 'moderator',
   };
 
-  const adPromise = getAdForViewing({ adType: 'banner', db: args.context.DB });
+  const adPromise = getAdForViewing({
+    adType: 'banner',
+    db: args.context.cloudflare.env.DB,
+  });
 
   const comicPromise = getComicByField({
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     fieldName: 'name',
     fieldValue: comicName,
     userId: user?.userId,

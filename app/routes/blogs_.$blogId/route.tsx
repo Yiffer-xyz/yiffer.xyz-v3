@@ -17,7 +17,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return { notFound: true, blog: null, queryStr: blogId };
   }
 
-  const allBlogsRes = await getBlogById(args.context.DB, blogIdNum);
+  const allBlogsRes = await getBlogById(args.context.cloudflare.env.DB, blogIdNum);
 
   if (allBlogsRes.err) {
     return processApiError('Error getting blog in /blogs/id loader', allBlogsRes.err, {

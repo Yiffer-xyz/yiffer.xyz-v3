@@ -24,7 +24,12 @@ export async function action(args: ActionFunctionArgs) {
   const comicId = parseInt(formComicId.toString());
   if (isNaN(comicId)) return create400Json('Invalid comicId');
 
-  const err = await updateStarRating(args.context.DB, user.userId, comicId, stars);
+  const err = await updateStarRating(
+    args.context.cloudflare.env.DB,
+    user.userId,
+    comicId,
+    stars
+  );
   if (err) {
     return processApiError('Error in /update-your-stars', err);
   }

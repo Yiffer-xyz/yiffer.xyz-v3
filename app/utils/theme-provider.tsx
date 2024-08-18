@@ -49,16 +49,18 @@ export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProp
     persistUIPrefRef.current = persistUIPref;
   }, [persistUIPref]);
 
-  const mountRun = useRef(false);
+  const prevUIRef = useRef<UIPreferences | null>(null);
 
+  // Only submit if ui pref actually changed
   useEffect(() => {
-    if (!mountRun.current) {
-      mountRun.current = true;
+    if (!uiPref) return;
+
+    if (!prevUIRef.current) {
+      prevUIRef.current = { ...uiPref };
       return;
     }
-    if (!uiPref) {
-      return;
-    }
+
+    if (!areUIPrefsDifferent(prevUIRef.current, uiPref)) return;
 
     persistUIPrefRef.current.submit(
       { uiPref: JSON.stringify(uiPref) },
@@ -168,4 +170,16 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
   } catch (e) {
     return defaultUiPref;
   }
+}
+
+function areUIPrefsDifferent(u1: UIPreferences, u2: UIPreferences): boolean {
+  return (
+    u1.theme !== u2.theme ||
+    u1.viewMode !== u2.viewMode ||
+    u1.comicCardTags !== u2.comicCardTags ||
+    u1.comicDisplayOptions.display !== u2.comicDisplayOptions.display ||
+    u1.comicDisplayOptions.reverseOrder !== u2.comicDisplayOptions.reverseOrder ||
+    u1.comicDisplayOptions.clickToToggleDisplay !==
+      u2.comicDisplayOptions.clickToToggleDisplay
+  );
 }

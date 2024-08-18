@@ -384,7 +384,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const errors = await checkForExistingComicOrSuggestion(
-    args.context.DB,
+    args.context.cloudflare.env.DB,
     comicName as string
   );
   if (errors?.err) {
@@ -416,7 +416,7 @@ export async function action(args: ActionFunctionArgs) {
     userIp,
   ];
 
-  const dbRes = await queryDb(args.context.DB, insertQuery, insertParams);
+  const dbRes = await queryDb(args.context.cloudflare.env.DB, insertQuery, insertParams);
 
   if (dbRes.isError) {
     return processApiError(undefined, {

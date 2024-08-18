@@ -32,7 +32,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const categories = params.categories.includes('All') ? undefined : params.categories;
 
   const comicsResPromise = getComicsPaginated({
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     limit: COMICS_PER_PAGE,
     offset: params.page !== 1 ? (params.page - 1) * COMICS_PER_PAGE : undefined,
     search: params.search,
@@ -43,7 +43,10 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user?.userId,
     includeAds: true,
   });
-  const adPromise = getAdForViewing({ db: args.context.DB, adType: 'topSmall' });
+  const adPromise = getAdForViewing({
+    db: args.context.cloudflare.env.DB,
+    adType: 'topSmall',
+  });
 
   const [comicsRes, adRes] = await Promise.all([comicsResPromise, adPromise]);
 
@@ -59,8 +62,8 @@ export async function loader(args: LoaderFunctionArgs) {
     numberOfPages: comicsRes.result.numberOfPages,
     totalNumComics: comicsRes.result.totalNumComics,
     topAd: adRes.result,
-    pagesPath: args.context.PAGES_PATH,
-    adsPath: args.context.ADS_PATH,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
+    adsPath: args.context.cloudflare.env.ADS_PATH,
   };
 }
 

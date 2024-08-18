@@ -1,13 +1,7 @@
 compatibility_date = "2024-01-29"
 
-# For local dev
 [[d1_databases]]
 binding = "DB" # available in your Worker on env.DB
 database_name = "yiffer-local-dev"
 database_id = "fac2fded-f9ec-4aaf-84f2-c3b37b3e0305"
-
-# For online dev
-[[d1_databases]]
-binding = "DB" # available in your Worker on env.DB
-database_name = "yiffer-d1-test"
-database_id = "4adb1d02-3ef2-4631-a64b-37e11a6e6c2d"
+preview_database_id = "DB" # Required for Pages local development

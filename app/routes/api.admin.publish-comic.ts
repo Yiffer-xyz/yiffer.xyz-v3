@@ -17,7 +17,10 @@ export async function action(args: ActionFunctionArgs) {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  const err = await publishComic(args.context.DB, parseInt(formComicId.toString()));
+  const err = await publishComic(
+    args.context.cloudflare.env.DB,
+    parseInt(formComicId.toString())
+  );
   if (err) {
     return processApiError('Error in /publish-comic', err, {
       comicId: formComicId,

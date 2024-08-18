@@ -59,7 +59,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const adId = args.params.ad as string;
   const adRes = await getAdById({
     adId,
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     includeDetailedStats: true,
   });
 
@@ -70,13 +70,13 @@ export async function loader(args: LoaderFunctionArgs) {
     throw new Response('Ad not found', { status: 404 });
   }
 
-  return { adData: adRes.result, adsPath: args.context.ADS_PATH };
+  return { adData: adRes.result, adsPath: args.context.cloudflare.env.ADS_PATH };
 }
 
 export async function action(args: ActionFunctionArgs) {
   const adId = args.params.ad as string;
 
-  const res = await approveActiveAd(args.context.DB, adId);
+  const res = await approveActiveAd(args.context.cloudflare.env.DB, adId);
 
   if (res?.error) {
     return processApiError('Error approving active ad', res);

@@ -143,8 +143,8 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const comicParam = args.params.comic as string;
 
-  const PAGES_PATH = args.context.PAGES_PATH;
-  const IMAGES_SERVER_URL = args.context.IMAGES_SERVER_URL;
+  const PAGES_PATH = args.context.cloudflare.env.PAGES_PATH;
+  const IMAGES_SERVER_URL = args.context.cloudflare.env.IMAGES_SERVER_URL;
 
   const comicId = parseInt(comicParam);
   if (isNaN(comicId)) {
@@ -152,7 +152,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   const comicsRes = await getComicByField({
-    db: args.context.DB,
+    db: args.context.cloudflare.env.DB,
     fieldName: 'id',
     fieldValue: comicId,
     includeMetadata: true,

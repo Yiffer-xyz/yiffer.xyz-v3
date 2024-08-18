@@ -141,7 +141,11 @@ export async function action(args: ActionFunctionArgs) {
     'INSERT INTO feedback (text, type, userId, userIp) VALUES (?, ?, ?, ?)';
   const insertParams = [feedbackText, feedbackType, userId, userIp];
 
-  const dbRes = await queryDbExec(args.context.DB, insertQuery, insertParams);
+  const dbRes = await queryDbExec(
+    args.context.cloudflare.env.DB,
+    insertQuery,
+    insertParams
+  );
   if (dbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error saving user feedback',
