@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -22,9 +22,9 @@ import type { SimilarArtistResponse } from '../api.search-similar-artist';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   return await authLoader(args);
-}
+});
 
 export default function Upload() {
   const actionData = useActionData<typeof action>();
@@ -374,7 +374,7 @@ export default function Upload() {
   );
 }
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const reqBody = await args.request.formData();
   const logCtx = Object.fromEntries(reqBody);
   const { comicName, artist, linksComments } = logCtx;
@@ -427,7 +427,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});
 
 async function checkForExistingComicOrSuggestion(
   db: D1Database,

@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getArtistAndComicsByField } from '~/route-funcs/get-artist';
 import type { Artist, ComicForBrowse } from '~/types/types';
@@ -7,7 +7,6 @@ import ArtistLinks from './ArtistLinks';
 import { authLoader } from '~/utils/loaders';
 import ComicCard from '../browse/ComicCard';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
 import Link from '~/ui-components/Link';
 
 export default function ArtistPage() {
@@ -73,7 +72,7 @@ type LoaderData = {
   isMod: boolean;
 };
 
-export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
+export const loader = unstable_defineLoader(async args => {
   const user = await authLoader(args);
   const artistName = args.params.name;
 
@@ -108,4 +107,4 @@ export async function loader(args: LoaderFunctionArgs): Promise<LoaderData> {
   returnVal.artist = combinedRes.result.artist;
   returnVal.comics = combinedRes.result.comics;
   return returnVal;
-}
+});

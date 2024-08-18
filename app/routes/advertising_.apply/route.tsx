@@ -9,13 +9,9 @@ import Step2Details from './step2-details';
 import Step1Info from './step1-info';
 import type { SubmitAdFormData } from '../api.submit-ad';
 import { useLoaderData } from '@remix-run/react';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
-
-export function links() {
-  return [{ rel: 'stylesheet', href: cropperCss }];
-}
 
 export default function AdvertisingApply() {
   const { IMAGES_SERVER_URL } = useLoaderData<typeof loader>();
@@ -156,9 +152,8 @@ export default function AdvertisingApply() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
-  // const db = args.context.cloudflare.env.DB;
+export const loader = unstable_defineLoader(async args => {
   return {
     IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-}
+});

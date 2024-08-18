@@ -1,5 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
-import { redirect } from '@remix-run/cloudflare';
+import { redirect, unstable_defineLoader } from '@remix-run/cloudflare';
 import { Link, Outlet, useLoaderData, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
@@ -43,7 +42,7 @@ export default function Admin() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   await redirectIfNotMod(args);
 
   const url = new URL(args.request.url);
@@ -88,7 +87,7 @@ export async function loader(args: LoaderFunctionArgs) {
   };
 
   return globalContext;
-}
+});
 
 function Sidebar({ alwaysShow, delay }: { alwaysShow: boolean; delay: boolean }) {
   const matches = useMatches();

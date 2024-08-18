@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
@@ -87,12 +87,12 @@ export default function Signup() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   await redirectIfLoggedIn(args);
   return null;
-}
+});
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const reqBody = await args.request.formData();
   const {
     username: formUsername,
@@ -130,7 +130,7 @@ export async function action(args: ActionFunctionArgs) {
     return createAnyErrorCodeJson(401, errorMessage);
   }
   throw redirect;
-}
+});
 
 function getSignupValidationError(
   username: string,

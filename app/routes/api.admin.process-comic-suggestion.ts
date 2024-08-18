@@ -1,10 +1,10 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicSuggestionVerdict } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export type ProcessComicSuggestionBody = {
   actionId: number;
@@ -14,7 +14,7 @@ export type ProcessComicSuggestionBody = {
   suggestingUserId?: number;
 };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const { fields, user, isUnauthorized } =
     await parseFormJson<ProcessComicSuggestionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
@@ -35,7 +35,7 @@ export async function action(args: ActionFunctionArgs) {
     });
   }
   return createSuccessJson();
-}
+});
 
 async function processComicSuggestion(
   db: D1Database,

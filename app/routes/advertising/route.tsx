@@ -1,10 +1,10 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   return {};
-}
+});
 
 export default function Advertising() {
   return (

@@ -97,8 +97,9 @@ export async function recalculatePublishingQueue(
   // only update comics whose position changed
   const comicsToUpdate = [];
   for (const comic of queue) {
-    const newQueuePos = newQueue.find(newComic => newComic.comicId === comic.comicId)
-      ?.publishingQueuePos;
+    const newQueuePos = newQueue.find(
+      newComic => newComic.comicId === comic.comicId
+    )?.publishingQueuePos;
     if (newQueuePos !== comic.publishingQueuePos) {
       comicsToUpdate.push({
         comicId: comic.comicId,

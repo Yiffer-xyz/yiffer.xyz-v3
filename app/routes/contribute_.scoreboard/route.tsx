@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { add, format, sub } from 'date-fns';
 import { Fragment, useState } from 'react';
@@ -7,11 +7,9 @@ import {
   MdArrowDropDown,
   MdArrowDropUp,
   MdArrowForward,
-  MdHome,
 } from 'react-icons/md';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
-import Link from '~/ui-components/Link';
 import Spinner from '~/ui-components/Spinner';
 import {
   Table,
@@ -24,7 +22,7 @@ import Username from '~/ui-components/Username';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type { ContributionPointsEntry, UserType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
-import type { ApiResponse, ResultOrErrorPromise } from '~/utils/request-helpers';
+import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
@@ -228,17 +226,15 @@ export default function Scoreboard() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const scoresRes = await getTopScores(args.context.cloudflare.env.DB, undefined, false);
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
   return { topScores: scoresRes.result };
-}
+});
 
-export async function action(
-  args: ActionFunctionArgs
-): Promise<ApiResponse<TopContributionPointsRow[]>> {
+export const action = unstable_defineAction(async args => {
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const yearMonthStr = yearMonth.toString();
@@ -255,7 +251,7 @@ export async function action(
     data: res.result,
     error: null,
   };
-}
+});
 
 type TopContributionPointsRow = {
   userId: number;

@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type {
   ComicPublishStatus,
@@ -157,7 +157,7 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
   LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
 `;
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const dataFetchStatements: QueryWithParams[] = [
     { query: tagSuggestionsQuery },
     { query: comicProblemsQuery },
@@ -168,7 +168,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const dbResList = await queryDbMultiple<
     [
-      DbTagSuggestion[],
+      DbFullTagSuggestion[],
       DbComicProblem[],
       DbComicUpload[],
       DbComicSuggestion[],
@@ -196,9 +196,9 @@ export async function loader(args: LoaderFunctionArgs) {
   });
 
   return createSuccessJson(allSuggestions);
-}
+});
 
-type DbTagSuggestion = {
+type DbFullTagSuggestion = {
   tagSuggestionGroupId: number;
   tagSuggestionItemId: number;
   isAdding: number;
@@ -238,7 +238,7 @@ function tinyIntOrNullToBool(input: number | null): boolean | null {
   return input === 1;
 }
 
-function mapDbTagSuggestions(input: DbTagSuggestion[]): DashboardAction[] {
+function mapDbTagSuggestions(input: DbFullTagSuggestion[]): DashboardAction[] {
   // Group tag suggestions by tagSuggestionGroupId
   const groupedSuggestions: Map<number, TagSuggestionGroup> = new Map();
 

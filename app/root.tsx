@@ -1,7 +1,7 @@
-import type {
-  LinksFunction,
-  LoaderFunctionArgs,
-  MetaFunction,
+import {
+  unstable_defineLoader,
+  type LinksFunction,
+  type MetaFunction,
 } from '@remix-run/cloudflare';
 import {
   Links,
@@ -24,7 +24,7 @@ import {
 import { MdLightbulbOutline } from 'react-icons/md';
 import Link from './ui-components/Link';
 import { ToastContainer } from 'react-toastify';
-import { UserSession } from './types/types';
+import type { UserSession } from './types/types';
 import './tailwind.css';
 import './main.css';
 import { getUserSession } from './utils/auth.server';
@@ -67,7 +67,7 @@ export const meta: MetaFunction = () => [
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async ({ request, context }) => {
   const uiPrefSession = await getUIPrefSession(request);
   const userSession = await getUserSession(
     request,
@@ -80,7 +80,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
   };
   return data;
-}
+});
 
 export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>();

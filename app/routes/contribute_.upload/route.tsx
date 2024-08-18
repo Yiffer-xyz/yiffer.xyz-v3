@@ -1,5 +1,4 @@
 import '~/utils/cropper.min.css';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -39,12 +38,9 @@ import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
-
-export function links() {
-  return [{ rel: 'stylesheet', href: cropperCss }];
-}
 
 export default function Upload() {
   const { artists, comics, user, tags, IMAGES_SERVER_URL } =
@@ -304,7 +300,7 @@ export default function Upload() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const db = args.context.cloudflare.env.DB;
 
   const dbStatements: QueryWithParams[] = [
@@ -336,9 +332,9 @@ export async function loader(args: LoaderFunctionArgs) {
     user,
     IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-}
+});
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await authLoader(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
@@ -356,7 +352,7 @@ export async function action(args: ActionFunctionArgs) {
     return create500Json();
   }
   return createSuccessJson();
-}
+});
 
 function validateUploadForm(uploadBody: UploadBody): { error?: string } {
   if (!uploadBody.comicName) {

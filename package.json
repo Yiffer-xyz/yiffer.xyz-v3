@@ -11,6 +11,7 @@
     "start": "wrangler pages dev ./build/client",
     "typecheck": "tsc",
     "typegen": "wrangler types",
+    "format": "npx prettier --write .",
     "upgrade-remix": "upgrade-remix"
   },
   "dependencies": {
@@ -48,8 +49,6 @@
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@types/uuid": "^10",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
-    "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^9.1.0",

@@ -5,7 +5,7 @@ import {
   useNavigate,
   useOutletContext,
 } from '@remix-run/react';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Tag } from '~/types/types';
@@ -96,7 +96,7 @@ export default function ManageTags() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const tagsWithCountsRes = await getTagsWithUsageCount(args.context.cloudflare.env.DB);
   if (tagsWithCountsRes.err) {
     return processApiError(
@@ -108,4 +108,4 @@ export async function loader(args: LoaderFunctionArgs) {
   return {
     tagsWithCounts: tagsWithCountsRes.result,
   };
-}
+});

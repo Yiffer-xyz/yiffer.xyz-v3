@@ -1,5 +1,5 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Link from '~/ui-components/Link';
 import { getAllBlogs } from '~/route-funcs/get-blogs';
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import { format } from 'date-fns';
 import useWindowSize from '~/utils/useWindowSize';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const allBlogsRes = await getAllBlogs(args.context.cloudflare.env.DB);
 
   if (allBlogsRes.err) {
@@ -18,7 +18,7 @@ export async function loader(args: LoaderFunctionArgs) {
   return {
     blogs: allBlogsRes.result,
   };
-}
+});
 
 export default function BlogPage() {
   const { blogs } = useLoaderData<typeof loader>();

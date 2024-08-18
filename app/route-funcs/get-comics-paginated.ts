@@ -222,6 +222,8 @@ export async function getComicsPaginated({
           return { name, id: parseInt(id, 10) };
         })
       : undefined,
+    published: new Date(c.published),
+    updated: new Date(c.updated),
   })) as ComicForBrowse[];
 
   let comicsWithAds: (ComicForBrowse | AdForViewing)[] = comics;

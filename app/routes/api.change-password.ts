@@ -1,11 +1,11 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 import { changePassword } from '~/utils/auth.server';
 import { authLoader } from '~/utils/loaders';
 import { create400Json, createSuccessJson, noGetRoute } from '~/utils/request-helpers';
 
 export { noGetRoute as loader };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await authLoader(args);
   if (!user) {
     return create400Json('Not logged in');
@@ -43,7 +43,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});
 
 function getSignupValidationError(
   currentPassword: string,

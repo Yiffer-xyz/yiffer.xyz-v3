@@ -1,9 +1,9 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getAllModApplications } from '~/route-funcs/get-mod-application';
 import { processApiError } from '~/utils/request-helpers';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const applicationsRes = await getAllModApplications(args.context.cloudflare.env.DB);
   if (applicationsRes.err) {
     return processApiError(
@@ -13,7 +13,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return { applications: applicationsRes.result };
-}
+});
 
 export default function AdminModApplications() {
   const { applications } = useLoaderData<typeof loader>();

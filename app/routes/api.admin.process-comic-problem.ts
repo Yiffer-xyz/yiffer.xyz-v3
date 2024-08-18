@@ -1,9 +1,9 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export type ProcessComicProblemBody = {
   actionId: number;
@@ -11,7 +11,7 @@ export type ProcessComicProblemBody = {
   reportingUserId?: number;
 };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const { fields, isUnauthorized, user } = await parseFormJson<ProcessComicProblemBody>(
     args,
     'mod'
@@ -32,7 +32,7 @@ export async function action(args: ActionFunctionArgs) {
     });
 
   return createSuccessJson();
-}
+});
 
 async function processComicProblem(
   db: D1Database,

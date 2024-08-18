@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -11,6 +10,7 @@ import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import type { FeedbackType } from '~/types/types';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export { authLoader as loader };
 
@@ -124,7 +124,7 @@ export default function Feedback() {
   );
 }
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const reqBody = await args.request.formData();
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
 
@@ -155,4 +155,4 @@ export async function action(args: ActionFunctionArgs) {
     return create500Json();
   }
   return createSuccessJson();
-}
+});

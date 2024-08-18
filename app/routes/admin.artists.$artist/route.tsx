@@ -1,7 +1,7 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { MdArrowForward, MdCheck, MdClose, MdOpenInNew, MdReplay } from 'react-icons/md';
+import { MdArrowForward, MdCheck, MdClose, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -310,7 +310,7 @@ export type ArtistDataChanges = {
   links?: string[];
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotMod(args);
   const db = args.context.cloudflare.env.DB;
   const artistParam = args.params.artist as string;
@@ -331,7 +331,7 @@ export async function loader(args: LoaderFunctionArgs) {
     comics: combinedRes.result.comics,
     user,
   };
-}
+});
 
 function getChanges(initialArtist: Artist, updatedArtist: NewArtist): FieldChange[] {
   const changes: FieldChange[] = [];

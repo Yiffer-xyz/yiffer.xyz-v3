@@ -1,10 +1,10 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { logout } from '../utils/auth.server';
 
-export async function action(args: ActionFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   return logout(args.context.cloudflare.env.JWT_CONFIG_STR);
-}
+});
 
-export function loader(args: LoaderFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   return logout(args.context.cloudflare.env.JWT_CONFIG_STR);
-}
+});

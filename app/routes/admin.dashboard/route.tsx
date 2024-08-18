@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ProcessTagSuggestionBody } from '../api.admin.process-tag-suggestion';
@@ -37,10 +37,10 @@ const actionTypeToLabel: Record<DashboardActionType, string> = {
   pendingComicProblem: 'Pending problems',
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotMod(args);
   return { user };
-}
+});
 
 export default function Dashboard() {
   const { user } = useLoaderData<typeof loader>();

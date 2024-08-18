@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -105,7 +105,7 @@ export default function Apply() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);
 
   const existingApplicationRes = await getModApplicationForUser(
@@ -118,12 +118,12 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return { hasExistingApplication: existingApplicationRes.result !== null };
-}
+});
 
 const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){4,32}$/.test(username);
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const db = args.context.cloudflare.env.DB;
   const reqBody = await args.request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
@@ -160,4 +160,4 @@ export async function action(args: ActionFunctionArgs) {
     return create500Json();
   }
   return createSuccessJson();
-}
+});

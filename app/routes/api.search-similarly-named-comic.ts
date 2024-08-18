@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
@@ -7,6 +6,7 @@ import {
 } from '~/utils/request-helpers';
 import stringDistance from '~/utils/string-distance';
 import { getComicNamesAndIDs } from '../route-funcs/get-comics';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export type SimilarComicResponse = {
   similarComics: string[];
@@ -15,7 +15,7 @@ export type SimilarComicResponse = {
   exactMatchRejectedComic?: string;
 };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const body = await args.request.formData();
   const comicName = body.get('comicName') as string;
   const excludeName = body.get('excludeName');
@@ -32,7 +32,7 @@ export async function action(args: ActionFunctionArgs) {
     });
   }
   return createSuccessJson(comicsRes.result);
-}
+});
 
 export async function getSimilarlyNamedComics(
   db: D1Database,

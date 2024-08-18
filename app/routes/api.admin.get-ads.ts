@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 import { getAds } from '~/route-funcs/get-ads';
 import type { AdStatus, AdType } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -8,7 +8,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -32,4 +32,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson(adsRes.result);
-}
+});

@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { useNavigate } from '@remix-run/react';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { useState } from 'react';
@@ -9,6 +8,7 @@ import { IoMdCloseCircle } from 'react-icons/io';
 import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export default function ManageTag() {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ export default function ManageTag() {
   );
 }
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const data = await args.request.formData();
   const tagName = data.get('tagName');
 
@@ -117,4 +117,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});

@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ArtistDataChanges } from './admin.artists.$artist/route';
 import type { Artist } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
@@ -14,8 +13,9 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getArtistByField } from '~/route-funcs/get-artist';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;
@@ -32,7 +32,7 @@ export async function action(args: ActionFunctionArgs) {
     return processApiError('Errir in /update-artist-data', err);
   }
   return createSuccessJson();
-}
+});
 
 export async function updateArtistData(
   db: D1Database,

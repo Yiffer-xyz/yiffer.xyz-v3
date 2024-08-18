@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
@@ -6,7 +6,7 @@ import { getAds } from '~/route-funcs/get-ads';
 import { processApiError } from '~/utils/request-helpers';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);
 
   const ads = await getAds({
@@ -26,7 +26,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ads: ads.result,
     adsPath: args.context.cloudflare.env.ADS_PATH,
   };
-}
+});
 
 export default function Advertising() {
   const { ads, adsPath } = useLoaderData<typeof loader>();

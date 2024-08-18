@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -12,6 +11,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import TopGradientBox from '~/ui-components/TopGradientBox';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 
 export default function Login() {
   const fetcher = useGoodFetcher({
@@ -71,12 +71,12 @@ export default function Login() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   await redirectIfLoggedIn(args);
   return null;
-}
+});
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const reqBody = await args.request.formData();
   const { username: formUsername, password: formPassword } = Object.fromEntries(reqBody);
 
@@ -101,4 +101,4 @@ export async function action(args: ActionFunctionArgs) {
     return createAnyErrorCodeJson(401, errorMessage);
   }
   throw redirect;
-}
+});

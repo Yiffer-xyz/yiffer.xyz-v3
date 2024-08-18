@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 import { differenceInDays } from 'date-fns';
 import { getAdById } from '~/route-funcs/get-ads';
 import isAdOwner from '~/route-funcs/is-ad-owner';
@@ -12,7 +12,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotLoggedIn(args);
   const formData = await args.request.formData();
   const adId = formData.get('id');
@@ -31,7 +31,7 @@ export async function action(args: ActionFunctionArgs) {
     return processApiError('Error in /deactivate-ad', err, { adId, ...user });
   }
   return createSuccessJson();
-}
+});
 
 export async function deactivateAd(
   db: D1Database,

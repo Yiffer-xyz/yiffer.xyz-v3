@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { createSuccessJson, processApiError } from '~/utils/request-helpers';
 import { getAdById } from '~/route-funcs/get-ads';
@@ -55,7 +55,7 @@ export default function ManageAd() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const adId = args.params.ad as string;
   const adRes = await getAdById({
     adId,
@@ -71,9 +71,9 @@ export async function loader(args: LoaderFunctionArgs) {
   }
 
   return { adData: adRes.result, adsPath: args.context.cloudflare.env.ADS_PATH };
-}
+});
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const adId = args.params.ad as string;
 
   const res = await approveActiveAd(args.context.cloudflare.env.DB, adId);
@@ -83,4 +83,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});

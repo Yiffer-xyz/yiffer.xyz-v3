@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { AdFreeTrialStateEnum } from '~/types/types';
 import type { UserSession, AdType } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
@@ -12,6 +11,7 @@ import {
 } from '~/utils/request-helpers';
 import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export type SubmitAdFormData = {
   id: string;
@@ -25,7 +25,7 @@ export type SubmitAdFormData = {
   isAnimated: boolean;
 };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotLoggedIn(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as SubmitAdFormData;
@@ -47,7 +47,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});
 
 export async function submitAd(
   db: D1Database,

@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
-import { redirect } from '@remix-run/cloudflare';
+import { redirect, unstable_defineLoader } from '@remix-run/cloudflare';
 import { getUserSession } from './auth.server';
 import { getUserById } from '~/route-funcs/get-user';
 import { processApiError } from './request-helpers';
@@ -7,15 +7,15 @@ import { processApiError } from './request-helpers';
 // A way to get the user session. Can be awaited as a normal func,
 // but can also be exported directly if a route needs no other loader.
 // Like this: export { authLoader as loader }
-export async function authLoader(args: LoaderFunctionArgs) {
+export const authLoader = unstable_defineLoader(async args => {
   const userSession = await getUserSession(
     args.request,
     args.context.cloudflare.env.JWT_CONFIG_STR
   );
   return userSession;
-}
+});
 
-export async function fullUserLoader(args: LoaderFunctionArgs) {
+export const fullUserLoader = unstable_defineLoader(async args => {
   const user = await authLoader(args);
   if (!user) throw redirect('/');
 
@@ -25,7 +25,7 @@ export async function fullUserLoader(args: LoaderFunctionArgs) {
   }
 
   return fullUserRes.result;
-}
+});
 
 export async function redirectIfNotLoggedIn(args: LoaderFunctionArgs) {
   const user = await authLoader(args);

@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
@@ -41,6 +40,7 @@ import pluralize from 'pluralize';
 import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
@@ -127,7 +127,7 @@ export default function YourContributions() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotLoggedIn(args);
 
   const dbStatements: QueryWithParams[] = [
@@ -174,7 +174,7 @@ export async function loader(args: LoaderFunctionArgs) {
   return {
     contributions,
   };
-}
+});
 
 function ContributionDetails({ contribution }: { contribution: Contribution }) {
   if (contribution.type === 'ContributedComic') {

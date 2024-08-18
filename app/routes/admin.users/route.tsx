@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin';
 import type { User } from '~/types/types';
 import TextInput from '~/ui-components/TextInput/TextInput';
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { searchUsers } from '~/route-funcs/get-user';
 import {
   create400Json,
@@ -13,6 +12,7 @@ import {
 import { setExtra } from '@sentry/browser';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Button from '~/ui-components/Buttons/Button';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export default function UserManager() {
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ export default function UserManager() {
   );
 }
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const formDataBody = await args.request.formData();
   const searchText = formDataBody.get('searchText');
 
@@ -94,4 +94,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson(userResult.result);
-}
+});

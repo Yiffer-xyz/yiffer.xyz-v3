@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError } from '~/utils/request-helpers';
@@ -10,6 +9,7 @@ import {
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { TagSuggestionItem } from '~/types/types';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
 export type ProcessTagSuggestionBody = {
   suggestionGroupId: number;
@@ -18,7 +18,7 @@ export type ProcessTagSuggestionBody = {
   suggestingUserId?: number;
 };
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const { fields, isUnauthorized, user } = await parseFormJson<ProcessTagSuggestionBody>(
     args,
     'mod'
@@ -39,7 +39,7 @@ export async function action(args: ActionFunctionArgs) {
     });
   }
   return createSuccessJson();
-}
+});
 
 async function processTagSuggestion(
   db: D1Database,

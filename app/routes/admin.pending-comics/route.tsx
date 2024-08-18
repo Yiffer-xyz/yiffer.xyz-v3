@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
@@ -243,7 +243,7 @@ export default function PendingComics() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const dbRes = await getPendingComics(args.context.cloudflare.env.DB);
 
   if (dbRes.err) {
@@ -256,7 +256,7 @@ export async function loader(args: LoaderFunctionArgs) {
       args.context.cloudflare.env.DAILY_SCHEDULE_PUBLISH_COUNT
     ),
   };
-}
+});
 
 function getBgColor(pendingComic: DbPendingComic) {
   if (pendingComic.publishStatus === 'scheduled') {

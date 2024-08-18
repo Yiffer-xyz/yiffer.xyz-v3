@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getComicByField } from '~/route-funcs/get-comic';
 import { processApiError } from '~/utils/request-helpers';
@@ -176,7 +176,7 @@ type LoaderData = {
   isMod: boolean;
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await authLoader(args);
   const comicName = args.params.comicname as string;
 
@@ -219,4 +219,4 @@ export async function loader(args: LoaderFunctionArgs) {
   res.comic = comicRes.result;
   res.ad = adRes.result;
   return res;
-}
+});

@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -10,8 +9,9 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -27,7 +27,7 @@ export async function action(args: ActionFunctionArgs) {
     return processApiError('Error in /schedule-comic-to-queue', err);
   }
   return createSuccessJson();
-}
+});
 
 export async function scheduleComic(
   db: D1Database,

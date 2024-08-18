@@ -1,12 +1,12 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { authLoader } from '~/utils/loaders';
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   return await authLoader(args);
-}
+});
 
 export default function Index() {
   const user = useLoaderData<typeof loader>();

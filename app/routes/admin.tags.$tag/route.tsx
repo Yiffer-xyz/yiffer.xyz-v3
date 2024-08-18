@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { redirect, useLoaderData, useNavigate } from '@remix-run/react';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { getTagById } from '~/route-funcs/get-tags';
@@ -116,7 +116,7 @@ export default function ManageTag() {
   );
 }
 
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const tagParam = args.params.tag as string;
   const tagId = parseInt(tagParam);
 
@@ -146,9 +146,9 @@ export async function loader(args: LoaderFunctionArgs) {
     tag: tagRes.result,
     comics: comicsRes.result,
   };
-}
+});
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   const data = await args.request.formData();
   const tagId = parseInt(args.params.tag as string);
   const formNewName = data.get('newName');
@@ -180,4 +180,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});

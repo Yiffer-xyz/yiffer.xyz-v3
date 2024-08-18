@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -10,7 +10,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -31,7 +31,7 @@ export async function action(args: ActionFunctionArgs) {
     return processApiError('Error in /unlist-comic', err);
   }
   return createSuccessJson();
-}
+});
 
 export async function unlistComic(
   db: D1Database,

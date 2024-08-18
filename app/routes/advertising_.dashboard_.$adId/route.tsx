@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData, useNavigate } from '@remix-run/react';
 import '~/utils/cropper.min.css';
 import { getAdById } from '~/route-funcs/get-ads';
@@ -17,12 +16,9 @@ import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 import { getFileExtension, type ComicImage } from '~/utils/general';
+import { unstable_defineLoader } from '@remix-run/cloudflare';
 
-export function links() {
-  return [{ rel: 'stylesheet', href: cropperCss }];
-}
-
-export async function loader(args: LoaderFunctionArgs) {
+export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);
 
   const adRes = await getAdById({
@@ -58,7 +54,7 @@ export async function loader(args: LoaderFunctionArgs) {
     adData: adRes.result,
     imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-}
+});
 
 export default function AdvertisingAd() {
   const { adData, notFound, adId, adsPath, imagesServerUrl } =

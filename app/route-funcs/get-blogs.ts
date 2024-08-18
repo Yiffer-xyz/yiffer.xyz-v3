@@ -8,17 +8,15 @@ type DbBlog = Omit<Blog, 'authorUser'> & { userId: number; username: string };
 export async function getLatestBlog(
   db: D1Database
 ): ResultOrErrorPromise<Blog | undefined> {
-  // SELECT blog.id, title, content, timestamp, user.id AS userId, user.username
-  // FROM blog
-  // INNER JOIN user ON blog.author = user.id
-  // ORDER BY timestamp DESC
-  // LIMIT 1
   const blogQuery = `
-    SELECT name FROM sqlite_master WHERE type='table'
+    SELECT blog.id, title, content, timestamp, user.id AS userId, user.username
+    FROM blog
+    INNER JOIN user ON blog.author = user.id
+    ORDER BY timestamp DESC
+    LIMIT 1
   `;
 
   const dbRes = await queryDb<DbBlog[]>(db, blogQuery);
-  console.log(dbRes);
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting latest blog');
   }

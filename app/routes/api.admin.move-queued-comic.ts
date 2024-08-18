@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
@@ -6,8 +5,9 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { moveComicInQueue } from '~/route-funcs/publishing-queue';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -33,4 +33,4 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   return createSuccessJson();
-}
+});

@@ -1,4 +1,3 @@
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { ComicDataChanges } from './admin.comics.$comic/LiveComic';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
@@ -11,8 +10,9 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicByField } from '~/route-funcs/get-comic';
+import { unstable_defineAction } from '@remix-run/cloudflare';
 
-export async function action(args: ActionFunctionArgs) {
+export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ComicDataChanges;
@@ -22,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
     return processApiError(`Error in /update-comic-data`, err, body);
   }
   return createSuccessJson();
-}
+});
 
 export async function updateComicData(
   db: D1Database,
