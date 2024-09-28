@@ -168,7 +168,7 @@ export const loader = unstable_defineLoader(async args => {
   ];
 
   contributions = contributions.sort((a, b) => {
-    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+    return a.timestamp.getTime() - b.timestamp.getTime();
   });
 
   return {
@@ -333,10 +333,9 @@ function getContributionStatusColor(status: ContributionStatus): string {
   }
 }
 
-function getDate(timestamp: string): string {
-  const d = new Date(timestamp);
-  const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(d);
-  const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(d);
+function getDate(timestamp: Date): string {
+  const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(timestamp);
+  const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(timestamp);
 
   return `${mo} ${da}`;
 }
