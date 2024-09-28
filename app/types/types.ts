@@ -422,7 +422,6 @@ export type ComicDisplayOptions = {
 
 export type UIPreferences = {
   theme: 'light' | 'dark';
-  viewMode: ViewType;
   comicCardTags: boolean;
   comicDisplayOptions: ComicDisplayOptions;
 };

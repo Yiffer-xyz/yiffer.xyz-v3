@@ -9,6 +9,7 @@ export type BaseSearchableSelectProps<T> = {
   options: { text: string; value: T }[];
   title?: string;
   clearOnFocus?: boolean;
+  clearOnSelect?: boolean;
   error?: boolean;
   maxWidth?: number;
   isFullWidth?: boolean;
@@ -33,6 +34,7 @@ export default function SearchableSelect<T>({
   value,
   onValueCleared,
   clearOnFocus,
+  clearOnSelect,
   onChange,
   error = false,
   maxWidth = 999999,
@@ -126,6 +128,9 @@ export default function SearchableSelect<T>({
     setSearchText(text);
     setIsOpen(false);
     onChange(clickedValue);
+    if (clearOnSelect) {
+      setSearchText('');
+    }
   }
 
   function clearAndCloseSearch({ avoidIfHighlighted = false } = {}) {
@@ -171,6 +176,8 @@ export default function SearchableSelect<T>({
       }
     } else if (event.key === 'Escape') {
       clearAndCloseSearch();
+    } else {
+      setIsOpen(true);
     }
   }
 

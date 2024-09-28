@@ -8,12 +8,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { PageDisplay, UIPreferences, ViewType } from '~/types/types';
-import { isViewType } from '~/types/types';
+import type { PageDisplay, UIPreferences } from '~/types/types';
 
 const defaultUiPref: UIPreferences = {
   theme: 'light',
-  viewMode: 'Standard',
   comicCardTags: false,
   comicDisplayOptions: {
     display: 'Fit',
@@ -86,11 +84,6 @@ export function useUIPreferences() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const setViewMode = useCallback((newViewMode: ViewType) => {
-    context.setUiPref(prev => ({ ...prev, viewMode: newViewMode }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const setComicCardTags = useCallback((newComicCardTags: boolean) => {
     context.setUiPref(prev => ({ ...prev, comicCardTags: newComicCardTags }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,8 +116,6 @@ export function useUIPreferences() {
   return {
     theme: context.uiPref.theme,
     setTheme,
-    viewMode: context.uiPref.viewMode,
-    setViewMode,
     comicCardTags: context.uiPref.comicCardTags,
     setComicCardTags,
     comicDisplayOptions: context.uiPref.comicDisplayOptions,
@@ -140,9 +131,6 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
     const parsed = JSON.parse(rawUIPref);
     if (parsed.theme && (parsed.theme === 'light' || parsed.theme === 'dark')) {
       newUIPref.theme = parsed.theme;
-    }
-    if (parsed.viewMode && isViewType(parsed.viewMode)) {
-      newUIPref.viewMode = parsed.viewMode;
     }
     if (parsed.comicCardTags !== undefined) {
       newUIPref.comicCardTags = parsed.comicCardTags;
@@ -175,7 +163,6 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
 function areUIPrefsDifferent(u1: UIPreferences, u2: UIPreferences): boolean {
   return (
     u1.theme !== u2.theme ||
-    u1.viewMode !== u2.viewMode ||
     u1.comicCardTags !== u2.comicCardTags ||
     u1.comicDisplayOptions.display !== u2.comicDisplayOptions.display ||
     u1.comicDisplayOptions.reverseOrder !== u2.comicDisplayOptions.reverseOrder ||

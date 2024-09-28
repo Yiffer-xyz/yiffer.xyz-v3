@@ -15,6 +15,7 @@ import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
 import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 import { areArraysEqual } from '~/utils/general';
+import SwitchToggleSmall from '~/ui-components/Buttons/SwitchToggleSmall';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -48,7 +49,7 @@ export default function SearchFilterContent({
     removeTagID,
   } = browseParams;
 
-  const { viewMode, setViewMode, comicCardTags, setComicCardTags } = useUIPreferences();
+  const { comicCardTags, setComicCardTags } = useUIPreferences();
 
   const { ref, height } = useResizeObserver<HTMLDivElement>();
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function SearchFilterContent({
 
   return (
     <div className={`flex flex-col gap-6 mt-2 ${isVisible ? '' : 'hidden'}`} ref={ref}>
-      <div className="flex flex-row w-full">
+      <div className="flex flex-row w-full justify-between">
         <MultiSelectDropdown
           values={_categories}
           name="Category"
@@ -169,12 +170,16 @@ export default function SearchFilterContent({
           onAllOptionSelected={() => _setCategories(['All'])}
         />
 
-        <SwitchToggle
-          label={comicCardTags ? 'shown' : 'hidden'}
-          title="Tags"
-          checked={comicCardTags}
-          onChange={() => setComicCardTags(!comicCardTags)}
-          className="ml-4"
+        <Select
+          name="sort"
+          title="Sorting"
+          value={_sort}
+          style={{ width: '49%' }}
+          onChange={onSortChange}
+          options={allSortTypes.map(x => ({
+            text: x,
+            value: x,
+          }))}
         />
       </div>
 
@@ -194,6 +199,7 @@ export default function SearchFilterContent({
           name="Tags"
           title="Tags"
           placeholder="Search for tag"
+          clearOnSelect
           style={{ width: '49%' }}
           onChange={(newVal: Tag) => onTagSelected(newVal)}
           onValueCleared={() => null}
@@ -224,29 +230,12 @@ export default function SearchFilterContent({
         </div>
       )}
 
-      <div className="flex justify-between">
-        <Select
-          name="sort"
-          title="Sorting"
-          value={_sort}
-          style={{ width: '49%' }}
-          onChange={onSortChange}
-          options={allSortTypes.map(x => ({
-            text: x,
-            value: x,
-          }))}
-        />
-
-        <Select
-          name="view"
-          title="View"
-          value={viewMode}
-          style={{ width: '49%' }}
-          onChange={newView => setViewMode(newView)}
-          options={allViewTypes.map(x => ({
-            text: x,
-            value: x,
-          }))}
+      <div className="flex gap-2">
+        <SwitchToggleSmall
+          title={comicCardTags ? 'Tags shown' : 'Tags hidden'}
+          checked={comicCardTags}
+          onChange={() => setComicCardTags(!comicCardTags)}
+          className="w-[130px]"
         />
       </div>
 

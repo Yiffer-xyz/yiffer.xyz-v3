@@ -1,15 +1,13 @@
 import type { HTMLAttributes } from 'react';
 
 type SwitchToggleProps = {
-  label?: string;
   title?: string;
   checked?: boolean;
   onChange: (checked: boolean) => void;
   className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
-export default function SwitchToggle({
-  label,
+export default function SwitchToggleSmall({
   title,
   checked,
   onChange,
@@ -17,8 +15,6 @@ export default function SwitchToggle({
 }: SwitchToggleProps) {
   return (
     <div className={`flex flex-col gap-2 w-fit ${className}`}>
-      {title && <label className="text-sm">{title}</label>}
-
       <label className={`inline-flex items-center cursor-pointer`}>
         <input
           type="checkbox"
@@ -36,7 +32,7 @@ export default function SwitchToggle({
             after:border-gray-700 after:border after:rounded-full after:h-4 after:w-4
             after:transition-all dark:border-gray-600 peer-checked:bg-theme1-darker`}
         />
-        {label && <span className="ms-1 text-sm">{label}</span>}
+        <span className="ms-1 text-sm">{title}</span>
       </label>
     </div>
   );

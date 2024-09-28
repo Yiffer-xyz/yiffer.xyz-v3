@@ -8,9 +8,8 @@ export function getTimeAgo(time: string) {
   return timeAgo.replace('about ', '').trim();
 }
 
-export function getTimeAgoShort(time: string, includeSpace = true) {
-  const localTime = UTCTimeStrToLocalDate(time);
-  const timeAgo = formatDistanceStrict(new Date(), localTime);
+export function getTimeAgoShort(time: Date, includeSpace = true) {
+  const timeAgo = formatDistanceStrict(new Date(), time);
   if (timeAgo.includes('second')) {
     return 'now';
   }

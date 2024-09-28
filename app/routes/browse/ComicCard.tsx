@@ -27,7 +27,7 @@ export default function ComicCard({
   showStaticTags,
   toggleBookmark,
 }: ComicCardProps) {
-  const { viewMode, comicCardTags } = useUIPreferences();
+  const { comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
@@ -87,53 +87,49 @@ export default function ComicCard({
           className="text-sm"
         />
 
-        {viewMode !== 'Minimal' && (
-          <>
-            <div className="flex flex-row justify-evenly mx-auto w-full mt-1">
-              <div className="w-9 flex flex-col items-center" title="Pages">
-                <IoDocumentOutline size={14} className="-mb-0.5" />
-                <label className="text-sm">{comic.numberOfPages}</label>
+        <div className="flex flex-row justify-evenly mx-auto w-full mt-1">
+          <div className="w-9 flex flex-col items-center" title="Pages">
+            <IoDocumentOutline size={14} className="-mb-0.5" />
+            <label className="text-sm">{comic.numberOfPages}</label>
+          </div>
+          {comic.sumStars > 0 && (
+            <>
+              <div
+                className="w-9 flex flex-col items-center"
+                title={`Number of stars (popularity)${
+                  comic.yourStars ? ' & Your stars' : ''
+                }`}
+              >
+                <FaRegStar
+                  size={14}
+                  className={clsx(
+                    '-mb-0.5',
+                    comic.yourStars && 'text-theme1-darker dark:text-theme1-dark'
+                  )}
+                />
+                <div className="flex items-center">
+                  <label className="text-sm">{comic.sumStars}</label>
+                  {comic.yourStars && (
+                    <label className="text-sm font-bold ml-1 text-theme1-darker dark:text-theme1-dark">
+                      {comic.yourStars}
+                    </label>
+                  )}
+                </div>
               </div>
-              {comic.sumStars > 0 && (
-                <>
-                  <div
-                    className="w-9 flex flex-col items-center"
-                    title={`Number of stars (popularity)${
-                      comic.yourStars ? ' & Your stars' : ''
-                    }`}
-                  >
-                    <FaRegStar
-                      size={14}
-                      className={clsx(
-                        '-mb-0.5',
-                        comic.yourStars && 'text-theme1-darker dark:text-theme1-dark'
-                      )}
-                    />
-                    <div className="flex items-center">
-                      <label className="text-sm">{comic.sumStars}</label>
-                      {comic.yourStars && (
-                        <label className="text-sm font-bold ml-1 text-theme1-darker dark:text-theme1-dark">
-                          {comic.yourStars}
-                        </label>
-                      )}
-                    </div>
-                  </div>
-                  {/* <div
+              {/* <div
                     className="w-9 flex flex-col items-center"
                     title="Average stars per rating, 1-3 (enjoyment)"
                   >
                     <FaPercent size={14} className="-mb-0.5" />
                     <label className="text-sm">{comic.avgStarsPercent}</label>
                   </div> */}
-                </>
-              )}
-              <div className="w-9 flex flex-col items-center" title="Last updated">
-                <LuRefreshCcw size={14} className="-mb-0.5" />
-                <label className="text-sm">{getTimeAgoShort(comic.updated, false)}</label>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+          <div className="w-9 flex flex-col items-center" title="Last updated">
+            <LuRefreshCcw size={14} className="-mb-0.5" />
+            <label className="text-sm">{getTimeAgoShort(comic.updated, false)}</label>
+          </div>
+        </div>
 
         {showTags && comic.tags?.length && (
           <div className="w-full flex flex-row flex-wrap gap-x-1 gap-y-1 items-center justify-center mt-1.5 mb-1">
