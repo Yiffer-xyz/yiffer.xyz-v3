@@ -4,7 +4,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Category, CategoryWithAll, SortType, Tag } from '~/types/types';
-import { allCategories, allSortTypes, allViewTypes } from '~/types/types';
+import { allCategories, allSortTypes } from '~/types/types';
 import { IoCaretUp } from 'react-icons/io5';
 import MultiSelectDropdown from '~/ui-components/MultiSelectDropdown/MultiSelectDropdown';
 import useDebounce from '~/utils/useDebounce';
@@ -13,7 +13,6 @@ import { SEARCHFILTER_PADDING_HORIZ } from './SearchFilterContainer';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
-import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 import { areArraysEqual } from '~/utils/general';
 import SwitchToggleSmall from '~/ui-components/Buttons/SwitchToggleSmall';
 
@@ -25,6 +24,7 @@ type SearchFilterContentProps = {
   setAllTags: (tags: Tag[]) => void;
   isVisible: boolean;
   onHeightChange: (height: number) => void;
+  isLoggedIn: boolean;
 };
 
 export default function SearchFilterContent({
@@ -35,6 +35,7 @@ export default function SearchFilterContent({
   setAllTags,
   isVisible,
   onHeightChange,
+  isLoggedIn,
 }: SearchFilterContentProps) {
   const {
     search,
@@ -47,6 +48,8 @@ export default function SearchFilterContent({
     tagIDs,
     addTagID,
     removeTagID,
+    bookmarkedOnly,
+    setBookmarkedOnly,
   } = browseParams;
 
   const { comicCardTags, setComicCardTags } = useUIPreferences();
@@ -138,6 +141,20 @@ export default function SearchFilterContent({
     setSort(newSort);
   };
 
+  // Local vars for a more snappy feel
+  const [_bookmarkedOnly, _setBookmarkedOnly] = useState(bookmarkedOnly);
+  useEffect(() => {
+    _setBookmarkedOnly(bookmarkedOnly);
+  }, [bookmarkedOnly]);
+  const onBookmarkedOnlyChange = (newVal: boolean) => {
+    _setBookmarkedOnly(newVal);
+    setBookmarkedOnly(newVal);
+  };
+
+  const availableSortTypes = isLoggedIn
+    ? allSortTypes
+    : allSortTypes.filter(x => x !== 'Your score');
+
   const categoryMinWidth = (openWidth - 2 * SEARCHFILTER_PADDING_HORIZ) * 0.49;
 
   return (
@@ -176,7 +193,7 @@ export default function SearchFilterContent({
           value={_sort}
           style={{ width: '49%' }}
           onChange={onSortChange}
-          options={allSortTypes.map(x => ({
+          options={availableSortTypes.map(x => ({
             text: x,
             value: x,
           }))}
@@ -237,6 +254,15 @@ export default function SearchFilterContent({
           onChange={() => setComicCardTags(!comicCardTags)}
           className="w-[130px]"
         />
+
+        {isLoggedIn && (
+          <SwitchToggleSmall
+            title="Bookmarked only"
+            checked={_bookmarkedOnly}
+            onChange={onBookmarkedOnlyChange}
+            className="ml-4"
+          />
+        )}
       </div>
 
       <div

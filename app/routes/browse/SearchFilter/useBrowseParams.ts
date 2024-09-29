@@ -13,6 +13,7 @@ export type BrowseParams = {
   sort: SortType;
   tagIDs: number[];
   showTags: boolean;
+  bookmarkedOnly: boolean;
 };
 
 export type BrowseUtilities = BrowseParams & {
@@ -24,6 +25,7 @@ export type BrowseUtilities = BrowseParams & {
   removeTagID: (tag: number) => void;
   clearTagIDs: () => void;
   setShowTags: (showTags: boolean) => void;
+  setBookmarkedOnly: (bookmarkedOnly: boolean) => void;
 };
 
 export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
@@ -35,6 +37,7 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
   const rawTags = rawParams.getAll('tag') ?? [];
   const tags = rawTags.map(tag => parseInt(tag, 10)).filter(tag => !isNaN(tag));
   const showTags = rawParams.get('showTags') === 'true';
+  const bookmarkedOnly = rawParams.get('bookmarkedOnly') === 'true';
 
   let categories: CategoryWithAll[];
   if (rawCategories.length === 0) {
@@ -51,6 +54,7 @@ export function parseBrowseParams(rawParams: URLSearchParams): BrowseParams {
     sort: rawUrlSortToSort(rawSort),
     tagIDs: tags,
     showTags,
+    bookmarkedOnly,
   };
 }
 
@@ -113,6 +117,13 @@ export function useBrowseParams(): BrowseUtilities {
     [updateParams]
   );
 
+  const setBookmarkedOnly = useCallback(
+    (newBookmarkedOnly: boolean) => {
+      updateParams('bookmarkedOnly', newBookmarkedOnly === true ? 'true' : undefined);
+    },
+    [updateParams]
+  );
+
   return {
     page: parsedParams.page,
     setPage,
@@ -147,6 +158,8 @@ export function useBrowseParams(): BrowseUtilities {
     setShowTags: (showTags: boolean) => {
       updateParams('showTags', showTags === true ? 'true' : undefined);
     },
+    bookmarkedOnly: parsedParams.bookmarkedOnly,
+    setBookmarkedOnly,
   };
 }
 

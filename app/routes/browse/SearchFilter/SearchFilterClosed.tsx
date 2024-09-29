@@ -4,9 +4,9 @@ import type { Tag } from '~/types/types';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { GoSearch, GoSortDesc } from 'react-icons/go';
-import { MdOutlineRemoveRedEye } from 'react-icons/md';
 import { BsGenderTrans, BsTags } from 'react-icons/bs';
 import useResizeObserver from 'use-resize-observer';
+import { FaRegBookmark } from 'react-icons/fa';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -24,7 +24,7 @@ export default function SearchFilterClosed({
   onHeightChange,
 }: SearchFilterContentProps) {
   const { comicCardTags } = useUIPreferences();
-  const { search, categories, sort, tagIDs } = browseParams;
+  const { search, categories, sort, tagIDs, bookmarkedOnly } = browseParams;
 
   const { ref, height } = useResizeObserver<HTMLDivElement>();
   useEffect(() => {
@@ -86,12 +86,17 @@ export default function SearchFilterClosed({
           {tagIDs.length}: <span>{tagsText}</span>
         </p>
       )}
+      {bookmarkedOnly && (
+        <p className="font-semibold">
+          <FaRegBookmark size={13} /> Bookmarked only
+        </p>
+      )}
       <div className="flex flex-row gap-6">
         <div>
-          <GoSortDesc /> {sort}
+          <GoSortDesc /> Sort: {sort}
         </div>
         <div>
-          <BsTags /> {comicCardTags ? 'Shown' : 'Hidden'}
+          <BsTags /> {comicCardTags ? 'Tags shown' : 'Tags hidden'}
         </div>
       </div>
     </div>

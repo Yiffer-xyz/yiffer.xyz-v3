@@ -30,6 +30,7 @@ export const loader = unstable_defineLoader(async args => {
   const user = await authLoader(args);
 
   const categories = params.categories.includes('All') ? undefined : params.categories;
+  const bookmarkedOnly = params.bookmarkedOnly;
 
   const comicsResPromise = getComicsPaginated({
     db: args.context.cloudflare.env.DB,
@@ -41,6 +42,7 @@ export const loader = unstable_defineLoader(async args => {
     categories,
     includeTags: uiPrefSession.getUiPref().comicCardTags,
     userId: user?.userId,
+    bookmarkedOnly,
     includeAds: true,
   });
   const adPromise = getAdForViewing({
@@ -64,14 +66,22 @@ export const loader = unstable_defineLoader(async args => {
     topAd: adRes.result,
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     adsPath: args.context.cloudflare.env.ADS_PATH,
+    isLoggedIn: !!user,
   };
 });
 
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
   const browseUtilities = useBrowseParams();
-  const { comicsAndAds, numberOfPages, totalNumComics, pagesPath, adsPath, topAd } =
-    useLoaderData<typeof loader>();
+  const {
+    comicsAndAds,
+    numberOfPages,
+    totalNumComics,
+    pagesPath,
+    adsPath,
+    topAd,
+    isLoggedIn,
+  } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
   function onPageChange(newPage: number) {
@@ -113,7 +123,7 @@ export default function BrowsePage() {
         />
       </div>
 
-      <SearchFilter browseUtilities={browseUtilities} />
+      <SearchFilter browseUtilities={browseUtilities} isLoggedIn={isLoggedIn} />
 
       <Paginator
         numPages={numberOfPages}

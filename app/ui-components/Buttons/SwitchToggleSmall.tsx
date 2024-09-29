@@ -18,9 +18,8 @@ export default function SwitchToggleSmall({
       <label className={`inline-flex items-center cursor-pointer`}>
         <input
           type="checkbox"
-          value=""
           className="peer hidden"
-          defaultChecked={checked}
+          checked={checked}
           onChange={e => onChange(e.target.checked)}
         />
         <div

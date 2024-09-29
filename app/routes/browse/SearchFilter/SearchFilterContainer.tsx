@@ -8,6 +8,7 @@ import SearchFilterClosed from './SearchFilterClosed';
 
 type SearchFilterProps = {
   browseUtilities: BrowseUtilities;
+  isLoggedIn: boolean;
 };
 
 export const CLOSED_SEARCHFILTER_WIDTH = 300;
@@ -15,7 +16,7 @@ export const OPEN_SEARCHFILTER_MAXWIDTH = 500;
 export const SEARCHFILTER_PADDING_HORIZ = 12;
 export const SEARCHFILTER_PADDING_VERT = 8;
 
-export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
+export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilterProps) {
   const { width: windowWidth } = useWindowSize();
   const [isOpen, setIsOpenInner] = useState(false);
   const [width, setWidth] = useState(CLOSED_SEARCHFILTER_WIDTH);
@@ -35,7 +36,8 @@ export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
       !!browseUtilities.search ||
       browseUtilities.tagIDs.length > 0 ||
       !browseUtilities.categories.includes('All') ||
-      browseUtilities.sort !== 'Updated'
+      browseUtilities.sort !== 'Updated' ||
+      browseUtilities.bookmarkedOnly
     );
   }, [browseUtilities]);
 
@@ -61,6 +63,7 @@ export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
     browseUtilities.setCategories(['All']);
     browseUtilities.setPage(1);
     browseUtilities.setSort('Updated');
+    browseUtilities.setBookmarkedOnly(false);
     browseUtilities.clearTagIDs();
   }
 
@@ -122,6 +125,7 @@ export default function SearchFilter({ browseUtilities }: SearchFilterProps) {
         }}
         isVisible={isOpen}
         onHeightChange={onHeightChange}
+        isLoggedIn={isLoggedIn}
       />
       <SearchFilterClosed
         browseParams={browseUtilities}

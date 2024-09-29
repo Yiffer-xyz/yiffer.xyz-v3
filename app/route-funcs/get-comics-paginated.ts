@@ -32,6 +32,7 @@ type GetComicsParams = {
   artistName?: string;
   includeTags?: boolean;
   includeAds?: boolean;
+  bookmarkedOnly?: boolean;
 };
 
 export async function getComicsPaginated({
@@ -47,6 +48,7 @@ export async function getComicsPaginated({
   artistName,
   includeTags,
   includeAds,
+  bookmarkedOnly,
 }: GetComicsParams): ResultOrErrorPromise<{
   comicsAndAds: (ComicForBrowse | AdForViewing)[];
   numberOfPages: number;
@@ -92,7 +94,7 @@ export async function getComicsPaginated({
     paginationQueryString += ' OFFSET ? ';
   }
   const isBookmarkedQuery = `
-    LEFT JOIN (
+    ${bookmarkedOnly ? 'INNER JOIN' : 'LEFT JOIN'} (
       SELECT comicId, 1 as isBookmarked
       FROM comicbookmark
       WHERE userId = ?
