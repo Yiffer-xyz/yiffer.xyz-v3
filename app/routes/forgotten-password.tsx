@@ -12,6 +12,7 @@ import {
 } from '~/utils/request-helpers';
 import { resetPassword } from '~/utils/reset-password.server';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   await redirectIfLoggedIn(args);

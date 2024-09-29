@@ -18,8 +18,7 @@ import Button from '~/ui-components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-
-export { ErrorBoundary } from '../admin';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const allActionTypes: DashboardActionType[] = [
   'tagSuggestion',

@@ -10,8 +10,6 @@ export interface Env {
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;
   DAILY_SCHEDULE_PUBLISH_COUNT: string;
-  SENTRY_DSN: string;
-  SENTRY_AUTH_TOKEN: string;
   DB: D1Database;
 }
 

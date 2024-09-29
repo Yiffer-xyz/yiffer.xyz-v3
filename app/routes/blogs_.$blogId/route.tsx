@@ -3,6 +3,7 @@ import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getBlogById } from '~/route-funcs/get-blogs';
 import { processApiError } from '~/utils/request-helpers';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const { blogId } = args.params;

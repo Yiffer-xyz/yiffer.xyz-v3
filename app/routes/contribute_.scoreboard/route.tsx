@@ -27,6 +27,7 @@ import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type CachedPoints = {
   yearMonth: string;

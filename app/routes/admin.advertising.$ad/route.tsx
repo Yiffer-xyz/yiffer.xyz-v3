@@ -9,6 +9,7 @@ import useWindowSize from '~/utils/useWindowSize';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { approveActiveAd } from '~/route-funcs/approve-active-ad';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageAd() {
   const isMobile = useWindowSize();

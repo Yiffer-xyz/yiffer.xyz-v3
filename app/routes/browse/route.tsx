@@ -23,6 +23,7 @@ import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const url = new URL(args.request.url);

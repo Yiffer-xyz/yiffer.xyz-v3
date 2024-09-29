@@ -3,6 +3,7 @@ import React from 'react';
 import { MdArrowForward } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { GlobalAdminContext } from '../admin';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function UpdateThumbnails() {
   const globalContext: GlobalAdminContext = useOutletContext();

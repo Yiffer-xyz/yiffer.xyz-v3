@@ -19,6 +19,7 @@ import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
 import { useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
 

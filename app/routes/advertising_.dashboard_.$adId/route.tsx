@@ -17,6 +17,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 import { getFileExtension, type ComicImage } from '~/utils/general';
 import { unstable_defineLoader } from '@remix-run/cloudflare';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);

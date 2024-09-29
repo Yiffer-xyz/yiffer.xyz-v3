@@ -13,6 +13,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { LuRefreshCcw } from 'react-icons/lu';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
 

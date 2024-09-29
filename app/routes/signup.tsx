@@ -12,6 +12,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Signup() {
   const fetcher = useGoodFetcher({

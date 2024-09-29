@@ -1,3 +1,4 @@
+import React from 'react';
 import { MdChevronRight } from 'react-icons/md';
 import Link from '../Link';
 
@@ -16,9 +17,9 @@ export default function Breadcrumbs({ currentRoute, prevRoutes, className }: Pro
   return (
     <div className={`mb-4 mt-2 ${className}`}>
       {prevRoutesWithHome.map(route => (
-        <>
-          <Link href={route.href} text={route.text} key={route.href} /> <MdChevronRight />{' '}
-        </>
+        <React.Fragment key={route.href}>
+          <Link href={route.href} text={route.text} /> <MdChevronRight />{' '}
+        </React.Fragment>
       ))}
 
       {currentRoute}

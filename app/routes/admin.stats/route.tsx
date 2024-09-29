@@ -11,6 +11,7 @@ import {
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type SiteStats = {
   totalUsers: number;

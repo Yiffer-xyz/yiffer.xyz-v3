@@ -14,6 +14,7 @@ import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();

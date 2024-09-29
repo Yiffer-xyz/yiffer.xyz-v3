@@ -17,6 +17,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import Link from '~/ui-components/Link';
 import { capitalizeString } from '~/utils/general';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTags() {
   const globalContext: GlobalAdminContext = useOutletContext();

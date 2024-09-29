@@ -11,6 +11,7 @@ import TopGradientBox from '~/ui-components/TopGradientBox';
 import { capitalizeString } from '~/utils/general';
 import { fullUserLoader } from '~/utils/loaders';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const user = await fullUserLoader(args);

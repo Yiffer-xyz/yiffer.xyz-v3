@@ -5,6 +5,7 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { getAds } from '~/route-funcs/get-ads';
 import { processApiError } from '~/utils/request-helpers';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);

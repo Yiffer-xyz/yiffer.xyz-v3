@@ -7,8 +7,6 @@ interface Env {
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;
   DAILY_SCHEDULE_PUBLISH_COUNT: string;
-  SENTRY_DSN: string;
-  SENTRY_AUTH_TOKEN: string;
   CLOUDFLARE_ACCOUNT_ID: string;
   PAGES_PATH: string;
   ADS_PATH: string;

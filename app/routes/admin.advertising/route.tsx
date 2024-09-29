@@ -14,6 +14,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import { capitalizeFirstRestLower } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   return { adsPath: args.context.cloudflare.env.ADS_PATH };

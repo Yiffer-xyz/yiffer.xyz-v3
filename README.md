@@ -38,6 +38,11 @@ To make logging and tracing(invaluable!) errors as easy as possible, and to forc
 
 When wrapping errors and adding messages, they'll appear in the final log in the format `outer message >> inner message >> (db message if the original error was a db one)` - with 0-any levels of inner messages. This makes tracing errors very pleasant.
 
+### Error boundaries, catching, logging
+There are no easy solutions for catching server logs in Cloudflare Pages. Therefore, we try to secure all routes by enforcing the return of error objects in all paths. These errors are processed in `utils/request-helpers.ts`. Here, they're shipped off to an error logging service - currently the multi-purpose images server. The sending of the error over there is awaited, because otherwise the edge instance shuts down before properly sending it. Additionally, we throw a limited version of the error to be caught by the error boundary in `app/utils/error.tsx`.
+
+We have one root error boundary in `root.tsx`. This is a last resort, as it will not have theming/session data. Ideally, put the same error boundary in all top level routes. The line `export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';` does exactly this.
+
 ### Returning errors: No return value
 
 Api routes that only _do_ something but don't return anything useful, should return `Promise<ApiError | undefined>`.

@@ -2,6 +2,7 @@ import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getAllModApplications } from '~/route-funcs/get-mod-application';
 import { processApiError } from '~/utils/request-helpers';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const applicationsRes = await getAllModApplications(args.context.cloudflare.env.DB);

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { ArtistTiny } from '~/types/types';
 import type { GlobalAdminContext } from '../admin';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageArtists() {
   const navigate = useNavigate();

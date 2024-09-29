@@ -11,6 +11,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTag() {
   const navigate = useNavigate();

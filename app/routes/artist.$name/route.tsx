@@ -8,6 +8,7 @@ import { authLoader } from '~/utils/loaders';
 import ComicCard from '../browse/ComicCard';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ArtistPage() {
   const { artist, comics, notFound, queriedArtistName, pagesPath, isMod } =

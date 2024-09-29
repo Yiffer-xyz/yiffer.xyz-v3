@@ -4,6 +4,7 @@ import { RiAccountCircleFill } from 'react-icons/ri';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const user = await redirectIfNotLoggedIn(args);

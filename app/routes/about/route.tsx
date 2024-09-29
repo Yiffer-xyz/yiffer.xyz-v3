@@ -1,4 +1,5 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function AboutPage() {
   return (

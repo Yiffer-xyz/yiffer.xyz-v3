@@ -41,6 +41,7 @@ import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { unstable_defineLoader } from '@remix-run/cloudflare';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();

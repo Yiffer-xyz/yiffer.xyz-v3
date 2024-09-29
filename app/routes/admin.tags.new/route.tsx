@@ -9,6 +9,7 @@ import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-hel
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTag() {
   const navigate = useNavigate();

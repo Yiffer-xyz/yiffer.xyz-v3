@@ -7,6 +7,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import { format } from 'date-fns';
 import useWindowSize from '~/utils/useWindowSize';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   const allBlogsRes = await getAllBlogs(args.context.cloudflare.env.DB);

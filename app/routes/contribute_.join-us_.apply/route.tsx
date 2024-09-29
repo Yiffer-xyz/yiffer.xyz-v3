@@ -18,6 +18,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Apply() {
   const fetcher = useGoodFetcher({

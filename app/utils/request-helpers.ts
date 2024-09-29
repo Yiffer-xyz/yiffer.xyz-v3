@@ -5,8 +5,6 @@ import type {
   ExecDBResponse,
   QueryWithParams,
 } from '~/utils/database-facade';
-import { HANDLED_ERR_MSG } from './error';
-// import * as Sentry from '@sentry/browser';
 
 export type ResultOrErrorPromise<T> = Promise<
   { result: T; err?: undefined } | { err: ApiError }
@@ -37,16 +35,22 @@ export async function processApiError(
   err: ApiError,
   context?: { [key: string]: any }
 ): Promise<never> {
-  logApiError(prependMessage, {
-    ...err,
-    context: {
-      ...(err.context || {}),
-      ...(context || {}),
-    },
-  });
+  await logApiError(prependMessage, err, context);
 
-  throw new Error(HANDLED_ERR_MSG);
+  const logError = errToLogApiError(prependMessage, err, context);
+  delete logError.error.errorJSONStr;
+  throw new Error(JSON.stringify(logError));
 }
+
+type LogApiError = {
+  error: {
+    logMessage: string;
+    context?: any;
+    dbQueries?: any;
+    errorJSONStr?: string;
+    sqlErrorShort?: string;
+  };
+};
 
 // Use this when not wanting to throw an error (when you want
 // to show a nice error message to the user), but still need to log it.
@@ -55,18 +59,32 @@ export async function logApiError(
   err: ApiError,
   context?: { [key: string]: any }
 ) {
+  const logError = errToLogApiError(prependMessage, err, context);
+
+  try {
+    console.log('Logging error...');
+    await fetch('https://images-srv.testyiffer.xyz/error-log', {
+      // await fetch('http://localhost:8770/error-log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logError),
+    });
+    console.log('Error logged');
+  } catch (e) {
+    console.log('Error logging error', e);
+  }
+}
+
+function errToLogApiError(
+  prependMessage: string | undefined,
+  err: ApiError,
+  context?: { [key: string]: any }
+): LogApiError {
   const fullErrMsg = prependMessage
     ? prependMessage + ' >> ' + err.logMessage
     : err.logMessage;
-
-  console.log('⛔');
-  console.log(fullErrMsg);
-  console.log('⛔');
-  console.log(err.context);
-  console.log('⛔');
-  console.log(err.error);
-  console.log('⛔');
-
   const extra: any = {
     ...(err.context || {}),
     ...(context || {}),
@@ -75,35 +93,22 @@ export async function logApiError(
     extra.dbResponse = err.error;
   }
 
-  try {
-    await fetch('https://images-srv.testyiffer.xyz/error-log', {
-      // await fetch('http://localhost:8770/error-log', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        error: err,
-      }),
-    });
-  } catch (e) {
-    console.log('Error logging error', e);
-  }
+  const logContext: any = {
+    ...(err.context || {}),
+    ...(context || {}),
+  };
 
-  // Sentry.captureMessage(fullErrMsg, {
-  //   extra,
-  //   level: 'error',
-  // });
-}
+  const logError: LogApiError = {
+    error: {
+      logMessage: fullErrMsg,
+      context: logContext,
+      dbQueries: err.dbQueries,
+      errorJSONStr: JSON.stringify(err),
+      sqlErrorShort: err.error?.errorMessage,
+    },
+  };
 
-// Log a message when something fails drastically but there's no error object
-export function logApiErrorMessage(message: string, context?: { [key: string]: any }) {
-  // Sentry.captureMessage(message, {
-  //   extra: {
-  //     ...(context || {}),
-  //   },
-  //   level: 'error',
-  // });
+  return logError;
 }
 
 // Wrap a DBResponse and return an ApiError.
@@ -132,19 +137,6 @@ export function makeDbErrObj(
   return {
     err: makeDbErr(err, message, context),
   };
-}
-
-// This is for front-end errors that are thrown and thus not handled by
-// the API's error handling. Not to be called from anything other than
-// an error boundary.
-export function logErrorBoundaryException(err: Error) {
-  console.log('Error boundary captured and logging exception!');
-  console.log(err);
-  // Sentry.captureException(err, {
-  //   tags: {
-  //     errorBoundary: 'true',
-  //   },
-  // });
 }
 
 // Wraps an api error with an additional level of message, plus optional context fields

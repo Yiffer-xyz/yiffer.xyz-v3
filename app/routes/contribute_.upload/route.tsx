@@ -39,6 +39,7 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 

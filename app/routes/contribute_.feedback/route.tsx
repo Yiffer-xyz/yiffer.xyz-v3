@@ -11,7 +11,7 @@ import { create500Json, createSuccessJson, logApiError } from '~/utils/request-h
 import type { FeedbackType } from '~/types/types';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { unstable_defineAction } from '@remix-run/cloudflare';
-
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export { authLoader as loader };
 
 export default function Feedback() {
@@ -70,6 +70,7 @@ export default function Feedback() {
                   text="Please do not use the support feature to ask questions. We will only respond to support requests if you have an issue that requires our attention. If we deem it necessary, we will contact you via the email associated with your account."
                   className="mb-4"
                   disableElevation
+                  boldText={false}
                 />
               )}
               {feedbackType === 'bug' && (
@@ -79,6 +80,7 @@ export default function Feedback() {
                   text="Please report any crashes or obvious errors here. Do not use this to request new features - use the general feedback option above for that."
                   className="mb-4"
                   disableElevation
+                  boldText={false}
                 />
               )}
               {feedbackType === 'general' && (
@@ -88,6 +90,7 @@ export default function Feedback() {
                   text="Please note that we will not answer any questions."
                   className="mb-4"
                   disableElevation
+                  boldText={false}
                 />
               )}
 
@@ -96,7 +99,7 @@ export default function Feedback() {
                 name="feedbackText"
                 value={feedback}
                 onChange={setFeedback}
-                className="mb-2"
+                className="mb-2 mt-6"
               />
 
               {actionData?.error && (

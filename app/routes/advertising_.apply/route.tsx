@@ -12,6 +12,7 @@ import { useLoaderData } from '@remix-run/react';
 import { unstable_defineLoader } from '@remix-run/cloudflare';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function AdvertisingApply() {
   const { IMAGES_SERVER_URL } = useLoaderData<typeof loader>();

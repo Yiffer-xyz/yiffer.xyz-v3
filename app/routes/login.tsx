@@ -12,6 +12,7 @@ import {
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Login() {
   const fetcher = useGoodFetcher({

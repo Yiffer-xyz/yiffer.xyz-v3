@@ -3,6 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import { getUserById } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageSingleUser() {
   const { user } = useLoaderData<typeof loader>();

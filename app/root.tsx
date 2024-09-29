@@ -28,19 +28,7 @@ import type { UserSession } from './types/types';
 import './tailwind.css';
 import './main.css';
 import { getUserSession } from './utils/auth.server';
-
-// import * as Sentry from '@sentry/browser';
-
-// Sentry.init({
-//   dsn: 'https://74fe377e56b149fa9f1fa9d41d5de90b@o4504978928959488.ingest.sentry.io/4504978941542400',
-//   integrations: [new Sentry.BrowserTracing()],
-//   // Alternatively, use `process.env.npm_package_version` for a dynamic release version
-//   // if your build tool supports it.
-//   // Set tracesSampleRate to 1.0 to capture 100%
-//   // of transactions for performance monitoring.
-//   // We recommend adjusting this value in production
-//   tracesSampleRate: 1.0,
-// });
+import { YifferErrorBoundary } from './utils/error';
 
 export const links: LinksFunction = () => [
   {
@@ -119,10 +107,12 @@ function App() {
 function Layout({
   frontPageUrl,
   user,
+  excludeLogin = false,
   children,
 }: {
   frontPageUrl: string;
   user: UserSession | null;
+  excludeLogin?: boolean;
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
@@ -189,7 +179,7 @@ function Layout({
                 Icon={RiAddLine}
               />
             </>
-            {!isLoggedIn && (
+            {!isLoggedIn && !excludeLogin && (
               <a href="/login" className={navLinkStyle}>
                 <RiLoginBoxLine className="inline-block" />
                 Log in
@@ -208,5 +198,23 @@ function Layout({
 
       {children}
     </>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
+        <Layout frontPageUrl={'https://new.testyiffer.xyz'} user={null} excludeLogin>
+          <YifferErrorBoundary />
+        </Layout>
+      </body>
+    </html>
   );
 }

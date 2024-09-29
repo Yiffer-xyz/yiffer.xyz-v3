@@ -9,10 +9,10 @@ import {
   createSuccessJson,
   processApiError,
 } from '~/utils/request-helpers';
-import { setExtra } from '@sentry/browser';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Button from '~/ui-components/Buttons/Button';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function UserManager() {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export const action = unstable_defineAction(async args => {
   const formDataBody = await args.request.formData();
   const searchText = formDataBody.get('searchText');
 
-  if (!searchText || setExtra.toString().length < 3) {
+  if (!searchText || searchText.toString().length < 3) {
     return create400Json('Missing or too short searchText');
   }
 

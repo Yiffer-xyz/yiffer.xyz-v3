@@ -15,6 +15,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ComicAdminLink from '~/ui-components/ComicAdminLink/ComicAdminLink';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();

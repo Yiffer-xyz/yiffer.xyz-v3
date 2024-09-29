@@ -6,7 +6,7 @@ import type { Blog } from '~/types/types';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { authLoader } from '~/utils/loaders';
 import { colors } from 'tailwind.config';
-
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export { authLoader as loader };
 
 export default function Index() {

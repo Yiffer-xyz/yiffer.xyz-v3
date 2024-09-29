@@ -21,6 +21,7 @@ import { authLoader } from '~/utils/loaders';
 import type { SimilarArtistResponse } from '../api.search-similar-artist';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
   return await authLoader(args);

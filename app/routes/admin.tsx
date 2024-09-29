@@ -12,14 +12,13 @@ import { getAllTagsQuery } from '~/route-funcs/get-tags';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
+export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export type GlobalAdminContext = {
   comics: ComicTiny[];
   artists: ArtistTiny[];
   tags: Tag[];
 };
-
-export { ErrorBoundary } from '~/utils/error';
 
 const navWidth = 200;
 const mobileClosedBarW = 24;
