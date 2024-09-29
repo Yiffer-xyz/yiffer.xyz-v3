@@ -5,6 +5,7 @@ import type { BrowseUtilities } from './useBrowseParams';
 import { LiaUndoAltSolid } from 'react-icons/lia';
 import type { Tag } from '~/types/types';
 import SearchFilterClosed from './SearchFilterClosed';
+import { useUIPreferences } from '~/utils/theme-provider';
 
 type SearchFilterProps = {
   browseUtilities: BrowseUtilities;
@@ -18,6 +19,7 @@ export const SEARCHFILTER_PADDING_VERT = 8;
 
 export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilterProps) {
   const { width: windowWidth } = useWindowSize();
+  const { theme } = useUIPreferences();
   const [isOpen, setIsOpenInner] = useState(false);
   const [width, setWidth] = useState(CLOSED_SEARCHFILTER_WIDTH);
   const [height, setHeight] = useState(180);
@@ -61,21 +63,24 @@ export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilt
   function resetFilters() {
     browseUtilities.setSearch('');
     browseUtilities.setCategories(['All']);
-    browseUtilities.setPage(1);
+    browseUtilities.setPage(1, { scrollTop: false });
     browseUtilities.setSort('Updated');
     browseUtilities.setBookmarkedOnly(false);
     browseUtilities.clearTagIDs();
   }
 
   const openClassNames = isOpen ? '' : 'cursor-pointer';
-  const bgClassName =
-    !isOpen && isAnySearchSortActive
-      ? 'bg-theme2-primary dark:bg-theme1-primaryLessTrans'
-      : 'bg-theme1-primaryTrans';
+  const bgClassName = isAnySearchSortActive
+    ? 'bg-theme2-primary dark:bg-theme1-primaryTrans dark:border-theme2-dark dark:border-4'
+    : 'bg-theme1-primaryTrans';
+
+  const removePadding = isAnySearchSortActive && theme === 'dark' ? 4 : 0;
+  const paddingHoriz = SEARCHFILTER_PADDING_HORIZ - removePadding;
+  const paddingVert = SEARCHFILTER_PADDING_VERT - removePadding;
 
   return (
     <div
-      className={` rounded shadow mt-4 dark:text-text-white
+      className={`rounded shadow mt-4 dark:text-text-white
         ${bgClassName} ${isOverflowHidden ? 'overflow-hidden' : ''} 
         mx-auto font ${openClassNames}`}
       onClick={() => {
@@ -85,11 +90,12 @@ export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilt
         width,
         maxWidth: '95vw',
         maxHeight: height,
-        transition: 'all 0.2s ease-out',
-        paddingLeft: SEARCHFILTER_PADDING_HORIZ,
-        paddingRight: SEARCHFILTER_PADDING_HORIZ,
-        paddingTop: SEARCHFILTER_PADDING_VERT,
-        paddingBottom: SEARCHFILTER_PADDING_VERT,
+        transition:
+          'width 0.2s ease-out, height 0.2s ease-out, background-color 0.2s ease-out',
+        paddingLeft: paddingHoriz,
+        paddingRight: paddingHoriz,
+        paddingTop: paddingVert,
+        paddingBottom: paddingVert,
       }}
     >
       <div

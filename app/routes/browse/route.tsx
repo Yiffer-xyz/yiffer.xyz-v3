@@ -22,6 +22,7 @@ import { isComic } from '~/utils/general';
 import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
+import pluralize from 'pluralize';
 
 export const loader = unstable_defineLoader(async args => {
   const url = new URL(args.request.url);
@@ -84,8 +85,8 @@ export default function BrowsePage() {
   } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
-  function onPageChange(newPage: number) {
-    setPage(newPage);
+  function onPageChange(newPage: number, { scrollTop }: { scrollTop: boolean }) {
+    setPage(newPage, { scrollTop });
   }
 
   const toggleBookmarkFetcher = useGoodFetcher({
@@ -95,6 +96,10 @@ export default function BrowsePage() {
   function toggleBookmark(comicId: number) {
     toggleBookmarkFetcher.submit({ comicId });
   }
+
+  const isNoComics = totalNumComics === 0;
+
+  console.log('isNoComics', totalNumComics);
 
   return (
     <div>
@@ -125,33 +130,51 @@ export default function BrowsePage() {
 
       <SearchFilter browseUtilities={browseUtilities} isLoggedIn={isLoggedIn} />
 
-      <Paginator
-        numPages={numberOfPages}
-        currentPage={page}
-        isLoading={false}
-        onPageChange={onPageChange}
-        className="mt-6"
-      />
+      {!isNoComics && (
+        <Paginator
+          numPages={numberOfPages}
+          currentPage={page}
+          isLoading={false}
+          onPageChange={page => onPageChange(page, { scrollTop: false })}
+          className="mt-6"
+        />
+      )}
 
-      <p className="text-sm mx-auto w-fit mt-2">
-        {totalNumComics.toLocaleString('en').replace(',', ' ')} comics
+      <p className={`text-sm mx-auto w-fit mt-${isNoComics ? '8' : '2'}`}>
+        {totalNumComics.toLocaleString('en').replace(',', ' ')}{' '}
+        {pluralize('comic', totalNumComics)}
       </p>
 
-      <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4 max-w-[1780px] mx-auto pb-20">
-        {comicsAndAds
-          ? comicsAndAds.map(comicOrAd =>
-              isComic(comicOrAd) ? (
-                <ComicCard
-                  comic={comicOrAd}
-                  key={comicOrAd.id}
-                  pagesPath={pagesPath}
-                  toggleBookmark={toggleBookmark}
-                />
-              ) : (
-                <AdComicCard ad={comicOrAd} adsPath={adsPath} key={comicOrAd.renderId} />
+      <div className="pb-20">
+        <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4 max-w-[1780px] mx-auto mb-8">
+          {comicsAndAds
+            ? comicsAndAds.map(comicOrAd =>
+                isComic(comicOrAd) ? (
+                  <ComicCard
+                    comic={comicOrAd}
+                    key={comicOrAd.id}
+                    pagesPath={pagesPath}
+                    toggleBookmark={toggleBookmark}
+                  />
+                ) : (
+                  <AdComicCard
+                    ad={comicOrAd}
+                    adsPath={adsPath}
+                    key={comicOrAd.renderId}
+                  />
+                )
               )
-            )
-          : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}
+            : Array.from(Array(40).keys()).map(n => <SkeletonComicCard key={n} />)}
+        </div>
+
+        {!isNoComics && comicsAndAds.length > 5 && (
+          <Paginator
+            numPages={numberOfPages}
+            currentPage={page}
+            isLoading={false}
+            onPageChange={page => onPageChange(page, { scrollTop: true })}
+          />
+        )}
       </div>
     </div>
   );

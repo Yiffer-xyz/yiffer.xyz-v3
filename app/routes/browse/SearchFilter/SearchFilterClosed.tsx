@@ -92,8 +92,8 @@ export default function SearchFilterClosed({
         </p>
       )}
       <div className="flex flex-row gap-6">
-        <div>
-          <GoSortDesc /> Sort: {sort}
+        <div className={`${sort === 'Updated' ? '' : 'font-semibold'}`}>
+          <GoSortDesc /> Order: {sort}
         </div>
         <div>
           <BsTags /> {comicCardTags ? 'Tags shown' : 'Tags hidden'}

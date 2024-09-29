@@ -80,7 +80,7 @@ export default function SearchFilterContent({
   const [internalSearch, setInternalSearch] = useState(search);
 
   const debouncedSearch = useDebounce(() => {
-    setPage(1);
+    setPage(1, { scrollTop: false });
     setSearch(internalSearch);
   });
 
@@ -114,11 +114,13 @@ export default function SearchFilterContent({
   function onTagSelected(tag: Tag) {
     _setTags([..._tags, tag]);
     addTagID(tag.id);
+    setPage(1, { scrollTop: false });
   }
 
   function onTagDeselected(tag: Tag) {
     _setTags(_tags.filter(t => t.id !== tag.id));
     removeTagID(tag.id);
+    setPage(1, { scrollTop: false });
   }
 
   // Local vars updated while dropdown open; set to params when it's closed
@@ -129,6 +131,7 @@ export default function SearchFilterContent({
   function onCategoriesClose() {
     if (areArraysEqual(_categories, categories)) return;
     setCategories(_categories);
+    setPage(1, { scrollTop: false });
   }
 
   // Local vars for a more snappy feel
@@ -139,6 +142,7 @@ export default function SearchFilterContent({
   const onSortChange = (newSort: SortType) => {
     _setSort(newSort);
     setSort(newSort);
+    setPage(1, { scrollTop: false });
   };
 
   // Local vars for a more snappy feel
@@ -149,6 +153,7 @@ export default function SearchFilterContent({
   const onBookmarkedOnlyChange = (newVal: boolean) => {
     _setBookmarkedOnly(newVal);
     setBookmarkedOnly(newVal);
+    setPage(1, { scrollTop: false });
   };
 
   const availableSortTypes = isLoggedIn

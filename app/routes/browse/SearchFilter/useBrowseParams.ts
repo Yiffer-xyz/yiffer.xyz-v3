@@ -17,7 +17,7 @@ export type BrowseParams = {
 };
 
 export type BrowseUtilities = BrowseParams & {
-  setPage: (newPage: number) => void;
+  setPage: (newPage: number, { scrollTop }: { scrollTop: boolean }) => void;
   setSearch: (newSearch: string) => void;
   setCategories: (newCategories: CategoryWithAll[]) => void;
   setSort: (newSort: SortType) => void;
@@ -63,23 +63,27 @@ export function useBrowseParams(): BrowseUtilities {
   const parsedParams = useMemo(() => parseBrowseParams(params), [params]);
 
   const updateParams = useCallback(
-    (paramName: string, newValue: string | number | undefined) => {
+    (
+      paramName: string,
+      newValue: string | number | undefined,
+      preventScrollReset = true
+    ) => {
       if (newValue === undefined || newValue.toString().trim() === '') {
         params.delete(paramName);
       } else {
         params.set(paramName, newValue.toString());
       }
-      setParams(params);
+      setParams(params, { preventScrollReset });
     },
     [params, setParams]
   );
 
   const setPage = useCallback(
-    (newPage: number) => {
+    (newPage: number, { scrollTop }: { scrollTop: boolean }) => {
       if (newPage <= 1) {
-        updateParams('page', undefined);
+        updateParams('page', undefined, !scrollTop);
       } else {
-        updateParams('page', newPage);
+        updateParams('page', newPage, !scrollTop);
       }
     },
     [updateParams]
@@ -104,7 +108,7 @@ export function useBrowseParams(): BrowseUtilities {
         });
       }
 
-      setParams(params);
+      setParams(params, { preventScrollReset: true });
     },
     [params, setParams]
   );
@@ -138,7 +142,7 @@ export function useBrowseParams(): BrowseUtilities {
     addTagID: (tag: number) => {
       if (parsedParams.tagIDs.includes(tag)) return;
       params.append('tag', tag.toString());
-      setParams(params);
+      setParams(params, { preventScrollReset: true });
     },
     removeTagID: (tag: number) => {
       if (!parsedParams.tagIDs.includes(tag)) return;
@@ -148,11 +152,11 @@ export function useBrowseParams(): BrowseUtilities {
           params.append('tag', id.toString());
         }
       });
-      setParams(params);
+      setParams(params, { preventScrollReset: true });
     },
     clearTagIDs: () => {
       params.delete('tag');
-      setParams(params);
+      setParams(params, { preventScrollReset: true });
     },
     showTags: parsedParams.showTags,
     setShowTags: (showTags: boolean) => {
