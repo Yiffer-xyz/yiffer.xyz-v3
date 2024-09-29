@@ -399,8 +399,6 @@ function calculateFilesChanged(
     }
   }
 
-  console.log(combineSequentialFileChanges(filesThatHaveChanged));
-
   // return filesThatHaveChanged;
   return combineSequentialFileChanges(filesThatHaveChanged);
 }

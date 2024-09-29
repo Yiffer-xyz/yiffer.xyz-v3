@@ -81,7 +81,8 @@ export async function getComicsPaginated({
     (!tagIDs || tagIDs.length === 0) &&
     !search &&
     !artistId &&
-    !artistName;
+    !artistName &&
+    !bookmarkedOnly;
 
   const orderBy = orderByParamToDbField(order ?? 'updated');
   const orderQueryString = `ORDER BY ${orderBy} DESC`;
@@ -137,6 +138,7 @@ export async function getComicsPaginated({
     : `SELECT COUNT(*) AS count FROM (
         SELECT comic.id
         FROM comic
+        ${bookmarkedOnly ? isBookmarkedQuery : ''}
         ${innerJoinKeywordString}
         ${search ? ' INNER JOIN artist ON (artist.id = comic.artist) ' : ''}
         ${filterQueryString}
@@ -153,6 +155,7 @@ export async function getComicsPaginated({
     queryParams = [userId, userId];
   }
   queryParams.push(...filterQueryParams);
+  if (bookmarkedOnly) totalCountQueryParams.push(userId);
   totalCountQueryParams.push(...filterQueryParams);
 
   if (limit) {

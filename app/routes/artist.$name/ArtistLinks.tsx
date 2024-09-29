@@ -49,7 +49,6 @@ export default function ArtistLinks({
 
       {artist.links.map(link => {
         const siteImgPath = linkToSiteIcon(link);
-        console.log({ siteImgPath });
 
         return (
           <div className="flex flex-row items-center gap-1 mb-1" key={link}>
@@ -74,7 +73,6 @@ export default function ArtistLinks({
 }
 
 function linkToSiteIcon(link: string): string | null {
-  console.log(link);
   if (link.includes('e621.net')) return `${websiteImgPath}/e621.png`;
   if (link.includes('patreon.com')) return `${websiteImgPath}/patreon.png`;
   if (link.includes('twitter') || link.includes('://x.com/') || link.startsWith('x.com'))

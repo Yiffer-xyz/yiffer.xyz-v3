@@ -8,7 +8,6 @@ export const loader = unstable_defineLoader(async args => {
   const { blogId } = args.params;
 
   if (!blogId) {
-    console.log('no id');
     return { notFound: true, blog: null, queryStr: blogId };
   }
 

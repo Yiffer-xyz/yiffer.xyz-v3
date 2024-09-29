@@ -59,8 +59,6 @@ export async function updateStarRating(
   `;
   const queryParams = [userId, comicId, stars, stars];
 
-  console.log(upsertQuery, queryParams);
-
   const dbRes = await queryDbExec(db, upsertQuery, queryParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
