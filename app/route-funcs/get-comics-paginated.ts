@@ -1,6 +1,7 @@
 import { ADS_PER_PAGE, COMICS_PER_PAGE } from '~/types/constants';
 import type { AdForViewing, ComicForBrowse } from '~/types/types';
 import { queryDbMultiple } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -226,8 +227,8 @@ export async function getComicsPaginated({
           return { name, id: parseInt(id, 10) };
         })
       : undefined,
-    published: new Date(c.published),
-    updated: new Date(c.updated),
+    published: parseDbDateStr(c.published),
+    updated: parseDbDateStr(c.updated),
     isBookmarked: c.isBookmarked === 1,
   })) as ComicForBrowse[];
 

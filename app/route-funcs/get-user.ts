@@ -1,5 +1,6 @@
 import type { User } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type {
   ResultOrErrorPromise,
   ResultOrNotFoundOrErrorPromise,
@@ -87,8 +88,8 @@ function dbUserToUser(user: DbUser): User {
   return {
     ...user,
     isBanned: !!user.isBanned,
-    createdTime: new Date(user.createdTime),
-    banTime: user.banTime ? new Date(user.banTime) : undefined,
-    lastActionTime: user.lastActionTime ? new Date(user.lastActionTime) : undefined,
+    createdTime: parseDbDateStr(user.createdTime),
+    banTime: user.banTime ? parseDbDateStr(user.banTime) : undefined,
+    lastActionTime: user.lastActionTime ? parseDbDateStr(user.lastActionTime) : undefined,
   };
 }

@@ -1,6 +1,7 @@
 import type { ComicPublishStatus, ComicTiny } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -57,7 +58,7 @@ export function mapDBComicTiny(
     name: comic.name,
     id: comic.id,
     publishStatus: comic.publishStatus,
-    temp_published: comic.published,
+    temp_published: comic.published ? parseDbDateStr(comic.published) : undefined,
     temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
   }));
 

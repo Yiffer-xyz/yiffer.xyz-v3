@@ -55,7 +55,7 @@ export default function UserUploadSection({
         review.
       </p>
       <p>Uploaded by {comicData.metadata?.uploadUsername}.</p>
-      <p>Uploaded {format(new Date(comicData.metadata?.timestamp || ''), 'PPPPp')}</p>
+      <p>Uploaded {format(comicData.metadata?.timestamp || '', 'PPPPp')}</p>
 
       <h4 className="mt-4">Review submission</h4>
       <p>

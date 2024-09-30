@@ -6,6 +6,7 @@ import type {
   AdvertisementFullData,
 } from '~/types/types';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type {
   ResultOrErrorPromise,
   ResultOrNotFoundOrErrorPromise,
@@ -164,10 +165,10 @@ export async function getAdById({
 
   const paymentsMapped = payments.map(({ amount, registeredDate }) => ({
     amount,
-    registeredDate: new Date(registeredDate),
+    registeredDate: parseDbDateStr(registeredDate),
   }));
   const clicksMapped = clicks.map(({ date, clicks }) => ({
-    date: new Date(date),
+    date: parseDbDateStr(date),
     clicks,
   }));
 
@@ -185,7 +186,7 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
   let currentDaysActive = 0;
   if (ad.status === 'ACTIVE' && ad.lastActivationDate) {
     const today = new Date();
-    const lastActivationDate = new Date(ad.lastActivationDate);
+    const lastActivationDate = parseDbDateStr(ad.lastActivationDate);
     currentDaysActive = differenceInDays(today, lastActivationDate);
     totalDaysActive += currentDaysActive + 1;
   }
@@ -204,8 +205,8 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     },
     status: ad.status,
     isAnimated: ad.isAnimated,
-    expiryDate: ad.expiryDate ? new Date(ad.expiryDate) : undefined,
-    createdDate: new Date(ad.createdDate),
+    expiryDate: ad.expiryDate ? parseDbDateStr(ad.expiryDate) : undefined,
+    createdDate: parseDbDateStr(ad.createdDate),
     advertiserNotes: ad.advertiserNotes,
     clicks: ad.clicks,
     impressions: ad.impressions,
@@ -221,7 +222,7 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     correctionNote: ad.correctionNote,
     freeTrialState: ad.freeTrialState,
     lastActivationDate: ad.lastActivationDate
-      ? new Date(ad.lastActivationDate)
+      ? parseDbDateStr(ad.lastActivationDate)
       : undefined,
     numDaysActive: totalDaysActive,
     currentDaysActive,

@@ -4,7 +4,6 @@ import { AiOutlinePlus } from 'react-icons/ai';
 import { IoDocumentOutline, IoStar } from 'react-icons/io5';
 import { LuRefreshCcw } from 'react-icons/lu';
 import type { Comic } from '~/types/types';
-import { UTCTimeStrToLocalDate } from '~/utils/date-utils';
 import { desktopStatsWidth } from './route';
 
 type ComicStatsProps = {
@@ -33,14 +32,14 @@ export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
       {comic.published && (
         <div className="flex flex-row items-center gap-1.5" title="Published">
           <AiOutlinePlus className="mt-[1.5px]" />
-          <p>{format(UTCTimeStrToLocalDate(comic.published), 'PP')}</p>
+          <p>{format(comic.published, 'PP')}</p>
         </div>
       )}
 
       {comic.updated && comic.updated !== comic.published && (
         <div className="flex flex-row items-center gap-1.5" title="Updated">
           <LuRefreshCcw className="mt-[3px] mr-[1px]" size={13} />
-          <p>{format(UTCTimeStrToLocalDate(comic.updated), 'PP')}</p>
+          <p>{format(comic.updated, 'PP')}</p>
         </div>
       )}
 

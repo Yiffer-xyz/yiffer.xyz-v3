@@ -30,9 +30,7 @@ export function ScheduledComic({
     <>
       {hasDate ? (
         <p className="mb-2 -mt-2">
-          <b>
-            Scheduled for {format(new Date(comicData.metadata?.publishDate || ''), 'PPP')}
-          </b>
+          <b>Scheduled for {format(comicData.metadata?.publishDate || '', 'PPP')}</b>
         </p>
       ) : (
         <p className="mb-2 -mt-2">

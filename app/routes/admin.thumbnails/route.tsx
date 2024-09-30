@@ -16,15 +16,14 @@ export default function UpdateThumbnails() {
     .filter(comic => !comic.temp_hasHighresThumbnail)
     .sort((a, b) => {
       if (!a.temp_published || !b.temp_published) return 0;
-      return b.temp_published.localeCompare(a.temp_published);
+      return b.temp_published.getTime() - a.temp_published.getTime();
     })
     .map(comic => ({
       id: comic.id,
       name: comic.name,
       daysSincePublished: comic.temp_published
         ? Math.floor(
-            (Date.now() - new Date(comic.temp_published).getTime()) /
-              (1000 * 60 * 60 * 24)
+            (Date.now() - comic.temp_published.getTime()) / (1000 * 60 * 60 * 24)
           )
         : 0,
     }));

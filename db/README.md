@@ -9,7 +9,7 @@ Should make this more easily configurable in the future, of course. Ideas for ho
 
 ### Set up tables and test data
 ⚠️ For interacting with database on cloudflare non-locally, replace `yiffer-local-dev` with `yiffer-d1-test`!
-With the new version of wrangler, commands are local by default. To run against live data, add `--remote` to your commands.
+With the new version of wrangler, commands are local by default. To run against live data, add `--remote` to your commands. Note that for local development, you can only run against local. You can interact directly with the database on the live site through the commands below, though.
 
 ```sh
 # For local development

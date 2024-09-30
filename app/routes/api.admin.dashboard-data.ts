@@ -8,6 +8,7 @@ import type {
 } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 
 type UserOrIP = {
@@ -36,7 +37,7 @@ export type DashboardAction = {
   secondaryField?: string;
   description?: string;
   isProcessed: boolean;
-  timestamp: string;
+  timestamp: Date;
   assignedMod?: UsernameAndUserId;
   user: UserOrIP;
   verdict?: string; // the result of the mod processing (eg. "approved", "rejected - comment 'asdasd'")
@@ -192,7 +193,7 @@ export const loader = unstable_defineLoader(async args => {
   ];
 
   allSuggestions.sort((a, b) => {
-    return a.timestamp.localeCompare(b.timestamp, undefined, {}) * -1;
+    return b.timestamp.getTime() - a.timestamp.getTime();
   });
 
   return createSuccessJson(allSuggestions);
@@ -220,7 +221,7 @@ type TagSuggestionGroup = {
   id: number;
   comicId: number;
   comicName: string;
-  timestamp: string;
+  timestamp: Date;
   userId: number | undefined;
   userIP: string | undefined;
   username: string | undefined;
@@ -249,7 +250,7 @@ function mapDbTagSuggestions(input: DbFullTagSuggestion[]): DashboardAction[] {
         id: dbTagSugg.tagSuggestionGroupId,
         comicId: dbTagSugg.comicId,
         comicName: dbTagSugg.comicName,
-        timestamp: dbTagSugg.timestamp,
+        timestamp: parseDbDateStr(dbTagSugg.timestamp),
         userId: dbTagSugg.userId,
         userIP: dbTagSugg.userIP,
         username: dbTagSugg.username,
@@ -324,7 +325,7 @@ function mapDbComicProblems(input: DbComicProblem[]): DashboardAction[] {
       secondaryField: dbComicProblem.problemCategory,
       description: dbComicProblem.description,
       isProcessed: dbComicProblem.status !== 'pending',
-      timestamp: dbComicProblem.timestamp,
+      timestamp: parseDbDateStr(dbComicProblem.timestamp),
       user: dbComicProblem.userId
         ? { userId: dbComicProblem.userId, username: dbComicProblem.username }
         : { ip: dbComicProblem.userIP },
@@ -380,7 +381,7 @@ function mapDbComicSuggestions(input: DbComicSuggestion[]): DashboardAction[] {
       primaryField: `${dbComicSugg.comicName} - ${dbComicSugg.artistName}`,
       description: dbComicSugg.description,
       isProcessed: dbComicSugg.status !== 'pending',
-      timestamp: dbComicSugg.timestamp,
+      timestamp: parseDbDateStr(dbComicSugg.timestamp),
       user: dbComicSugg.userId
         ? { userId: dbComicSugg.userId, username: dbComicSugg.username }
         : { ip: dbComicSugg.userIP },
@@ -463,7 +464,7 @@ function mapDbComicUploads(input: DbComicUpload[]): DashboardAction[] {
           comicId: dbComicUpload.comicId,
           primaryField: `${comicName} - ${dbComicUpload.artistName}`,
           isProcessed: dbComicUpload.publishStatus !== 'uploaded',
-          timestamp: dbComicUpload.timestamp,
+          timestamp: parseDbDateStr(dbComicUpload.timestamp),
           user: dbComicUpload.uploadUsername
             ? {
                 userId: dbComicUpload.uploadUserId,
@@ -501,7 +502,7 @@ function mapDbPendingComicProblems(input: DbPendingComicSimple[]): DashboardActi
       comicId: dbPending.comicId,
       primaryField: `${dbPending.comicName} - ${dbPending.artistName}`,
       isProcessed: false,
-      timestamp: dbPending.timestamp,
+      timestamp: parseDbDateStr(dbPending.timestamp),
       user:
         dbPending.uploadUserId && dbPending.uploadUsername
           ? {

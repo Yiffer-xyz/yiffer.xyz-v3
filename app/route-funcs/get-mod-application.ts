@@ -1,5 +1,6 @@
 import type { ModApplication } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -26,7 +27,7 @@ export async function getAllModApplications(
 
   const applications = dbRes.result.map(app => ({
     ...app,
-    timestamp: new Date(app.timestamp),
+    timestamp: parseDbDateStr(app.timestamp),
   }));
 
   return { result: applications };
@@ -55,7 +56,7 @@ export async function getModApplicationForUser(
 
   const applicationOrNull =
     dbRes.result.length > 0
-      ? { ...dbRes.result[0], timestamp: new Date(dbRes.result[0].timestamp) }
+      ? { ...dbRes.result[0], timestamp: parseDbDateStr(dbRes.result[0].timestamp) }
       : null;
 
   return { result: applicationOrNull };

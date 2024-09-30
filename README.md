@@ -30,7 +30,7 @@ API Routes that are not tied to a single component are still `action`s. These ha
 
 ### Dates
 
-Unfortunately, sqlite does not support time zones in their dates. Therefore, every date is stored as UTC. When displaying dates, they should be converted to the user's timezone _on the front-end only_. The CF workers run anywhere, so we must treat everything as UTC there (i.e. no `new Date()` -> `toDateString()` etc. in the api). Additionally, when going from back-end to front-end in Remix, dates are serialized as strings. So, in the front-end, whenever a date is encountered, run it through `UTCTimeStrToLocalDate` to get a correct `Date` object. Whenever a date is sent to the back-end, it should be serialized as a string using `localDateToUTCTimeStr`.
+Every database date is stored as UTC. This used to be more convoluted, but with the newer Remix versions, dates can be sent as Date objects from the back-end to the front-end. It is, however, important to call `parseDbDateStr` on them when they are encountered from the database - otherwise, the date will be off in any time zone that's not UTC. In theory, the user's location could be in a different time zone than the cloudflare edge instance, but this should be quite rare, and even so the date will only be off by an hour at worst. The alternative would be to not convert any dates until they're on the front-end.
 
 ## Error handling
 

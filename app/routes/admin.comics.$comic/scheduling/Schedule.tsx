@@ -16,9 +16,7 @@ type ScheduleParams = {
 
 export function Schedule({ comicData, onCancel, onFinish }: ScheduleParams) {
   const [publishDate, setPublishDate] = useState<Date>(
-    comicData.metadata?.publishDate
-      ? new Date(comicData.metadata.publishDate)
-      : new Date()
+    comicData.metadata?.publishDate ?? new Date()
   );
 
   const fetcher = useGoodFetcher({

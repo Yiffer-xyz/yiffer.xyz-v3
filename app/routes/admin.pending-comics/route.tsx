@@ -145,7 +145,7 @@ export default function PendingComics() {
 
           const publishedP = comic.publishStatus === 'scheduled' && comic.publishDate && (
             <p>
-              <MdCheck /> Scheduled: {format(new Date(comic.publishDate), 'MMM do')}
+              <MdCheck /> Scheduled: {format(comic.publishDate, 'MMM do')}
             </p>
           );
 
@@ -190,7 +190,7 @@ export default function PendingComics() {
           const addedReviewerP = (
             <p>
               Added by {comic.uploadUsername || comic.uploadUserIP},{' '}
-              {format(new Date(comic.timestamp), 'MMM do')}
+              {format(comic.timestamp, 'MMM do')}
               {comic.reviewerModName && <> - reviewer: {comic.reviewerModName}</>}
             </p>
           );
@@ -215,7 +215,7 @@ export default function PendingComics() {
                   {errorP}
                   <p>
                     Added by {comic.uploadUsername || comic.uploadUserIP},{' '}
-                    {format(new Date(comic.timestamp), 'MMM do')}
+                    {format(comic.timestamp, 'MMM do')}
                   </p>
                   {comic.reviewerModName && <p>Reviewer: {comic.reviewerModName}</p>}
                   {scheduledByP}

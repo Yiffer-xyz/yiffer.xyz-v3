@@ -190,12 +190,12 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
             {ad.expiryDate && (
               <TableRow>
                 <TableCell className="font-semibold">Expiry date</TableCell>
-                <TableCell>{format(new Date(ad.expiryDate), 'PPP')}</TableCell>
+                <TableCell>{format(ad.expiryDate, 'PPP')}</TableCell>
               </TableRow>
             )}
             <TableRow>
               <TableCell className="font-semibold">Created</TableCell>
-              <TableCell>{format(new Date(ad.createdDate), 'PPP')}</TableCell>
+              <TableCell>{format(ad.createdDate, 'PPP')}</TableCell>
             </TableRow>
             {ad.numDaysActive > 0 && (
               <TableRow>

@@ -7,14 +7,14 @@ import useWindowSize from '~/utils/useWindowSize';
 export default function AdClickStats({
   clickStats,
 }: {
-  clickStats: { clicks: number; date: string }[];
+  clickStats: { clicks: number; date: Date }[];
 }) {
   const { theme } = useUIPreferences();
   const { width, isMobile } = useWindowSize();
 
   const processedData = useMemo(() => {
     return clickStats.map(click => ({
-      date: new Date(click.date).getTime(),
+      date: click.date.getTime(),
       clicks: click.clicks,
     }));
   }, [clickStats]);

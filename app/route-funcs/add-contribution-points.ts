@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import type { ApiError } from '~/utils/request-helpers';
 import { makeDbErr } from '~/utils/request-helpers';
@@ -11,7 +10,10 @@ export async function addContributionPoints(
 ): Promise<ApiError | undefined> {
   if (!userId) return;
 
-  const yearMonth = format(new Date(), 'yyyy-MM');
+  const today = new Date();
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth() + 1;
+  const yearMonth = `${year}-${month}`;
   const logCtx = { userId, pointColumn, yearMonth };
 
   const getExistingPointsForMonthQuery = `

@@ -1,5 +1,6 @@
 import type { PendingComic } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -62,8 +63,8 @@ export async function getPendingComics(
 
   const comics = dbRes.result.map(comic => ({
     ...comic,
-    timestamp: new Date(comic.timestamp),
-    publishDate: comic.publishDate ? new Date(comic.publishDate) : undefined,
+    timestamp: parseDbDateStr(comic.timestamp),
+    publishDate: comic.publishDate ? parseDbDateStr(comic.publishDate) : undefined,
   }));
 
   return { result: comics };

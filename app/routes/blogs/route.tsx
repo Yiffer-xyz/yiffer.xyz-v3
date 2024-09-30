@@ -43,21 +43,17 @@ export default function BlogPage() {
                   text={blogs[0].title}
                   showRightArrow
                 />
-                {isMobile && <p>{format(new Date(blogs[0].timestamp), 'PPP')}</p>}
+                {isMobile && <p>{format(blogs[0].timestamp, 'PPP')}</p>}
               </TableCell>
-              {!isMobile && (
-                <TableCell>{format(new Date(blogs[0].timestamp), 'PPP')}</TableCell>
-              )}
+              {!isMobile && <TableCell>{format(blogs[0].timestamp, 'PPP')}</TableCell>}
             </TableRow>
             {blogs.slice(1).map(blog => (
               <TableRow key={blog.id}>
                 <TableCell>
                   <Link href={`/blogs/${blog.id}`} text={blog.title} showRightArrow />
-                  {isMobile && <p>{format(new Date(blog.timestamp), 'PPP')}</p>}
+                  {isMobile && <p>{format(blog.timestamp, 'PPP')}</p>}
                 </TableCell>
-                {!isMobile && (
-                  <TableCell>{format(new Date(blog.timestamp), 'PPP')}</TableCell>
-                )}
+                {!isMobile && <TableCell>{format(blog.timestamp, 'PPP')}</TableCell>}
               </TableRow>
             ))}
           </TableBody>

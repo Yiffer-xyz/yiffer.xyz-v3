@@ -50,8 +50,7 @@ export async function deactivateAd(
 
   let newActiveDays = 0;
   if (adRes.result.ad.lastActivationDate) {
-    newActiveDays =
-      differenceInDays(new Date(), new Date(adRes.result.ad.lastActivationDate)) + 1;
+    newActiveDays = differenceInDays(new Date(), adRes.result.ad.lastActivationDate) + 1;
   }
 
   const query = `UPDATE advertisement

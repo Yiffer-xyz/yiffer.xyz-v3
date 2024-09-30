@@ -32,7 +32,7 @@ export default function ComicCard({
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
-  const isNewComic = differenceInDays(new Date(), new Date(comic.published)) < 14;
+  const isNewComic = differenceInDays(new Date(), comic.published) < 14;
 
   const showTags = comicCardTags || showStaticTags;
 

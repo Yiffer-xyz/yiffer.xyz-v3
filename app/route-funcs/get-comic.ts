@@ -1,6 +1,8 @@
+import { format } from 'date-fns';
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -115,8 +117,8 @@ function mergeDbFieldsToComic(
     publishStatus: dbComic.publishStatus,
     category: dbComic.category,
     numberOfPages: dbComic.numberOfPages,
-    published: dbComic.published ? new Date(dbComic.published) : undefined,
-    updated: dbComic.updated ? new Date(dbComic.updated) : undefined,
+    published: dbComic.published ? parseDbDateStr(dbComic.published) : undefined,
+    updated: dbComic.updated ? parseDbDateStr(dbComic.updated) : undefined,
     avgStarsPercent: dbComic.avgStars ? Math.round((dbComic.avgStars - 1) * 50) : 0,
     sumStars: dbComic.sumStars,
     numTimesStarred: dbComic.numTimesStarred,
@@ -150,9 +152,9 @@ function mergeDbFieldsToComic(
 
   if (includeMetadata) {
     comic.metadata = {
-      timestamp: new Date(dbComic.timestamp),
+      timestamp: parseDbDateStr(dbComic.timestamp),
       errorText: dbComic.errorText,
-      publishDate: dbComic.publishDate ? new Date(dbComic.publishDate) : undefined,
+      publishDate: dbComic.publishDate ? parseDbDateStr(dbComic.publishDate) : undefined,
       modId: dbComic.modId,
       modComment: dbComic.modComment,
       verdict: dbComic.verdict,

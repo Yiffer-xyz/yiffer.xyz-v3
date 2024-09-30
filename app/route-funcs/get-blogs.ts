@@ -1,5 +1,6 @@
 import type { Blog } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
+import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
@@ -76,7 +77,7 @@ function dbBlogToBlog(dbBlog: DbBlog): Blog {
     id: dbBlog.id,
     title: dbBlog.title,
     content: dbBlog.content,
-    timestamp: new Date(dbBlog.timestamp),
+    timestamp: parseDbDateStr(dbBlog.timestamp),
     authorUser: {
       id: dbBlog.userId,
       username: dbBlog.username,

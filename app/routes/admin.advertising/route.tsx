@@ -61,8 +61,7 @@ export default function Advertising() {
     });
 
     return filtered.sort((a, b) => {
-      if (sort === 'age')
-        return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+      if (sort === 'age') return b.createdDate.getTime() - a.createdDate.getTime();
       if (sort === 'total-clicks') return b.clicks - a.clicks;
       if (sort === 'clicks-per-day') return b.clicksPerDayActive - a.clicksPerDayActive;
       if (sort === 'click-rate') return b.clickRateSrv - a.clickRateSrv;

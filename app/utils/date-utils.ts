@@ -1,10 +1,14 @@
 import { formatDistanceStrict, formatDistanceToNow } from 'date-fns';
 
-export function getTimeAgo(time: string) {
-  const timeAgo = formatDistanceToNow(new Date(time), {
-    addSuffix: false,
-  });
+// All db times are UTC. Add the Z to make this execution (local CF edge point or user's device)
+// parse it as UTC and therefore make the Date object correct.
+// ⚠️ This MUST be done on all date strings coming from the db ⚠️
+export function parseDbDateStr(dbDate: string): Date {
+  return new Date(dbDate + 'Z');
+}
 
+export function getTimeAgo(time: Date) {
+  const timeAgo = formatDistanceToNow(time, { addSuffix: false });
   return timeAgo.replace('about ', '').trim();
 }
 
@@ -40,12 +44,4 @@ export function getTimeAgoShort(time: Date, includeSpace = true) {
     .replace(' month', 'mo')
     .replace(' years', 'yr')
     .replace(' year', 'yr');
-}
-
-export function UTCTimeStrToLocalDate(utcTimeStr: string): Date {
-  return new Date(utcTimeStr + 'Z');
-}
-
-export function localDateToUTCTimeStr(date: Date): string {
-  return date.toISOString().replace('T', ' ').replace('Z', '');
 }

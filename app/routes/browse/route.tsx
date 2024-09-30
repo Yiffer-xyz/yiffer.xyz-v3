@@ -100,8 +100,6 @@ export default function BrowsePage() {
 
   const isNoComics = totalNumComics === 0;
 
-  console.log('isNoComics', totalNumComics);
-
   return (
     <div>
       <h1

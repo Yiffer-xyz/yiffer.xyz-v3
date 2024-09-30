@@ -43,8 +43,8 @@ export default function AccountPage() {
       </p>
 
       <p className="mt-2">
-        <span className="font-bold">Account created</span>{' '}
-        {format(new Date(user.createdTime), 'PPPP')}
+        <span className="font-bold">Account created</span>:{' '}
+        {format(user.createdTime, 'PPPP')}
       </p>
 
       <ChangePassword />

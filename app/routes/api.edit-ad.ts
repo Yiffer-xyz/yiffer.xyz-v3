@@ -110,8 +110,7 @@ export async function editAd(
   if (status === 'ENDED') {
     let newActiveDays = 0;
     if (existingAd.lastActivationDate) {
-      newActiveDays =
-        differenceInDays(new Date(), new Date(existingAd.lastActivationDate)) + 1;
+      newActiveDays = differenceInDays(new Date(), existingAd.lastActivationDate) + 1;
     }
     maybeDeactivationStr = `, numDaysActive = numDaysActive + ${newActiveDays}, lastActivationDate = NULL`;
   }
