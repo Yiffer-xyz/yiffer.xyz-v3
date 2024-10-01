@@ -37,18 +37,20 @@ export async function processApiError(
 ): Promise<never> {
   await logApiError(prependMessage, err, context);
 
-  const logError = errToLogApiError(prependMessage, err, context);
+  const logError = errToExternalLogError(prependMessage, err, context);
   delete logError.error.errorJSONStr;
   throw new Error(JSON.stringify(logError));
 }
 
-type LogApiError = {
+export type ExternalLogError = {
   error: {
     logMessage: string;
     context?: any;
     dbQueries?: any;
     errorJSONStr?: string;
     sqlErrorShort?: string;
+    isServerError: boolean;
+    isClientError: boolean;
   };
 };
 
@@ -59,8 +61,11 @@ export async function logApiError(
   err: ApiError,
   context?: { [key: string]: any }
 ) {
-  const logError = errToLogApiError(prependMessage, err, context);
+  const logError = errToExternalLogError(prependMessage, err, context);
+  await logErrorExternally(logError);
+}
 
+export async function logErrorExternally(logError: ExternalLogError) {
   try {
     console.log('Logging error...');
     await fetch('https://images-srv.testyiffer.xyz/error-log', {
@@ -77,11 +82,11 @@ export async function logApiError(
   }
 }
 
-function errToLogApiError(
+function errToExternalLogError(
   prependMessage: string | undefined,
   err: ApiError,
   context?: { [key: string]: any }
-): LogApiError {
+): ExternalLogError {
   const fullErrMsg = prependMessage
     ? prependMessage + ' >> ' + err.logMessage
     : err.logMessage;
@@ -98,13 +103,15 @@ function errToLogApiError(
     ...(context || {}),
   };
 
-  const logError: LogApiError = {
+  const logError: ExternalLogError = {
     error: {
       logMessage: fullErrMsg,
       context: logContext,
       dbQueries: err.dbQueries,
       errorJSONStr: JSON.stringify(err),
       sqlErrorShort: err.error?.errorMessage,
+      isServerError: true,
+      isClientError: false,
     },
   };
 

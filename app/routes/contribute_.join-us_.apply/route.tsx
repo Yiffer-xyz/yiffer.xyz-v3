@@ -46,7 +46,8 @@ export default function Apply() {
       <p>
         In order to be accepted as a mod, you must have and use a Telegram account. We use
         telegram for communication and announcements for mods. If you do not have a
-        telegram account, you will not be accepted.
+        telegram account, or if the username you enter doesn't work, you will not be
+        accepted.
       </p>
 
       {hasExistingApplication && (
@@ -63,7 +64,7 @@ export default function Apply() {
           <fetcher.Form className="w-fit mx-auto flex flex-col">
             <TextareaUncontrolled
               name="notes"
-              label="Tell us a little about why you want to be a mod, and what sources you use for finding comics (which websites):"
+              label="Briefly tell us why you want to be a mod, and what sources you use for finding comics (which websites):"
               className="mb-12"
               validatorFunc={v => v.length > 0}
               onErrorChange={hasError => setNotesIsValid(!hasError)}

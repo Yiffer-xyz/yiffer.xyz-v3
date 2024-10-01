@@ -3,6 +3,8 @@ import type { ErrorResponse } from '@remix-run/react';
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react';
 import { colors } from 'tailwind.config';
 import Link from '~/ui-components/Link';
+import { useGoodFetcher } from './useGoodFetcher';
+import { useEffect } from 'react';
 
 export const HANDLED_ERR_MSG = 'HANDLED server error';
 
@@ -36,7 +38,13 @@ function CatchBoundary({ error }: { error: ErrorResponse }) {
 }
 
 function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }) {
+  const clientErrLogFetcher = useGoodFetcher({
+    url: '/api/log-client-error',
+    method: 'post',
+    toastError: false,
+  });
   const errors: string[] = [];
+
   for (const errField of ['clientMessage', 'message', 'errorCode', 'sqlErrorShort']) {
     if (error[errField]) {
       errors.push(error[errField]);
@@ -45,6 +53,33 @@ function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }
 
   const isWindowAndJsWorking = typeof window !== 'undefined';
   const isLocalhost = isWindowAndJsWorking && window.location.hostname === 'localhost';
+
+  useEffect(() => {
+    maybeLogClientErr();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function maybeLogClientErr() {
+    if (isWindowAndJsWorking) {
+      try {
+        for (const errStr of errors) {
+          const isStr = typeof errStr === 'string';
+          let parsedAndNotServer = false;
+          // I think they're always string, but just in case
+          if (!isStr) {
+            const parsed = JSON.parse(errStr);
+            parsedAndNotServer = !parsed?.error?.isFromServer;
+          }
+          if (isStr || parsedAndNotServer) {
+            const formData = new FormData();
+            formData.append('url', window.location.toString());
+            formData.append('logMessage', errStr);
+            clientErrLogFetcher.submit(formData);
+          }
+        }
+      } catch (e) {}
+    }
+  }
 
   return (
     <div className="container mx-auto">

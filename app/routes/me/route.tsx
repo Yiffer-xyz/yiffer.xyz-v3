@@ -45,7 +45,7 @@ export default function AccountPage() {
           href="/advertising"
           title="Advertising"
           includeRightArrow
-          description="See and manage your ads"
+          description="Manage your ads and submit new ones"
           className="mt-4"
         />
 

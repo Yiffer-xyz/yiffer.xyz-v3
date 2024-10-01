@@ -56,7 +56,7 @@ export default function Advertising() {
           ))}
         </div>
       ) : (
-        <p>No ads found</p>
+        <p>You don't have any ads.</p>
       )}
     </div>
   );
