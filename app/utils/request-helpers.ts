@@ -61,6 +61,8 @@ export async function logApiError(
   err: ApiError,
   context?: { [key: string]: any }
 ) {
+  console.log('🆎 ERROR from logApiError');
+  console.error(prependMessage, err, context);
   const logError = errToExternalLogError(prependMessage, err, context);
   await logErrorExternally(logError);
 }

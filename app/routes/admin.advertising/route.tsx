@@ -5,7 +5,9 @@ import {
   type AdType,
   type AdStatus,
   type Advertisement,
+  type AdvertisementPoorlyTyped,
   allAdStatuses,
+  advertisementTypeMapper,
 } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
@@ -36,29 +38,31 @@ export default function Advertising() {
     'topSmall',
   ]);
 
-  const { submit, data: ads } = useGoodFetcher<Advertisement[]>({
+  const { submit, data: ads } = useGoodFetcher<AdvertisementPoorlyTyped[]>({
     url: '/api/admin/get-ads',
     method: 'post',
   });
 
-  const filteredAds = useMemo(() => {
+  const filteredAds = useMemo<Advertisement[]>(() => {
     if (!ads) return [];
 
-    const filtered = ads.filter(ad => {
-      if (searchText) {
-        const searchTextLower = searchText.toLowerCase();
-        const match =
-          ad.id.toLowerCase().includes(searchTextLower) ||
-          ad.user.username.toLowerCase().includes(searchTextLower) ||
-          ad.user.email.toLowerCase().includes(searchTextLower);
-        if (!match) return false;
-      }
+    const filtered = ads
+      .filter(ad => {
+        if (searchText) {
+          const searchTextLower = searchText.toLowerCase();
+          const match =
+            ad.id.toLowerCase().includes(searchTextLower) ||
+            ad.user.username.toLowerCase().includes(searchTextLower) ||
+            ad.user.email.toLowerCase().includes(searchTextLower);
+          if (!match) return false;
+        }
 
-      if (!statusFilter.includes(ad.status)) return false;
-      if (!adTypeFilter.includes(ad.adType)) return false;
+        if (!statusFilter.includes(ad.status)) return false;
+        if (!adTypeFilter.includes(ad.adType)) return false;
 
-      return true;
-    });
+        return true;
+      })
+      .map(ad => advertisementTypeMapper(ad));
 
     return filtered.sort((a, b) => {
       if (sort === 'age') return b.createdDate.getTime() - a.createdDate.getTime();

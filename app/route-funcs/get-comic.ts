@@ -152,7 +152,7 @@ function mergeDbFieldsToComic(
 
   if (includeMetadata) {
     comic.metadata = {
-      timestamp: parseDbDateStr(dbComic.timestamp),
+      timestamp: dbComic.timestamp ? parseDbDateStr(dbComic.timestamp) : new Date(0),
       errorText: dbComic.errorText,
       publishDate: dbComic.publishDate ? parseDbDateStr(dbComic.publishDate) : undefined,
       modId: dbComic.modId,

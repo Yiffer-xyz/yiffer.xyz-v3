@@ -61,6 +61,9 @@ function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }
 
   async function maybeLogClientErr() {
     if (isWindowAndJsWorking) {
+      console.log('🆎 ERROR FROM maybeLogClientErr');
+      console.error(errors);
+
       try {
         for (const errStr of errors) {
           const isStr = typeof errStr === 'string';
