@@ -1,9 +1,5 @@
 import { unstable_defineLoader } from '@remix-run/cloudflare';
-import {
-  create400Json,
-  logApiErrorMessage,
-  processApiError,
-} from '~/utils/request-helpers';
+import { create400Json, processApiError } from '~/utils/request-helpers';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { publishComic } from './api.admin.publish-comic';
 
@@ -19,9 +15,9 @@ export const loader = unstable_defineLoader(async args => {
   );
 
   if (cronKey !== requestApiKeyHeader) {
-    logApiErrorMessage('Invalid x-yiffer-api-key header in /publish-comics-cron', {
-      requestApiKeyHeader,
-    });
+    // logApiErrorMessage('Invalid x-yiffer-api-key header in /publish-comics-cron', {
+    //   requestApiKeyHeader,
+    // });
     return create400Json(
       `Invalid x-yiffer-api-key header in /publish-comics-cron: ${requestApiKeyHeader}`
     );

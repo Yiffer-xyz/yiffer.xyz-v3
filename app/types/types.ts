@@ -365,6 +365,26 @@ export type Advertisement = {
   isChangedWhileActive: boolean;
 };
 
+export type AdvertisementPoorlyTyped = Omit<
+  Advertisement,
+  'createdDate' | 'expiryDate' | 'lastActivationDate'
+> & {
+  createdDate: string;
+  expiryDate?: string;
+  lastActivationDate?: string;
+};
+
+export function advertisementTypeMapper(ad: AdvertisementPoorlyTyped): Advertisement {
+  return {
+    ...ad,
+    createdDate: new Date(ad.createdDate),
+    expiryDate: ad.expiryDate ? new Date(ad.expiryDate) : undefined,
+    lastActivationDate: ad.lastActivationDate
+      ? new Date(ad.lastActivationDate)
+      : undefined,
+  };
+}
+
 export type AdvertisementFullData = {
   ad: Advertisement;
   payments: { amount: number; registeredDate: Date }[];

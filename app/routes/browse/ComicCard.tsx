@@ -50,6 +50,7 @@ export default function ComicCard({
           style={{ height: 226 }}
           height={226}
         />
+        {/* <div className="w-[160px] h-[226px] bg-gray-500" /> */}
       </RemixLink>
 
       <div
