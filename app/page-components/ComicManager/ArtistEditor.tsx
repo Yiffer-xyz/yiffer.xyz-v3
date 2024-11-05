@@ -204,7 +204,7 @@ export default function ArtistEditor({
         </>
       )}
 
-      <h4 className="mt-8">E621 and Patreon</h4>
+      <h4 className="mt-10">E621 and Patreon</h4>
 
       {!newArtistData.hasConfirmedNoE621Name && (
         <TextInput
@@ -258,7 +258,7 @@ export default function ArtistEditor({
         className="mt-2"
       />
 
-      <h4 className="mt-8">Other links</h4>
+      <h4 className="mt-10">Other links</h4>
       {!hideBorderTitle && (
         <p className="mb-4">
           It's important to be on good terms with artists. Links to their profiles are

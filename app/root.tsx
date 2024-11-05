@@ -10,6 +10,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useMatches,
 } from '@remix-run/react';
 import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
 import clsx from 'clsx';
@@ -29,6 +30,7 @@ import './tailwind.css';
 import './main.css';
 import { getUserSession } from './utils/auth.server';
 import { YifferErrorBoundary } from './utils/error';
+import { useMemo } from 'react';
 
 export const links: LinksFunction = () => [
   {
@@ -116,17 +118,25 @@ function Layout({
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
+  const matches = useMatches();
 
   const isLoggedIn = !!user;
   const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
   const darkNavLinkColorStyle = 'dark:text-blue-strong-300';
   const navLinkStyle = `text-gray-200 font-semibold bg-none text-sm ${darkNavLinkColorStyle}`;
 
+  const isAdmin = useMemo(() => {
+    return matches.some(
+      match => match.pathname.includes('/admin/') || match.pathname.endsWith('/admin')
+    );
+  }, [matches]);
+
   return (
     <>
       <nav
-        className="flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:bg-none
-          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20"
+        className={`flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:from-bgDark dark:to-bgDark
+          px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20
+          ${isAdmin ? 'fixed dark:border-b-3 dark:border-b-gray-400' : ''}`}
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">

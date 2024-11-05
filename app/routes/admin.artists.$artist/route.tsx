@@ -262,7 +262,7 @@ export default function ManageArtist() {
       )}
 
       {user.userType === 'admin' && !artist.isBanned && (
-        <div className="mt-10">
+        <div className="mt-10 pb-20">
           <h3>Admin tools</h3>
           {!isBanning && (
             <Button

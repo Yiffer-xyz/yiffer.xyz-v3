@@ -102,7 +102,7 @@ export default function ManageComicInner() {
       )}
 
       {comic.publishStatus === 'published' && (
-        <>
+        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <p className="text-lg text-theme1-darker">
             This comic is live!
             <Link
@@ -123,7 +123,7 @@ export default function ManageComicInner() {
               </p>
             </>
           )}
-        </>
+        </div>
       )}
 
       <LiveComic

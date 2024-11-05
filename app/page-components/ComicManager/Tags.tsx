@@ -16,7 +16,7 @@ export default function TagsEditor({
   tags,
   onUpdate,
   includeClearAll,
-  title = 'Tags',
+  title,
   className = '',
 }: TagsEditorProps) {
   const tagOptions = allTags.map(tag => ({ value: tag, text: tag.name }));

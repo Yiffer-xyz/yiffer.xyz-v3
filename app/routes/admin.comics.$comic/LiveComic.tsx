@@ -140,7 +140,7 @@ export default function LiveComic({
 
   return (
     <>
-      <div className="mt-4">
+      <div className="mt-8">
         <h4 className="mb-1">Comic data</h4>
         {updatedComicData && (
           <>
@@ -153,13 +153,13 @@ export default function LiveComic({
               isAdminPanel={true}
             />
 
-            <h4>Tags</h4>
+            <h4 className="mt-10">Tags</h4>
             <TagsEditor
               allTags={allTags}
               tags={updatedComicData.tags}
               onUpdate={tags => setUpdatedComicData({ ...updatedComicData, tags })}
               includeClearAll
-              className="mt-8 max-w-5xl"
+              className="max-w-5xl"
             />
           </>
         )}
@@ -257,7 +257,7 @@ export default function LiveComic({
       </div>
 
       {user.userType === 'admin' && comic.publishStatus !== 'unlisted' && (
-        <div className="mt-8">
+        <div className="mt-8 pb-16">
           <h3>Admin tools</h3>
 
           {!isUnlisting && (
