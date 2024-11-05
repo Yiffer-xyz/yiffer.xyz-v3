@@ -68,7 +68,7 @@ export default function RadioButtonGroup<T>({
               onFocus={() => setCurrentlyHighlightedIndex(index)}
             >
               <div
-                className={`flex flex-shrink-0 items-center justify-center w-5 h-5 rounded-full border
+                className={`flex flex-shrink-0 items-center justify-center w-5 h-5 rounded-full border-[1.5px]
                 border-gray-800 dark:border-gray-600 
               ${
                 currentlyHighlightedIndex === index && !disabled
@@ -86,7 +86,7 @@ export default function RadioButtonGroup<T>({
                   />
                 )}
               </div>
-              <div className="ml-2 text-sm">{option.text}</div>
+              <div className="ml-1.5 text-sm">{option.text}</div>
             </div>
           ))}
         </div>

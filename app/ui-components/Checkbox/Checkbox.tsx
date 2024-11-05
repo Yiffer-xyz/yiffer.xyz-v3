@@ -32,7 +32,7 @@ export default function Checkbox({
   });
 
   const disabledClass = disabled ? 'text-gray-700' : 'hover:cursor-pointer';
-  const fullClassname = `block relative select-none pl-8 
+  const fullClassname = `block relative select-none pl-7 
     outline-none w-fit ${disabledClass} ${className} `;
 
   function onKeyPressed(keyEvent: KeyboardEvent<HTMLLabelElement>) {
@@ -68,9 +68,12 @@ export default function Checkbox({
         className="absolute opacity-0 cursor-pointer h-0 w-0 peer"
       />
 
-      <span className="absolute top-0 left-0 h-6 w-6 border-2 border-theme1-primary peer-focus:border-theme1-verydark peer-checked:bg-theme1-primary rounded-sm flex justify-center items-center peer-disabled:bg-trans peer-disabled:border-gray-800 dark:peer-disabled:border-gray-600">
+      <span className="absolute top-[0.5px] left-0 h-[22px] w-[22px] border-[1.5px] border-gray-800 dark:border-gray-600 peer-focus:bg-theme1-primaryTrans rounded-sm flex justify-center items-center peer-disabled:bg-trans peer-disabled:bg-gray-900 dark:peer-disabled:border-gray-500 dark:peer-disabled:bg-gray-300">
         {checked && (
-          <FaCheck className="mt-0.5 text-white dark:text-text-light" size={16} />
+          <FaCheck
+            className="mt-0.5 text-theme1-dark dark:text-theme1-primary"
+            size={16}
+          />
         )}
       </span>
     </label>
