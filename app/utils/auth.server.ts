@@ -92,7 +92,7 @@ export async function signup(
     id: newUserResult.result[0].id,
     username,
     email,
-    userType: 'user',
+    userType: 'normal',
   };
 
   const err = await sendEmail(createWelcomeEmail(username, email), postmarkToken);

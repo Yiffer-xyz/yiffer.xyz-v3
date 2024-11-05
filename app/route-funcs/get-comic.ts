@@ -35,6 +35,7 @@ type DbComic = {
   originalArtistIfRejected?: string;
   unlistComment?: string;
   pendingProblemModId?: number;
+  source?: string;
 };
 
 type DbComicLink = {
@@ -164,6 +165,7 @@ function mergeDbFieldsToComic(
       originalArtistIfRejected: dbComic.originalArtistIfRejected,
       unlistComment: dbComic.unlistComment,
       pendingProblemModId: dbComic.pendingProblemModId,
+      source: dbComic.source,
     };
   }
 
@@ -213,7 +215,8 @@ function getDbComicByFieldQuery(
       comicmetadata.originalNameIfRejected,
       comicmetadata.originalArtistIfRejected,
       comicmetadata.unlistComment,
-      comicmetadata.pendingProblemModId
+      comicmetadata.pendingProblemModId,
+      comicmetadata.source
       ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
       ${userId ? ', userCR.rating AS yourStars' : ''}
     FROM comic

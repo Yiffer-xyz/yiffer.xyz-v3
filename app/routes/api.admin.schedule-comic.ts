@@ -20,7 +20,7 @@ export const action = unstable_defineAction(async args => {
   if (!formComicId) return create400Json('Missing comicId');
   if (!formPublishDate) return create400Json('Missing publishDate');
 
-  const err = await scheduleComic(
+  const err = await scheduleComicForDate(
     args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     formPublishDate.toString(),
@@ -32,7 +32,7 @@ export const action = unstable_defineAction(async args => {
   return createSuccessJson();
 });
 
-export async function scheduleComic(
+export async function scheduleComicForDate(
   db: D1Database,
   comicId: number,
   publishDate: string,
@@ -42,6 +42,8 @@ export async function scheduleComic(
     'UPDATE comicmetadata SET publishDate = ?, scheduleModId = ?, publishingQueuePos = NULL WHERE comicId = ?';
   const comicQuery = `UPDATE comic SET publishStatus = 'scheduled' WHERE id = ?`;
 
+  const date = new Date(publishDate).toISOString().split('T')[0];
+
   const dbRes = await queryDbMultiple(db, [
     {
       query: comicQuery,
@@ -49,7 +51,7 @@ export async function scheduleComic(
     },
     {
       query: metadataQuery,
-      params: [modId, comicId],
+      params: [date, modId, comicId],
     },
   ]);
 

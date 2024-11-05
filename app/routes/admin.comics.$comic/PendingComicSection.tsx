@@ -112,6 +112,10 @@ export default function PendingComicSection({
             the artist is published, the artist will automatically do the same.
           </p>
         )}
+
+        {comicData.metadata?.source && (
+          <p className="mt-2">Pages source: {comicData.metadata.source}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">

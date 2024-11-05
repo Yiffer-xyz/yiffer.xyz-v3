@@ -207,6 +207,7 @@ CREATE TABLE IF NOT EXISTS `comicmetadata` (
 `unlistComment` TEXT NULL DEFAULT NULL,
 `pendingProblemModId` INTEGER  NULL DEFAULT NULL,
 `hasHighresThumbnail` TINYINTEGER  NOT NULL DEFAULT '1',
+`source` TEXT NULL DEFAULT NULL,
 PRIMARY KEY (`id`)
 FOREIGN KEY (`comicId`)
 REFERENCES `comic` (`id`)

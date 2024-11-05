@@ -113,8 +113,8 @@ async function createComicMetadata(
 ): Promise<ApiError | undefined> {
   const query = `
     INSERT INTO comicmetadata
-    (comicId, uploadUserId, uploadUserIP, uploadId, verdict)
-    VALUES (?, ?, ?, ?, ?)
+    (comicId, uploadUserId, uploadUserIP, uploadId, verdict, source)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
@@ -123,6 +123,7 @@ async function createComicMetadata(
     userIP || null,
     uploadBody.uploadId,
     skipApproval ? 'excellent' : null,
+    uploadBody.source,
   ];
 
   const dbRes = await queryDbExec(db, query, values);

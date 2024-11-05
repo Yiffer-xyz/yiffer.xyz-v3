@@ -48,6 +48,9 @@ export default function AnonUploadSection({
       </p>
       <p>Uploaded by a guest user with IP {comicData.metadata?.uploadUserIP}.</p>
       <p>Uploaded {format(comicData.metadata?.timestamp || '', 'PPPPp')}</p>
+      <p className="mt-2">
+        <b>Source</b>: {comicData.metadata?.source ?? 'Not provided.'}
+      </p>
 
       <RadioButtonGroup
         onChange={val => setVerdict(val as AllowedAnonComicVerdict)}

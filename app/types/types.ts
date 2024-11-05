@@ -16,7 +16,7 @@ export interface Env {
 export enum UserType {
   Admin = 'admin',
   Mod = 'moderator',
-  User = 'user',
+  User = 'normal',
 }
 
 export type Artist = {
@@ -155,6 +155,7 @@ export type ComicMetadata = {
   originalArtistIfRejected?: string;
   unlistComment?: string;
   pendingProblemModId?: number;
+  source?: string;
 };
 
 export type Tag = {
@@ -182,7 +183,7 @@ export type JwtConfig = {
 export type UserSession = {
   userId: number;
   username: string;
-  userType: 'admin' | 'moderator' | 'user';
+  userType: 'admin' | 'moderator' | 'normal';
 };
 
 // Used for auth, where we don't need all the fields
@@ -190,14 +191,22 @@ export type SimpleUser = {
   id: number;
   username: string;
   email: string;
-  userType: 'admin' | 'moderator' | 'user';
+  userType: 'admin' | 'moderator' | 'normal';
 };
+
+export function isModOrAdmin({
+  userType,
+}: {
+  userType: 'admin' | 'moderator' | 'normal';
+}) {
+  return userType === 'admin' || userType === 'moderator';
+}
 
 export type User = {
   id: number;
   username: string;
   email: string;
-  userType: 'admin' | 'moderator' | 'user';
+  userType: 'admin' | 'moderator' | 'normal';
   createdTime: Date;
   isBanned: boolean;
   banReason?: string;

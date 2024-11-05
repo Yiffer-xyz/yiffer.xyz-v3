@@ -12,11 +12,11 @@ export type ParsedFormdataJson<T> = {
 // in formdata requests. Can also validate user type.
 export async function parseFormJson<T>(
   args: ActionFunctionArgs,
-  validateUser: 'user' | 'mod' | 'admin' | 'none' = 'none'
+  validateUser: 'normal' | 'mod' | 'admin' | 'none' = 'none'
 ): Promise<ParsedFormdataJson<T>> {
   const user = await authLoader(args);
 
-  if (validateUser === 'user' && !user) {
+  if (validateUser === 'normal' && !user) {
     return makeUnauthorizedResponse(user);
   }
 

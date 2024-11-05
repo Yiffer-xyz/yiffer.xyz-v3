@@ -18,7 +18,7 @@ export const action = unstable_defineAction(async args => {
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
 
-  const err = await scheduleComic(
+  const err = await scheduleComicToQueue(
     args.context.cloudflare.env.DB,
     parseInt(formComicId.toString()),
     user.userId
@@ -29,7 +29,7 @@ export const action = unstable_defineAction(async args => {
   return createSuccessJson();
 });
 
-export async function scheduleComic(
+export async function scheduleComicToQueue(
   db: D1Database,
   comicId: number,
   modId: number

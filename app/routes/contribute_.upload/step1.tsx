@@ -2,14 +2,18 @@ import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import Button from '~/ui-components/Buttons/Button';
 import { RiArrowRightLine } from 'react-icons/ri';
 import { useState } from 'react';
+import Textarea from '~/ui-components/Textarea/Textarea';
+import InfoBox from '~/ui-components/InfoBox';
 
 export type Step1Props = {
-  onNext: () => void;
+  isMod: boolean;
+  onNext: (source: string) => void;
 };
 
-export default function Step1({ onNext }: Step1Props) {
+export default function Step1({ onNext, isMod }: Step1Props) {
   const [hasCheckedPublic, setHasCheckedPublic] = useState(false);
   const [hasCheckedResolution, setHasCheckedResolution] = useState(false);
+  const [source, setSource] = useState('');
 
   return (
     <>
@@ -29,7 +33,7 @@ export default function Step1({ onNext }: Step1Props) {
         be.
       </p>
 
-      <h2 className="mt-4">Before you begin: requirements</h2>
+      <h2 className="mt-6">Before you begin: requirements</h2>
       <ul>
         <li>The comic must be at least four pages long.</li>
         <li>
@@ -43,7 +47,7 @@ export default function Step1({ onNext }: Step1Props) {
         <li>Pages must be in jpg og png format.</li>
       </ul>
 
-      <h2 className="mt-4">Checklist</h2>
+      <h2 className="mt-6">Checklist</h2>
       <p>
         <u>All</u> uploaded pages uploaded must be publicly available. A comic with some
         of its pages exclusive to subscription services (eg. Patreon, Subscribestar) will
@@ -69,13 +73,43 @@ export default function Step1({ onNext }: Step1Props) {
         className="mt-2"
       />
 
+      <h2 className="mt-6">Source</h2>
+      {isMod && (
+        <InfoBox
+          variant="info"
+          text={`As a mod, prviding the source is optional. It doesn't hurt to supply the link regardless, though!`}
+          boldText={false}
+          fitWidth
+          className="mb-4"
+        />
+      )}
+
+      <p>
+        Where did you find the comic's pages? Please provide a link to and/or description
+        of the source.
+      </p>
+      <p className="mt-4">
+        If your answer is "google", or "on my computer", there is a higher chance we'll
+        reject your upload, as it is harder for us to verify the page quality and
+        availability (the "Checklist" checkboxes above).
+      </p>
+      <Textarea
+        value={source}
+        onChange={setSource}
+        name="source"
+        label="Source link or description"
+        className="mt-4"
+      />
+
       <Button
         text="Continue"
-        disabled={!hasCheckedPublic || !hasCheckedResolution}
+        disabled={
+          !hasCheckedPublic || !hasCheckedResolution || (source.length < 3 && !isMod)
+        }
         endIcon={RiArrowRightLine}
         variant="contained"
         color="primary"
-        onClick={onNext}
+        onClick={() => onNext(source || 'Mod upload')}
         className="mt-6"
       />
     </>

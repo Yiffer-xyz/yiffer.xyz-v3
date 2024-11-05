@@ -8,6 +8,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import InfoBox from '~/ui-components/InfoBox';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import Link from '~/ui-components/Link';
 
 const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
   ([verdict, value]) => ({
@@ -54,8 +55,19 @@ export default function UserUploadSection({
         This comic is not live. It has been uploaded by a user and is now up for mod
         review.
       </p>
-      <p>Uploaded by {comicData.metadata?.uploadUsername}.</p>
-      <p>Uploaded {format(comicData.metadata?.timestamp || '', 'PPPPp')}</p>
+      <p>
+        Uploaded by{' '}
+        <Link
+          text={comicData.metadata?.uploadUsername || 'Unknown'}
+          href={`/admin/users/${comicData.metadata?.uploadUserId}`}
+          showRightArrow
+          isInsideParagraph
+        />
+        , {format(comicData.metadata?.timestamp || '', 'PPPPp')}
+      </p>
+      <p className="mt-2">
+        <b>Source</b>: {comicData.metadata?.source ?? 'Not provided.'}
+      </p>
 
       <h4 className="mt-4">Review submission</h4>
       <p>

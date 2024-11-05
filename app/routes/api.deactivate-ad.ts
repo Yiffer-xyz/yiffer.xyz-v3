@@ -2,6 +2,7 @@ import { unstable_defineAction } from '@remix-run/cloudflare';
 import { differenceInDays } from 'date-fns';
 import { getAdById } from '~/route-funcs/get-ads';
 import isAdOwner from '~/route-funcs/is-ad-owner';
+import { isModOrAdmin } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -25,7 +26,7 @@ export const action = unstable_defineAction(async args => {
     args.context.cloudflare.env.DB,
     adId.toString(),
     user.userId,
-    user.userType !== 'user'
+    isModOrAdmin(user)
   );
   if (err) {
     return processApiError('Error in /deactivate-ad', err, { adId, ...user });

@@ -7,7 +7,7 @@ import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
 import type { DbComicTiny } from '~/route-funcs/get-comics';
 import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-comics';
 import { getAllTagsQuery } from '~/route-funcs/get-tags';
-import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
+import { isModOrAdmin, type ArtistTiny, type ComicTiny, type Tag } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import Step1 from './step1';
 import Step3Pagemanager from './step3-pagemanager';
@@ -47,6 +47,7 @@ export default function Upload() {
   const { artists, comics, user, tags, IMAGES_SERVER_URL } =
     useLoaderData<typeof loader>();
   const [step, setStep] = useState<number | string>(1);
+  const [source, setSource] = useState('');
   const [comicData, setComicData] = useState<NewComicData>(createEmptyUploadData());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -176,6 +177,7 @@ export default function Upload() {
       numberOfPages: comicData.files.length,
       previousComic: comicData.previousComic?.id ? comicData.previousComic : undefined,
       nextComic: comicData.nextComic?.id ? comicData.nextComic : undefined,
+      source,
     };
 
     const formData = new FormData();
@@ -253,7 +255,15 @@ export default function Upload() {
 
       {step === 'success' && <SuccessMessage isLoggedIn={!!user} />}
 
-      {step === 1 && <Step1 onNext={() => setStep(2)} />}
+      {step === 1 && (
+        <Step1
+          isMod={(user && isModOrAdmin(user)) ?? false}
+          onNext={(source: string) => {
+            setSource(source);
+            setStep(2);
+          }}
+        />
+      )}
 
       {step === 2 && (
         <>
@@ -434,6 +444,7 @@ export type UploadBody = {
   nextComic?: ComicTiny;
   tagIds: number[];
   numberOfPages: number;
+  source: string;
 };
 
 // For handling upload data internally in the front-end

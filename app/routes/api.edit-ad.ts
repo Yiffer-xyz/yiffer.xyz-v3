@@ -1,4 +1,4 @@
-import type { AdStatus, AdType } from '~/types/types';
+import { isModOrAdmin, type AdStatus, type AdType } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -43,7 +43,7 @@ export const action = unstable_defineAction(async args => {
     args.context.cloudflare.env.DB,
     body,
     user.userId,
-    user.userType !== 'user',
+    isModOrAdmin(user),
     body.status,
     body.wasMediaChanged
   );
