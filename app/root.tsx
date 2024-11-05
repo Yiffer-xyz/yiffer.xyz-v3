@@ -136,7 +136,7 @@ function Layout({
       <nav
         className={`flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:from-bgDark dark:to-bgDark
           px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20
-          ${isAdmin ? 'fixed dark:border-b-3 dark:border-b-gray-400' : ''}`}
+          ${isAdmin ? 'fixed lg:dark:border-b-3 lg:dark:border-b-gray-400' : ''}`}
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">

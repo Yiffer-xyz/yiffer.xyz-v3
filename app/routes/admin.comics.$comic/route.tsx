@@ -3,7 +3,7 @@ import { useLoaderData, useOutletContext, useRevalidator } from '@remix-run/reac
 import { format } from 'date-fns';
 import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/ui-components/Link';
-import type { GlobalAdminContext } from '~/routes/admin';
+import type { GlobalAdminContext } from '~/routes/admin/route';
 import { getComicByField } from '~/route-funcs/get-comic';
 import type { Comic } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';

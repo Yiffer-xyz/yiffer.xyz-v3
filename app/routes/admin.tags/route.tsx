@@ -9,7 +9,7 @@ import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Tag } from '~/types/types';
-import type { GlobalAdminContext } from '../admin';
+import type { GlobalAdminContext } from '../admin/route';
 import Button from '~/ui-components/Buttons/Button';
 import { MdAdd } from 'react-icons/md';
 import { getTagsWithUsageCount } from '~/route-funcs/get-tags';

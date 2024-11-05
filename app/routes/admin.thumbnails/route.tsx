@@ -2,7 +2,7 @@ import { useOutletContext } from '@remix-run/react';
 import React from 'react';
 import { MdArrowForward } from 'react-icons/md';
 import Link from '~/ui-components/Link';
-import type { GlobalAdminContext } from '../admin';
+import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function UpdateThumbnails() {

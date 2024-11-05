@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { ComicTiny } from '~/types/types';
-import type { GlobalAdminContext } from '~/routes/admin';
+import type { GlobalAdminContext } from '~/routes/admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageComics() {

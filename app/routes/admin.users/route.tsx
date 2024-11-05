@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import type { GlobalAdminContext } from '~/routes/admin';
+import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { User } from '~/types/types';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { searchUsers } from '~/route-funcs/get-user';
