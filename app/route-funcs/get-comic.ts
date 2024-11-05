@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';

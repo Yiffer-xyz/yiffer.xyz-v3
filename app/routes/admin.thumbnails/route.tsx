@@ -53,7 +53,6 @@ export default function UpdateThumbnails() {
             <p>{getTimeSincePublishString(comic.daysSincePublished)}</p>
             <Link
               href={`/admin/comics/${comic.id}`}
-              newTab
               text={comic.name}
               IconRight={MdArrowForward}
             />

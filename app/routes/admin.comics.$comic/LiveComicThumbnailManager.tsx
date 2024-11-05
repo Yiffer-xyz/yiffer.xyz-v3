@@ -8,7 +8,7 @@ import type { ComicImage } from '~/utils/general';
 import { getFileWithBase64, padPageNumber, randomString } from '~/utils/general';
 import type { Comic } from '~/types/types';
 import '~/utils/cropper.min.css';
-import { showErrorToast, showSuccessToast } from '~/utils/useGoodFetcher';
+import { showErrorToast, showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
 
 type Props = {
@@ -32,6 +32,12 @@ export default function LiveComicThumbnailManager({
   const [pageNumForCrop, setPageNumForCrop] = useState<number | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateComicFetcher = useGoodFetcher({
+    url: '/api/update-thumbnail-status',
+    method: 'post',
+    toastError: true,
+  });
 
   function cancelChanges() {
     setTempSelectedPageNum(1);
@@ -62,6 +68,8 @@ export default function LiveComicThumbnailManager({
       showSuccessToast('Changed thumbnail', false, theme);
       setRandomQueryStr(randomString(3));
       cancelChanges();
+
+      updateComicFetcher.submit({ comicId: comicData.id });
     } else {
       const resText = await res.text();
       showErrorToast('Error changing thumbnail: ' + resText, theme);
