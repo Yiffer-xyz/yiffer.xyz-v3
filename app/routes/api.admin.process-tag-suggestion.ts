@@ -1,6 +1,6 @@
 import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   createSuccessJson,
   makeDbErr,
@@ -10,6 +10,8 @@ import {
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { TagSuggestionItem } from '~/types/types';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export type ProcessTagSuggestionBody = {
   suggestionGroupId: number;

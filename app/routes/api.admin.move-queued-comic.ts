@@ -2,10 +2,13 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
   createSuccessJson,
+  noGetRoute,
   processApiError,
 } from '~/utils/request-helpers';
 import { moveComicInQueue } from '~/route-funcs/publishing-queue';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);

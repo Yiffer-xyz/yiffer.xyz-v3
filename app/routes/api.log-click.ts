@@ -4,9 +4,12 @@ import {
   create400Json,
   createSuccessJson,
   makeDbErr,
+  noGetRoute,
   processApiError,
   type ApiError,
 } from '~/utils/request-helpers';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   const formDataBody = await args.request.formData();

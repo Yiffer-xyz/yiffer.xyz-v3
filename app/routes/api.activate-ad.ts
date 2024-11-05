@@ -4,13 +4,15 @@ import isAdOwner from '~/route-funcs/is-ad-owner';
 import { isModOrAdmin } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotLoggedIn(args);

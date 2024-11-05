@@ -1,6 +1,6 @@
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
@@ -9,6 +9,8 @@ import {
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   await redirectIfNotMod(args);

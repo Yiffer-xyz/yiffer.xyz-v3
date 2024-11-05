@@ -1,9 +1,11 @@
 import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import type { DashboardActionType } from './api.admin.dashboard-data';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export type AssignActionBody = {
   actionId: number;

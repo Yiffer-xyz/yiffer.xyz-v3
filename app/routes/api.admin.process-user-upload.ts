@@ -2,7 +2,7 @@ import type { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
@@ -14,6 +14,8 @@ import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import { getArtistByComicId } from '~/route-funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from '../route-funcs/manage-artist';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotMod(args);

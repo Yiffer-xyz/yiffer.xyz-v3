@@ -1,6 +1,6 @@
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
@@ -14,6 +14,8 @@ import { rejectComic } from './api.admin.reject-pending-comic';
 import { unlistComic } from './api.admin.unlist-comic';
 import { boolToInt } from '~/utils/general';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export const action = unstable_defineAction(async args => {
   const user = await redirectIfNotMod(args);

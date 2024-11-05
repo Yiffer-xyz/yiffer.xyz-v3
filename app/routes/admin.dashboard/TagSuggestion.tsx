@@ -62,7 +62,7 @@ export function TagSuggestion({
         <div className="flex flex-col justify-between gap-2">
           <Chip color={themedColor} text="Tag suggestion" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-            <div className="flex flex-row gap-x-3">
+            <div className="flex flex-row gap-x-3 flex-wrap">
               <b>{action.primaryField}</b>
               <Link
                 href={`/admin/comics/${action.comicId}`}

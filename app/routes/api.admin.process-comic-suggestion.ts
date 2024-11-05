@@ -1,10 +1,12 @@
 import type { ComicSuggestionVerdict } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export type ProcessComicSuggestionBody = {
   actionId: number;

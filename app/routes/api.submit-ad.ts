@@ -2,7 +2,7 @@ import { AdFreeTrialStateEnum } from '~/types/types';
 import type { UserSession, AdType } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
@@ -12,6 +12,8 @@ import {
 import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export type SubmitAdFormData = {
   id: string;

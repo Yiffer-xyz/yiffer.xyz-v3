@@ -1,13 +1,15 @@
 import { unstable_defineAction } from '@remix-run/cloudflare';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import type { ApiError } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
   create400Json,
   createSuccessJson,
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+
+export { noGetRoute as loader };
 
 export type TagChanges = {
   comicId: number;

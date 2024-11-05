@@ -1,4 +1,4 @@
-import type { ResultOrErrorPromise } from '~/utils/request-helpers';
+import type { noGetRoute, ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
   processApiError,
@@ -7,6 +7,8 @@ import {
 import stringDistance from '~/utils/string-distance';
 import { getComicNamesAndIDs } from '../route-funcs/get-comics';
 import { unstable_defineAction } from '@remix-run/cloudflare';
+
+export { noGetRoute as loader };
 
 export type SimilarComicResponse = {
   similarComics: string[];
