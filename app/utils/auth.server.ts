@@ -95,7 +95,12 @@ export async function signup(
     userType: 'normal',
   };
 
-  const err = await sendEmail(createWelcomeEmail(username, email), postmarkToken);
+  let err: any;
+  try {
+    err = await sendEmail(createWelcomeEmail(username, email), postmarkToken);
+  } catch (e) {
+    err = e;
+  }
   if (err) {
     logApiError('Error sending welcome email in signup', err, { username, email });
   }

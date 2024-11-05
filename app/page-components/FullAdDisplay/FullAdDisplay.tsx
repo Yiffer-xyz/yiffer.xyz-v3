@@ -242,7 +242,7 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
           <h3>Payments</h3>
           {adData.payments.length > 0 ? (
             adData.payments.map(payment => (
-              <p key={payment.registeredDate}>{JSON.stringify(payment)}</p>
+              <p key={payment.registeredDate.getTime()}>{JSON.stringify(payment)}</p>
             ))
           ) : (
             <p>There are no registered payments for this ad.</p>

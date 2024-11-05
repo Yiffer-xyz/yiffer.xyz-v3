@@ -46,7 +46,12 @@ export default function ForgottenPassword() {
             </div>
 
             {fetcher?.isError && (
-              <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
+              <InfoBox
+                variant="error"
+                text={fetcher.errorMessage}
+                className="my-2"
+                disableElevation
+              />
             )}
 
             <div className="flex">

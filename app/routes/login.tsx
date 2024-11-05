@@ -1,7 +1,6 @@
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
-import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import { login } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
@@ -12,9 +11,14 @@ import {
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import { useState } from 'react';
+import TextInput from '~/ui-components/TextInput/TextInput';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
   const fetcher = useGoodFetcher({
     method: 'post',
     toastError: false,
@@ -27,7 +31,9 @@ export default function Login() {
           <h1 className="text-3xl">Log in</h1>
 
           <div className="mt-4 flex flex-col gap-6">
-            <TextInputUncontrolled
+            <TextInput
+              value={username}
+              onChange={setUsername}
               name="username"
               label="Username or email"
               autocomplete="username"
@@ -35,7 +41,9 @@ export default function Login() {
               type="text"
             />
 
-            <TextInputUncontrolled
+            <TextInput
+              value={password}
+              onChange={setPassword}
               name="password"
               label="Password - at least 6 characters"
               autocomplete="password"
@@ -45,7 +53,12 @@ export default function Login() {
           </div>
 
           {fetcher.isError && (
-            <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
+            <InfoBox
+              variant="error"
+              text={fetcher.errorMessage}
+              className="my-2"
+              disableElevation
+            />
           )}
 
           <div className="flex">
@@ -57,6 +70,10 @@ export default function Login() {
               fullWidth
               isLoading={fetcher.isLoading}
               isSubmit
+              onClick={e => {
+                e.preventDefault();
+                fetcher.submit({ username, password });
+              }}
             />
           </div>
         </TopGradientBox>

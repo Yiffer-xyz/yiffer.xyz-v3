@@ -1,8 +1,9 @@
 import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
-import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
+import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { signup } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
@@ -15,6 +16,11 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Signup() {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+
   const fetcher = useGoodFetcher({
     method: 'post',
     toastError: false,
@@ -27,32 +33,36 @@ export default function Signup() {
           <h1 className="text-3xl">Sign up</h1>
 
           <div className="mt-4 flex flex-col gap-6">
-            <TextInputUncontrolled
-              name="username"
+            <TextInput
+              value={username}
+              onChange={setUsername}
               label="Username"
               autocomplete="username"
               className="mb-6 mt-4"
               type="text"
             />
 
-            <TextInputUncontrolled
-              name="email"
+            <TextInput
+              value={email}
+              onChange={setEmail}
               label="Email"
               autocomplete="email"
               className="mb-6"
               type="text"
             />
 
-            <TextInputUncontrolled
-              name="password"
+            <TextInput
+              value={password}
+              onChange={setPassword}
               label="Password - at least 6 characters"
               autocomplete="password"
               type="password"
               className="mb-6"
             />
 
-            <TextInputUncontrolled
-              name="password2"
+            <TextInput
+              value={password2}
+              onChange={setPassword2}
               label="Repeat password"
               autocomplete="password"
               type="password"
@@ -61,7 +71,12 @@ export default function Signup() {
           </div>
 
           {fetcher?.isError && (
-            <InfoBox variant="error" text={fetcher.errorMessage} className="my-2" />
+            <InfoBox
+              variant="error"
+              text={fetcher.errorMessage}
+              className="my-2"
+              disableElevation
+            />
           )}
 
           <div className="flex">
@@ -73,6 +88,15 @@ export default function Signup() {
               fullWidth
               isLoading={fetcher.isLoading}
               isSubmit
+              onClick={e => {
+                e.preventDefault();
+                fetcher.submit({
+                  username,
+                  email,
+                  password,
+                  password2,
+                });
+              }}
             />
           </div>
         </TopGradientBox>
