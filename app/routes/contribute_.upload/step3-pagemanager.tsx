@@ -4,7 +4,6 @@ import useWindowSize from '~/utils/useWindowSize';
 import { getFilesWithBase64 } from '~/utils/general';
 import PageManager from '~/page-components/PageManager/PageManager';
 import Button from '~/ui-components/Buttons/Button';
-import { MdClear } from 'react-icons/md';
 import FileInput from '~/ui-components/FileInput';
 import InfoBox from '~/ui-components/InfoBox';
 
@@ -96,7 +95,6 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
               variant="outlined"
               text="Clear pages"
               onClick={() => setIsClearingPages(true)}
-              startIcon={MdClear}
             />
           )}
           {isClearingPages && (
@@ -105,7 +103,6 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
                 variant="outlined"
                 onClick={() => setIsClearingPages(false)}
                 text="Cancel"
-                startIcon={MdClear}
               />
               <Button
                 text="Clear pages"
@@ -114,7 +111,6 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
                   onUpdate({ ...comicData, files: [] });
                   setIsClearingPages(false);
                 }}
-                startIcon={MdClear}
               />
             </div>
           )}

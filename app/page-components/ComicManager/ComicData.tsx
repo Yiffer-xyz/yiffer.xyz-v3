@@ -63,14 +63,14 @@ export default function ComicDataEditor({
   return (
     <>
       <ComicNameEditor
-        comicName={comicData.comicName}
+        comicName={comicData.name}
         setIsLegalComicnameState={isLegal =>
           onUpdate({
             ...comicData,
             validation: { ...comicData.validation, isLegalComicName: isLegal },
           })
         }
-        onUpdate={newVal => onUpdate({ ...comicData, comicName: newVal })}
+        onUpdate={newVal => onUpdate({ ...comicData, name: newVal })}
         existingComic={existingComic}
       />
 

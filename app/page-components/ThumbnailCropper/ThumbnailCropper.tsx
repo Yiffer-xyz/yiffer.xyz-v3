@@ -6,6 +6,7 @@ import type { ComicImage } from '~/utils/general';
 import useWindowSize from '~/utils/useWindowSize';
 import Button from '~/ui-components/Buttons/Button';
 import InfoBox from '~/ui-components/InfoBox';
+import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 
 export interface ThumbnailCropperProps {
   image: ComicImage;
@@ -14,6 +15,7 @@ export interface ThumbnailCropperProps {
   idealWidth?: number;
   onComplete: (croppedThumbnail: ComicImage) => void;
   onClose: () => void;
+  isLoading?: boolean;
 }
 
 export default function ThumbnailCropper({
@@ -23,6 +25,7 @@ export default function ThumbnailCropper({
   onClose,
   onComplete,
   image,
+  isLoading,
 }: ThumbnailCropperProps) {
   const cropperRef = useRef<ReactCropperElement | null>(null);
   const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(
@@ -98,7 +101,7 @@ export default function ThumbnailCropper({
                   <b>Crop image</b>
                 </p>
                 <Cropper
-                  src={image.base64}
+                  src={image.base64 ?? image.url}
                   style={{ height: step1Height, width: step1Width }}
                   aspectRatio={aspectRatio}
                   guides={false}
@@ -184,13 +187,14 @@ export default function ThumbnailCropper({
                       />
                     )}
 
-                    <Button
+                    <LoadingButton
                       variant="contained"
                       color="primary"
                       text="Confirm crop"
                       startIcon={MdCheck}
                       onClick={() => onComplete(cropResult)}
                       style={{ width: step2Width }}
+                      isLoading={isLoading ?? false}
                     />
                   </>
                 )}

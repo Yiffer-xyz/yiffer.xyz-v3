@@ -80,7 +80,7 @@ export default function Upload() {
       thumbnailFile,
       `thumbnail.${getFileExtension(thumbnailFile.name)}`
     );
-    currentFormData.append('comicName', comicData.comicName);
+    currentFormData.append('comicName', comicData.name);
     currentFormData.append('uploadId', uploadId);
     let currentFormDataSize = 0;
 
@@ -93,7 +93,7 @@ export default function Upload() {
         currentFormData.append('hasMore', 'true');
         filesFormDatas.push(currentFormData);
         currentFormData = new FormData();
-        currentFormData.append('comicName', comicData.comicName);
+        currentFormData.append('comicName', comicData.name);
         currentFormData.append('uploadId', uploadId);
         currentFormDataSize = 0;
       }
@@ -123,7 +123,7 @@ export default function Upload() {
 
   async function submit() {
     const randomId = generateRandomId();
-    const uploadId = `${comicData.comicName}-${randomId}`;
+    const uploadId = `${comicData.name}-${randomId}`;
     setError(null);
 
     if (!comicData.validation.isLegalComicName) {
@@ -167,7 +167,7 @@ export default function Upload() {
 
     const uploadBody: UploadBody = {
       uploadId,
-      comicName: comicData.comicName,
+      comicName: comicData.name,
       category: comicData.category,
       state: comicData.state,
       tagIds: comicData.tags.map(tag => tag.id),
@@ -210,7 +210,7 @@ export default function Upload() {
   function fillWithStuff() {
     setComicData({
       ...comicData,
-      comicName: 'Test2 ' + randomString(12),
+      name: 'Test2 ' + randomString(12),
       category: 'MF',
       state: 'finished',
       validation: {
@@ -390,7 +390,7 @@ function validateUploadForm(uploadBody: UploadBody): { error?: string } {
 
 function createEmptyUploadData(): NewComicData {
   return {
-    comicName: '',
+    name: '',
     category: '',
     state: '',
     tags: [],
@@ -438,8 +438,8 @@ export type UploadBody = {
 
 // For handling upload data internally in the front-end
 export type NewComicData = {
-  comicId?: number;
-  comicName: string;
+  id?: number;
+  name: string;
   artistId?: number;
   newArtist: NewArtist;
   category: string;

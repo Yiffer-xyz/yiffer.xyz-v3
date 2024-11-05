@@ -12,6 +12,7 @@ import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ManagePagesAdmin from './ManagePagesAdmin';
 import { useUIPreferences } from '~/utils/theme-provider';
+import LiveComicThumbnailManager from './LiveComicThumbnailManager';
 
 type LiveComicProps = {
   comic: Comic;
@@ -62,11 +63,7 @@ export default function LiveComic({
   }, [updatedComicData]);
 
   useEffect(() => {
-    if (
-      !updatedComicData?.comicName ||
-      needsUpdate ||
-      comic.id !== updatedComicData.comicId
-    ) {
+    if (!updatedComicData?.name || needsUpdate || comic.id !== updatedComicData.id) {
       setInitialComicData();
       setNeedsUpdate(false);
     }
@@ -139,7 +136,7 @@ export default function LiveComic({
     !updatedComicData?.validation.isLegalComicName;
 
   const canSave =
-    !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.comicName;
+    !isNameChangedAndInvalid && updatedComicData?.artistId && updatedComicData.name;
 
   return (
     <>
@@ -242,6 +239,11 @@ export default function LiveComic({
 
       <div className="mt-8">
         <h3>Thumbnail</h3>
+        <LiveComicThumbnailManager
+          comicData={comic}
+          PAGES_PATH={PAGES_PATH}
+          IMAGES_SERVER_URL={IMAGES_SERVER_URL}
+        />
       </div>
 
       <div className="mt-8">
@@ -316,8 +318,8 @@ export type ComicDataChanges = {
 
 function setupInitialUpdatedComic(comic: Comic): NewComicData {
   const newComicData: NewComicData = {
-    comicId: comic.id,
-    comicName: comic.name,
+    id: comic.id,
+    name: comic.name,
     artistId: comic.artist.id,
     category: comic.category,
     state: comic.state,
@@ -358,12 +360,12 @@ function getComicDataChanges(
   if (!updatedComicData) return [];
   const changes: FieldChange[] = [];
 
-  if (comic.name !== updatedComicData.comicName) {
+  if (comic.name !== updatedComicData.name) {
     changes.push({
       field: 'Name',
       oldValue: comic.name,
-      newValue: updatedComicData.comicName,
-      newDataValue: updatedComicData.comicName,
+      newValue: updatedComicData.name,
+      newDataValue: updatedComicData.name,
     });
   }
   if (comic.artist.id !== updatedComicData.artistId) {
