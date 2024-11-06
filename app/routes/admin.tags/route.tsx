@@ -44,7 +44,6 @@ export default function ManageTags() {
           <Button
             text="Create new tag"
             startIcon={MdAdd}
-            variant="outlined"
             className="mb-4 mt-4"
             onClick={() => {
               setSelectedTag(undefined);

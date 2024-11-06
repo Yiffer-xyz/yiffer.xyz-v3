@@ -97,7 +97,13 @@ export function useGoodFetcher<T = void>({
         if (toastSuccessMessage && fetcher.data.success && !fetcher.data.error) {
           showSuccessToast(toastSuccessMessage, preventToastClose, theme);
         } else if (toastError && fetcher.data.error) {
-          showErrorToast(fetcher.data.error, theme);
+          const errMsg =
+            // @ts-ignore
+            'errorMessage' in fetcher.data.error
+              ? fetcher.data.error.errorMessage
+              : fetcher.data.error;
+          showErrorToast(errMsg as string, theme);
+          showSuccessToast(fetcher.data.error, false, theme);
         }
       }
 

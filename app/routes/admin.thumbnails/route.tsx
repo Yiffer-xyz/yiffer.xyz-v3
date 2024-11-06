@@ -43,11 +43,13 @@ export default function UpdateThumbnails() {
       </p>
 
       <p className="mb-2">
-        Ordered by time since published date (the first column). More recent = more
-        important.
+        Ordered by time since published date. More recent = more important.
       </p>
 
-      <div className="grid gap-x-3 w-fit" style={{ gridTemplateColumns: 'auto auto' }}>
+      <div
+        className="grid gap-x-3 gap-y-2 w-fit"
+        style={{ gridTemplateColumns: 'auto auto' }}
+      >
         {orderedMissingComics.map(comic => (
           <React.Fragment key={comic.id}>
             <p>{getTimeSincePublishString(comic.daysSincePublished)}</p>

@@ -119,6 +119,7 @@ export default function AdminSidebar({
             isSelected={isRoute('thumbnails')}
           />
           <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
+          <SidebarLink href="/admin/blogs" text="Blogs" isSelected={isRoute('blogs')} />
         </div>
       </div>
     </>
