@@ -73,52 +73,99 @@ export default function YourContributions() {
       {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
 
       {contributions.length > 0 && (
-        <Table horizontalScroll={true} className="mt-4">
-          <TableHeadRow isTableMaxHeight={false}>
-            <TableCell>Contribution</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Points</TableCell>
-            <TableCell>Mod comment</TableCell>
-            <TableCell className="text-end">Contribution Details</TableCell>
-          </TableHeadRow>
-          <TableBody>
+        <>
+          <Table horizontalScroll={true} className="mt-4 hidden md:block">
+            <TableHeadRow isTableMaxHeight={false}>
+              <TableCell>Contribution</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Points</TableCell>
+              <TableCell>Mod comment</TableCell>
+              <TableCell className="text-end">Contribution Details</TableCell>
+            </TableHeadRow>
+            <TableBody>
+              {contributions.map((contribution, index) => (
+                <TableRow
+                  key={index}
+                  className="border-b border-gray-800 dark:border-gray-500"
+                >
+                  <TableCell>
+                    <p className="font-extralight">{getContributionName(contribution)}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p
+                      className={`${getContributionStatusColor(
+                        contribution.status
+                      )} font-extralight`}
+                    >
+                      {capitalizeString(contribution.status)}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-extralight">{getDate(contribution.timestamp)}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-semibold">{contribution.points || '-'}</p>
+                    <p className="font-extralight">{contribution.pointsDescription}</p>
+                  </TableCell>
+                  <TableCell className="max-w-[300px]">
+                    <p className="font-extralight whitespace-pre-wrap">
+                      {contribution.modComment || '-'}
+                    </p>
+                  </TableCell>
+                  <TableCell className="max-w-[300px] flex flex-col items-end">
+                    <ContributionDetails contribution={contribution} alignRight />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="mt-4 md:hidden">
             {contributions.map((contribution, index) => (
-              <TableRow
-                key={contribution.comicName + index}
-                className="border-b border-gray-800 dark:border-gray-500"
+              <div
+                key={index}
+                className="p-3 w-full mb-4 max-w-3xl rounded bg-white dark:bg-gray-300 shadow-md"
               >
-                <TableCell>
-                  <p className="font-extralight">{getContributionName(contribution)}</p>
-                </TableCell>
-                <TableCell>
-                  <p
-                    className={`${getContributionStatusColor(
-                      contribution.status
-                    )} font-extralight`}
-                  >
-                    {capitalizeString(contribution.status)}
+                <div className="flex flex-row justify-between gap-2">
+                  <p className="font-semibold">{getContributionName(contribution)}</p>
+                  <p className="font-extralight text-sm">
+                    {getDate(contribution.timestamp)}
                   </p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-extralight">{getDate(contribution.timestamp)}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-semibold">{contribution.points || '-'}</p>
-                  <p className="font-extralight">{contribution.pointsDescription}</p>
-                </TableCell>
-                <TableCell className="max-w-[300px]">
-                  <p className="font-extralight whitespace-pre-wrap">
-                    {contribution.modComment || '-'}
+                </div>
+
+                <p
+                  className={`${getContributionStatusColor(
+                    contribution.status
+                  )} font-extralight`}
+                >
+                  {capitalizeString(contribution.status)}
+                </p>
+
+                {contribution.points && contribution.points > 0 ? (
+                  <p>
+                    <span className="font-semibold">{contribution.points}</span> points
+                    {contribution.pointsDescription && (
+                      <span className="font-extralight italic text-sm">
+                        {` (${contribution.pointsDescription})`}
+                      </span>
+                    )}
                   </p>
-                </TableCell>
-                <TableCell className="max-w-[300px] flex flex-col items-end">
-                  <ContributionDetails contribution={contribution} />
-                </TableCell>
-              </TableRow>
+                ) : null}
+
+                {contribution.modComment && (
+                  <p className="font-extralight whitespace-pre-wrap text-sm ">
+                    Mod comment: {contribution.modComment}
+                  </p>
+                )}
+
+                <div className="text-sm mt-2">
+                  <ContributionDetails contribution={contribution} alignRight={false} />
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </>
       )}
 
       {contributions.length === 0 && (
@@ -169,7 +216,7 @@ export const loader = unstable_defineLoader(async args => {
   ];
 
   contributions = contributions.sort((a, b) => {
-    return a.timestamp.getTime() - b.timestamp.getTime();
+    return b.timestamp.getTime() - a.timestamp.getTime();
   });
 
   return {
@@ -177,7 +224,13 @@ export const loader = unstable_defineLoader(async args => {
   };
 });
 
-function ContributionDetails({ contribution }: { contribution: Contribution }) {
+function ContributionDetails({
+  contribution,
+  alignRight,
+}: {
+  contribution: Contribution;
+  alignRight: boolean;
+}) {
   if (contribution.type === 'ContributedComic') {
     return (
       <>
@@ -189,7 +242,7 @@ function ContributionDetails({ contribution }: { contribution: Contribution }) {
       </>
     );
   } else if (contribution.type === 'ComicProblem') {
-    return <ComicProblemDetails contribution={contribution} />;
+    return <ComicProblemDetails contribution={contribution} alignRight={alignRight} />;
   } else if (contribution.type === 'ComicSuggestion') {
     return (
       <>
@@ -197,13 +250,19 @@ function ContributionDetails({ contribution }: { contribution: Contribution }) {
       </>
     );
   } else if (contribution.type === 'TagSuggestion') {
-    return <TagSuggestionDetails contribution={contribution} />;
+    return <TagSuggestionDetails contribution={contribution} alignRight={alignRight} />;
   }
 
   return '-';
 }
 
-function ComicProblemDetails({ contribution }: { contribution: ComicProblem }) {
+function ComicProblemDetails({
+  contribution,
+  alignRight,
+}: {
+  contribution: ComicProblem;
+  alignRight: boolean;
+}) {
   const [isViewingDetails, setIsViewingDetails] = useState(false);
 
   return (
@@ -212,14 +271,20 @@ function ComicProblemDetails({ contribution }: { contribution: ComicProblem }) {
       <p>Problem: {contribution.problemCategory}</p>
 
       {isViewingDetails && (
-        <p className="mt-2 font-extralight whitespace-pre-wrap break-all text-right">
+        <p
+          className={`mt-2 font-extralight whitespace-pre-wrap break-all ${
+            alignRight ? 'text-right' : 'text-left'
+          }`}
+        >
           {contribution.description}
         </p>
       )}
 
       <Button
         text={isViewingDetails ? 'Hide details' : 'Show details'}
-        className={`self-end -mr-3 ${isViewingDetails ? 'mt-1 -mb-1' : '-my-1'}`}
+        className={`${alignRight ? 'self-end -mr-3' : 'self-start pl-0'} ${
+          isViewingDetails ? 'mt-1 -mb-1' : '-my-1'
+        }`}
         variant="naked"
         onClick={() => setIsViewingDetails(!isViewingDetails)}
       />
@@ -229,8 +294,10 @@ function ComicProblemDetails({ contribution }: { contribution: ComicProblem }) {
 
 function TagSuggestionDetails({
   contribution,
+  alignRight,
 }: {
   contribution: ContributionTagSuggestion;
+  alignRight: boolean;
 }) {
   const [isViewingDetails, setIsViewingDetails] = useState(false);
   const isAdd = contribution.addTags.length > 0;
@@ -258,8 +325,14 @@ function TagSuggestionDetails({
       {isViewingDetails && (
         <>
           {isAdd && (
-            <div className="flex flex-row flex-wrap justify-end w-full items-center gap-1">
-              <p className="whitespace-pre-wrap text-end mr-1">
+            <div
+              className={`flex flex-row flex-wrap w-full items-center gap-1 ${
+                alignRight ? 'justify-end' : 'justify-start'
+              }`}
+            >
+              <p
+                className={`whitespace-pre-wrap ${alignRight ? 'text-right' : 'text-left'} mr-1`}
+              >
                 <b>Add</b>
               </p>
               {contribution.addTags.map(tag => (
@@ -275,11 +348,13 @@ function TagSuggestionDetails({
 
           {isRemove && (
             <div
-              className={`flex flex-row flex-wrap justify-end w-full items-center gap-1 ${
-                isAdd && 'mt-2'
-              }`}
+              className={`flex flex-row flex-wrap w-full items-center gap-1 ${
+                alignRight ? 'justify-end' : 'justify-start'
+              } ${isAdd && 'mt-2'}`}
             >
-              <p className="whitespace-pre-wrap text-end mr-1">
+              <p
+                className={`whitespace-pre-wrap ${alignRight ? 'text-right' : 'text-left'} mr-1`}
+              >
                 <b>Remove</b>
               </p>
               {contribution.removeTags.map(tag => (
@@ -297,7 +372,9 @@ function TagSuggestionDetails({
 
       <Button
         text={isViewingDetails ? 'Hide details' : 'Show details'}
-        className={`self-end -mr-3 ${isViewingDetails ? 'mt-1 -mb-1' : '-my-1'}`}
+        className={`${alignRight ? 'self-end -mr-3' : 'self-start pl-0'} ${
+          isViewingDetails ? 'mt-1 -mb-1' : '-my-1'
+        }`}
         variant="naked"
         onClick={() => setIsViewingDetails(!isViewingDetails)}
       />
