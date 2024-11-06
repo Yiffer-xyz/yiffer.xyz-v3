@@ -3,6 +3,7 @@ import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getBlogById } from '~/route-funcs/get-blogs';
 import { processApiError } from '~/utils/request-helpers';
+import { format, formatDistanceToNow } from 'date-fns';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
@@ -44,10 +45,16 @@ export default function BlogPage() {
         currentRoute={blog?.title ?? queryStr ?? 'Blog'}
       />
 
-      {notFound === false ? (
-        <pre>{JSON.stringify(blog, null, 2)}</pre>
-      ) : (
-        <p>Blog not found</p>
+      {notFound && <p>Blog not found</p>}
+
+      {notFound === false && blog && (
+        <div className="whitespace-pre-wrap -mt-2">
+          <p className="text-sm">
+            By {blog?.authorUser.username} - {format(blog?.timestamp, 'PPP')} (
+            {formatDistanceToNow(blog?.timestamp)} ago)
+          </p>
+          <p className="mt-2">{blog?.content}</p>
+        </div>
       )}
     </div>
   );
