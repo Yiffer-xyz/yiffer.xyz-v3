@@ -1,6 +1,5 @@
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { MdArrowDropDown, MdArrowDropUp } from 'react-icons/md';
 import {
   Table,
   TableBody,
@@ -11,7 +10,6 @@ import {
 import { capitalizeString } from '~/utils/general';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { makeDbErr, processApiError } from '~/utils/request-helpers';
-import { PointInfo } from '../contribute_.scoreboard/route';
 import type {
   DbComicProblem,
   DbComicSuggestion,
@@ -41,11 +39,11 @@ import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { unstable_defineLoader } from '@remix-run/cloudflare';
+import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();
-  const [showPointInfo, setShowPointInfo] = useState(false);
 
   return (
     <div className="container mx-auto pb-8">
@@ -56,21 +54,7 @@ export default function YourContributions() {
         currentRoute="Your contributions"
       />
 
-      <p>
-        <button
-          onClick={() => setShowPointInfo(!showPointInfo)}
-          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
-          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
-          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
-          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
-          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
-        >
-          {showPointInfo ? 'Hide' : 'Show'} point info{' '}
-          {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
-        </button>
-      </p>
-
-      {showPointInfo && <PointInfo showInfoAboutUploadedComics />}
+      <ContributionPointInfo showInfoAboutUploadedComics />
 
       {contributions.length > 0 && (
         <>

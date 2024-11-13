@@ -1,18 +1,20 @@
 export const CONTRIBUTION_POINTS = {
   tagSuggestion: {
     points: 5,
+    description: 'Add/remove tag suggestion approved',
   },
   comicProblem: {
     points: 10,
+    description: 'Comic problem reported',
   },
   comicSuggestion: {
     good: {
       points: 30,
-      description: undefined,
+      description: 'Accepted, excellent information',
     },
     bad: {
       points: 15,
-      description: 'Lacking links/info',
+      description: 'Accepted, but lacking links/info',
     },
   },
   comicUpload: {

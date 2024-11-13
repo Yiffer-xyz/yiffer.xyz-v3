@@ -10,7 +10,9 @@ import type { Config } from 'tailwindcss';
 export const colors = {
   text: {
     light: '#292929',
+    weakLight: '#595959',
     dark: '#eee',
+    weakDark: '#c0c0c0',
     white: '#fff',
   },
   status: {

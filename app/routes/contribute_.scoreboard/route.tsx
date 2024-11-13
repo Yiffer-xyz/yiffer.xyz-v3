@@ -1,13 +1,8 @@
 import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { add, format, sub } from 'date-fns';
-import { Fragment, useState } from 'react';
-import {
-  MdArrowBack,
-  MdArrowDropDown,
-  MdArrowDropUp,
-  MdArrowForward,
-} from 'react-icons/md';
+import { useState } from 'react';
+import { MdArrowBack, MdArrowForward } from 'react-icons/md';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import Spinner from '~/ui-components/Spinner';
@@ -27,6 +22,7 @@ import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type CachedPoints = {
@@ -53,7 +49,6 @@ export default function Scoreboard() {
 
   const allTimePoints = useLoaderData<typeof loader>();
 
-  const [showPointInfo, setShowPointInfo] = useState(false);
   const [activeCategory, setActiveCategory] = useState<'Monthly' | 'All time'>('Monthly');
   const [excludeMods, setExcludeMods] = useState(false);
   const [date, setDate] = useState(new Date());
@@ -135,21 +130,7 @@ export default function Scoreboard() {
         plans to change this, but who knows what the future holds?
       </p>
 
-      <p className="text-center sm:text-left">
-        <button
-          onClick={() => setShowPointInfo(!showPointInfo)}
-          className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
-          bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
-          dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
-          focus:no-underline cursor-pointer bg-[length:0%_1px] transition-[background-size]
-          duration-200 bg-[center_bottom] hover:bg-[length:100%_1px]`}
-        >
-          {showPointInfo ? 'Hide' : 'Show'} point info{' '}
-          {showPointInfo ? <MdArrowDropUp /> : <MdArrowDropDown />}
-        </button>
-      </p>
-
-      {showPointInfo && <PointInfo />}
+      <ContributionPointInfo />
 
       <div className="flex flex-col justify-center sm:justify-normal items-center w-fit mx-auto sm:mx-0 mt-8">
         <Checkbox
@@ -330,89 +311,4 @@ function topScoreEntriesToPointList(
   });
 
   return topScoreRows;
-}
-
-const pInfoColors = {
-  pValues: {
-    green: 'dark:text-green-600 text-green-700',
-    blue: 'dark:text-blue-600 text-blue-700',
-    purple: 'dark:text-purple-600 text-purple-700',
-    yellow: 'dark:text-yellow-500 text-yellow-600',
-  },
-  pDescriptions: {
-    green: 'dark:text-green-400 text-green-600',
-    blue: 'dark:text-blue-400 text-blue-600',
-    purple: 'dark:text-purple-400 text-purple-600',
-    yellow: 'dark:text-yellow-200 text-yellow-500',
-  },
-};
-
-const nonRejectedUploads = Object.entries(CONTRIBUTION_POINTS.comicUpload)
-  .filter(([verdict]) => verdict !== 'rejected' && verdict !== 'rejected-list')
-  .map(([_, value]) => ({
-    points: value.points,
-    text: value.scoreListDescription,
-  }));
-
-export function PointInfo({
-  showInfoAboutUploadedComics = false,
-}: {
-  showInfoAboutUploadedComics?: boolean;
-}) {
-  return (
-    <>
-      <div
-        className="grid gap-y-1 gap-x-2 mt-4 w-fit"
-        style={{ gridTemplateColumns: 'auto auto' }}
-      >
-        {nonRejectedUploads.map(({ points, text }) => (
-          <Fragment key={points}>
-            <p className={pInfoColors.pValues.green}>
-              <b>{points}</b>
-            </p>
-            <p className={pInfoColors.pDescriptions.green}>{text}</p>
-          </Fragment>
-        ))}
-
-        <p className={pInfoColors.pValues.blue}>
-          <b>30</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.blue}>
-          Comic suggestion approved with good links/information
-        </p>
-
-        <p className={pInfoColors.pValues.blue}>
-          <b>15</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.blue}>
-          Comic suggestion approved with lacking links/information
-        </p>
-
-        <p className={pInfoColors.pValues.purple}>
-          <b>10</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.purple}>Comic problem reported</p>
-
-        <p className={pInfoColors.pValues.yellow}>
-          <b>5</b>
-        </p>
-        <p className={pInfoColors.pDescriptions.yellow}>
-          Add/remove tag suggestion approved
-        </p>
-      </div>
-      {showInfoAboutUploadedComics && (
-        <>
-          <p className="mt-4">
-            Sometimes good suggestions might show up as rejected, if someone else beat you
-            to it.
-          </p>
-          <p className="mt-2">
-            Note that even if your comic upload has the status Approved it might still not
-            be available on the site. We queue comics to spread their distribution evenly
-            over time.
-          </p>
-        </>
-      )}
-    </>
-  );
 }
