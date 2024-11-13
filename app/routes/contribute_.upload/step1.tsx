@@ -86,7 +86,8 @@ export default function Step1({ onNext, isMod }: Step1Props) {
 
       <p>
         Where did you find the comic's pages? Please provide a link to and/or description
-        of the source.
+        of the source. If the pages are on individual links, a link to one page is enough
+        - we don't need one for every page.
       </p>
       <p className="mt-4">
         If your answer is "google", or "on my computer", there is a higher chance we'll
