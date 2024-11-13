@@ -142,7 +142,7 @@ function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParam
   let updateFieldStr = '';
   const updateFieldValues: any[] = [];
   if (changes.category) {
-    updateFieldStr += 'tag = ?, ';
+    updateFieldStr += 'category = ?, ';
     updateFieldValues.push(changes.category);
   }
   if (changes.artistId) {
