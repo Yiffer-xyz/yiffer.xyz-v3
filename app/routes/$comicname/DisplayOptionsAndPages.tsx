@@ -215,6 +215,7 @@ export default function DisplayOptionsAndPages({
               text="Set as default"
               className="!py-1 !px-2 font-normal"
               onClick={setDefault}
+              variant="outlined"
             />
             <IconButton
               variant="naked"
@@ -238,6 +239,10 @@ export default function DisplayOptionsAndPages({
               style={getPageStyle(i)}
               onClick={() => onPageClick(i)}
             />
+            {/* abc */}
+            {/* <div className="w-[400px] h-[600px] bg-gray-800 flex items-center justify-center">
+              <p>Page {i + 1}</p>
+            </div> */}
 
             {individualPageStylesShowLabels[i] !== undefined && (
               <div
