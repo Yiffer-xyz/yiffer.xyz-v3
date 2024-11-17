@@ -11,6 +11,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import { MdArrowBack } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTag() {
@@ -43,6 +44,12 @@ export default function ManageTag() {
 
       {!isEditing && !isDeleting && (
         <div className="flex flex-row gap-3">
+          <Button
+            text="Back"
+            onClick={() => navigate('/admin/tags')}
+            startIcon={MdArrowBack}
+            variant="outlined"
+          />
           <Button text="Edit tag" onClick={() => setIsEditing(true)} />
           <Button text="Delete tag" onClick={() => setIsDeleting(true)} color="error" />
         </div>
