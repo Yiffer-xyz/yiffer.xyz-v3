@@ -32,7 +32,8 @@ export default function Stats() {
   const navigate = useNavigate();
 
   const { pathname } = useLocation();
-  const isCreating = pathname.includes('/new');
+  const isCreatingOrEditing =
+    pathname.includes('/new') || pathname.match(/^\/admin\/blogs\/[^\/]+$/);
 
   return (
     <>
@@ -40,7 +41,7 @@ export default function Stats() {
 
       <Outlet context={globalContext} />
 
-      {!isCreating && (
+      {!isCreatingOrEditing && (
         <>
           <Button
             text="New blog"
@@ -59,7 +60,7 @@ export default function Stats() {
                 <TableRow includeBorderTop>
                   <TableCell>
                     <Link
-                      href={`/blogs/${blogs[0].id}`}
+                      href={`/admin/blogs/${blogs[0].id}`}
                       text={blogs[0].title}
                       showRightArrow
                     />
@@ -72,7 +73,11 @@ export default function Stats() {
                 {blogs.slice(1).map(blog => (
                   <TableRow key={blog.id}>
                     <TableCell>
-                      <Link href={`/blogs/${blog.id}`} text={blog.title} showRightArrow />
+                      <Link
+                        href={`/admin/blogs/${blog.id}`}
+                        text={blog.title}
+                        showRightArrow
+                      />
                       {isMobile && <p>{format(blog.timestamp, 'PPP')}</p>}
                     </TableCell>
                     {!isMobile && <TableCell>{format(blog.timestamp, 'PPP')}</TableCell>}
