@@ -21,6 +21,8 @@ import { authLoader } from '~/utils/loaders';
 import type { SimilarArtistResponse } from '../api.search-similar-artist';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import Link from '~/ui-components/Link';
+import { MdArrowForward } from 'react-icons/md';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const loader = unstable_defineLoader(async args => {
@@ -29,10 +31,12 @@ export const loader = unstable_defineLoader(async args => {
 
 export default function Upload() {
   const actionData = useActionData<typeof action>();
+
   const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
     url: '/api/search-similarly-named-comic',
     method: 'post',
   });
+
   const similarArtistsFetcher = useGoodFetcher({
     url: '/api/search-similar-artist',
     method: 'post',
@@ -41,6 +45,7 @@ export default function Upload() {
       setSimilarArtists(similarArtistsFetcher.data);
     },
   });
+
   const [comicName, setComicName] = useState('');
   const [artistName, setArtistName] = useState('');
   const [comments, setComments] = useState('');
@@ -125,17 +130,6 @@ export default function Upload() {
     }, 1500);
   }
 
-  function getSuccessText() {
-    if (user) {
-      return 'You can track its progress and result in the "Your contributions" section of the previous page.';
-    }
-
-    return (
-      'Since you are not logged in, you cannot track the status and result of your submission. We' +
-      ' recommend that you create a user next time - it will take you under a minute!'
-    );
-  }
-
   const isSubmitDisabled =
     !comicName || !artistName || !comments || !isComicnameLegal || !isArtistNameLegal;
 
@@ -153,6 +147,8 @@ export default function Upload() {
     similarArtists &&
     similarArtists.similarBannedArtists.length > 0;
 
+  console.log(similarComics);
+
   return (
     <section className="container mx-auto justify-items-center">
       <h1>Suggest a comic</h1>
@@ -165,18 +161,38 @@ export default function Upload() {
       {actionData?.success ? (
         <InfoBox
           title="Thanks for helping out!"
-          text={getSuccessText()}
           variant="success"
+          boldText={false}
           className="mt-4"
-        />
+        >
+          {user ? (
+            <p>
+              You can track your suggestion's progress in the{' '}
+              <Link
+                isInsideParagraph
+                href="/contribute/your-contributions"
+                text="Your contributions page"
+                className="!text-white"
+                IconRight={MdArrowForward}
+              />
+              .
+            </p>
+          ) : (
+            <p>
+              Since you are not logged in, you cannot track the status and result of your
+              submission. We recommend that you create an account next time - it will take
+              you under a minute!
+            </p>
+          )}
+        </InfoBox>
       ) : (
         <>
           <p>
             If you would like to follow your suggestion&apos;s status,{' '}
             <span>create an account!</span> You can then follow updates in the &quot;view
-            your contributions&quot; section above. Having a user will also earn you
-            points in the scoreboard on the previous page - though significantly less than
-            if you upload the comic yourself.
+            your contributions&quot; section on the previous page. Having a user will also
+            earn you points in the scoreboard on the previous page - though significantly
+            less than if you upload the comic yourself.
           </p>
           <br />
           <h4>Guidelines</h4>
@@ -196,7 +212,8 @@ export default function Upload() {
               who have asked not to be represented here.
             </li>
           </ul>
-          <TopGradientBox containerClassName="my-10 mx-20 shadow-lg">
+
+          <TopGradientBox containerClassName="my-10 shadow-lg">
             <Form method="post" className="w-fit mx-8 py-6">
               <h3 className="pb-6">Suggest comic</h3>
               <TextInput
