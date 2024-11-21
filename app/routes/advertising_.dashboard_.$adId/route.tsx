@@ -9,7 +9,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { ADVERTISEMENTS } from '~/types/constants';
 import { useState } from 'react';
 import type { AdType, Advertisement } from '~/types/types';
-import Step2Details from '../advertising_.apply/step2-details';
+import Step3Details from '../advertising_.apply/step3-details';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
@@ -171,8 +171,6 @@ function AdEditing({
       wasMediaChanged: !!file?.file,
     };
 
-    console.log(body);
-
     submitFetcher.submit({ body: JSON.stringify(body) });
     setIsSubmitting(false);
   }
@@ -203,13 +201,14 @@ function AdEditing({
 
   return (
     <TopGradientBox containerClassName="mt-6" innerClassName="p-6 pt-4 flex flex-col">
-      <h3 className="-mb-2">Edit ad</h3>
+      <h3>Edit ad</h3>
 
-      <Step2Details
+      <Step3Details
         isNewAd={false}
         adName={newAd.adName}
         setAdName={val => setNewAd(newAd => ({ ...newAd, adName: val }))}
-        adType={fullAdType}
+        adType={fullAdType!}
+        mediaType={newAd.mediaType}
         link={newAd.link}
         setLink={val => setNewAd(newAd => ({ ...newAd, link: val }))}
         mainText={newAd.mainText}

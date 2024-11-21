@@ -43,7 +43,7 @@ export async function getAds({
 
   let getAdsQuery = `
     SELECT
-      advertisement.id, adType, adName, link, mainText, secondaryText, userId,
+      advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
       isChangedWhileActive,
@@ -106,7 +106,7 @@ export async function getAdById({
 
   const getAdQuery = `
     SELECT
-      advertisement.id, adType, adName, link, mainText, secondaryText, userId,
+      advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
       isChangedWhileActive,
@@ -194,6 +194,7 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
   return {
     id: ad.id,
     adType: ad.adType,
+    mediaType: ad.mediaType,
     adName: ad.adName,
     link: ad.link,
     mainText: ad.mainText,

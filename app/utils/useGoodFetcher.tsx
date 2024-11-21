@@ -97,13 +97,17 @@ export function useGoodFetcher<T = void>({
         if (toastSuccessMessage && fetcher.data.success && !fetcher.data.error) {
           showSuccessToast(toastSuccessMessage, preventToastClose, theme);
         } else if (toastError && fetcher.data.error) {
-          const errMsg =
-            // @ts-ignore
-            'errorMessage' in fetcher.data.error
-              ? fetcher.data.error.errorMessage
-              : fetcher.data.error;
-          showErrorToast(errMsg as string, theme);
-          showSuccessToast(fetcher.data.error, false, theme);
+          let errMsg: string;
+          if (typeof fetcher.data.error === 'string') {
+            errMsg = fetcher.data.error;
+          } else {
+            errMsg =
+              'errorMessage' in fetcher.data.error
+                ? // @ts-ignore
+                  fetcher.data.error.errorMessage
+                : fetcher.data.error;
+          }
+          showErrorToast(errMsg, theme);
         }
       }
 

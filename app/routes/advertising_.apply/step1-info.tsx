@@ -5,6 +5,8 @@ import Button from '~/ui-components/Buttons/Button';
 export default function Step1Info({ onNext }: { onNext: () => void }) {
   return (
     <>
+      <p className="font-semibold text-lg mb-2">Step 1: Information</p>
+
       <div className="flex flex-col gap-2">
         <p className="font-bold -mb-2">Free trial</p>
         <p>
@@ -64,7 +66,7 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
       </div>
 
       <Button
-        text="Next: Ad information"
+        text="Next: Ad & media type"
         endIcon={MdArrowForward}
         className="mt-8 self-end"
         onClick={onNext}

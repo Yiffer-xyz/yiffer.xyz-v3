@@ -330,6 +330,10 @@ export type AdvertisementInfo = {
     width: number;
     height: number;
   };
+  alternativeDimensions?: {
+    width: number;
+    height: number;
+  }[];
   idealDimensions?: {
     width: number;
     height: number;
@@ -341,11 +345,14 @@ export type AdvertisementInfo = {
   };
 };
 
+export type AdMediaType = 'image' | 'video' | 'gif';
+
 // TODO-db: Make userId and clicks not nullable
 export type Advertisement = {
   id: string;
   adType: AdType;
   adName: string;
+  mediaType: AdMediaType;
   link: string;
   mainText?: string;
   secondaryText?: string;

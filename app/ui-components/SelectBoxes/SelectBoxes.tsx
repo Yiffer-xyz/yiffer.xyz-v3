@@ -22,7 +22,7 @@ export default function SelectBoxes<T>({
     >
       {options.map(option => (
         <button
-          key={String(option.value)}
+          key={String(option.text)}
           onClick={() => onChange(option.value)}
           className={`
             px-3 py-1.5 rounded border-3 transition-colors

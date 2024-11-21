@@ -70,6 +70,10 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
       width: 728,
       height: 90,
     },
+    alternativeDimensions: [
+      { width: 728, height: 90 },
+      { width: 728 * 1.5, height: 90 * 1.5 },
+    ],
     idealDimensions: {
       width: 728 * 2,
       height: 90 * 2,
@@ -90,6 +94,10 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
       width: 300,
       height: 90,
     },
+    alternativeDimensions: [
+      { width: 300, height: 90 },
+      { width: 300 * 1.5, height: 90 * 1.5 },
+    ],
     idealDimensions: {
       width: 300 * 2,
       height: 90 * 2,

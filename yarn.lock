@@ -500,6 +500,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bytescale/sdk@npm:^3.49.0":
+  version: 3.49.0
+  resolution: "@bytescale/sdk@npm:3.49.0"
+  checksum: 10c0/7dc72c56e569b9192c88c36739846d839b8865e86940a036e23dce90563204753eb2273f1c2b40c032af0dc05e7a0f7d539ca7e647c8c0f86f98d637b57b5cf2
+  languageName: node
+  linkType: hard
+
 "@cloudflare/kv-asset-handler@npm:0.3.4":
   version: 0.3.4
   resolution: "@cloudflare/kv-asset-handler@npm:0.3.4"
@@ -10544,6 +10551,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "yiffer-xyz-2@workspace:."
   dependencies:
+    "@bytescale/sdk": "npm:^3.49.0"
     "@cloudflare/workers-types": "npm:^4.20240925.0"
     "@remix-run/cloudflare": "npm:^2.11.2"
     "@remix-run/cloudflare-pages": "npm:^2.11.2"

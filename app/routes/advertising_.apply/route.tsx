@@ -1,17 +1,18 @@
 import '~/utils/cropper.min.css';
 import { useState } from 'react';
-import type { AdType, AdvertisementInfo } from '~/types/types';
+import type { AdMediaType, AdType, AdvertisementInfo } from '~/types/types';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { getFileExtension, randomString, type ComicImage } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import Step2Details from './step2-details';
+import Step3Details from './step3-details';
 import Step1Info from './step1-info';
 import type { SubmitAdFormData } from '../api.submit-ad';
 import { useLoaderData } from '@remix-run/react';
 import { unstable_defineLoader } from '@remix-run/cloudflare';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
+import Step2MediaType from './step2-mediaType';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function AdvertisingApply() {
@@ -24,6 +25,7 @@ export default function AdvertisingApply() {
   const [mainText, setMainText] = useState<string>('');
   const [secondaryText, setSecondaryText] = useState<string>('');
   const [isRequestingTrial, setIsRequestingTrial] = useState<boolean>(false);
+  const [mediaType, setMediaType] = useState<AdMediaType | undefined>(undefined);
 
   const [selectedFile, setSelectedFile] = useState<ComicImage | undefined>();
   const [croppedFile, setCroppedFile] = useState<ComicImage | undefined>();
@@ -82,6 +84,7 @@ export default function AdvertisingApply() {
       notesComments: notesComments || null,
       isAnimated: false,
     };
+
     submitFetcher.submit({ body: JSON.stringify(body) });
     setIsLoading(false);
   }
@@ -115,37 +118,48 @@ export default function AdvertisingApply() {
         </InfoBox>
       ) : (
         <TopGradientBox containerClassName="mt-6" innerClassName="p-6 pt-4 flex flex-col">
-          {step === 1 && (
-            <p className="font-semibold text-lg mb-4">Step 1: Information</p>
-          )}
-          {step === 2 && <p className="font-semibold text-lg mb-4">Step 2: Ad details</p>}
-
           {step === 1 && <Step1Info onNext={() => setStep(2)} />}
+
           {step === 2 && (
-            <Step2Details
+            <Step2MediaType
               isNewAd
-              adName={adName}
-              setAdName={setAdName}
+              mediaType={mediaType}
+              setMediaType={setMediaType}
               adType={adType}
               setAdType={setAdType}
               isRequestingTrial={isRequestingTrial}
               setIsRequestingTrial={setIsRequestingTrial}
-              link={link}
-              setLink={setLink}
-              mainText={mainText}
-              setMainText={setMainText}
-              secondaryText={secondaryText}
-              setSecondaryText={setSecondaryText}
-              notesComments={notesComments}
-              setNotesComments={setNotesComments}
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
-              setCroppedFile={setCroppedFile}
               onBack={() => setStep(1)}
-              onSubmit={onSubmit}
-              isSubmitting={submitFetcher.isLoading || isLoading}
-              submitError={fileSubmitErr ?? submitFetcher.errorMessage}
+              onNext={() => setStep(3)}
             />
+          )}
+
+          {step === 3 && (
+            <>
+              <p className="font-semibold text-lg mb-0">Step 3: Details</p>
+              <Step3Details
+                isNewAd
+                adName={adName}
+                setAdName={setAdName}
+                mediaType={mediaType!}
+                adType={adType!}
+                link={link}
+                setLink={setLink}
+                mainText={mainText}
+                setMainText={setMainText}
+                secondaryText={secondaryText}
+                setSecondaryText={setSecondaryText}
+                notesComments={notesComments}
+                setNotesComments={setNotesComments}
+                selectedFile={selectedFile}
+                setSelectedFile={setSelectedFile}
+                setCroppedFile={setCroppedFile}
+                onBack={() => setStep(2)}
+                onSubmit={onSubmit}
+                isSubmitting={submitFetcher.isLoading || isLoading}
+                submitError={fileSubmitErr ?? submitFetcher.errorMessage}
+              />
+            </>
           )}
         </TopGradientBox>
       )}

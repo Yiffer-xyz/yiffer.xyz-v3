@@ -32,6 +32,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS `idx_user_unique_username` ON `user` (`Usernam
 CREATE TABLE IF NOT EXISTS `advertisement` (
 `id` TEXT  NOT NULL,
 `adType` TEXT CHECK( `adType` IN ('card', 'banner', 'topSmall') ) NOT NULL,
+`mediaType` TEXT CHECK( `mediaType` IN ('image', 'video', 'gif') ) NOT NULL,
 `adName` TEXT NOT NULL,
 `status` TEXT CHECK( `status` IN ('PENDING', 'ACTIVE', 'ENDED', 'NEEDS CORRECTION', 'AWAITING PAYMENT') ) NOT NULL DEFAULT 'PENDING',
 `link` TEXT  NOT NULL,
