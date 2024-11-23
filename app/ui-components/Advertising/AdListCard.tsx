@@ -78,7 +78,7 @@ export default function AdListCard({
 
       {(ad.adType === 'banner' || ad.adType === 'topSmall') && (
         <div style={{ width: 300 }}>
-          <Ad ad={ad} adsPath={adMediaPath} bypassCache />
+          <Ad ad={ad} adsPath={adMediaPath} bypassCache overrideWidth={300} />
         </div>
       )}
 

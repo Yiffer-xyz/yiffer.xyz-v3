@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS `advertisement` (
 `lastActivationDate` TIMESTAMP NULL DEFAULT NULL,
 `numDaysActive` INTEGER NOT NULL DEFAULT '0',
 `isChangedWhileActive` TINYINTEGER  NOT NULL DEFAULT '0',
+`videoSpecificFileType` TEXT NULL DEFAULT NULL,
 PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));

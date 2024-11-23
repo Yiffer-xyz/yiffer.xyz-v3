@@ -57,15 +57,27 @@ export default function VideoOrGifAdMedia({
 
   function verifyDimensions(width: number, height: number, file: File) {
     let isCorrectDimensions = false;
-    if (width === ad.minDimensions.width && height === ad.minDimensions.height) {
+
+    // Check if dimensions are within ±1 pixel of the minimum dimensions
+    if (
+      Math.abs(width - ad.minDimensions.width) <= 1 &&
+      Math.abs(height - ad.minDimensions.height) <= 1
+    ) {
       isCorrectDimensions = true;
     }
+
+    console.log(ad.alternativeDimensions, ad.idealDimensions);
+
+    // Check alternative dimensions with the same ±1 pixel tolerance
     if (ad.alternativeDimensions) {
       isCorrectDimensions =
         isCorrectDimensions ||
-        ad.alternativeDimensions.some(
-          dim => dim.width === width && dim.height === height
-        );
+        [...ad.alternativeDimensions].some(
+          dim => Math.abs(dim.width - width) <= 1 && Math.abs(dim.height - height) <= 1
+        ) ||
+        (!!ad.idealDimensions &&
+          Math.abs(ad.idealDimensions.width - width) <= 1 &&
+          Math.abs(ad.idealDimensions.height - height) <= 1);
     }
 
     setIsCorrectDimensions(isCorrectDimensions);
@@ -131,7 +143,7 @@ export default function VideoOrGifAdMedia({
         <div className="flex flex-row items-center">
           <MdCheckCircle className="text-theme2-darker mr-1 mt-0.5" />
           <p>
-            <b>Video dimensions are correct</b>
+            <b>File dimensions are correct</b>
           </p>
         </div>
       )}

@@ -9,6 +9,7 @@ type Props = {
   adsPath: string;
   excludeClickLogging?: boolean;
   bypassCache?: boolean;
+  overrideWidth?: number;
   className?: HTMLAttributes<HTMLAnchorElement>['className'];
 };
 
@@ -17,6 +18,7 @@ export default function Ad({
   adsPath,
   excludeClickLogging,
   bypassCache,
+  overrideWidth,
   className,
 }: Props) {
   const fullAd = ADVERTISEMENTS.find(fullAd => fullAd.name === ad.adType);
@@ -33,8 +35,16 @@ export default function Ad({
     logClickFetcher.submit({ adId: ad.id });
   }
 
-  const { width, height } = fullAd.minDimensions;
+  let { width, height } = fullAd.minDimensions;
   const queryStr = bypassCache ? `?q=${randomString(3)}` : '';
+
+  if (overrideWidth) {
+    const aspectRatio = width / height;
+    const newHeight = overrideWidth / aspectRatio;
+    height = newHeight;
+  }
+
+  const displayHeight = ad.adType === 'banner' ? undefined : height;
 
   return (
     <a
@@ -44,20 +54,72 @@ export default function Ad({
       className={`block w-fit ${className ?? ''}`}
       onClick={onClick}
     >
-      <picture style={{ width, height }}>
-        <source
-          srcSet={`${adsPath}/${ad.id}-2x.webp${queryStr}`}
-          type="image/webp"
-          width={width}
-          height={height}
-        />
+      {ad.mediaType === 'image' && (
+        <picture
+          style={{
+            maxHeight: fullAd.minDimensions.height,
+          }}
+        >
+          <source
+            srcSet={`${adsPath}/${ad.id}-2x.webp${queryStr}`}
+            type="image/webp"
+            width={overrideWidth ?? undefined}
+            height={displayHeight}
+            style={{
+              width: overrideWidth ?? undefined,
+              height: displayHeight,
+              maxHeight: fullAd.minDimensions.height,
+            }}
+          />
+          <img
+            src={`${adsPath}/${ad.id}-2x.jpg${queryStr}`}
+            alt="illustration"
+            width={overrideWidth ?? undefined}
+            height={displayHeight}
+            style={{
+              width: overrideWidth ?? undefined,
+              height: displayHeight,
+              maxHeight: fullAd.minDimensions.height,
+            }}
+          />
+        </picture>
+      )}
+
+      {ad.mediaType === 'gif' && (
         <img
-          src={`${adsPath}/${ad.id}-2x.jpg${queryStr}`}
-          alt="illustration"
-          width={width}
-          height={height}
+          src={`${adsPath}/${ad.id}-1x.gif${queryStr}`}
+          style={{
+            maxHeight: Math.min(displayHeight ?? 9999, fullAd.minDimensions.height),
+          }}
+          alt="Ad"
         />
-      </picture>
+      )}
+
+      {ad.mediaType === 'video' && (
+        <video
+          height={displayHeight}
+          style={{
+            width: overrideWidth ?? undefined,
+            height: displayHeight,
+            maxHeight: fullAd.minDimensions.height,
+          }}
+          autoPlay
+          loop
+          muted
+        >
+          {ad.videoSpecificFileType ? (
+            <source
+              src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
+              type={`video/${ad.videoSpecificFileType}`}
+            />
+          ) : (
+            <>
+              <source src={`${adsPath}/${ad.id}-1x.webm${queryStr}`} type="video/webm" />
+              <source src={`${adsPath}/${ad.id}-1x.mp4${queryStr}`} type="video/mp4" />
+            </>
+          )}
+        </video>
+      )}
     </a>
   );
 }

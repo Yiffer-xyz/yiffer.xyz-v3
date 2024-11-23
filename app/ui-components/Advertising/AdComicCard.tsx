@@ -37,6 +37,7 @@ export default function AdComicCard({
   }
 
   const height = minimal ? 113 : 226;
+  const width = minimal ? 80 : 160;
   const widthClassName = minimal ? 'w-[80px]' : 'w-[160px]';
   const queryStr = bypassCache ? `?q=${randomString(3)}` : '';
 
@@ -53,20 +54,45 @@ export default function AdComicCard({
         target="_blank"
         rel="noreferrer"
         onClick={onClick}
-        style={{ height }}
+        style={{ height, width }}
       >
-        <picture style={{ height }}>
-          <source
-            srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp${queryStr}`}
-            type="image/webp"
-            height={height}
-          />
+        {ad.mediaType === 'image' && (
+          <picture style={{ height, width }}>
+            <source
+              srcSet={`${adsPath}/${ad.id}-${multiplier}x.webp${queryStr}`}
+              type="image/webp"
+              height={height}
+              width={width}
+            />
+            <img
+              src={`${adsPath}/${ad.id}-${multiplier}x.jpg${queryStr}`}
+              alt="Advertisement"
+              height={height}
+              width={width}
+            />
+          </picture>
+        )}
+
+        {ad.mediaType === 'gif' && (
           <img
-            src={`${adsPath}/${ad.id}-${multiplier}x.jpg${queryStr}`}
-            alt="Advertisement"
+            src={`${adsPath}/${ad.id}-1x.gif${queryStr}`}
+            style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
+            width={width}
             height={height}
+            alt="Ad"
           />
-        </picture>
+        )}
+
+        {(ad.mediaType === 'gif' || ad.mediaType === 'video') && (
+          <video
+            src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
+            width={width}
+            height={height}
+            autoPlay
+            loop
+            muted
+          />
+        )}
       </a>
 
       {!minimal && (

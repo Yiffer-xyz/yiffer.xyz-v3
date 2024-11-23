@@ -43,15 +43,39 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
     }
     const width = ad.adType === 'banner' ? 364 : 300;
     const height = ad.adType === 'banner' ? 45 : 90;
-    return (
-      <img
-        src={`${adsPath}/${ad.id}-2x.jpg${queryStr}`}
-        style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
-        width={width}
-        height={height}
-        alt="Ad"
-      />
-    );
+    if (ad.mediaType === 'image') {
+      return (
+        <img
+          src={`${adsPath}/${ad.id}-2x.jpg${queryStr}`}
+          style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
+          width={width}
+          height={height}
+          alt="Ad"
+        />
+      );
+    } else if (ad.mediaType === 'gif') {
+      return (
+        <img
+          src={`${adsPath}/${ad.id}-1x.gif${queryStr}`}
+          style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
+          width={width}
+          height={height}
+          alt="Ad"
+        />
+      );
+    } else {
+      return (
+        <video
+          src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
+          style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
+          width={width}
+          height={height}
+          autoPlay
+          loop
+          muted
+        />
+      );
+    }
   }, [ad, adsPath, queryStr]);
 
   const updateAdFetcher = useGoodFetcher({

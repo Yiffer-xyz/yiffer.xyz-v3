@@ -379,6 +379,7 @@ export type Advertisement = {
   currentDaysActive: number;
   numDaysActive: number;
   isChangedWhileActive: boolean;
+  videoSpecificFileType?: string | null;
 };
 
 export type AdvertisementPoorlyTyped = Omit<
@@ -415,6 +416,8 @@ export type AdForViewing = {
   secondaryText?: string;
   isAnimated: boolean;
   renderId?: string;
+  mediaType: AdMediaType;
+  videoSpecificFileType?: string | null;
 };
 
 export type Blog = {

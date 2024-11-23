@@ -197,7 +197,7 @@ export async function getComicsPaginated({
 
   if (includeAds) {
     const adsQueryAndParams = {
-      query: `SELECT id, link, mainText, secondaryText, isAnimated
+      query: `SELECT id, link, mainText, secondaryText, isAnimated, mediaType, videoSpecificFileType
         FROM advertisement
         WHERE adType = 'card' AND status = 'ACTIVE'
         ORDER BY RANDOM() LIMIT ${COMICS_PER_PAGE} 

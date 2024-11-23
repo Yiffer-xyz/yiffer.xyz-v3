@@ -83,6 +83,7 @@ export default function ComicManageTags({
         variant="success"
         className="mt-4 w-fit md:w-[728px]"
         closable
+        fitWidth
         overrideOnCloseFunc={onCancel}
       >
         <p className="font-normal">Thanks for your suggestion!</p>

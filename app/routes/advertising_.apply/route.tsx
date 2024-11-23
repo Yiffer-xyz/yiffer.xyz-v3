@@ -73,16 +73,24 @@ export default function AdvertisingApply() {
       return;
     }
 
+    const videoSpecificFileType = file.file.type.includes('video')
+      ? getFileExtension(file.file.name)
+      : null;
+
+    console.log('🃏videoSpecificFileType', videoSpecificFileType);
+
     const body: SubmitAdFormData = {
       id,
       isRequestingTrial,
       adName,
       adType: adType.name,
+      mediaType: mediaType!,
       link,
       mainText: mainText || null,
       secondaryText: secondaryText || null,
       notesComments: notesComments || null,
       isAnimated: false,
+      videoSpecificFileType,
     };
 
     submitFetcher.submit({ body: JSON.stringify(body) });

@@ -14,7 +14,7 @@ export async function getAdForViewing({
   const logCtx = { adType };
 
   const getAdsQuery = `
-    SELECT id, link, isAnimated, adType
+    SELECT id, link, isAnimated, adType, mediaType, videoSpecificFileType
     FROM advertisement
     WHERE status = 'ACTIVE' AND adType = ?
     ORDER BY RANDOM() LIMIT 1`;

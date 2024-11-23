@@ -46,7 +46,7 @@ export async function getAds({
       advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      isChangedWhileActive,
+      isChangedWhileActive, videoSpecificFileType,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -109,7 +109,7 @@ export async function getAdById({
       advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      isChangedWhileActive,
+      isChangedWhileActive, videoSpecificFileType,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -230,5 +230,6 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
     clicksPerDayActive:
       totalDaysActive === 0 ? 0 : Math.round(10 * (ad.clicks / totalDaysActive)) / 10,
     isChangedWhileActive: ad.isChangedWhileActive === 1,
+    videoSpecificFileType: ad.videoSpecificFileType,
   };
 }

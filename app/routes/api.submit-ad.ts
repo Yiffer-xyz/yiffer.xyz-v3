@@ -1,5 +1,5 @@
 import { AdFreeTrialStateEnum } from '~/types/types';
-import type { UserSession, AdType } from '~/types/types';
+import type { UserSession, AdType, AdMediaType } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -19,12 +19,14 @@ export type SubmitAdFormData = {
   id: string;
   isRequestingTrial: boolean;
   adType: AdType;
+  mediaType: AdMediaType;
   link: string;
   adName: string;
   mainText?: string | null;
   secondaryText?: string | null;
   notesComments?: string | null;
   isAnimated: boolean;
+  videoSpecificFileType?: string | null;
 };
 
 export const action = unstable_defineAction(async args => {
@@ -59,12 +61,13 @@ export async function submitAd(
   user: UserSession
 ): Promise<ApiError | undefined> {
   const insertQuery = `INSERT INTO advertisement 
-    (id, adType, adName, link, mainText, secondaryText, userId, isAnimated, advertiserNotes, freeTrialState)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+    (id, adType, mediaType, adName, link, mainText, secondaryText, userId, isAnimated, advertiserNotes, freeTrialState, videoSpecificFileType)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
 
   const insertParams = [
     data.id,
     data.adType,
+    data.mediaType,
     data.adName,
     data.link,
     data.mainText ?? null,
@@ -73,6 +76,7 @@ export async function submitAd(
     data.isAnimated,
     data.notesComments,
     data.isRequestingTrial ? AdFreeTrialStateEnum.Requested : null,
+    data.videoSpecificFileType ?? null,
   ];
 
   const dbRes = await queryDbExec(db, insertQuery, insertParams);
