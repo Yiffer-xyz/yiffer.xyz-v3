@@ -132,7 +132,7 @@ export default function Scoreboard() {
 
       <ContributionPointInfo />
 
-      <div className="flex flex-col justify-center sm:justify-normal items-center w-fit mx-auto sm:mx-0 mt-8">
+      <div className="flex flex-col justify-start min-w-[300px] mx-auto sm:mx-0 mt-8">
         <Checkbox
           label="Include mods"
           checked={!excludeMods}
