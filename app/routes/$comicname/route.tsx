@@ -130,23 +130,23 @@ export default function ComicPage() {
                 />
               </div>
             )}
-
-            {isManagingTags && (
-              <ComicManageTags
-                comic={comic}
-                setIsManagingTags={setIsManagingTags}
-                isLoggedIn={isLoggedIn}
-              />
-            )}
-
-            {isReportingProblem && (
-              <ComicReportProblem
-                comic={comic}
-                setIsReportingProblem={setIsReportingProblem}
-                isLoggedIn={isLoggedIn}
-              />
-            )}
           </div>
+
+          {isManagingTags && (
+            <ComicManageTags
+              comic={comic}
+              setIsManagingTags={setIsManagingTags}
+              isLoggedIn={isLoggedIn}
+            />
+          )}
+
+          {isReportingProblem && (
+            <ComicReportProblem
+              comic={comic}
+              setIsReportingProblem={setIsReportingProblem}
+              isLoggedIn={isLoggedIn}
+            />
+          )}
 
           <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
             {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}

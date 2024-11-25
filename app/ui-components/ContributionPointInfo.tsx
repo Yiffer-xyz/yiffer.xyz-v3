@@ -108,8 +108,8 @@ export default function ContributionPointInfo({
           </div>
 
           <p className="text-sm mt-0.5 italic text-text-weakLight dark:text-text-weakDark">
-            Sometimes good suggestions might show up as rejected, if someone else beat you
-            to it.
+            Sometimes good suggestions might show up as rejected, if someone else
+            suggested the same before you.
           </p>
         </>
       )}
