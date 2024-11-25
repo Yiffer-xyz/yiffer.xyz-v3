@@ -45,7 +45,7 @@ export default function Advertising() {
       />
 
       {ads.length > 0 ? (
-        <div className="flex flex-col gap-2 w-fit max-w-full mt-2">
+        <div className="flex flex-col gap-2 w-fit max-w-full mt-2 pb-16">
           {ads.map(ad => (
             <AdListCard
               ad={ad}

@@ -4,6 +4,8 @@ import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import Link from '~/ui-components/Link';
 import { capitalizeFirstRestLower } from '~/utils/general';
 import AdComicCard from './AdComicCard';
+import { useMemo } from 'react';
+import { ADVERTISEMENTS } from '~/types/constants';
 
 export default function AdListCard({
   ad,
@@ -16,18 +18,23 @@ export default function AdListCard({
   frontendAdsPath: string;
   showFullAdminData?: boolean;
 }) {
-  const bgColor =
-    showFullAdminData && ad.isChangedWhileActive
+  const bgColor = useMemo(() => {
+    if (ad.videoSpecificFileType && showFullAdminData) return 'bg-red-moreTrans';
+
+    return showFullAdminData && ad.isChangedWhileActive
       ? 'bg-theme1-primaryTrans'
       : 'bg-white dark:bg-gray-300';
+  }, [ad.videoSpecificFileType, showFullAdminData, ad.isChangedWhileActive]);
+
+  const adTypeInfo = ADVERTISEMENTS.find(adInfo => adInfo.name === ad.adType);
 
   return (
     <div
-      className={`flex flex-row flex-wrap shadow rounded-sm gap-y-1 px-3 py-3
+      className={`flex flex-col md:flex-row flex-nowrap shadow rounded-sm gap-y-1 px-3 py-3
         gap-6 justify-between ${bgColor}`}
       key={ad.id}
     >
-      <div className="flex flex-col gap-y-1 justify-between">
+      <div className="flex flex-col gap-y-1 justify-between flex-grow md:flex-grow-0">
         <div className="w-full flex flex-row justify-between items-center gap-6">
           <Link
             href={`${frontendAdsPath}/${ad.id}`}
@@ -46,7 +53,9 @@ export default function AdListCard({
         )}
 
         <div className="w-full flex flex-row justify-between items-center gap-6">
-          <p className="text-sm">{capitalizeFirstRestLower(ad.adType)}</p>
+          <p className="text-sm">
+            {adTypeInfo?.shortTitle} ・ {capitalizeFirstRestLower(ad.mediaType)}
+          </p>
           <p className="text-sm">
             {ad.numDaysActive} active days
             {ad.numDaysActive !== ad.currentDaysActive
@@ -71,8 +80,17 @@ export default function AdListCard({
 
         {showFullAdminData && (
           <p className="text-sm break-all">
-            {ad.user.username} ・ {ad.user.email} ・ {ad.id}
+            <Link
+              href={`/admin/users/${ad.user.id}`}
+              text={ad.user.username}
+              showRightArrow
+            />{' '}
+            ・ {ad.user.email} ・ {ad.id}
           </p>
+        )}
+
+        {showFullAdminData && ad.videoSpecificFileType && (
+          <p className="text-sm text-red-strong-100 font-semibold">{ad.mediaType} only</p>
         )}
       </div>
 

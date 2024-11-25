@@ -15,25 +15,36 @@ import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { capitalizeString, randomString } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import { MdCheck, MdClose, MdDelete } from 'react-icons/md';
+import { useNavigate } from '@remix-run/react';
 
 type Props = {
   adData: AdvertisementFullData;
   adsPath: string;
   showAdminFeatures?: boolean;
+  imagesServerUrl?: string;
 };
 
-export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Props) {
+export default function FullAdDisplay({
+  adData,
+  adsPath,
+  showAdminFeatures,
+  imagesServerUrl,
+}: Props) {
+  const navigate = useNavigate();
   const ad = adData?.ad;
   const [updatedAd, setUpdatedAd] = useState<Advertisement>({ ...ad });
   const shouldShowPayments = ad && (adData.payments.length > 0 || ad.status === 'ACTIVE');
 
   const [isEditing, setIsEditing] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
   const isChanged = useMemo(() => {
     return updatedAd.link !== ad.link || updatedAd.status !== ad.status;
   }, [updatedAd, ad]);
 
   const queryStr = `?q=${randomString(3)}`;
+
+  const adTypeInfo = ADVERTISEMENTS.find(a => a.name === ad.adType);
 
   const displayedAd = useMemo(() => {
     if (!ad) return null;
@@ -66,14 +77,16 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
     } else {
       return (
         <video
-          src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
           style={{ maxWidth: width, maxHeight: height, width: 'auto', height: 'auto' }}
           width={width}
           height={height}
           autoPlay
           loop
           muted
-        />
+        >
+          <source src={`${adsPath}/${ad.id}-1x.webm${queryStr}`} type="video/webm" />
+          <source src={`${adsPath}/${ad.id}-1x.mp4${queryStr}`} type="video/mp4" />
+        </video>
       );
     }
   }, [ad, adsPath, queryStr]);
@@ -83,6 +96,26 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
     method: 'post',
     toastError: true,
     toastSuccessMessage: 'Ad updated',
+    onFinish: () => {
+      setIsEditing(false);
+      setIsDeleting(false);
+    },
+  });
+
+  const deleteAdFetcher = useGoodFetcher({
+    url: '/api/delete-ad',
+    method: 'post',
+    toastError: true,
+    toastSuccessMessage: 'Ad deleted',
+    onFinish: () => {
+      navigate('/admin/advertising');
+    },
+  });
+
+  const markVideoAsConvertedFetcher = useGoodFetcher({
+    url: '/api/set-ad-video-converted',
+    method: 'post',
+    toastSuccessMessage: 'Video marked as converted',
     onFinish: () => {
       setIsEditing(false);
     },
@@ -104,6 +137,26 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
     updateAdFetcher.submit({ body: JSON.stringify(body) });
   }
 
+  async function onDeleteAd() {
+    await fetch(`${imagesServerUrl}/delete-ad`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adId: ad.id }),
+    });
+
+    const formData = new FormData();
+    formData.append('id', ad.id);
+    deleteAdFetcher.submit(formData);
+
+    navigate('/admin/advertising');
+  }
+
+  async function onMarkVideoAsConverted() {
+    const formData = new FormData();
+    formData.append('adId', ad.id);
+    markVideoAsConvertedFetcher.submit(formData);
+  }
+
   return (
     <>
       <div className="flex flex-row items-center">
@@ -123,7 +176,10 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
                   text="Cancel"
                   variant="outlined"
                   className="h-fit"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setIsDeleting(false);
+                  }}
                 />
                 <LoadingButton
                   text="Save"
@@ -137,7 +193,6 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
           </div>
         )}
       </div>
-
       <div className="flex flex-row flex-wrap gap-x-8 gap-y-4">
         <Table>
           <TableBody>
@@ -152,7 +207,7 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
             <TableRow>
               <TableCell className="font-semibold">Type</TableCell>
               <TableCell>
-                {ADVERTISEMENTS.find(a => a.name === ad.adType)?.title}
+                {adTypeInfo?.title}, {ad.mediaType}
               </TableCell>
             </TableRow>
             {showAdminFeatures && (
@@ -260,6 +315,44 @@ export default function FullAdDisplay({ adData, adsPath, showAdminFeatures }: Pr
 
         {ad.isAnimated ? <>animated not supported yet</> : displayedAd}
       </div>
+
+      {/* ADMIN EDITING */}
+      {isEditing && showAdminFeatures && (
+        <div className="mt-6 flex flex-row gap-2">
+          {ad.videoSpecificFileType && !isDeleting && (
+            <LoadingButton
+              text="Mark video as converted"
+              onClick={onMarkVideoAsConverted}
+              startIcon={MdCheck}
+              isLoading={deleteAdFetcher.isLoading}
+            />
+          )}
+
+          {isDeleting ? (
+            <>
+              <Button
+                text="Cancel, keep ad"
+                variant="outlined"
+                onClick={() => setIsDeleting(false)}
+                startIcon={MdClose}
+              />
+              <LoadingButton
+                text="Delete ad"
+                color="error"
+                onClick={onDeleteAd}
+                isLoading={deleteAdFetcher.isLoading}
+              />
+            </>
+          ) : (
+            <Button
+              text="Delete ad"
+              color="error"
+              startIcon={MdDelete}
+              onClick={() => setIsDeleting(true)}
+            />
+          )}
+        </div>
+      )}
 
       {shouldShowPayments && (
         <div className="mt-6">

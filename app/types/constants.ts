@@ -47,6 +47,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
   {
     name: 'card',
     title: 'Comic card',
+    shortTitle: 'Card',
     description: 'Shows up in the list of comics on the main browse page.',
     freeTrialOffered: true,
     hasTexts: true,
@@ -63,6 +64,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
   {
     name: 'banner',
     title: 'Banner above comics',
+    shortTitle: 'Comic banner',
     description: 'Wide banner at the top when viewing a comic.',
     freeTrialOffered: true,
     hasTexts: false,
@@ -87,6 +89,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
   {
     name: 'topSmall',
     title: 'Browse top banner',
+    shortTitle: 'Browse banner',
     description: 'Semi-wide banner at the top of the main browse page',
     freeTrialOffered: true,
     hasTexts: false,

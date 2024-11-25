@@ -13,7 +13,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageAd() {
   const isMobile = useWindowSize();
-  const { adData, adsPath } = useLoaderData<typeof loader>();
+  const { adData, adsPath, imagesServerUrl } = useLoaderData<typeof loader>();
 
   const approveAdFetcher = useGoodFetcher({
     method: 'post',
@@ -51,7 +51,12 @@ export default function ManageAd() {
         </div>
       )}
 
-      <FullAdDisplay adData={adData} adsPath={adsPath} showAdminFeatures />
+      <FullAdDisplay
+        adData={adData}
+        adsPath={adsPath}
+        showAdminFeatures
+        imagesServerUrl={imagesServerUrl}
+      />
     </>
   );
 }
@@ -71,7 +76,11 @@ export const loader = unstable_defineLoader(async args => {
     throw new Response('Ad not found', { status: 404 });
   }
 
-  return { adData: adRes.result, adsPath: args.context.cloudflare.env.ADS_PATH };
+  return {
+    adData: adRes.result,
+    adsPath: args.context.cloudflare.env.ADS_PATH,
+    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
+  };
 });
 
 export const action = unstable_defineAction(async args => {

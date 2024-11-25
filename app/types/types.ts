@@ -323,6 +323,7 @@ export enum AdFreeTrialStateEnum {
 export type AdvertisementInfo = {
   name: AdType;
   title: string;
+  shortTitle: string;
   description: string;
   freeTrialOffered: boolean;
   hasTexts: boolean;

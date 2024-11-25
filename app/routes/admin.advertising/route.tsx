@@ -169,7 +169,11 @@ export default function Advertising() {
             className="max-w-xs"
           />
 
-          <div className="flex flex-col gap-2 w-fit max-w-full mt-6">
+          <p className="mt-4 text-sm text-gray-strong-100 font-semibold">
+            {filteredAds.length} ads
+          </p>
+
+          <div className="flex flex-col gap-2 w-fit max-w-full mt-2">
             {filteredAds?.map(ad => (
               <AdListCard
                 ad={ad}
