@@ -48,7 +48,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     name: 'card',
     title: 'Comic card',
     shortTitle: 'Card',
-    description: 'Shows up in the list of comics on the main browse page.',
+    description: 'Shows up in the list of comics on the main browse page',
     freeTrialOffered: true,
     hasTexts: true,
     minDimensions: {
@@ -65,7 +65,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     name: 'banner',
     title: 'Banner above comics',
     shortTitle: 'Comic banner',
-    description: 'Wide banner at the top when viewing a comic.',
+    description: 'Wide banner at the top when viewing a comic',
     freeTrialOffered: true,
     hasTexts: false,
     minDimensions: {

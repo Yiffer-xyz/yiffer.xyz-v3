@@ -22,7 +22,7 @@ export default function LinkCard({
   includeRightArrow = includeRightArrow && !disabled;
 
   const containerClassName = `flex flex-col bg-white   
-    dark:bg-gray-300 rounded px-3 py-2 border-transparent
+    dark:bg-gray-300 rounded px-3 py-2 border-transparent shadow
     ${disabled ? 'opacity-60' : notDisabledStyle}
     ${className}`;
 

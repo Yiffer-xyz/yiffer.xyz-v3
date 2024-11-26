@@ -90,9 +90,11 @@ export default function YourContributions() {
                   </TableCell>
                   <TableCell>
                     <p className="font-semibold">{contribution.points || '-'}</p>
-                    <p className="font-extralight">{contribution.pointsDescription}</p>
+                    <p className="font-extralight whitespace-pre-wrap max-w-[100px]">
+                      {contribution.pointsDescription}
+                    </p>
                   </TableCell>
-                  <TableCell className="max-w-[300px]">
+                  <TableCell className="max-w-[240px]">
                     <p className="font-extralight whitespace-pre-wrap">
                       {contribution.modComment || '-'}
                     </p>

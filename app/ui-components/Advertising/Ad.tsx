@@ -51,7 +51,7 @@ export default function Ad({
       href={ad.link}
       target="_blank"
       rel="noreferrer"
-      className={`block w-fit ${className ?? ''}`}
+      className={`block w-fit ${className ?? ''} rounded overflow-hidden`}
       onClick={onClick}
     >
       {ad.mediaType === 'image' && (

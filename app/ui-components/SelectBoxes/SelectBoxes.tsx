@@ -25,7 +25,7 @@ export default function SelectBoxes<T>({
           key={String(option.text)}
           onClick={() => onChange(option.value)}
           className={`
-            px-3 py-1.5 rounded border-3 transition-colors
+            px-3 py-1.5 rounded border-3 transition-colors cursor-pointer
             bg-white dark:bg-gray-300
             ${fullWidthMobile ? 'w-full md:w-fit' : ''}
             ${value === option.value ? 'border-theme1-dark' : 'border-gray-900 dark:border-gray-500'}
