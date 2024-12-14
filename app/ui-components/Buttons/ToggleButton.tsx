@@ -7,6 +7,7 @@ type Props<T> = {
   }[];
   value: T;
   onChange: (value: T) => void;
+  disabled?: boolean;
   className?: string;
 };
 
@@ -21,10 +22,14 @@ export default function ToggleButton<T>({
   value,
   onChange,
   className = '',
+  disabled = false,
 }: Props<T>) {
+  const disabledActiveClass = `from-theme1-darkFaded to-theme2-darkFaded
+    dark:from-theme1-darkFaded dark:to-theme2-darkFaded`;
+
   const enabledClass = `
     dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-dark to-theme2-dark
-    dark:from-theme1-darker dark:to-theme2-darker
+    dark:from-theme1-darker dark:to-theme2-darker ${disabled ? disabledActiveClass : ''}
   `;
   const disabledClass = `
     dark:text-white dark:bg-gray-500 dark:hover:bg-gray-300 dark:focus:bg-gray-300
@@ -44,6 +49,7 @@ export default function ToggleButton<T>({
             disabledClass +
             (value === button.value ? enabledClass : '')
           }
+          disabled={disabled}
           onClick={() => {
             if (button.value !== value) onChange(button.value);
           }}

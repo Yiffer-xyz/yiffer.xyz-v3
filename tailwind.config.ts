@@ -35,6 +35,7 @@ export const colors = {
     darker2: '#02c1b7',
     darker3: '#00b8ad',
     verydark: '#007a74',
+    darkFaded: '#007a7440',
   },
   theme2: {
     primary: '#adfee0',
@@ -45,6 +46,7 @@ export const colors = {
     darker: '#1cda94',
     darker2: '#00c37a',
     darker3: '#00b56d',
+    darkFaded: '#1cda9440',
   },
   themeMiddle: {
     primary: '#9AEBE7',

@@ -222,7 +222,7 @@ export type ModApplication = {
   telegramUsername: string;
   username: string;
   notes: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'on-hold';
 };
 
 // It's not gorgeous, but it'll work. The numbers: counts of how many times

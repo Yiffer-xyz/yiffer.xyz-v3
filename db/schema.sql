@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS `modapplication` (
 `userId` INTEGER  NOT NULL,
 `telegramUsername` TEXT NOT NULL,
 `notes` TEXT NOT NULL,
-`status` TEXT CHECK( status IN ('pending', 'approved', 'rejected') ) NULL DEFAULT 'pending',
+`status` TEXT CHECK( status IN ('pending', 'approved', 'rejected', 'on-hold') ) NULL DEFAULT 'pending',
 `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)

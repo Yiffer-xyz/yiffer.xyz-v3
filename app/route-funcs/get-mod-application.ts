@@ -17,7 +17,8 @@ export async function getAllModApplications(
       timestamp,
       telegramUsername,
       notes,
-      user.username
+      user.username,
+      status
     FROM modapplication INNER JOIN user ON (user.id = modapplication.userId)`;
 
   const dbRes = await queryDb<DbModApplication[]>(db, query);
