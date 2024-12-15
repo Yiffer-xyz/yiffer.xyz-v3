@@ -244,7 +244,7 @@ export default function Upload() {
         currentRoute="Upload"
       />
 
-      <Button color="error" text="FILL WITH STUFF" onClick={fillWithStuff} />
+      {/* <Button color="error" text="FILL WITH STUFF" onClick={fillWithStuff} /> */}
 
       {user?.userType === 'moderator' && (
         <InfoBox variant="info" showIcon className="mb-4">
