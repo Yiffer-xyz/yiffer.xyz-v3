@@ -229,11 +229,6 @@ export default function Advertising() {
       <h2 className="mt-6">Additional information</h2>
       <div className="flex flex-col gap-4">
         <p>
-          Accepted formats: Most image formats, GIFs, and mp4/WebM for video. All pictures
-          will be converted to WebP with minimal loss, and videos will be converted to
-          WebM.
-        </p>
-        <p>
           The ads may be suggestive, but no excessive lewdness. Genitals are not strictly
           forbidden, but keep it tasteful. Media including content that is commonly
           frowned upon will be rejected. Censored pictures are allowed. If you're
@@ -245,9 +240,9 @@ export default function Advertising() {
           will be your own. This goes for all types of ads.
         </p>
         <p>
-          Each price is for a single ad with a single image/gif. It is perfectly fine to
-          apply several times with different images/gifs. You may also upload the same
-          picture/gif if you want your ad to show up more frequently. These will be
+          Each price is for a single ad with a single image/gif/video. It is perfectly
+          fine to apply several times with different media. You may also upload the same
+          image/gif/video if you want your ad to show up more frequently. These will be
           treated as separate ads and you will have to pay for each one. If you've paid
           for two ads and there are ten in total, about two out of every ten ads displayed
           will be yours.
@@ -256,7 +251,7 @@ export default function Advertising() {
           Our prices may change in the future. If you have paid for an X-month commitment,
           you will not be affected by these changes for the duration of your commitment.
         </p>
-        <p>Gifs must not have rapidly flashing lights or colors.</p>
+        <p>Gifs/videos must not have rapidly flashing lights or colors.</p>
         <p>
           For the free trial, we reserve the right to not offer it if the content being
           advertised seems to be of questionable quality.

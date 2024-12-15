@@ -8,7 +8,13 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
       <p className="font-semibold text-lg mb-2">Step 1: Information</p>
 
       <div className="flex flex-col gap-2">
-        <p className="font-bold -mb-2">Free trial</p>
+        <p className="font-bold -mb-2">General info</p>
+        <p>
+          If you haven't already, make sure to read the general info at the bottom of the
+          previous page.
+        </p>
+
+        <p className="font-bold mt-2 -mb-2">Free trial</p>
         <p>
           If this is your first ad, and your are a furry or furry-related content creator,
           you can request a one-month free trial. Note that we only offer this to{' '}
