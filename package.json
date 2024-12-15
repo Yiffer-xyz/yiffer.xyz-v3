@@ -64,7 +64,7 @@
     "upgrade-remix": "^0.6.2",
     "vite": "^5.1.0",
     "vite-tsconfig-paths": "^4.2.1",
-    "wrangler": "3.78.12"
+    "wrangler": "^3.95.0"
   },
   "engines": {
     "node": ">=20.0.0"
