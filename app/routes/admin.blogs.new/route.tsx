@@ -6,9 +6,9 @@ import Button from '~/ui-components/Buttons/Button';
 import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { unstable_defineAction } from '@remix-run/cloudflare';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import { redirectIfNotAdmin } from '~/utils/loaders';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function NewBlog() {
@@ -71,7 +71,7 @@ export default function NewBlog() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotAdmin(args);
 
   const data = await args.request.formData();
@@ -93,4 +93,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

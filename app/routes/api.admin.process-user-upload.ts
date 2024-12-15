@@ -13,11 +13,11 @@ import {
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import { getArtistByComicId } from '~/route-funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from '../route-funcs/manage-artist';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -51,7 +51,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /process-user-upload', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function processUserUpload(
   modId: number,

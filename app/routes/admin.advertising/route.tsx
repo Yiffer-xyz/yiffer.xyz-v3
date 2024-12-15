@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useNavigate, useParams } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -18,9 +18,9 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
-  return { adsPath: args.context.cloudflare.env.ADS_PATH };
-});
+export async function loader({ context }: LoaderFunctionArgs) {
+  return { adsPath: context.cloudflare.env.ADS_PATH };
+}
 
 export default function Advertising() {
   const { adsPath } = useLoaderData<typeof loader>();

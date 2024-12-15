@@ -1,4 +1,5 @@
-import { redirect, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { redirect } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -40,7 +41,7 @@ export default function Admin() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotMod(args);
 
   const url = new URL(args.request.url);
@@ -85,4 +86,4 @@ export const loader = unstable_defineLoader(async args => {
   };
 
   return globalContext;
-});
+}

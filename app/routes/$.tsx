@@ -1,8 +1,7 @@
-import { json } from '@remix-run/cloudflare';
 import Link from '~/ui-components/Link';
 
 export const loader = () => {
-  return json(null, { status: 404 });
+  return Response.json(null, { status: 404 });
 };
 
 export default function NotFoundPage() {

@@ -11,14 +11,14 @@ import {
 } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import { redirectIfNotAdmin } from '~/utils/loaders';
 import { getBlogById } from '~/route-funcs/get-blogs';
 import { MdArrowBack, MdDelete } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotAdmin(args);
 
   if (!args.params.id || isNaN(parseInt(args.params.id))) {
@@ -38,7 +38,7 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return { blog: blogRes.result };
-});
+}
 
 export default function BlogManager() {
   const navigate = useNavigate();
@@ -132,7 +132,7 @@ export default function BlogManager() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotAdmin(args);
 
   const data = await args.request.formData();
@@ -155,4 +155,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

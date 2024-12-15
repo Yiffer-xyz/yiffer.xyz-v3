@@ -1,5 +1,5 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useState } from 'react';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import {
   ADVERTISEMENTS,
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
@@ -16,12 +16,11 @@ import topSmallImageDark from '~/assets/ad-examples/topsmall-example-dark.png';
 import bannerImage from '~/assets/ad-examples/banner-example.png';
 import bannerImageDark from '~/assets/ad-examples/banner-example-dark.png';
 import { useUIPreferences } from '~/utils/theme-provider';
-
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   return {};
-});
+}
 
 export default function Advertising() {
   const [selectedAd, setSelectedAd] = useState<AdvertisementInfo | null>(null);

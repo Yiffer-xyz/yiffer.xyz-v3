@@ -9,11 +9,11 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -29,7 +29,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /schedule-comic-to-queue', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function scheduleComicToQueue(
   db: D1Database,

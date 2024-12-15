@@ -13,12 +13,13 @@ import {
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getArtistByField } from '~/route-funcs/get-artist';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
+
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ArtistDataChanges;
 
@@ -34,7 +35,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Errir in /update-artist-data', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function updateArtistData(
   db: D1Database,

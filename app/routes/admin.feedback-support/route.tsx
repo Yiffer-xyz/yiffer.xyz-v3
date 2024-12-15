@@ -1,17 +1,17 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getAllFeedback } from '~/route-funcs/get-feedback';
 import { processApiError } from '~/utils/request-helpers';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const feedbackRes = await getAllFeedback(args.context.cloudflare.env.DB);
   if (feedbackRes.err) {
     return processApiError('Error getting data in admin feedback route', feedbackRes.err);
   }
 
   return { feedback: feedbackRes.result };
-});
+}
 
 export default function AdminFeedback() {
   const { feedback } = useLoaderData<typeof loader>();

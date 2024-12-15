@@ -1,4 +1,3 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ProcessTagSuggestionBody } from '../api.admin.process-tag-suggestion';
@@ -18,6 +17,7 @@ import Button from '~/ui-components/Buttons/Button';
 import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const allActionTypes: DashboardActionType[] = [
@@ -36,10 +36,10 @@ const actionTypeToLabel: Record<DashboardActionType, string> = {
   pendingComicProblem: 'Pending problems',
 };
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   return { user };
-});
+}
 
 export default function Dashboard() {
   const { user } = useLoaderData<typeof loader>();

@@ -3,7 +3,7 @@ import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import type { DashboardActionType } from './api.admin.dashboard-data';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -12,7 +12,7 @@ export type UnAssignActionBody = {
   actionType: DashboardActionType;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized } = await parseFormJson<UnAssignActionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
@@ -25,7 +25,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /unassign-action', err);
   }
   return createSuccessJson();
-});
+}
 
 async function unAssignActionToMod(
   db: D1Database,

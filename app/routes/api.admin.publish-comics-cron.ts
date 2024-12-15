@@ -1,11 +1,11 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { create400Json, processApiError } from '~/utils/request-helpers';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { publishComic } from './api.admin.publish-comic';
 
 // To be called via a cron job from a Cloudfare worker
 // Authorizes via x-yiffer-api-key header that the worker has as a secret
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const requestApiKeyHeader = args.request.headers.get('x-yiffer-api-key');
   const db = args.context.cloudflare.env.DB;
   // const cronKey = args.context.cloudflare.env.CRON_KEY;
@@ -39,4 +39,4 @@ export const loader = unstable_defineLoader(async args => {
     `Cron published comics finished. Comics published: ${dbRes.result.length}.`,
     { status: 200 }
   );
-});
+}

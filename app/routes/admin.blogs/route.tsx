@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import {
   Outlet,
   useLoaderData,
@@ -17,13 +17,13 @@ import useWindowSize from '~/utils/useWindowSize';
 import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const blogs = await getAllBlogs(args.context.cloudflare.env.DB);
   if (blogs.err) {
     return processApiError('Error getting all blogs in /admin/blogs loader', blogs.err);
   }
   return { blogs: blogs.result };
-});
+}
 
 export default function Stats() {
   const globalContext: GlobalAdminContext = useOutletContext();

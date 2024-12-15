@@ -10,8 +10,9 @@ import { authLoader } from '~/utils/loaders';
 import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
 import type { FeedbackType } from '~/types/types';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
 export { authLoader as loader };
 
 export default function Feedback() {
@@ -127,7 +128,7 @@ export default function Feedback() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
 
@@ -158,4 +159,4 @@ export const action = unstable_defineAction(async args => {
     return create500Json();
   }
   return createSuccessJson();
-});
+}

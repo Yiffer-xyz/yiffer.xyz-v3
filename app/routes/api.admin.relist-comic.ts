@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
@@ -12,7 +12,7 @@ import {
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -27,7 +27,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error relisting comic', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function relistComic(
   db: D1Database,

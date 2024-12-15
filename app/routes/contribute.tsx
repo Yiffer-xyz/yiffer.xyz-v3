@@ -1,13 +1,13 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { authLoader } from '~/utils/loaders';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   return await authLoader(args);
-});
+}
 
 export default function Index() {
   const user = useLoaderData<typeof loader>();

@@ -1,8 +1,10 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { getLatestBlog } from '~/route-funcs/get-blogs';
-import { createSuccessJson, processApiError } from '~/utils/request-helpers';
+import { createSuccessJson, noGetRoute, processApiError } from '~/utils/request-helpers';
 
-export const loader = unstable_defineLoader(async args => {
+export { noGetRoute as loader };
+
+export async function action(args: ActionFunctionArgs) {
   const blogRes = await getLatestBlog(args.context.cloudflare.env.DB);
 
   if (blogRes.err) {
@@ -10,4 +12,4 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return createSuccessJson(blogRes.result);
-});
+}

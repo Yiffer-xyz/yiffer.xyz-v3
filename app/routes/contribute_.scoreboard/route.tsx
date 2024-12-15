@@ -1,4 +1,3 @@
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { add, format, sub } from 'date-fns';
 import { useState } from 'react';
@@ -23,6 +22,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type CachedPoints = {
@@ -208,15 +208,15 @@ export default function Scoreboard() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const scoresRes = await getTopScores(args.context.cloudflare.env.DB, undefined, false);
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
   return { topScores: scoresRes.result };
-});
+}
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const yearMonthStr = yearMonth.toString();
@@ -233,7 +233,7 @@ export const action = unstable_defineAction(async args => {
     data: res.result,
     error: null,
   };
-});
+}
 
 type TopContributionPointsRow = {
   userId: number;

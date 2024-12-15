@@ -1,4 +1,3 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData, useOutletContext, useRevalidator } from '@remix-run/react';
 import { format } from 'date-fns';
 import { MdOpenInNew } from 'react-icons/md';
@@ -14,6 +13,7 @@ import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageComicInner() {
@@ -139,7 +139,7 @@ export default function ManageComicInner() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const comicParam = args.params.comic as string;
 
@@ -170,4 +170,4 @@ export const loader = unstable_defineLoader(async args => {
     PAGES_PATH,
     IMAGES_SERVER_URL,
   };
-});
+}

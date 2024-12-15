@@ -9,7 +9,7 @@ import {
 } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { TagSuggestionItem } from '~/types/types';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -20,7 +20,7 @@ export type ProcessTagSuggestionBody = {
   suggestingUserId?: number;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized, user } = await parseFormJson<ProcessTagSuggestionBody>(
     args,
     'mod'
@@ -41,7 +41,7 @@ export const action = unstable_defineAction(async args => {
     });
   }
   return createSuccessJson();
-});
+}
 
 async function processTagSuggestion(
   db: D1Database,

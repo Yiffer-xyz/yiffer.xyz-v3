@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type {
   ComicPublishStatus,
@@ -158,7 +158,7 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
   LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
 `;
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const dataFetchStatements: QueryWithParams[] = [
     { query: tagSuggestionsQuery },
     { query: comicProblemsQuery },
@@ -197,7 +197,7 @@ export const loader = unstable_defineLoader(async args => {
   });
 
   return createSuccessJson(allSuggestions);
-});
+}
 
 type DbFullTagSuggestion = {
   tagSuggestionGroupId: number;

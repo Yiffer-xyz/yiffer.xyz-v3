@@ -13,7 +13,7 @@ import { getAdById } from '~/route-funcs/get-ads';
 import { differenceInDays } from 'date-fns';
 import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -29,7 +29,7 @@ export type EditAdFormData = {
   wasMediaChanged?: boolean;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as EditAdFormData;
@@ -53,7 +53,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /edit-ad', err, { ...body, ...user });
   }
   return createSuccessJson();
-});
+}
 
 export async function editAd(
   frontEndUrlBase: string,

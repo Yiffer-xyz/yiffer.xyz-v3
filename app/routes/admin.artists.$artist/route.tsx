@@ -1,5 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
-import { useLoaderData } from '@remix-run/react';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { MdArrowForward, MdCheck, MdClose, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
@@ -15,6 +14,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ComicAdminLink from '~/ui-components/ComicAdminLink/ComicAdminLink';
+import { useLoaderData } from '@remix-run/react';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageArtist() {
@@ -311,7 +311,7 @@ export type ArtistDataChanges = {
   links?: string[];
 };
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const db = args.context.cloudflare.env.DB;
   const artistParam = args.params.artist as string;
@@ -332,7 +332,7 @@ export const loader = unstable_defineLoader(async args => {
     comics: combinedRes.result.comics,
     user,
   };
-});
+}
 
 function getChanges(initialArtist: Artist, updatedArtist: NewArtist): FieldChange[] {
   const changes: FieldChange[] = [];

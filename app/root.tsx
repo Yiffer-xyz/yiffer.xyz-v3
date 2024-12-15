@@ -1,7 +1,7 @@
-import {
-  unstable_defineLoader,
-  type LinksFunction,
-  type MetaFunction,
+import type {
+  LoaderFunctionArgs,
+  LinksFunction,
+  MetaFunction,
 } from '@remix-run/cloudflare';
 import {
   Links,
@@ -57,7 +57,7 @@ export const meta: MetaFunction = () => [
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 
-export const loader = unstable_defineLoader(async ({ request, context }) => {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const uiPrefSession = await getUIPrefSession(request);
   const userSession = await getUserSession(
     request,
@@ -70,7 +70,7 @@ export const loader = unstable_defineLoader(async ({ request, context }) => {
     frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
   };
   return data;
-});
+}
 
 export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>();

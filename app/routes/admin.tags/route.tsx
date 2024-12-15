@@ -5,7 +5,6 @@ import {
   useNavigate,
   useOutletContext,
 } from '@remix-run/react';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { Tag } from '~/types/types';
@@ -17,6 +16,7 @@ import { processApiError } from '~/utils/request-helpers';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import Link from '~/ui-components/Link';
 import { capitalizeString } from '~/utils/general';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTags() {
@@ -96,7 +96,7 @@ export default function ManageTags() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const tagsWithCountsRes = await getTagsWithUsageCount(args.context.cloudflare.env.DB);
   if (tagsWithCountsRes.err) {
     return processApiError(
@@ -108,4 +108,4 @@ export const loader = unstable_defineLoader(async args => {
   return {
     tagsWithCounts: tagsWithCountsRes.result,
   };
-});
+}

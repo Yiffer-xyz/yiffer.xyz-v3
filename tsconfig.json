@@ -12,7 +12,6 @@
     "types": [
       "@remix-run/cloudflare",
       "vite/client",
-      "@remix-run/react/future/single-fetch.d.ts"
     ],
     "isolatedModules": true,
     "esModuleInterop": true,

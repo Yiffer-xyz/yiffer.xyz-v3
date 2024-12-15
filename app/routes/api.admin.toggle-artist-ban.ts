@@ -13,11 +13,11 @@ import { processUserUpload } from './api.admin.process-user-upload';
 import { rejectComic } from './api.admin.reject-pending-comic';
 import { unlistComic } from './api.admin.unlist-comic';
 import { boolToInt } from '~/utils/general';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -42,7 +42,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /toggle-artist-ban', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function toggleArtistBan(
   db: D1Database,

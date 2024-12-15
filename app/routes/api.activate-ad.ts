@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { getAdById } from '~/route-funcs/get-ads';
 import isAdOwner from '~/route-funcs/is-ad-owner';
 import { isModOrAdmin } from '~/types/types';
@@ -14,7 +14,7 @@ import {
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   const formData = await args.request.formData();
   const adId = formData.get('id');
@@ -34,7 +34,7 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}
 
 export async function activateAd(
   db: D1Database,

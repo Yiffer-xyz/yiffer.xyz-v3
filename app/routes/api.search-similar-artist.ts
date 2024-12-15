@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDb } from '~/utils/database-facade';
 import type { noGetRoute, ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
@@ -17,7 +17,7 @@ export type SimilarArtistResponse = {
   exactMatchBannedArtist: string;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const body = await args.request.formData();
   const artistName = body.get('artistName') as string;
   const excludeName = body.get('excludeName');
@@ -31,7 +31,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /search-similar-artist', artistsRes.err);
   }
   return createSuccessJson(artistsRes.result);
-});
+}
 
 export async function getSimilarArtists(
   db: D1Database,

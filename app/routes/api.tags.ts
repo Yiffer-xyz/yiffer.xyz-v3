@@ -1,8 +1,8 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { getAllTags } from '~/route-funcs/get-tags';
 import { createSuccessJson, processApiError } from '~/utils/request-helpers';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const tagsRes = await getAllTags(args.context.cloudflare.env.DB);
 
   if (tagsRes.err) {
@@ -10,4 +10,4 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return createSuccessJson(tagsRes.result);
-});
+}

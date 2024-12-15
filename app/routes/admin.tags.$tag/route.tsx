@@ -1,4 +1,3 @@
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { redirect, useLoaderData, useNavigate } from '@remix-run/react';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { getTagById } from '~/route-funcs/get-tags';
@@ -12,6 +11,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { MdArrowBack } from 'react-icons/md';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ManageTag() {
@@ -124,7 +124,7 @@ export default function ManageTag() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const tagParam = args.params.tag as string;
   const tagId = parseInt(tagParam);
 
@@ -154,9 +154,9 @@ export const loader = unstable_defineLoader(async args => {
     tag: tagRes.result,
     comics: comicsRes.result,
   };
-});
+}
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const data = await args.request.formData();
   const tagId = parseInt(args.params.tag as string);
   const formNewName = data.get('newName');
@@ -188,4 +188,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

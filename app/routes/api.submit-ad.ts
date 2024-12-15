@@ -11,7 +11,7 @@ import {
 } from '~/utils/request-helpers';
 import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -29,7 +29,7 @@ export type SubmitAdFormData = {
   videoSpecificFileType?: string | null;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as SubmitAdFormData;
@@ -51,7 +51,7 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}
 
 export async function submitAd(
   db: D1Database,

@@ -1,4 +1,3 @@
-import { unstable_defineLoader, unstable_defineAction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useMemo, useState } from 'react';
 import { getAllModApplications } from '~/route-funcs/get-mod-application';
@@ -12,6 +11,7 @@ import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-h
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const statusOptions: { key: ModApplication['status']; text: string }[] = [
@@ -25,7 +25,7 @@ function statusToActionText(status: ModApplication['status']) {
   return statusOptions.find(opt => opt.key === status)?.text ?? 'Action';
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const applicationsRes = await getAllModApplications(args.context.cloudflare.env.DB);
   if (applicationsRes.err) {
     return processApiError(
@@ -35,7 +35,7 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return { applications: applicationsRes.result };
-});
+}
 
 export default function AdminModApplications() {
   const { applications } = useLoaderData<typeof loader>();
@@ -159,7 +159,7 @@ type ActionFields = {
   status: ModApplication['status'];
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized } = await parseFormJson<ActionFields>(args, 'admin');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
 
@@ -177,4 +177,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

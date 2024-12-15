@@ -38,7 +38,7 @@ import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
@@ -311,7 +311,7 @@ export default function Upload() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const db = args.context.cloudflare.env.DB;
 
   const dbStatements: QueryWithParams[] = [
@@ -343,9 +343,9 @@ export const loader = unstable_defineLoader(async args => {
     user,
     IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-});
+}
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await authLoader(args);
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
@@ -363,7 +363,7 @@ export const action = unstable_defineAction(async args => {
     return create500Json();
   }
   return createSuccessJson();
-});
+}
 
 function validateUploadForm(uploadBody: UploadBody): { error?: string } {
   if (!uploadBody.comicName) {

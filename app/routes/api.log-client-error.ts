@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import {
   createSuccessJson,
   logErrorExternally,
@@ -8,7 +8,7 @@ import {
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const formDataBody = await args.request.formData();
   const url = formDataBody.get('url');
   const logMessage = formDataBody.get('logMessage');
@@ -25,4 +25,4 @@ export const action = unstable_defineAction(async args => {
   await logErrorExternally(errObj);
 
   return createSuccessJson();
-});
+}

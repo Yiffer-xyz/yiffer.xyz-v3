@@ -1,9 +1,9 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -23,4 +23,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

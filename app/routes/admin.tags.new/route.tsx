@@ -8,9 +8,8 @@ import { IoMdCloseCircle } from 'react-icons/io';
 import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
-
 export default function ManageTag() {
   const navigate = useNavigate();
 
@@ -103,7 +102,7 @@ export default function ManageTag() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const data = await args.request.formData();
   const tagName = data.get('tagName');
 
@@ -118,4 +117,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

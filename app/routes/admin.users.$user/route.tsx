@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getUserById } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -17,7 +17,7 @@ export default function ManageSingleUser() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotMod(args);
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
@@ -29,4 +29,4 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return { user: userRes.result };
-});
+}

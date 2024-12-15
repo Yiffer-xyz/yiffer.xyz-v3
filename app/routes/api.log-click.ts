@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbExec } from '~/utils/database-facade';
 import {
   create400Json,
@@ -11,7 +11,7 @@ import {
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const formDataBody = await args.request.formData();
   const formAdId = formDataBody.get('adId');
   if (!formAdId) return create400Json('Missing adId');
@@ -22,7 +22,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /log-click (ad)', err, { comicId: adId });
   }
   return createSuccessJson();
-});
+}
 
 export async function logAdClick(
   db: D1Database,

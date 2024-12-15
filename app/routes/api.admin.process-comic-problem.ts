@@ -3,7 +3,7 @@ import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -13,7 +13,7 @@ export type ProcessComicProblemBody = {
   reportingUserId?: number;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const { fields, isUnauthorized, user } = await parseFormJson<ProcessComicProblemBody>(
     args,
     'mod'
@@ -34,7 +34,7 @@ export const action = unstable_defineAction(async args => {
     });
 
   return createSuccessJson();
-});
+}
 
 async function processComicProblem(
   db: D1Database,

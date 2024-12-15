@@ -4,7 +4,7 @@ import { parseFormJson } from '~/utils/formdata-parser';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
 export { noGetRoute as loader };
 
@@ -16,7 +16,7 @@ export type ProcessComicSuggestionBody = {
   suggestingUserId?: number;
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const { fields, user, isUnauthorized } =
     await parseFormJson<ProcessComicSuggestionBody>(args, 'mod');
   if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
@@ -37,7 +37,7 @@ export const action = unstable_defineAction(async args => {
     });
   }
   return createSuccessJson();
-});
+}
 
 async function processComicSuggestion(
   db: D1Database,

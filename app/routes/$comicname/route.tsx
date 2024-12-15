@@ -1,4 +1,3 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getComicByField } from '~/route-funcs/get-comic';
 import { processApiError } from '~/utils/request-helpers';
@@ -19,6 +18,7 @@ import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
 import { useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
@@ -177,7 +177,7 @@ type LoaderData = {
   isMod: boolean;
 };
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   const comicName = args.params.comicname as string;
 
@@ -220,4 +220,4 @@ export const loader = unstable_defineLoader(async args => {
   res.comic = comicRes.result;
   res.ad = adRes.result;
   return res;
-});
+}

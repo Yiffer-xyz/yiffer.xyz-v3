@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
@@ -6,10 +6,10 @@ import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   return user;
-});
+}
 
 export default function AccountPage() {
   const user = useLoaderData<typeof loader>();

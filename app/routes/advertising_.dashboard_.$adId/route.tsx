@@ -16,10 +16,10 @@ import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 import { getFileExtension, type ComicImage } from '~/utils/general';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const adRes = await getAdById({
@@ -55,7 +55,7 @@ export const loader = unstable_defineLoader(async args => {
     adData: adRes.result,
     imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-});
+}
 
 export default function AdvertisingAd() {
   const { adData, notFound, adId, adsPath, imagesServerUrl } =

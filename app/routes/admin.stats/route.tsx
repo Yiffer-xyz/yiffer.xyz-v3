@@ -1,4 +1,4 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { MdCheck, MdClose } from 'react-icons/md';
 import {
@@ -74,7 +74,7 @@ const emptyContributionData: ContributionData = {
   tagSuggestionRejected: 0,
 };
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const dbStatements: QueryWithParams[] = [
     { query: 'SELECT COUNT(*) AS count FROM user' },
     { query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'` },
@@ -204,7 +204,7 @@ export const loader = unstable_defineLoader(async args => {
   };
 
   return siteStats;
-});
+}
 
 export default function Stats() {
   const stats = useLoaderData<typeof loader>();

@@ -1,4 +1,4 @@
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -25,9 +25,9 @@ import Link from '~/ui-components/Link';
 import { MdArrowForward } from 'react-icons/md';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   return await authLoader(args);
-});
+}
 
 export default function Upload() {
   const actionData = useActionData<typeof action>();
@@ -392,7 +392,7 @@ export default function Upload() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const logCtx = Object.fromEntries(reqBody);
   const { comicName, artist, linksComments } = logCtx;
@@ -445,7 +445,7 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}
 
 async function checkForExistingComicOrSuggestion(
   db: D1Database,

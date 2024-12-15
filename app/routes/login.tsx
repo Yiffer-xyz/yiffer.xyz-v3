@@ -10,7 +10,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useState } from 'react';
 import TextInput from '~/ui-components/TextInput/TextInput';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
@@ -89,12 +89,12 @@ export default function Login() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);
   return null;
-});
+}
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { username: formUsername, password: formPassword } = Object.fromEntries(reqBody);
 
@@ -119,4 +119,4 @@ export const action = unstable_defineAction(async args => {
     return createAnyErrorCodeJson(401, errorMessage);
   }
   throw redirect;
-});
+}

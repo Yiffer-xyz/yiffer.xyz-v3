@@ -1,12 +1,12 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getBlogById } from '~/route-funcs/get-blogs';
 import { processApiError } from '~/utils/request-helpers';
 import { format, formatDistanceToNow } from 'date-fns';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const { blogId } = args.params;
 
   if (!blogId) {
@@ -31,7 +31,7 @@ export const loader = unstable_defineLoader(async args => {
     blog: allBlogsRes.result,
     queryStr: blogId,
   };
-});
+}
 
 export default function BlogPage() {
   const { blog, notFound, queryStr } = useLoaderData<typeof loader>();

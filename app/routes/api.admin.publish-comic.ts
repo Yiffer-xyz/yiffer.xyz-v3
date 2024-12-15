@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -11,7 +11,7 @@ import {
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -29,7 +29,7 @@ export const action = unstable_defineAction(async args => {
     });
   }
   return createSuccessJson();
-});
+}
 
 export async function publishComic(
   db: D1Database,

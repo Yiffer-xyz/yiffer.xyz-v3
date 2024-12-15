@@ -1,4 +1,3 @@
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -18,6 +17,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Apply() {
@@ -107,7 +107,7 @@ export default function Apply() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const existingApplicationRes = await getModApplicationForUser(
@@ -120,12 +120,12 @@ export const loader = unstable_defineLoader(async args => {
   }
 
   return { hasExistingApplication: existingApplicationRes.result !== null };
-});
+}
 
 const validateTelegramUsername = (username: string) =>
   /^([a-zA-Z0-9_]){4,32}$/.test(username);
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const db = args.context.cloudflare.env.DB;
   const reqBody = await args.request.formData();
   const { notes, telegram } = Object.fromEntries(reqBody);
@@ -162,4 +162,4 @@ export const action = unstable_defineAction(async args => {
     return create500Json();
   }
   return createSuccessJson();
-});
+}

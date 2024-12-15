@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -17,7 +17,7 @@ export type TagChanges = {
   removedTagIDs: number[];
 };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const user = await authLoader(args);
 
   const formData = await args.request.formData();
@@ -45,7 +45,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /update-your-stars', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function submitTagChanges(
   db: D1Database,

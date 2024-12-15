@@ -9,10 +9,10 @@ import Step3Details from './step3-details';
 import Step1Info from './step1-info';
 import type { SubmitAdFormData } from '../api.submit-ad';
 import { useLoaderData } from '@remix-run/react';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import Step2MediaType from './step2-mediaType';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function AdvertisingApply() {
@@ -175,8 +175,8 @@ export default function AdvertisingApply() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   return {
     IMAGES_SERVER_URL: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
-});
+}

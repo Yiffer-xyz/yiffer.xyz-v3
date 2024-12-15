@@ -11,7 +11,7 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Button from '~/ui-components/Buttons/Button';
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function UserManager() {
@@ -77,7 +77,7 @@ export default function UserManager() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const formDataBody = await args.request.formData();
   const searchText = formDataBody.get('searchText');
 
@@ -94,4 +94,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson(userResult.result);
-});
+}

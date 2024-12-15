@@ -1,4 +1,3 @@
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useMemo, useState } from 'react';
@@ -13,6 +12,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { LuRefreshCcw } from 'react-icons/lu';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
@@ -244,7 +244,7 @@ export default function PendingComics() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const dbRes = await getPendingComics(args.context.cloudflare.env.DB);
 
   if (dbRes.err) {
@@ -257,7 +257,7 @@ export const loader = unstable_defineLoader(async args => {
       args.context.cloudflare.env.DAILY_SCHEDULE_PUBLISH_COUNT
     ),
   };
-});
+}
 
 function getBgColor(pendingComic: PendingComic) {
   if (pendingComic.publishStatus === 'scheduled') {

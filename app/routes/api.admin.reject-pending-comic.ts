@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -6,7 +6,7 @@ import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-h
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const formDataBody = await args.request.formData();
@@ -22,7 +22,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /reject-pending-comic', err);
   }
   return createSuccessJson();
-});
+}
 
 export async function rejectComic(
   db: D1Database,

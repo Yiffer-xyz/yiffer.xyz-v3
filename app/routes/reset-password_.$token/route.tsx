@@ -1,4 +1,4 @@
-import { unstable_defineAction, unstable_defineLoader } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
@@ -15,10 +15,10 @@ import { resetPasswordByLink } from '~/utils/reset-password.server';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);
   return { token: args.params.token as string };
-});
+}
 
 export default function ResetPassword() {
   const { token } = useLoaderData<typeof loader>();
@@ -83,7 +83,7 @@ export default function ResetPassword() {
   );
 }
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const formPassword = reqBody.get('password');
   const formToken = reqBody.get('resetToken');
@@ -113,4 +113,4 @@ export const action = unstable_defineAction(async args => {
   }
 
   return createSuccessJson();
-});
+}

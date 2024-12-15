@@ -1,5 +1,4 @@
 import type { TypedResponse } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
 import type {
   DBResponse,
   ExecDBResponse,
@@ -174,7 +173,7 @@ export function wrapApiError(
 // Eg. comic upload, mod applications form, and other places where they've spent
 // time filling out a form and don't want to just lose all their work.
 export function create500Json(message?: string): TypedResponse<ApiResponse> {
-  return json(
+  return Response.json(
     {
       error:
         message ||
@@ -188,7 +187,7 @@ export function create500Json(message?: string): TypedResponse<ApiResponse> {
 // Use when the user has made an error, meaning it's not a server error. Message
 // should typically always be shown in an infobox.
 export function create400Json(message: string): TypedResponse<ApiResponse> {
-  return json(
+  return Response.json(
     {
       error: message,
       success: false,
@@ -202,7 +201,7 @@ export function createAnyErrorCodeJson(
   code: number,
   message: string
 ): TypedResponse<ApiResponse> {
-  return json(
+  return Response.json(
     {
       error: message,
       success: false,
@@ -214,15 +213,12 @@ export function createAnyErrorCodeJson(
 // This exists because it returns the correct response type,
 // allowing us to infer a single type with useActionData<typeof action>()
 // in the actual component.
-export function createSuccessJson(data?: any): TypedResponse<ApiResponse> {
-  return json(
-    {
-      success: true,
-      error: null,
-      data: data,
-    },
-    { status: 200 }
-  );
+export function createSuccessJson(data?: any): ApiResponse {
+  return {
+    success: true,
+    error: null,
+    data: data,
+  };
 }
 
 // Put this in all api routes that don't support GET requests, otherwise

@@ -38,8 +38,8 @@ import pluralize from 'pluralize';
 import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
 import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function YourContributions() {
@@ -161,7 +161,7 @@ export default function YourContributions() {
   );
 }
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const dbStatements: QueryWithParams[] = [
@@ -208,7 +208,7 @@ export const loader = unstable_defineLoader(async args => {
   return {
     contributions,
   };
-});
+}
 
 function ContributionDetails({
   contribution,

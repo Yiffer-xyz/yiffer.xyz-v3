@@ -1,4 +1,4 @@
-import { unstable_defineAction } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -7,8 +7,9 @@ import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-h
 
 export { noGetRoute as loader };
 
-export const action = unstable_defineAction(async args => {
+export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
+
   const formDataBody = await args.request.formData();
 
   const formComicId = formDataBody.get('comicId');
@@ -24,7 +25,7 @@ export const action = unstable_defineAction(async args => {
     return processApiError('Error in /set-comic-error', err, { comicId, errorText });
   }
   return createSuccessJson();
-});
+}
 
 export async function setComicError(
   db: D1Database,

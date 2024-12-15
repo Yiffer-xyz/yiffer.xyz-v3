@@ -4,7 +4,7 @@ import { useUIPreferences } from '~/utils/theme-provider';
 import SearchFilter from './SearchFilter/SearchFilterContainer';
 import Paginator from './Paginator';
 import ComicCard, { SkeletonComicCard } from './ComicCard';
-import { unstable_defineLoader } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { processApiError } from '~/utils/request-helpers';
 import { useLoaderData } from '@remix-run/react';
 import { getComicsPaginated } from '~/route-funcs/get-comics-paginated';
@@ -25,7 +25,7 @@ import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
-export const loader = unstable_defineLoader(async args => {
+export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const params = parseBrowseParams(url.searchParams);
   const uiPrefSession = await getUIPrefSession(args.request);
@@ -70,7 +70,7 @@ export const loader = unstable_defineLoader(async args => {
     adsPath: args.context.cloudflare.env.ADS_PATH,
     isLoggedIn: !!user,
   };
-});
+}
 
 export default function BrowsePage() {
   const { theme } = useUIPreferences();
