@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/remix';
  */
 
 import { RemixBrowser } from '@remix-run/react';
-import { startTransition, StrictMode } from 'react';
+import { startTransition } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 
 Sentry.init({
@@ -14,10 +14,5 @@ Sentry.init({
 });
 
 startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <RemixBrowser />
-    </StrictMode>
-  );
+  hydrateRoot(document, <RemixBrowser />);
 });
