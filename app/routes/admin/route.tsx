@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { redirect } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData } from '@remix-run/react';
 import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
@@ -21,6 +21,10 @@ export type GlobalAdminContext = {
   comics: ComicTiny[];
   artists: ArtistTiny[];
   tags: Tag[];
+};
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod - Yiffer.xyz` }];
 };
 
 export default function Admin() {

@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { ComicTiny } from '~/types/types';
 import type { GlobalAdminContext } from '~/routes/admin/route';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Comics - Yiffer.xyz` }];
+};
 
 export default function ManageComics() {
   const navigate = useNavigate();

@@ -1,6 +1,11 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `About - Yiffer.xyz` }];
+};
 
 export default function AboutPage() {
   return (

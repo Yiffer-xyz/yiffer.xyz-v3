@@ -13,8 +13,13 @@ import PendingComicSection from './PendingComicSection';
 import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const comicName = data?.comic?.name;
+  return [{ title: `Mod: ${comicName} (comic) - Yiffer.xyz` }];
+};
 
 export default function ManageComicInner() {
   const revalidator = useRevalidator();

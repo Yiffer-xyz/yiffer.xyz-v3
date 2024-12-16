@@ -4,7 +4,6 @@ import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
 import { MdDelete } from 'react-icons/md';
 import IconButton from '~/ui-components/Buttons/IconButton';
-// import 'react-grid-dnd/dist/';
 
 const RATIO = Math.round(400 / 564);
 const PAGE_NAME_HEIGHT = 40;
@@ -30,13 +29,11 @@ export default function PageManager({ files, onChange, randomString }: PageManag
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const { width, isMobile } = useWindowSize();
   const [hoveredPageNum, setHoveredPageNum] = useState<number>();
-  const [isHalfSize, setIsHalfSize] = useState(false);
   const [fullSizeImage, setFullSizeImage] = useState<ComicImage | undefined>(undefined);
   const lastDragEndTime = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
 
-  let PAGE_IMG_HEIGHT = isMobile ? 100 : 160;
-  if (isHalfSize) PAGE_IMG_HEIGHT = PAGE_IMG_HEIGHT / 2;
+  const PAGE_IMG_HEIGHT = isMobile ? 100 : 160;
   const PAGE_CONTAINER_HEIGHT = PAGE_IMG_HEIGHT + PAGE_NAME_HEIGHT;
   const PAGE_IMG_WIDTH = PAGE_IMG_HEIGHT * RATIO;
 
@@ -73,13 +70,6 @@ export default function PageManager({ files, onChange, randomString }: PageManag
 
   return (
     <>
-      {/* <Button
-        variant="outlined"
-        onClick={() => setIsHalfSize(!isHalfSize)}
-        text={isHalfSize ? 'Larger' : 'Smaller'}
-        className="mb-4"
-      /> */}
-
       <div ref={gridContainerRef}>
         <GridContextProvider onChange={onDragEnd}>
           <GridDropZone

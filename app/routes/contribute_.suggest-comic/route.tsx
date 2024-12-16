@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -24,6 +28,10 @@ import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
 import { MdArrowForward } from 'react-icons/md';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Suggest comic - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   return await authLoader(args);

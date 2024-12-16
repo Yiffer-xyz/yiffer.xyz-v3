@@ -16,8 +16,12 @@ import { processApiError } from '~/utils/request-helpers';
 import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import Link from '~/ui-components/Link';
 import { capitalizeString } from '~/utils/general';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Tags - Yiffer.xyz` }];
+};
 
 export default function ManageTags() {
   const globalContext: GlobalAdminContext = useOutletContext();

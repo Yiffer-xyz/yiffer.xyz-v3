@@ -2,7 +2,7 @@ import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
 import type { Comic } from '~/types/types';
 import clsx from 'clsx';
-import { useLocation, useNavigate } from '@remix-run/react';
+import { useNavigate } from '@remix-run/react';
 
 type ComicInfoProps = {
   comic: Comic;

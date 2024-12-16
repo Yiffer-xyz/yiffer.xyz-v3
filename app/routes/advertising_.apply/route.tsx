@@ -12,8 +12,12 @@ import { useLoaderData } from '@remix-run/react';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import Step2MediaType from './step2-mediaType';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Advertising application - Yiffer.xyz` }];
+};
 
 export default function AdvertisingApply() {
   const { IMAGES_SERVER_URL } = useLoaderData<typeof loader>();

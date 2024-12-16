@@ -110,7 +110,7 @@ export default function AdminSidebar({
           />
           <SidebarLink
             href="/admin/mod-applications"
-            text="🚧 Mod applications"
+            text="Mod applications"
             isSelected={isRoute('mod-applications')}
           />
           <SidebarLink

@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -12,6 +12,10 @@ import { capitalizeString } from '~/utils/general';
 import { fullUserLoader } from '~/utils/loaders';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Account - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await fullUserLoader(args);

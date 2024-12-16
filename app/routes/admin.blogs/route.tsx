@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import {
   Outlet,
   useLoaderData,
@@ -16,6 +16,10 @@ import { processApiError } from '~/utils/request-helpers';
 import useWindowSize from '~/utils/useWindowSize';
 import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Blogs - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const blogs = await getAllBlogs(args.context.cloudflare.env.DB);

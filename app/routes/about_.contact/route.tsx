@@ -1,6 +1,11 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Contact & takedowns - Yiffer.xyz` }];
+};
 
 export default function ContactPage() {
   return (

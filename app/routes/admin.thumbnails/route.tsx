@@ -1,9 +1,14 @@
+import type { MetaFunction } from '@remix-run/react';
 import { useOutletContext } from '@remix-run/react';
 import React from 'react';
 import { MdArrowForward } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Thumbnails - Yiffer.xyz` }];
+};
 
 export default function UpdateThumbnails() {
   const globalContext: GlobalAdminContext = useOutletContext();

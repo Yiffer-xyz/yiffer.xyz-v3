@@ -29,7 +29,12 @@ import v2AdminProblems from '~/assets/about-history/v2/admin/admin-problems.png'
 import v2AdsDashboard from '~/assets/about-history/v2/ads-dashboard.png';
 import v2AdsManager from '~/assets/about-history/v2/ads-manager.png';
 import ImageCarousel from '~/ui-components/ImageCarousel/ImageCarousel';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `About Yiffer.xyz - Yiffer.xyz` }];
+};
 
 export default function AboutPage() {
   return (

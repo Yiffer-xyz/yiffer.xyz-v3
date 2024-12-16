@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
@@ -14,6 +18,10 @@ import {
 import { resetPasswordByLink } from '~/utils/reset-password.server';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Reset password - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   await redirectIfLoggedIn(args);

@@ -22,8 +22,16 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import ToggleButton from '~/ui-components/Buttons/ToggleButton';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Scoreboard - Yiffer.xyz` }];
+};
 
 type CachedPoints = {
   yearMonth: string;

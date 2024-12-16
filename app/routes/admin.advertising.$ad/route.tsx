@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { createSuccessJson, processApiError } from '~/utils/request-helpers';
 import { getAdById } from '~/route-funcs/get-ads';
@@ -10,6 +14,11 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { approveActiveAd } from '~/route-funcs/approve-active-ad';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const adId = data?.adData?.ad?.id as string;
+  return [{ title: `Mod: ${adId} (ad) - Yiffer.xyz` }];
+};
 
 export default function ManageAd() {
   const isMobile = useWindowSize();

@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useNavigate, useParams } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -17,6 +17,10 @@ import { capitalizeFirstRestLower } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = () => {
+  return [{ title: `Mod: Ads - Yiffer.xyz` }];
+};
 
 export async function loader({ context }: LoaderFunctionArgs) {
   return { adsPath: context.cloudflare.env.ADS_PATH };

@@ -11,12 +11,21 @@ import {
 } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import { redirectIfNotAdmin } from '~/utils/loaders';
 import { getBlogById } from '~/route-funcs/get-blogs';
 import { MdArrowBack, MdDelete } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const blogTitle = data?.blog?.title;
+  return [{ title: `Mod: ${blogTitle} (blog) - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotAdmin(args);

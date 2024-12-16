@@ -11,7 +11,11 @@ import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-h
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const statusOptions: { key: ModApplication['status']; text: string }[] = [
@@ -24,6 +28,10 @@ const statusOptions: { key: ModApplication['status']; text: string }[] = [
 function statusToActionText(status: ModApplication['status']) {
   return statusOptions.find(opt => opt.key === status)?.text ?? 'Action';
 }
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Mod applications - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const applicationsRes = await getAllModApplications(args.context.cloudflare.env.DB);

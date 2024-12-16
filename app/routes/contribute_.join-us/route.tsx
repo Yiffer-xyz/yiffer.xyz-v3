@@ -3,8 +3,13 @@ import { MdArrowForward, MdLogin } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { authLoader } from '~/utils/loaders';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export { authLoader as loader } from '~/utils/loaders';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Join us - Yiffer.xyz` }];
+};
 
 export default function JoinUs() {
   return (

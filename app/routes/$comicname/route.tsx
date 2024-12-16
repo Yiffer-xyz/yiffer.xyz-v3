@@ -18,12 +18,18 @@ import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
 import { useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
 import { RiShieldFill } from 'react-icons/ri';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
+
+export const meta: MetaFunction = ({ data }) => {
+  const comicName = (data as LoaderData)?.comic?.name;
+  if (!comicName) return [{ title: `Not found - Yiffer.xyz` }];
+  return [{ title: `${comicName} - Yiffer.xyz` }];
+};
 
 export default function ComicPage() {
   const {

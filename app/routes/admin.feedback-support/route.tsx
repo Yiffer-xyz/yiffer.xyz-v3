@@ -1,8 +1,12 @@
 import { useLoaderData } from '@remix-run/react';
 import { getAllFeedback } from '~/route-funcs/get-feedback';
 import { processApiError } from '~/utils/request-helpers';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Feedback/support - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const feedbackRes = await getAllFeedback(args.context.cloudflare.env.DB);

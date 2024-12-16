@@ -3,7 +3,12 @@ import { useEffect, useState } from 'react';
 import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
 import type { ArtistTiny } from '~/types/types';
 import type { GlobalAdminContext } from '../admin/route';
+import type { MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Artists - Yiffer.xyz` }];
+};
 
 export default function ManageArtists() {
   const navigate = useNavigate();

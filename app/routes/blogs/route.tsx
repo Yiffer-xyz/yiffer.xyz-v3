@@ -1,5 +1,5 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Link from '~/ui-components/Link';
 import { getAllBlogs } from '~/route-funcs/get-blogs';
@@ -8,6 +8,10 @@ import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import { format } from 'date-fns';
 import useWindowSize from '~/utils/useWindowSize';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Blogs - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const allBlogsRes = await getAllBlogs(args.context.cloudflare.env.DB);

@@ -11,8 +11,17 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { MdArrowBack } from 'react-icons/md';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const tagName = data?.tag?.name;
+  return [{ title: `Mod: ${tagName} (tag) - Yiffer.xyz` }];
+};
 
 export default function ManageTag() {
   const navigate = useNavigate();

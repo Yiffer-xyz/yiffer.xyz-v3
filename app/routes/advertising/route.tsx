@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import {
   ADVERTISEMENTS,
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
@@ -17,6 +17,10 @@ import bannerImage from '~/assets/ad-examples/banner-example.png';
 import bannerImageDark from '~/assets/ad-examples/banner-example-dark.png';
 import { useUIPreferences } from '~/utils/theme-provider';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Advertising - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   return {};

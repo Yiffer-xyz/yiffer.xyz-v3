@@ -39,8 +39,12 @@ import Button from '~/ui-components/Buttons/Button';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import ContributionPointInfo from '~/ui-components/ContributionPointInfo';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Your contributions - Yiffer.xyz` }];
+};
 
 export default function YourContributions() {
   const { contributions }: { contributions: Array<Contribution> } = useLoaderData();

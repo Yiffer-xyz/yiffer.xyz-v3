@@ -7,9 +7,15 @@ import { authLoader } from '~/utils/loaders';
 import ComicCard from '../browse/ComicCard';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { RiShieldFill } from 'react-icons/ri';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = ({ data }) => {
+  const comicName = (data as LoaderData)?.artist?.name;
+  if (!comicName) return [{ title: `Not found - Yiffer.xyz` }];
+  return [{ title: `${comicName} (Artist) - Yiffer.xyz` }];
+};
 
 export default function ArtistPage() {
   const { artist, comics, notFound, queriedArtistName, pagesPath, isMod } =

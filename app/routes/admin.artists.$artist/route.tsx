@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { MdArrowForward, MdCheck, MdClose, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
@@ -16,6 +16,11 @@ import useWindowSize from '~/utils/useWindowSize';
 import ComicAdminLink from '~/ui-components/ComicAdminLink/ComicAdminLink';
 import { useLoaderData } from '@remix-run/react';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const artistName = data?.artist?.name;
+  return [{ title: `Mod: ${artistName} (artist) - Yiffer.xyz` }];
+};
 
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();

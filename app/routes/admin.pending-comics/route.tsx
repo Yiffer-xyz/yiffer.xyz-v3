@@ -12,7 +12,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { LuRefreshCcw } from 'react-icons/lu';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
@@ -23,6 +23,10 @@ const filterOptions: { value: PendingComicsFilter; text: string }[] = [
   { value: 'unscheduled', text: 'Unscheduled only' },
   { value: 'problematic', text: 'Problematic only' },
 ];
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Pending comics - Yiffer.xyz` }];
+};
 
 export default function PendingComics() {
   const { pendingComics, dailySchedulePublishCount } = useLoaderData<typeof loader>();

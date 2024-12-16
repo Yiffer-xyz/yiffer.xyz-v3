@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { MdCheck, MdClose } from 'react-icons/md';
 import {
@@ -72,6 +72,10 @@ const emptyContributionData: ContributionData = {
   comicProblemRejected: 0,
   tagSuggestion: 0,
   tagSuggestionRejected: 0,
+};
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Stats - Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

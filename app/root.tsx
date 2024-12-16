@@ -1,4 +1,4 @@
-import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
+import { captureRemixErrorBoundaryError, withSentry } from '@sentry/remix';
 import type {
   LoaderFunctionArgs,
   LinksFunction,
@@ -54,8 +54,8 @@ export const links: LinksFunction = () => [
 const isDev = process.env.NODE_ENV === 'development';
 
 export const meta: MetaFunction = () => [
-  { title: `${isDev ? '🚧dev ' : ''}Yiffer.xyz` },
-  { property: 'og:title', content: `${isDev ? '🚧dev ' : ''}Yiffer.xyz` },
+  { title: `${isDev ? '🚧' : ''}Yiffer.xyz` },
+  { property: 'og:title', content: `${isDev ? '🚧' : ''}Yiffer.xyz` },
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 
@@ -216,7 +216,8 @@ function Layout({
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError();captureRemixErrorBoundaryError(error);
+  const error = useRouteError();
+  captureRemixErrorBoundaryError(error);
   return (
     <html lang="en">
       <head>

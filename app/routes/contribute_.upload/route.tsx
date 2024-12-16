@@ -29,17 +29,23 @@ import {
   getFileExtension,
   isUsernameUrl,
   pageNumberToPageName,
-  randomString,
 } from '~/utils/general';
-import Button from '~/ui-components/Buttons/Button';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Upload - Yiffer.xyz` }];
+};
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];
 
@@ -209,31 +215,31 @@ export default function Upload() {
     submitFetcher.submit(formData);
   }
 
-  function fillWithStuff() {
-    setComicData({
-      ...comicData,
-      name: 'Test2 ' + randomString(12),
-      category: 'MF',
-      state: 'finished',
-      validation: {
-        isLegalComicName: true,
-      },
-      tags: Array.from(
-        new Set([
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-          tags[Math.floor(Math.random() * tags.length)],
-        ])
-      ),
-      previousComic: comics[Math.floor(Math.random() * comics.length)],
-      nextComic: comics[Math.floor(Math.random() * comics.length)],
-      artistId: artists[Math.floor(Math.random() * artists.length)].id,
-    });
-  }
+  // function fillWithStuff() {
+  //   setComicData({
+  //     ...comicData,
+  //     name: 'Test2 ' + randomString(12),
+  //     category: 'MF',
+  //     state: 'finished',
+  //     validation: {
+  //       isLegalComicName: true,
+  //     },
+  //     tags: Array.from(
+  //       new Set([
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //         tags[Math.floor(Math.random() * tags.length)],
+  //       ])
+  //     ),
+  //     previousComic: comics[Math.floor(Math.random() * comics.length)],
+  //     nextComic: comics[Math.floor(Math.random() * comics.length)],
+  //     artistId: artists[Math.floor(Math.random() * artists.length)].id,
+  //   });
+  // }
 
   return (
     <div className="container mx-auto pb-16">

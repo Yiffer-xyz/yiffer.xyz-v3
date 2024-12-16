@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
@@ -6,6 +6,10 @@ import { getAds } from '~/route-funcs/get-ads';
 import { processApiError } from '~/utils/request-helpers';
 import AdListCard from '../../ui-components/Advertising/AdListCard';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Advertising dashboard - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);

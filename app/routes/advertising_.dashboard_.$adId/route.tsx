@@ -16,8 +16,13 @@ import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 import { getFileExtension, type ComicImage } from '~/utils/general';
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const adId = data?.adData?.ad?.id;
+  return [{ title: `Advertising: ${adId} - Yiffer.xyz` }];
+};
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
@@ -85,7 +90,7 @@ export default function AdvertisingAd() {
           { text: 'Advertising', href: '/advertising' },
           { text: 'Dashboard', href: '/advertising/dashboard' },
         ]}
-        currentRoute={adData?.ad?.adName ?? adId ?? 'Ad'}
+        currentRoute={adId ?? 'Ad'}
       />
 
       {notFound || !ad ? (

@@ -8,8 +8,13 @@ import { IoMdCloseCircle } from 'react-icons/io';
 import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: New tag - Yiffer.xyz` }];
+};
+
 export default function ManageTag() {
   const navigate = useNavigate();
 

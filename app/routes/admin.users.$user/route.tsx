@@ -1,9 +1,14 @@
-import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getUserById } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const username = data?.user?.username;
+  return [{ title: `Mod: ${username} (user) - Yiffer.xyz` }];
+};
 
 export default function ManageSingleUser() {
   const { user } = useLoaderData<typeof loader>();

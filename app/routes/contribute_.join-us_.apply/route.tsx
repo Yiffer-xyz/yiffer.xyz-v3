@@ -17,8 +17,16 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/cloudflare';
+import type {
+  LoaderFunctionArgs,
+  ActionFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod application - Yiffer.xyz` }];
+};
 
 export default function Apply() {
   const fetcher = useGoodFetcher({

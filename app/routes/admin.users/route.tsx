@@ -11,8 +11,12 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Button from '~/ui-components/Buttons/Button';
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: Users - Yiffer.xyz` }];
+};
 
 export default function UserManager() {
   const navigate = useNavigate();

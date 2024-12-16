@@ -8,8 +8,12 @@ import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import { redirectIfNotAdmin } from '~/utils/loaders';
-import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
+
+export const meta: MetaFunction = () => {
+  return [{ title: `Mod: New blog - Yiffer.xyz` }];
+};
 
 export default function NewBlog() {
   const navigate = useNavigate();

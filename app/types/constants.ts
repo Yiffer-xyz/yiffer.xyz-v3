@@ -13,6 +13,8 @@ export const CARD_AD_SECONDARY_TEXT_MAX_LENGTH = 60;
 export const COMICS_PER_PAGE = 60;
 export const ADS_PER_PAGE = 6; // Will be either this (rare) or this-1 (usually)
 
+export const defaultTitle = { title: 'Yiffer.xyz' };
+
 export const COMIC_PROBLEM_CATEGORIES = [
   {
     title: 'Update missing',
