@@ -72,7 +72,7 @@ export default function Apply() {
 
             <TextInputUncontrolled
               name="telegram"
-              label="Telegram username (don't include the @ symbol):"
+              label="Telegram username (don't include the @):"
               type="text"
               className="mb-4"
               validatorFunc={validateTelegramUsername}

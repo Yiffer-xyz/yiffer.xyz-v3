@@ -8,11 +8,12 @@ import ComicCard from '../browse/ComicCard';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { RiShieldFill } from 'react-icons/ri';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function ArtistPage() {
   const { artist, comics, notFound, queriedArtistName, pagesPath, isMod } =
-    useLoaderData<typeof loader>();
+    useLoaderData<LoaderData>();
 
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
@@ -26,16 +27,20 @@ export default function ArtistPage() {
           prevRoutes={[{ text: 'Browse', href: '/browse' }]}
         />
 
-        {isMod && (
-          <Link
-            href={`/admin/artists/${artist?.id}`}
-            text="Edit artist in mod panel"
-            className="mt-4"
-            showRightArrow
-          />
+        {isMod && !notFound && (
+          <div className="mt-2.5 mb-1 flex-row items-center">
+            <RiShieldFill className="text-blue-weak-200 dark:text-blue-strong-300 mr-1 mb-1" />
+            <Link
+              href={`/admin/artists/${artist?.id}`}
+              text="Edit artist in mod panel"
+              className="mt-4"
+              showRightArrow
+            />
+          </div>
         )}
 
         {!notFound && artist && <ArtistLinks artist={artist} pagesPath={pagesPath} />}
+        {notFound && <p className="mt-6">Artist not found.</p>}
       </div>
 
       {!notFound && artist && (
@@ -58,8 +63,6 @@ export default function ArtistPage() {
           </div>
         </>
       )}
-
-      {notFound && <p className="mt-6">Artist not found.</p>}
     </div>
   );
 }
@@ -102,7 +105,7 @@ export async function loader(args: LoaderFunctionArgs) {
   }
   if (combinedRes.notFound) {
     returnVal.notFound = true;
-    return returnVal;
+    return Response.json(returnVal, { status: 404 });
   }
 
   returnVal.artist = combinedRes.result.artist;

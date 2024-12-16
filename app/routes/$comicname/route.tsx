@@ -19,13 +19,24 @@ import { MdArrowUpward } from 'react-icons/md';
 import { useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
+import { RiShieldFill } from 'react-icons/ri';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
 
 export default function ComicPage() {
-  const { comic, queriedComicName, notFound, pagesPath, isLoggedIn, ad, adsPath, isMod } =
-    useLoaderData<typeof loader>();
+  const {
+    comic,
+    queriedComicName,
+    notFound,
+    pagesPath,
+    isLoggedIn,
+    ad,
+    adsPath,
+    isMod,
+    notFoundSimilarComicNames,
+  } = useLoaderData<LoaderData>();
 
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [isReportingProblem, setIsReportingProblem] = useState(false);
@@ -78,13 +89,30 @@ export default function ComicPage() {
           className="!mb-1"
         />
 
-        {isMod && (
-          <div className="mt-2.5 mb-1">
+        {isMod && !notFound && (
+          <div className="mt-2.5 mb-1 flex-row items-center">
+            <RiShieldFill className="text-blue-weak-200 dark:text-blue-strong-300 mr-1 mb-1" />
             <Link
               href={`/admin/comics/${comic?.id}`}
               text="Edit comic in mod panel"
               showRightArrow
             />
+          </div>
+        )}
+
+        {comicNotFound && (
+          <div className="mt-6">
+            <p>Comic not found.</p>
+            {notFoundSimilarComicNames.length > 0 && (
+              <>
+                <p className="mt-4">Comics with similar names:</p>
+                {notFoundSimilarComicNames.map(comicName => (
+                  <p key={comicName} className="mt-1">
+                    <Link href={`/${comicName}`} text={comicName} showRightArrow />
+                  </p>
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
@@ -160,8 +188,6 @@ export default function ComicPage() {
           />
         </>
       )}
-
-      {comicNotFound && <p className="mt-6">Comic not found.</p>}
     </div>
   );
 }
@@ -175,11 +201,13 @@ type LoaderData = {
   adsPath: string;
   queriedComicName: string;
   isMod: boolean;
+  notFoundSimilarComicNames: string[];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   const comicName = args.params.comicname as string;
+  console.log('comic1');
 
   const res: LoaderData = {
     comic: null,
@@ -190,6 +218,7 @@ export async function loader(args: LoaderFunctionArgs) {
     adsPath: args.context.cloudflare.env.ADS_PATH,
     queriedComicName: comicName,
     isMod: user?.userType === 'admin' || user?.userType === 'moderator',
+    notFoundSimilarComicNames: [],
   };
 
   const adPromise = getAdForViewing({
@@ -214,7 +243,22 @@ export async function loader(args: LoaderFunctionArgs) {
   }
   if (comicRes.notFound) {
     res.notFound = true;
-    return res;
+
+    const similarComicsRes = await getSimilarlyNamedComics(
+      args.context.cloudflare.env.DB,
+      comicName
+    );
+    if (similarComicsRes.err) {
+      return processApiError(
+        'Error getting similar comics in /comic',
+        similarComicsRes.err
+      );
+    }
+    if (similarComicsRes.result.similarComics.length > 0) {
+      res.notFoundSimilarComicNames = similarComicsRes.result.similarComics;
+    }
+
+    return Response.json(res, { status: 404 });
   }
 
   res.comic = comicRes.result;

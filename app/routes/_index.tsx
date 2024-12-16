@@ -41,10 +41,9 @@ export default function Index() {
           <p className="text-center">
             We are struggling financially.
             <br />
-            Please <Link text="support us on Patreon" href="/patreon" isInsideParagraph />
-            !
+            Please read more and <br />
+            <Link text="support us on Patreon" href="/patreon" isInsideParagraph />!
           </p>
-          <p className="text-center mt-0.5">VIP patron: TODO implement.</p>
         </div>
 
         <RemixLink to="/browse" className={`w-full`}>

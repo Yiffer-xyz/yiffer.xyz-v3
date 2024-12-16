@@ -34,7 +34,7 @@ export default function ComicCard({
 
   const isNewComic = differenceInDays(new Date(), comic.published) < 14;
 
-  const showTags = comicCardTags || showStaticTags;
+  const showTags = comicCardTags;
 
   return (
     <div

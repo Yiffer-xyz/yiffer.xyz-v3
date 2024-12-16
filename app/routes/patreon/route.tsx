@@ -7,7 +7,7 @@ export default function Patreon() {
     <div className="container mx-auto pb-20">
       <h1>Patreon</h1>
 
-      <Breadcrumbs prevRoutes={[{ text: 'Me', href: '/me' }]} currentRoute="Patreon" />
+      <Breadcrumbs prevRoutes={[]} currentRoute="Patreon" />
 
       <p>
         The costs of running this website are significant. As of 2024, the total monthly

@@ -4,7 +4,7 @@ import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
 import { MdDelete } from 'react-icons/md';
 import IconButton from '~/ui-components/Buttons/IconButton';
-import Button from '~/ui-components/Buttons/Button';
+// import 'react-grid-dnd/dist/';
 
 const RATIO = Math.round(400 / 564);
 const PAGE_NAME_HEIGHT = 40;
@@ -73,12 +73,12 @@ export default function PageManager({ files, onChange, randomString }: PageManag
 
   return (
     <>
-      <Button
+      {/* <Button
         variant="outlined"
         onClick={() => setIsHalfSize(!isHalfSize)}
         text={isHalfSize ? 'Larger' : 'Smaller'}
         className="mb-4"
-      />
+      /> */}
 
       <div ref={gridContainerRef}>
         <GridContextProvider onChange={onDragEnd}>

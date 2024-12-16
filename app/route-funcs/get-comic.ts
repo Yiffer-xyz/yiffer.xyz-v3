@@ -84,7 +84,7 @@ export async function getComicByField({
   }
 
   const [comicRes, linksRes, tagsRes] = dbRes.result;
-  if (comicRes.length === 0) {
+  if (comicRes.length === 0 || comicRes[0].id === null) {
     return { notFound: true };
   }
 
