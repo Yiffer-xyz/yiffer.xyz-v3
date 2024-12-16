@@ -20,3 +20,5 @@ functions/metafile.server.json
 functions/version.txt
 functions/metafile.css.json
 /public/build
+# Sentry Config File
+.env.sentry-build-plugin

@@ -9,6 +9,11 @@ import { RemixServer } from '@remix-run/react';
 import { isbot } from 'isbot';
 import { renderToReadableStream } from 'react-dom/server';
 
+// export const handleError = Sentry.wrapHandleErrorWithSentry((error, { request }) => {
+//   // Custom handleError implementation
+//   console.log('error', error);
+// });
+
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,

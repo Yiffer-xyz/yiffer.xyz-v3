@@ -1,3 +1,4 @@
+import { captureRemixErrorBoundaryError, withSentry } from "@sentry/remix";
 import type {
   LoaderFunctionArgs,
   LinksFunction,
@@ -11,6 +12,7 @@ import {
   ScrollRestoration,
   useLoaderData,
   useMatches,
+  useRouteError,
 } from '@remix-run/react';
 import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
 import clsx from 'clsx';
@@ -72,7 +74,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   return data;
 }
 
-export default function AppWithProviders() {
+function AppWithProviders() {
   const data = useLoaderData<typeof loader>();
 
   return (
@@ -81,6 +83,8 @@ export default function AppWithProviders() {
     </UIPrefProvider>
   );
 }
+
+export default withSentry(AppWithProviders);
 
 function App() {
   const { theme } = useUIPreferences();
@@ -212,6 +216,7 @@ function Layout({
 }
 
 export function ErrorBoundary() {
+  const error = useRouteError();captureRemixErrorBoundaryError(error);
   return (
     <html lang="en">
       <head>

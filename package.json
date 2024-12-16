@@ -15,9 +15,13 @@
     "upgrade-remix": "upgrade-remix"
   },
   "dependencies": {
+    "@cloudflare/pages-plugin-sentry": "^1.1.4",
     "@remix-run/cloudflare": "2.15.1",
     "@remix-run/cloudflare-pages": "2.15.1",
     "@remix-run/react": "2.15.1",
+    "@sentry/cloudflare": "^8.45.0",
+    "@sentry/remix": "^8",
+    "@sentry/vite-plugin": "^2.22.7",
     "@tsndr/cloudflare-worker-jwt": "^2.5.3",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
