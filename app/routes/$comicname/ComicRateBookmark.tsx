@@ -2,6 +2,7 @@ import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
 import type { Comic } from '~/types/types';
 import clsx from 'clsx';
+import { useLocation, useNavigate } from '@remix-run/react';
 
 type ComicInfoProps = {
   comic: Comic;
@@ -19,9 +20,13 @@ export default function ComicRateBookmark({
   className = '',
 }: ComicInfoProps) {
   const yourStars = comic.yourStars ?? 0;
+  const navigate = useNavigate();
 
   function onUpdateStars(stars: number) {
-    if (!isLoggedIn) alert('Log in bro - todo make this nice');
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
 
     if (yourStars === stars) {
       updateStars(0);
@@ -31,7 +36,10 @@ export default function ComicRateBookmark({
   }
 
   function onToggleBookmark() {
-    if (!isLoggedIn) alert('Log in bro - todo make this nice');
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
     toggleBookmark();
   }
 

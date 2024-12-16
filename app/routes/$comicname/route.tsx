@@ -207,7 +207,6 @@ type LoaderData = {
 export async function loader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   const comicName = args.params.comicname as string;
-  console.log('comic1');
 
   const res: LoaderData = {
     comic: null,
