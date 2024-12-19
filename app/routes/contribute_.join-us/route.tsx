@@ -13,7 +13,7 @@ export const meta: MetaFunction = () => {
 
 export default function JoinUs() {
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pb-8">
       <h1>Join us</h1>
 
       <Breadcrumbs

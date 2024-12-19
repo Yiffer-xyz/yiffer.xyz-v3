@@ -158,7 +158,7 @@ export default function Upload() {
   console.log(similarComics);
 
   return (
-    <section className="container mx-auto justify-items-center">
+    <section className="container mx-auto pb-8">
       <h1>Suggest a comic</h1>
 
       <Breadcrumbs

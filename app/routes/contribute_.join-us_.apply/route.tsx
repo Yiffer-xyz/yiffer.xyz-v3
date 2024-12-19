@@ -40,7 +40,7 @@ export default function Apply() {
   const [telegramIsValid, setTelegramIsValid] = useState(false);
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pb-8">
       <h1>Become a mod</h1>
 
       <Breadcrumbs
