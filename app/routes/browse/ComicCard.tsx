@@ -240,9 +240,9 @@ function StateCorner({
     : 'border-t-white dark:border-t-gray-300';
 
   return (
-    <div className="absolute top-0 left-0">
+    <div className="absolute top-0 left-0 rounded-tl">
       <div
-        className={`border-solid 
+        className={`border-solid rounded-tl 
               border-t-[60px] border-r-[60px] border-b-0 border-l-0
               ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
@@ -268,9 +268,9 @@ function NewCorner({ isHovered }: { isHovered: boolean }) {
     : 'border-t-white dark:border-t-gray-300';
 
   return (
-    <div className="absolute top-0 right-0">
+    <div className="absolute top-0 right-0 rounded-tr">
       <div
-        className={`border-solid 
+        className={`border-solid rounded-tr
               border-t-[60px] border-l-[60px] border-b-0 border-r-0
               ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
