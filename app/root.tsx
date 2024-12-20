@@ -5,6 +5,7 @@ import type {
   MetaFunction,
 } from '@remix-run/cloudflare';
 import {
+  Link as RemixLink,
   Links,
   Meta,
   Outlet,
@@ -12,6 +13,7 @@ import {
   ScrollRestoration,
   useLoaderData,
   useMatches,
+  useNavigation,
   useRouteError,
 } from '@remix-run/react';
 import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
@@ -88,6 +90,8 @@ export default withSentry(AppWithProviders);
 
 function App() {
   const { theme } = useUIPreferences();
+  const navigation = useNavigation();
+  const isLoading = navigation.state !== 'idle';
   const data = useLoaderData<typeof loader>();
 
   return (
@@ -98,7 +102,11 @@ function App() {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
+      <body
+        className={`dark:bg-bgDark text-text-light dark:text-text-dark ${
+          isLoading ? 'opacity-70 dark:opacity-80' : ''
+        }`}
+      >
         <Layout frontPageUrl={data.frontPageUrl} user={data.user}>
           <Outlet />
         </Layout>
@@ -144,8 +152,8 @@ function Layout({
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">
-            <a
-              href={frontPageUrl}
+            <RemixLink
+              to="/"
               className={`text-gray-200 hidden lg:block bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
                 fontFamily: 'Shrikhand,cursive',
@@ -154,9 +162,9 @@ function Layout({
               }}
             >
               Yiffer.xyz
-            </a>
-            <a
-              href={frontPageUrl}
+            </RemixLink>
+            <RemixLink
+              to="/"
               className={`text-gray-200 block lg:hidden bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
                 fontFamily: 'Shrikhand,cursive',
@@ -165,7 +173,7 @@ function Layout({
               }}
             >
               Y
-            </a>
+            </RemixLink>
             <>
               {isLoggedIn && (
                 <Link
@@ -194,10 +202,10 @@ function Layout({
               />
             </>
             {!isLoggedIn && !excludeLogin && (
-              <a href="/login" className={navLinkStyle}>
+              <RemixLink to="/login" className={navLinkStyle}>
                 <RiLoginBoxLine className="inline-block" />
                 Log in
-              </a>
+              </RemixLink>
             )}
           </div>
 

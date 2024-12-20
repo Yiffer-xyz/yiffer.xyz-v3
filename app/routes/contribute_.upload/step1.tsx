@@ -90,9 +90,9 @@ export default function Step1({ onNext, isMod }: Step1Props) {
         - we don't need one for every page.
       </p>
       <p className="mt-4">
-        If your answer is "google", or "on my computer", there is a higher chance we'll
-        reject your upload, as it is harder for us to verify the page quality and
-        availability (the "Checklist" checkboxes above).
+        If your answer is "google", or "on my computer", we will reject your upload, as it
+        is harder for us to verify the page quality and availability (the "Checklist"
+        checkboxes above).
       </p>
       <Textarea
         value={source}
