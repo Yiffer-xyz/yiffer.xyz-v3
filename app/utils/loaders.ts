@@ -29,7 +29,7 @@ export async function fullUserLoader(args: LoaderFunctionArgs) {
 
 export async function redirectIfNotLoggedIn(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
-  if (!user) throw redirect('/');
+  if (!user) throw redirect('/login');
   return user;
 }
 
