@@ -15,7 +15,7 @@ import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Users - Yiffer.xyz` }];
+  return [{ title: `Mod: Users | Yiffer.xyz` }];
 };
 
 export default function UserManager() {

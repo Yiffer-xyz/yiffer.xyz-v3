@@ -14,7 +14,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Account - Yiffer.xyz` }];
+  return [{ title: `Account | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

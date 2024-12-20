@@ -25,7 +25,7 @@ import type {
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod application - Yiffer.xyz` }];
+  return [{ title: `Mod application | Yiffer.xyz` }];
 };
 
 export default function Apply() {

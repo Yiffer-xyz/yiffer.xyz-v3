@@ -7,7 +7,7 @@ import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Thumbnails - Yiffer.xyz` }];
+  return [{ title: `Mod: Thumbnails | Yiffer.xyz` }];
 };
 
 export default function UpdateThumbnails() {

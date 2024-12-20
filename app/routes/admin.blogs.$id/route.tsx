@@ -24,7 +24,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const blogTitle = data?.blog?.title;
-  return [{ title: `Mod: ${blogTitle} (blog) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${blogTitle} (blog) | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

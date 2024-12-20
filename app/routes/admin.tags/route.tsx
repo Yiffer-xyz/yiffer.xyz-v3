@@ -20,7 +20,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Tags - Yiffer.xyz` }];
+  return [{ title: `Mod: Tags | Yiffer.xyz` }];
 };
 
 export default function ManageTags() {

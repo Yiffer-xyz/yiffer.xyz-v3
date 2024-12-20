@@ -5,7 +5,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Feedback/support - Yiffer.xyz` }];
+  return [{ title: `Mod: Feedback/support | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

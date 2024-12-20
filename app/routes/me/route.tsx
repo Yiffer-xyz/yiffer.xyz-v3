@@ -7,7 +7,7 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Me - Yiffer.xyz` }];
+  return [{ title: `Me | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

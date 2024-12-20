@@ -25,7 +25,7 @@ const filterOptions: { value: PendingComicsFilter; text: string }[] = [
 ];
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Pending comics - Yiffer.xyz` }];
+  return [{ title: `Mod: Pending comics | Yiffer.xyz` }];
 };
 
 export default function PendingComics() {

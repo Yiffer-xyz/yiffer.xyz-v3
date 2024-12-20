@@ -30,7 +30,7 @@ import { MdArrowForward } from 'react-icons/md';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Suggest comic - Yiffer.xyz` }];
+  return [{ title: `Suggest comic | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

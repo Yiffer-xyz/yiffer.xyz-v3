@@ -73,7 +73,7 @@ export function createPasswordResetEmail(
   return {
     To: recipient,
     From: `${EmailAccountSenders.account}@yiffer.xyz`,
-    Subject: 'Password reset - Yiffer.xyz',
+    Subject: 'Password reset | Yiffer.xyz',
     HtmlBody: html,
     MessageStream: 'outbound',
   };

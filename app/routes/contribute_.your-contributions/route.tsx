@@ -43,7 +43,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Your contributions - Yiffer.xyz` }];
+  return [{ title: `Your contributions | Yiffer.xyz` }];
 };
 
 export default function YourContributions() {

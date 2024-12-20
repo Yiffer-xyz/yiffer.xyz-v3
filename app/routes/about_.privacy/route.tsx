@@ -3,7 +3,7 @@ import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Privacy & Terms of Use - Yiffer.xyz` }];
+  return [{ title: `Privacy & Terms of Use | Yiffer.xyz` }];
 };
 
 export default function PrivacyPage() {

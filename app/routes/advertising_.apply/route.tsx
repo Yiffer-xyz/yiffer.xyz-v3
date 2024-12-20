@@ -16,7 +16,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Advertising application - Yiffer.xyz` }];
+  return [{ title: `Advertising application | Yiffer.xyz` }];
 };
 
 export default function AdvertisingApply() {

@@ -6,7 +6,7 @@ import { authLoader } from '~/utils/loaders';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Contribute - Yiffer.xyz` }];
+  return [{ title: `Contribute | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

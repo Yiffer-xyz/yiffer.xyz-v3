@@ -12,7 +12,7 @@ import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: New blog - Yiffer.xyz` }];
+  return [{ title: `Mod: New blog | Yiffer.xyz` }];
 };
 
 export default function NewBlog() {

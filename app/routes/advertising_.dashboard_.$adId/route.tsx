@@ -21,7 +21,7 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const adId = data?.adData?.ad?.id;
-  return [{ title: `Advertising: ${adId} - Yiffer.xyz` }];
+  return [{ title: `Advertising: ${adId} | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

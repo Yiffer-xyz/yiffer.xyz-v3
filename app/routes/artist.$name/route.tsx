@@ -13,8 +13,8 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = ({ data }) => {
   const comicName = (data as LoaderData)?.artist?.name;
-  if (!comicName) return [{ title: `Not found - Yiffer.xyz` }];
-  return [{ title: `${comicName} (Artist) - Yiffer.xyz` }];
+  if (!comicName) return [{ title: `Not found | Yiffer.xyz` }];
+  return [{ title: `${comicName} (Artist) | Yiffer.xyz` }];
 };
 
 export default function ArtistPage() {

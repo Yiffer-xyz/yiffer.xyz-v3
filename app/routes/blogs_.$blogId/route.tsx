@@ -10,9 +10,9 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export const meta: MetaFunction = ({ data }) => {
   const { blog, notFound } = data as LoaderData;
   if (notFound) {
-    return [{ title: `Not found - Yiffer.xyz` }];
+    return [{ title: `Not found | Yiffer.xyz` }];
   }
-  return [{ title: `Blog: ${blog?.title} - Yiffer.xyz` }];
+  return [{ title: `Blog: ${blog?.title} | Yiffer.xyz` }];
 };
 
 type LoaderData = {

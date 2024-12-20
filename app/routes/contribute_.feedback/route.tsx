@@ -16,7 +16,7 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export { authLoader as loader };
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Feedback - Yiffer.xyz` }];
+  return [{ title: `Feedback | Yiffer.xyz` }];
 };
 
 export default function Feedback() {

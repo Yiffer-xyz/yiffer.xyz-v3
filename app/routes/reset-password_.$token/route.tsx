@@ -20,7 +20,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Reset password - Yiffer.xyz` }];
+  return [{ title: `Reset password | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

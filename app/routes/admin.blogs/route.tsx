@@ -18,7 +18,7 @@ import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Blogs - Yiffer.xyz` }];
+  return [{ title: `Mod: Blogs | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

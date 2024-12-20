@@ -24,7 +24,7 @@ export type GlobalAdminContext = {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod - Yiffer.xyz` }];
+  return [{ title: `Mod | Yiffer.xyz` }];
 };
 
 export default function Admin() {

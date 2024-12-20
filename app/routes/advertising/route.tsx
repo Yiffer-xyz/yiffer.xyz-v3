@@ -19,7 +19,7 @@ import { useUIPreferences } from '~/utils/theme-provider';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Advertising - Yiffer.xyz` }];
+  return [{ title: `Advertising | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

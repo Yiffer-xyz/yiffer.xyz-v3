@@ -75,7 +75,7 @@ const emptyContributionData: ContributionData = {
 };
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Stats - Yiffer.xyz` }];
+  return [{ title: `Mod: Stats | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

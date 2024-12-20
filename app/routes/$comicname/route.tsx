@@ -27,8 +27,8 @@ export const desktopStatsWidth = 144;
 
 export const meta: MetaFunction = ({ data }) => {
   const comicName = (data as LoaderData)?.comic?.name;
-  if (!comicName) return [{ title: `Not found - Yiffer.xyz` }];
-  return [{ title: `${comicName} - Yiffer.xyz` }];
+  if (!comicName) return [{ title: `Not found | Yiffer.xyz` }];
+  return [{ title: `${comicName} | Yiffer.xyz` }];
 };
 
 export default function ComicPage() {

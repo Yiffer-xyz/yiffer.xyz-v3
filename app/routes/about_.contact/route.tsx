@@ -4,7 +4,7 @@ import type { MetaFunction } from '@remix-run/cloudflare';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Contact & takedowns - Yiffer.xyz` }];
+  return [{ title: `Contact & takedowns | Yiffer.xyz` }];
 };
 
 export default function ContactPage() {

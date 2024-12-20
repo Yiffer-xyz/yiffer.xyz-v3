@@ -6,7 +6,7 @@ import { useLoaderData } from '@remix-run/react';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Patreon - Yiffer.xyz` }];
+  return [{ title: `Patreon | Yiffer.xyz` }];
 };
 
 export function loader(args: LoaderFunctionArgs) {

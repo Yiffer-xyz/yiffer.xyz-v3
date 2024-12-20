@@ -17,7 +17,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const adId = data?.adData?.ad?.id as string;
-  return [{ title: `Mod: ${adId} (ad) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${adId} (ad) | Yiffer.xyz` }];
 };
 
 export default function ManageAd() {

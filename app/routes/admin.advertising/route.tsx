@@ -19,7 +19,7 @@ import AdListCard from '../../ui-components/Advertising/AdListCard';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = () => {
-  return [{ title: `Mod: Ads - Yiffer.xyz` }];
+  return [{ title: `Mod: Ads | Yiffer.xyz` }];
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {

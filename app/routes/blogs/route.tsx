@@ -10,7 +10,7 @@ import useWindowSize from '~/utils/useWindowSize';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Blogs - Yiffer.xyz` }];
+  return [{ title: `Blogs | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

@@ -19,7 +19,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const artistName = data?.artist?.name;
-  return [{ title: `Mod: ${artistName} (artist) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${artistName} (artist) | Yiffer.xyz` }];
 };
 
 export default function ManageArtist() {

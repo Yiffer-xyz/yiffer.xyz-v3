@@ -44,7 +44,7 @@ import type {
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Upload - Yiffer.xyz` }];
+  return [{ title: `Upload | Yiffer.xyz` }];
 };
 
 const illegalComicNameChars = ['#', '/', '?', '\\'];

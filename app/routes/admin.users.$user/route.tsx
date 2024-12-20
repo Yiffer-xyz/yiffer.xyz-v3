@@ -7,7 +7,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const username = data?.user?.username;
-  return [{ title: `Mod: ${username} (user) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${username} (user) | Yiffer.xyz` }];
 };
 
 export default function ManageSingleUser() {

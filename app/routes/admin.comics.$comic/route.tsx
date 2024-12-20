@@ -18,7 +18,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const comicName = data?.comic?.name;
-  return [{ title: `Mod: ${comicName} (comic) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${comicName} (comic) | Yiffer.xyz` }];
 };
 
 export default function ManageComicInner() {

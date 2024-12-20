@@ -30,7 +30,7 @@ function statusToActionText(status: ModApplication['status']) {
 }
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Mod applications - Yiffer.xyz` }];
+  return [{ title: `Mod: Mod applications | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

@@ -20,7 +20,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const tagName = data?.tag?.name;
-  return [{ title: `Mod: ${tagName} (tag) - Yiffer.xyz` }];
+  return [{ title: `Mod: ${tagName} (tag) | Yiffer.xyz` }];
 };
 
 export default function ManageTag() {

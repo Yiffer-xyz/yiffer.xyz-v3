@@ -30,7 +30,7 @@ import type {
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Scoreboard - Yiffer.xyz` }];
+  return [{ title: `Scoreboard | Yiffer.xyz` }];
 };
 
 type CachedPoints = {

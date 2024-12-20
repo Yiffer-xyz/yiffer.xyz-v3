@@ -7,7 +7,7 @@ import type { MetaFunction } from '@remix-run/cloudflare';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: Artists - Yiffer.xyz` }];
+  return [{ title: `Mod: Artists | Yiffer.xyz` }];
 };
 
 export default function ManageArtists() {

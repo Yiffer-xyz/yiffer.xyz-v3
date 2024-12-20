@@ -8,7 +8,7 @@ import AdListCard from '../../ui-components/Advertising/AdListCard';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Advertising dashboard - Yiffer.xyz` }];
+  return [{ title: `Advertising dashboard | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

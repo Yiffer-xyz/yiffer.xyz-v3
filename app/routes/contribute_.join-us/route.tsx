@@ -8,7 +8,7 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export { authLoader as loader } from '~/utils/loaders';
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Join us - Yiffer.xyz` }];
+  return [{ title: `Join us | Yiffer.xyz` }];
 };
 
 export default function JoinUs() {
