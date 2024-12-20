@@ -269,8 +269,8 @@ function addAdsToComics(
   // Mix ads into comic list, starting at index (numComicsBetweenAds +- 2) for variation,
   // then every numComicsBetweenAds after that.
 
-  const firstAdRandomizer = Math.floor(Math.random() * 5) - 2;
-  const firstAdIndex = numComicsBetweenAds + firstAdRandomizer;
+  // const firstAdRandomizer = Math.floor(Math.random() * 5) - 2;
+  const firstAdIndex = numComicsBetweenAds - 2;
 
   for (let i = 0; i < comics.length; i++) {
     if (

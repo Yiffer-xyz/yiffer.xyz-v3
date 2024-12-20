@@ -1,14 +1,15 @@
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
-import type { Comic } from '~/types/types';
+import type { Comic, ComicForBrowse } from '~/types/types';
 import clsx from 'clsx';
 import { useNavigate } from '@remix-run/react';
 
 type ComicInfoProps = {
-  comic: Comic;
+  comic: Comic | ComicForBrowse;
   updateStars: (stars: number) => void;
   toggleBookmark: () => void;
   isLoggedIn: boolean;
+  small?: boolean;
   className?: string;
 };
 
@@ -17,7 +18,8 @@ export default function ComicRateBookmark({
   updateStars,
   toggleBookmark,
   isLoggedIn,
-  className = '',
+  small = false,
+  className,
 }: ComicInfoProps) {
   const yourStars = comic.yourStars ?? 0;
   const navigate = useNavigate();
@@ -54,10 +56,13 @@ export default function ComicRateBookmark({
       {/* Bookmark */}
       <button onClick={onToggleBookmark} className="p-2 -ml-2 group">
         {comic.isBookmarked ? (
-          <FaBookmark size={20} className={`text-theme1-dark mt-[3px] ${hoverClass}`} />
+          <FaBookmark
+            size={small ? 16 : 20}
+            className={`text-theme1-dark mt-[3px] ${hoverClass}`}
+          />
         ) : (
           <FaRegBookmark
-            size={20}
+            size={small ? 16 : 20}
             className={`${unfilledColorClass} mt-[3px] ${
               isLoggedIn ? 'group-hover:text-theme1-dark' : ''
             }`}
@@ -66,36 +71,38 @@ export default function ComicRateBookmark({
       </button>
 
       {/* Vertical divider div */}
-      <div className="h-7 w-[0.5px] bg-gray-750 mx-1.5 mt-1" />
+      {!small && <div className="h-7 w-[0.5px] bg-gray-750 mx-1.5 mt-1" />}
 
       {/* Stars */}
-      <button onClick={() => onUpdateStars(1)} className="p-1 group">
-        <IoStar
-          size={24}
-          className={clsx(
-            yourStars >= 1 ? filledColorClass : unfilledColorClass,
-            hoverClass
-          )}
-        />
-      </button>
-      <button onClick={() => onUpdateStars(2)} className="p-1 group">
-        <IoStar
-          size={24}
-          className={clsx(
-            yourStars >= 2 ? filledColorClass : unfilledColorClass,
-            hoverClass
-          )}
-        />
-      </button>
-      <button onClick={() => onUpdateStars(3)} className="p-1 group">
-        <IoStar
-          size={24}
-          className={clsx(
-            yourStars >= 3 ? filledColorClass : unfilledColorClass,
-            hoverClass
-          )}
-        />
-      </button>
+      <div>
+        <button onClick={() => onUpdateStars(1)} className="p-1 group">
+          <IoStar
+            size={small ? 20 : 24}
+            className={clsx(
+              yourStars >= 1 ? filledColorClass : unfilledColorClass,
+              hoverClass
+            )}
+          />
+        </button>
+        <button onClick={() => onUpdateStars(2)} className="p-1 group">
+          <IoStar
+            size={small ? 20 : 24}
+            className={clsx(
+              yourStars >= 2 ? filledColorClass : unfilledColorClass,
+              hoverClass
+            )}
+          />
+        </button>
+        <button onClick={() => onUpdateStars(3)} className="p-1 group">
+          <IoStar
+            size={small ? 20 : 24}
+            className={clsx(
+              yourStars >= 3 ? filledColorClass : unfilledColorClass,
+              hoverClass
+            )}
+          />
+        </button>
+      </div>
     </div>
   );
 }

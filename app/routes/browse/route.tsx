@@ -16,7 +16,6 @@ import {
 } from './SearchFilter/useBrowseParams';
 import { getUIPrefSession } from '~/utils/theme.server';
 import { authLoader } from '~/utils/loaders';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { COMICS_PER_PAGE } from '~/types/constants';
 import { isComic } from '~/utils/general';
 import AdComicCard from '../../ui-components/Advertising/AdComicCard';
@@ -90,14 +89,6 @@ export default function BrowsePage() {
     setPage(newPage, { scrollTop });
   }
 
-  const toggleBookmarkFetcher = useGoodFetcher({
-    method: 'post',
-    url: '/api/toggle-bookmark',
-  });
-  function toggleBookmark(comicId: number) {
-    toggleBookmarkFetcher.submit({ comicId });
-  }
-
   const isNoComics = totalNumComics === 0;
 
   return (
@@ -149,12 +140,7 @@ export default function BrowsePage() {
           {comicsAndAds
             ? comicsAndAds.map(comicOrAd =>
                 isComic(comicOrAd) ? (
-                  <ComicCard
-                    comic={comicOrAd}
-                    key={comicOrAd.id}
-                    pagesPath={pagesPath}
-                    toggleBookmark={toggleBookmark}
-                  />
+                  <ComicCard comic={comicOrAd} key={comicOrAd.id} pagesPath={pagesPath} />
                 ) : (
                   <AdComicCard
                     ad={comicOrAd}

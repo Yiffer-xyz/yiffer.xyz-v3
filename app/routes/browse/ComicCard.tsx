@@ -12,36 +12,78 @@ import { differenceInDays } from 'date-fns';
 import clsx from 'clsx';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import ComicRateBookmark from '../$comicname/ComicRateBookmark';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
+
+const mouseLeaveTimeout = 25;
 
 type ComicCardProps = {
   comic: ComicForBrowse;
   pagesPath: string;
   showStaticTags?: boolean;
-  toggleBookmark?: (comicId: number) => void;
 };
 
-export default function ComicCard({
-  comic,
-  pagesPath,
-  showStaticTags,
-  toggleBookmark,
-}: ComicCardProps) {
+export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCardProps) {
   const { comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
+  const updateYourStarsFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/update-your-stars',
+  });
+
+  function updateStars(stars: number) {
+    updateYourStarsFetcher.submit({
+      stars,
+      comicId: comic!.id,
+    });
+  }
+
+  const toggleBookmarkFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/toggle-bookmark',
+  });
+
+  function toggleBookmark() {
+    toggleBookmarkFetcher.submit({ comicId: comic.id });
+  }
+
+  const [isHovering, setIsHovering] = useState(false);
+  const mouseLeaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const isNewComic = differenceInDays(new Date(), comic.published) < 14;
 
   const showTags = comicCardTags;
 
+  function clearIfTimeout() {
+    if (mouseLeaveTimeoutRef.current) {
+      clearTimeout(mouseLeaveTimeoutRef.current);
+    }
+  }
+
   return (
     <div
-      className={`w-[160px] rounded overflow-hidden shadow bg-white dark:bg-gray-300
-                  flex flex-col relative
-                  ${showTags ? 'h-fit' : ''}`}
+      className={`w-[160px] rounded shadow 
+                bg-white hover:bg-theme1-primaryMoreTrans
+                dark:bg-gray-300 dark:hover:bg-gray-400
+                  flex flex-col relative transition-all duration-100
+                  ${showTags ? 'h-fit' : ''}
+                  ${isHovering ? 'shadow-lg' : ''}`}
       key={comic.id}
+      onMouseMove={() => {
+        clearIfTimeout();
+        if (!isHovering) setIsHovering(true);
+      }}
+      onMouseLeave={() => {
+        clearIfTimeout();
+        mouseLeaveTimeoutRef.current = setTimeout(
+          () => setIsHovering(false),
+          mouseLeaveTimeout
+        );
+      }}
     >
       <RemixLink to={`/${comic.name}`}>
         <img
@@ -49,20 +91,54 @@ export default function ComicCard({
           alt="comic thumbnail"
           style={{ height: 226 }}
           height={226}
+          className="rounded-tl rounded-tr"
         />
         {/* <div className="w-[160px] h-[226px] bg-gray-500" /> */}
       </RemixLink>
 
+      {toggleBookmark && (isHovering || !!0) && (
+        <div
+          className="absolute -bottom-[30px] left-0 w-full h-[34px] 
+                   bg-theme1-primaryMoreTransSolid dark:bg-gray-400
+                     rounded-b shadow px-2 flex flex-row items-center justify-between pb-1"
+          style={{ zIndex: 2 }}
+          onMouseEnter={() => {
+            setIsHovering(true);
+            clearIfTimeout();
+          }}
+          onMouseLeave={() => {
+            clearIfTimeout();
+            mouseLeaveTimeoutRef.current = setTimeout(
+              () => setIsHovering(false),
+              mouseLeaveTimeout
+            );
+          }}
+        >
+          <ComicRateBookmark
+            comic={comic}
+            updateStars={updateStars}
+            toggleBookmark={toggleBookmark}
+            isLoggedIn
+            small
+            className="justify-evenly w-full pl-[7px]"
+          />
+        </div>
+      )}
+
       <div
-        className={`-mt-5 mx-auto bg-white px-2 pt-[1px] rounded-sm text-sm rounded-b-none
-                    dark:bg-gray-300 dark:font-bold`}
+        className={`-mt-5 mx-auto px-2 pt-[1px] rounded-sm text-sm rounded-b-none
+                    dark:font-bold transition-all duration-100
+                    ${isHovering ? 'bg-theme1-primaryMoreTransSolid' : 'bg-white'}
+                    dark:bg-gray-${isHovering ? '400' : '300'}`}
       >
         <label>{comic.category}</label>
       </div>
 
-      {comic.state !== 'finished' && <StateCorner state={comic.state} />}
+      {comic.state !== 'finished' && (
+        <StateCorner state={comic.state} isHovered={isHovering} />
+      )}
 
-      {isNewComic && <NewCorner />}
+      {isNewComic && <NewCorner isHovered={isHovering} />}
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <div className="leading-5 pt-0.5 pb-1">
@@ -152,13 +228,23 @@ export function SkeletonComicCard() {
   return <div className="w-[100px] h-[300px] rounded bg-gray-500" />;
 }
 
-function StateCorner({ state }: { state: 'cancelled' | 'wip' }) {
+function StateCorner({
+  state,
+  isHovered,
+}: {
+  state: 'cancelled' | 'wip';
+  isHovered: boolean;
+}) {
+  const borderClassName = isHovered
+    ? 'border-t-theme1-primaryMoreTransSolid dark:border-t-gray-400'
+    : 'border-t-white dark:border-t-gray-300';
+
   return (
     <div className="absolute top-0 left-0">
       <div
         className={`border-solid 
               border-t-[60px] border-r-[60px] border-b-0 border-l-0
-              border-t-white dark:border-t-gray-300 
+              ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
               flex items-center justify-center`}
       >
@@ -176,13 +262,17 @@ function StateCorner({ state }: { state: 'cancelled' | 'wip' }) {
   );
 }
 
-function NewCorner() {
+function NewCorner({ isHovered }: { isHovered: boolean }) {
+  const borderClassName = isHovered
+    ? 'border-t-theme1-primaryMoreTransSolid dark:border-t-gray-400'
+    : 'border-t-white dark:border-t-gray-300';
+
   return (
     <div className="absolute top-0 right-0">
       <div
         className={`border-solid 
               border-t-[60px] border-l-[60px] border-b-0 border-r-0
-              border-t-white dark:border-t-gray-300 
+              ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
               flex items-center justify-center`}
       >

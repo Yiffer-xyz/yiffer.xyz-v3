@@ -36,6 +36,7 @@ export const colors = {
     darker3: '#00b8ad',
     verydark: '#007a74',
     darkFaded: '#007a7440',
+    primaryMoreTransSolid: '#eff8f8', // Color of primaryMoreTrans on white bg
   },
   theme2: {
     primary: '#adfee0',
