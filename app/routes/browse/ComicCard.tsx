@@ -97,9 +97,7 @@ export default function ComicCard({
             <>
               <div
                 className="w-9 flex flex-col items-center"
-                title={`Number of stars (popularity)${
-                  comic.yourStars ? ' & Your stars' : ''
-                }`}
+                title={`Number of stars${comic.yourStars ? ' & Your stars' : ''}`}
               >
                 <FaRegStar
                   size={14}

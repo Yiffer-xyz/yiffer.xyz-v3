@@ -1,13 +1,22 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
-import type { MetaFunction } from '@remix-run/cloudflare';
+import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import PatronList from './patronList';
+import { useLoaderData } from '@remix-run/react';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
   return [{ title: `Patreon - Yiffer.xyz` }];
 };
 
+export function loader(args: LoaderFunctionArgs) {
+  const { IMAGES_SERVER_URL } = args.context.cloudflare.env;
+  return { IMAGES_SERVER_URL };
+}
+
 export default function Patreon() {
+  const { IMAGES_SERVER_URL } = useLoaderData<typeof loader>();
+
   return (
     <div className="container mx-auto pb-20">
       <h1>Patreon</h1>
@@ -24,7 +33,7 @@ export default function Patreon() {
         Additionally, if you have artist/creator/model friends who could use some more
         attention, our advertising service is genuinely quite effective and easy to use,
         so consider telling them about us and sending them to our{' '}
-        <Link href="/advertising" text="advertising page" />!
+        <Link href="/advertising" text="advertising page" isInsideParagraph />!
       </p>
 
       <a href="https://www.patreon.com/bePatron?u=61346131">
@@ -55,15 +64,18 @@ export default function Patreon() {
         </button>
       </a>
 
-      <h3 className="mt-6">Rewards</h3>
+      <h2 className="mt-6">Rewards</h2>
       <p>
         We've prioritized getting the new version of this site up and running over syncing
-        Patreon subscriber lists for now, so there are no immediate rewards yet. In the
-        near future, however, we plan to display a list of all patron users on our site to
-        show gratitude ❤️. If you have ideas for other patron perks, please let us know
-        via our{' '}
+        Patreon subscriber lists for now. Instead, at least once per month, we import the
+        list of patrons and display them below. In the near future, we plan to sync this
+        automatically, add options for displaying your name and picture (like in the old
+        version of the site), and potentially add other perks too. If you have ideas for
+        other patron perks, please let us know via our{' '}
         <Link href="/contribute/feedback" isInsideParagraph text="feedback form" />!
       </p>
+
+      <PatronList IMAGES_SERVER_URL={IMAGES_SERVER_URL} />
     </div>
   );
 }
