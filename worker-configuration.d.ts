@@ -12,4 +12,5 @@ interface Env {
   ADS_PATH: string;
   IMAGES_SERVER_URL: string;
   DB: D1Database;
+  CRON_KEY: string;
 }

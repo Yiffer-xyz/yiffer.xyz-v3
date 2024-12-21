@@ -8,16 +8,12 @@ import { publishComic } from './api.admin.publish-comic';
 export async function loader(args: LoaderFunctionArgs) {
   const requestApiKeyHeader = args.request.headers.get('x-yiffer-api-key');
   const db = args.context.cloudflare.env.DB;
-  // const cronKey = args.context.cloudflare.env.CRON_KEY;
-  const cronKey = 'test';
+  const cronKey = args.context.cloudflare.env.CRON_KEY;
   const schedulePerDay = parseInt(
     args.context.cloudflare.env.DAILY_SCHEDULE_PUBLISH_COUNT as string
   );
 
   if (cronKey !== requestApiKeyHeader) {
-    // logApiErrorMessage('Invalid x-yiffer-api-key header in /publish-comics-cron', {
-    //   requestApiKeyHeader,
-    // });
     return create400Json(
       `Invalid x-yiffer-api-key header in /publish-comics-cron: ${requestApiKeyHeader}`
     );

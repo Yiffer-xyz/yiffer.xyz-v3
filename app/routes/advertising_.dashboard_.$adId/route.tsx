@@ -365,7 +365,7 @@ function AdTopInfo({
 
       {ad.status === 'ENDED' && (
         <>
-          <p>This ad has ended. You can immediately pay to reactivate it right now.</p>
+          <p>This ad has ended. You can pay to reactivate it right now.</p>
 
           <AdPaymentInstructions adType={ad.adType} className="mt-1" />
 

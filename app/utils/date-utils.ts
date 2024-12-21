@@ -19,8 +19,8 @@ export function getTimeAgoShort(time: Date, includeSpace = true) {
   }
   if (timeAgo.includes('minute')) {
     return includeSpace
-      ? timeAgo.replace('minutes', 'm').replace('minute', 'm')
-      : timeAgo.replace(' minutes', 'm');
+      ? timeAgo.replace('minutes', 'min').replace('minute', 'min')
+      : timeAgo.replace(' minutes', 'min').replace(' minute', 'min');
   }
 
   if (includeSpace) {

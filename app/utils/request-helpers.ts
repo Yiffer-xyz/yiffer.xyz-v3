@@ -69,8 +69,8 @@ export async function logApiError(
 export async function logErrorExternally(logError: ExternalLogError) {
   try {
     console.log('Logging error...');
-    // await fetch('https://images-srv.testyiffer.xyz/error-log', {
-    await fetch('http://localhost:8770/error-log', {
+    await fetch('https://images-srv.testyiffer.xyz/error-log', {
+      // await fetch('http://localhost:8770/error-log', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

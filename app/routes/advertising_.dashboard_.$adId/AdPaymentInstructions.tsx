@@ -1,3 +1,4 @@
+import pluralize from 'pluralize';
 import type { HTMLAttributes } from 'react';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 import { ADVERTISEMENTS } from '~/types/constants';
@@ -49,7 +50,7 @@ export default function AdPaymentInstructions({
             <ul>
               {Object.entries(prices).map(([months, price]) => (
                 <li key={months}>
-                  {months} months: <b>${price}</b>
+                  {pluralize('month', parseInt(months), true)}: <b>${price}</b>
                   {months !== '1' && (
                     <span className="text-sm">
                       {' '}

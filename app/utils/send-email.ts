@@ -202,6 +202,36 @@ export function createModEndedAdEditedEmail({
   };
 }
 
+export function createModAdExpiredEmail({
+  adName,
+  adId,
+  adType,
+  adOwnerName,
+  frontEndUrlBase,
+}: {
+  adName: string;
+  adId: string;
+  adType: AdType;
+  adOwnerName: string;
+  frontEndUrlBase: string;
+}) {
+  const html = `
+    <p>An ad of type <strong>${adType}</strong> has expired.</p>
+    <p>Ad name: ${adName}</p>
+    <p>Ad ID: ${adId}</p>
+    <p>Owner: ${adOwnerName}</p>
+    <p><a href="${frontEndUrlBase}/admin/advertising/${adId}">View in admin panel</a></p>
+  `;
+
+  return {
+    To: 'advertising@yiffer.xyz',
+    From: 'advertising@yiffer.xyz',
+    Subject: 'Ad expired | Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}
+
 export function createNotifyUserNewAdEmail({
   adName,
   adId,
@@ -367,7 +397,7 @@ export function createNotifyUserAdExpiredEmail({
     <p>Send the payment to <b>advertising@yiffer.xyz</b> on Paypal, or use the quick link at <a href="https://www.paypal.com/paypalme/yifferadvertising">paypal.me/yifferadvertising</a>.</p>
     <p>You can pay <b>$${prices[1]}</b> for 1 month, <b>$${prices[4]}</b> for 4 months, or <b>$${prices[12]}</b> for 12 months.</p>
 
-    <p style="margin-top: 1rem;">Once we receive your renewal payment, we will <b>manually activate your ad</b>. This usually takes up to2 days. You will receive an email once your ad is active.</p>
+    <p style="margin-top: 1rem;">Once we receive your renewal payment, we will <b>manually activate your ad</b>. This usually takes up to 2 days. You will receive an email once your ad is active.</p>
 
     <p style="margin-top: 1rem;">You can also make changes to your ad before renewing, via the link above. It will then enter the PENDING state, and you will receive a follow-up email about payment.</p>
 

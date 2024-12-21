@@ -13,9 +13,11 @@ import { getAdById } from '~/route-funcs/get-ads';
 import { differenceInDays, format } from 'date-fns';
 import {
   createModActiveAdChangedEmail,
+  createModAdExpiredEmail,
   createModCorrectionAdEditedEmail,
   createModEndedAdEditedEmail,
   createNotifyUserAdActiveEmail,
+  createNotifyUserAdExpiredEmail,
   createNotifyUserAdNeedsCorrectionEmail,
   createNotifyUserAdReadyForPaymentEmail,
   sendEmail,
@@ -54,8 +56,8 @@ export async function action(args: ActionFunctionArgs) {
     args.context.cloudflare.env.POSTMARK_TOKEN,
     args.context.cloudflare.env.DB,
     body,
-    user.userId,
     isModOrAdmin(user),
+    user.userId,
     body.status,
     body.wasMediaChanged
   );
@@ -70,12 +72,13 @@ export async function editAd(
   postmarkToken: string,
   db: D1Database,
   data: EditAdFormData,
-  userId: number,
   isMod: boolean,
+  userId?: number,
   status?: AdStatus | null,
   wasMediaChanged?: boolean
 ): Promise<ApiError | undefined> {
   if (!isMod) {
+    if (!userId) return { logMessage: 'User ID is required' };
     const isOwner = await isAdOwner(db, userId, data.id);
     if (!isOwner) return { logMessage: 'Not authorized to edit ad' };
     if (status) return { logMessage: 'Not authorized to change status' };
@@ -151,14 +154,19 @@ export async function editAd(
     ${maybeStatusStr} ${maybeActivationStr} ${maybeDeactivationStr}
     WHERE id = ?`;
 
+  const expiryDate =
+    data.expiryDate && maybeDeactivationStr === ''
+      ? format(data.expiryDate, 'yyyy-MM-dd')
+      : null;
+
   const insertParams = [
     data.adName,
     data.link,
     data.mainText ?? null,
     data.secondaryText ?? null,
-    data.notesComments,
+    data.notesComments ?? null,
     data.correctionNote ?? null,
-    data.expiryDate ? format(data.expiryDate, 'yyyy-MM-dd') : null,
+    expiryDate,
   ];
   if (shouldRemoveNeedsCorrectionStatus) insertParams.push('PENDING');
   else if (isEndedAdEdited) insertParams.push('PENDING');
@@ -237,6 +245,30 @@ export async function editAd(
       createModEndedAdEditedEmail({
         adId: existingAd.id,
         adName: existingAd.adName,
+        adType: existingAd.adType,
+        adOwnerName: existingAd.user.username,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
+  if (maybeDeactivationStr !== '') {
+    await sendEmail(
+      createNotifyUserAdExpiredEmail({
+        adName: existingAd.adName,
+        adId: existingAd.id,
+        adType: existingAd.adType,
+        recipientEmail: existingAd.user.email,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+
+    await sendEmail(
+      createModAdExpiredEmail({
+        adName: existingAd.adName,
+        adId: existingAd.id,
         adType: existingAd.adType,
         adOwnerName: existingAd.user.username,
         frontEndUrlBase,
