@@ -71,7 +71,7 @@ export default function Step2MediaType({
           description: ad.description,
           children: (
             <p className="text-sm mt-1">
-              <b>${ad.pricesForMonts[1]}</b> per month
+              <b>${ad.pricesForMonths[1]}</b> per month
             </p>
           ),
         }))}

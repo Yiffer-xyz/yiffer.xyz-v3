@@ -339,7 +339,7 @@ export type AdvertisementInfo = {
     width: number;
     height: number;
   };
-  pricesForMonts: {
+  pricesForMonths: {
     1: number;
     4: number;
     12: number;

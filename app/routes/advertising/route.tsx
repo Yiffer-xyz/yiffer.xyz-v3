@@ -103,7 +103,7 @@ export default function Advertising() {
           text: ad.title,
           value: ad,
           description: ad.description,
-          children: <p>${ad.pricesForMonts[1]} per month</p>,
+          children: <p>${ad.pricesForMonths[1]} per month</p>,
         }))}
         onChange={ad => setSelectedAd(ad)}
         value={selectedAd}
@@ -140,15 +140,15 @@ export default function Advertising() {
 
               <p className="font-semibold mt-3">Prices</p>
               <p>
-                1 month: <b>${selectedAd.pricesForMonts[1]}</b>
+                1 month: <b>${selectedAd.pricesForMonths[1]}</b>
               </p>
               <p>
-                4 months: <b>${selectedAd.pricesForMonts[4] / 4} per month</b> ($
-                {selectedAd.pricesForMonts[4]} total)
+                4 months: <b>${selectedAd.pricesForMonths[4] / 4} per month</b> ($
+                {selectedAd.pricesForMonths[4]} total)
               </p>
               <p>
-                12 months: <b>${selectedAd.pricesForMonts[12] / 12} per month</b> ($
-                {selectedAd.pricesForMonts[12]} total)
+                12 months: <b>${selectedAd.pricesForMonths[12] / 12} per month</b> ($
+                {selectedAd.pricesForMonths[12]} total)
               </p>
 
               <p className="font-semibold mt-3">Requirements</p>

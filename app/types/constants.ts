@@ -57,7 +57,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
       width: COMIC_CARD_MAX_WIDTH,
       height: COMIC_CARD_MAX_HEIGHT,
     },
-    pricesForMonts: {
+    pricesForMonths: {
       1: 14,
       4: 48, // 12 per month
       12: 120, // 10 per month
@@ -82,7 +82,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
       width: 728 * 2,
       height: 90 * 2,
     },
-    pricesForMonts: {
+    pricesForMonths: {
       1: 18,
       4: 64, // 16 per month
       12: 168, // 14 per month
@@ -107,7 +107,7 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
       width: 300 * 2,
       height: 90 * 2,
     },
-    pricesForMonts: {
+    pricesForMonths: {
       1: 20,
       4: 68, // 17 per month
       12: 168, // 14 per month

@@ -18,6 +18,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { MdCheck, MdClose, MdDelete, MdReplay } from 'react-icons/md';
 import { useNavigate } from '@remix-run/react';
 import IconButton from '~/ui-components/Buttons/IconButton';
+import { FullAdPayments } from './FullAdPayments';
 
 type Props = {
   adData: AdvertisementFullData;
@@ -35,7 +36,6 @@ export default function FullAdDisplay({
   const navigate = useNavigate();
   const ad = adData?.ad;
   const [updatedAd, setUpdatedAd] = useState<Advertisement>({ ...ad });
-  const shouldShowPayments = ad && (adData.payments.length > 0 || ad.status === 'ACTIVE');
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -438,18 +438,7 @@ export default function FullAdDisplay({
         </div>
       )}
 
-      {shouldShowPayments && (
-        <div className="mt-6">
-          <h3>Payments</h3>
-          {adData.payments.length > 0 ? (
-            adData.payments.map(payment => (
-              <p key={payment.registeredDate.getTime()}>{JSON.stringify(payment)}</p>
-            ))
-          ) : (
-            <p>There are no registered payments for this ad.</p>
-          )}
-        </div>
-      )}
+      <FullAdPayments adData={adData} showAdminFeatures={!!showAdminFeatures} />
 
       <div className="mt-6">
         <h3>Engagement</h3>

@@ -32,7 +32,7 @@ export default function Admin() {
   const globalContext = useLoaderData<typeof loader>();
 
   return (
-    <div className="pt-16">
+    <div className="pt-16 pb-20">
       <AdminSidebar alwaysShow={isLgUp} delay={!width} />
 
       <div

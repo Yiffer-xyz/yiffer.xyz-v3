@@ -220,7 +220,7 @@ export function createNotifyUserAdReadyForPaymentEmail({
   recipientEmail: string;
   frontEndUrlBase: string;
 }) {
-  const prices = ADVERTISEMENTS.find(a => a.name === adType)?.pricesForMonts;
+  const prices = ADVERTISEMENTS.find(a => a.name === adType)?.pricesForMonths;
   if (!prices) throw new Error('No prices found for ad type');
 
   const html = `
@@ -322,7 +322,7 @@ export function createNotifyUserAdExpiredEmail({
   recipientEmail: string;
   frontEndUrlBase: string;
 }) {
-  const prices = ADVERTISEMENTS.find(a => a.name === adType)?.pricesForMonts;
+  const prices = ADVERTISEMENTS.find(a => a.name === adType)?.pricesForMonths;
   if (!prices) throw new Error('No prices found for ad type');
 
   const html = `

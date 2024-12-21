@@ -72,10 +72,6 @@ export default function AdvertisingAd() {
     setIsEditingAd(true);
   }
 
-  function setUpPayment() {
-    return null;
-  }
-
   function reactivateAd() {
     return null;
   }
@@ -98,12 +94,7 @@ export default function AdvertisingAd() {
       ) : (
         <>
           {!isEditingAd && (
-            <AdTopInfo
-              ad={ad}
-              editAd={editAd}
-              setUpPayment={setUpPayment}
-              reactivateAd={reactivateAd}
-            />
+            <AdTopInfo ad={ad} editAd={editAd} reactivateAd={reactivateAd} />
           )}
 
           {isEditingAd && (
@@ -236,12 +227,10 @@ function AdEditing({
 function AdTopInfo({
   ad,
   editAd,
-  setUpPayment,
   reactivateAd,
 }: {
   ad: Advertisement;
   editAd: () => void;
-  setUpPayment: () => void;
   reactivateAd: () => void;
 }) {
   const [isDeactivating, setIsDeactivating] = useState(false);
