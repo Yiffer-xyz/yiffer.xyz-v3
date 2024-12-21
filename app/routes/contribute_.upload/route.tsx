@@ -259,7 +259,9 @@ export default function Upload() {
         </InfoBox>
       )}
 
-      {step === 'success' && <SuccessMessage isLoggedIn={!!user} />}
+      {step === 'success' && (
+        <SuccessMessage isLoggedIn={!!user} isModOrAdmin={!!user && isModOrAdmin(user)} />
+      )}
 
       {step === 1 && (
         <Step1
