@@ -16,6 +16,7 @@ import topSmallImageDark from '~/assets/ad-examples/topsmall-example-dark.png';
 import bannerImage from '~/assets/ad-examples/banner-example.png';
 import bannerImageDark from '~/assets/ad-examples/banner-example-dark.png';
 import { useUIPreferences } from '~/utils/theme-provider';
+import AdPaymentInstructions from '../advertising_.dashboard_.$adId/AdPaymentInstructions';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -231,6 +232,7 @@ export default function Advertising() {
 
       <h2 className="mt-6">Additional information</h2>
       <div className="flex flex-col gap-4">
+        <AdPaymentInstructions className="mt-1" />
         <p>
           The ads may be suggestive, but no excessive lewdness. Genitals are not strictly
           forbidden, but keep it tasteful. Media including content that is commonly

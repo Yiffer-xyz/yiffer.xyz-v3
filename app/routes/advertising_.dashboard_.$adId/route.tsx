@@ -17,6 +17,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
 import { getFileExtension, type ComicImage } from '~/utils/general';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import AdPaymentInstructions from './AdPaymentInstructions';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -334,7 +335,8 @@ function AdTopInfo({
 
       {ad.status === 'AWAITING PAYMENT' && (
         <>
-          <p>This ad has been approved. TODO Paypal instructions here.</p>
+          <p>This ad has been approved. You can now pay to activate it.</p>
+          <AdPaymentInstructions adType={ad.adType} />
         </>
       )}
 
@@ -342,10 +344,12 @@ function AdTopInfo({
         <>
           <p>This ad is live, and is being shown to users on the site!</p>
           <p>
-            You can make changes to your ad at any time without pausing it. If you do, we
-            will review your edits to make sure everything looks good, and we reserve the
-            right to pause your ad if it no longer meets our requirements or standards.
+            You can make changes to your ad at any time without pausing it. We will review
+            your edit.
           </p>
+          <p>You can pay to extend your ad at any time.</p>
+
+          <AdPaymentInstructions adType={ad.adType} />
 
           <div className="flex flex-row gap-4">
             <Button onClick={editAd} text="Edit ad" className="mt-1" />
@@ -361,9 +365,17 @@ function AdTopInfo({
 
       {ad.status === 'ENDED' && (
         <>
-          <p>This ad has ended. You can reactivate it at any time.</p>
+          <p>This ad has ended. You can immediately pay to reactivate it right now.</p>
 
-          <Button onClick={reactivateAd} text="Reactivate ad" />
+          <AdPaymentInstructions adType={ad.adType} className="mt-1" />
+
+          <p className="mt-1">
+            You can also make changes to your ad, in which case it will enter the{' '}
+            <AdStatusText status="PENDING" /> state and go through the approval process
+            again, through <AdStatusText status="AWAITING PAYMENT" />.
+          </p>
+
+          <Button onClick={editAd} text="Edit ad" className="mt-1" />
         </>
       )}
     </div>

@@ -172,6 +172,36 @@ export function createModCorrectionAdEditedEmail({
   };
 }
 
+export function createModEndedAdEditedEmail({
+  adName,
+  adId,
+  adType,
+  adOwnerName,
+  frontEndUrlBase,
+}: {
+  adName: string;
+  adId: string;
+  adType: AdType;
+  adOwnerName: string;
+  frontEndUrlBase: string;
+}) {
+  const html = `
+    <p>An ad of type <strong>${adType}</strong> marked as ended has been edited.</p>
+    <p>Ad name: ${adName}</p>
+    <p>Ad ID: ${adId}</p>
+    <p>Owner: ${adOwnerName}</p>
+    <p><a href="${frontEndUrlBase}/admin/advertising/${adId}">View in admin panel</a></p>
+  `;
+
+  return {
+    To: 'advertising@yiffer.xyz',
+    From: 'advertising@yiffer.xyz',
+    Subject: 'Ended ad edited | Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}
+
 export function createNotifyUserNewAdEmail({
   adName,
   adId,
@@ -228,14 +258,14 @@ export function createNotifyUserAdReadyForPaymentEmail({
     <p>Ad ID: <b>${adId}</b></p>
     <p><a href="${frontEndUrlBase}/advertising/dashboard/${adId}">View in advertising dashboard</a></p>
 
-    <p style="margin-top: 1rem;">Payment is made via PayPal. <b>Make sure to include the ad ID in the payment description!</b></p>
-    <p>Send the payment to <b>advertising@yiffer.xyz</b> on PayPal, or use the quick link at <a href="https://www.paypal.com/paypalme/yifferadvertising">paypal.me/yifferadvertising</a>.</p>
+    <p style="margin-top: 1rem;">Payment is made via Paypal. <b>Make sure to include the ad ID in the payment description!</b></p>
+    <p>Send the payment to <b>advertising@yiffer.xyz</b> on Paypal, or use the quick link at <a href="https://www.paypal.com/paypalme/yifferadvertising">paypal.me/yifferadvertising</a>.</p>
     <p>You can pay <b>$${prices[1]}</b> for 1 month, <b>$${prices[4]}</b> for 4 months, or <b>$${prices[12]}</b> for 12 months.</p>
 
-    <p style="margin-top: 1rem;">Once we receive your payment, we will <b>manually activate your ad</b>. This usually takes 0-2 days. You will receive an email once your ad is active.</p>
+    <p style="margin-top: 1rem;">Once we receive your payment, we will <b>manually activate your ad</b>. This usually takes up to 2 days. You will receive an email once your ad is active.</p>
 
     <p style="margin-top: 1rem;">
-      If you have multiple ads pending payment, you can pay for all of them at once in a single PayPal transaction, as long as you include all ad IDs in the PayPal description.
+      If you have multiple ads pending payment, you can pay for all of them at once in a single Paypal transaction, as long as you include all ad IDs in the Paypal description.
     </p>
 
     <p style="margin-top: 1rem;">Regards,<br/> Yiffer.xyz</p>
@@ -333,11 +363,11 @@ export function createNotifyUserAdExpiredEmail({
     <p style="margin-top: 1rem;">
       You can renew your ad at any time:
     </p>
-    <p style="margin-top: 1rem;">Payment is made via PayPal. <b>Make sure to include the ad ID in the payment description!</b></p>
-    <p>Send the payment to <b>advertising@yiffer.xyz</b> on PayPal, or use the quick link at <a href="https://www.paypal.com/paypalme/yifferadvertising">paypal.me/yifferadvertising</a>.</p>
+    <p style="margin-top: 1rem;">Payment is made via Paypal. <b>Make sure to include the ad ID in the payment description!</b></p>
+    <p>Send the payment to <b>advertising@yiffer.xyz</b> on Paypal, or use the quick link at <a href="https://www.paypal.com/paypalme/yifferadvertising">paypal.me/yifferadvertising</a>.</p>
     <p>You can pay <b>$${prices[1]}</b> for 1 month, <b>$${prices[4]}</b> for 4 months, or <b>$${prices[12]}</b> for 12 months.</p>
 
-    <p style="margin-top: 1rem;">Once we receive your renewal payment, we will <b>manually activate your ad</b>. This usually takes 0-2 days. You will receive an email once your ad is active.</p>
+    <p style="margin-top: 1rem;">Once we receive your renewal payment, we will <b>manually activate your ad</b>. This usually takes up to2 days. You will receive an email once your ad is active.</p>
 
     <p style="margin-top: 1rem;">You can also make changes to your ad before renewing, via the link above. It will then enter the PENDING state, and you will receive a follow-up email about payment.</p>
 

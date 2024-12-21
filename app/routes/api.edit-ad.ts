@@ -14,6 +14,7 @@ import { differenceInDays, format } from 'date-fns';
 import {
   createModActiveAdChangedEmail,
   createModCorrectionAdEditedEmail,
+  createModEndedAdEditedEmail,
   createNotifyUserAdActiveEmail,
   createNotifyUserAdNeedsCorrectionEmail,
   createNotifyUserAdReadyForPaymentEmail,
@@ -98,6 +99,8 @@ export async function editAd(
   const shouldRemoveNeedsCorrectionStatus =
     !isMod && existingAd.status === 'NEEDS CORRECTION' && wasAdContentChanged;
 
+  const isEndedAdEdited = existingAd.status === 'ENDED' && wasAdContentChanged;
+
   if (shouldNotifyActiveAdChanged) {
     let changedText = '';
     if (wasMediaChanged) {
@@ -125,8 +128,10 @@ export async function editAd(
     );
   }
 
-  const maybeStatusStr =
-    status || shouldRemoveNeedsCorrectionStatus ? `, status = ?` : '';
+  let maybeStatusStr = '';
+  if (status || shouldRemoveNeedsCorrectionStatus || isEndedAdEdited) {
+    maybeStatusStr = `, status = ?`;
+  }
 
   const maybeActivationStr =
     status === 'ACTIVE' ? `, lastActivationDate = CURRENT_TIMESTAMP` : '';
@@ -156,6 +161,7 @@ export async function editAd(
     data.expiryDate ? format(data.expiryDate, 'yyyy-MM-dd') : null,
   ];
   if (shouldRemoveNeedsCorrectionStatus) insertParams.push('PENDING');
+  else if (isEndedAdEdited) insertParams.push('PENDING');
   else if (status) insertParams.push(status);
   insertParams.push(data.id);
 
@@ -220,6 +226,19 @@ export async function editAd(
         adName: existingAd.adName,
         adOwnerName: existingAd.user.username,
         adType: existingAd.adType,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
+  if (isEndedAdEdited) {
+    await sendEmail(
+      createModEndedAdEditedEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        adType: existingAd.adType,
+        adOwnerName: existingAd.user.username,
         frontEndUrlBase,
       }),
       postmarkToken

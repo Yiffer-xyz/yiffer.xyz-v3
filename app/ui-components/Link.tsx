@@ -7,6 +7,7 @@ type LinkProps = {
   newTab?: boolean;
   isInsideParagraph?: boolean;
   color?: 'link' | 'text' | 'white';
+  bold?: boolean;
   Icon?: React.ElementType;
   IconRight?: React.ElementType;
   showRightArrow?: boolean;
@@ -20,6 +21,7 @@ export default function Link({
   newTab,
   isInsideParagraph = false,
   color = 'link',
+  bold = true,
   Icon,
   IconRight,
   iconMargin = 4,
@@ -39,7 +41,7 @@ export default function Link({
   }
 
   const linkClass = `
-    w-fit h-fit font-semibold bg-gradient-to-r
+    w-fit h-fit ${bold ? 'font-semibold' : ''} bg-gradient-to-r
     ${colorClass} 
     bg-no-repeat focus:no-underline cursor-pointer
     ${className}

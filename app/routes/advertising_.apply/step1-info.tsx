@@ -1,6 +1,7 @@
 import AdStatusText from '~/ui-components/Advertising/AdStatusText';
 import { MdArrowForward } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
+import AdPaymentInstructions from '../advertising_.dashboard_.$adId/AdPaymentInstructions';
 
 export default function Step1Info({ onNext }: { onNext: () => void }) {
   return (
@@ -13,6 +14,8 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
           If you haven't already, make sure to read the general info at the bottom of the
           previous page.
         </p>
+
+        <AdPaymentInstructions className="mt-1" />
 
         <p className="font-bold mt-2 -mb-2">Free trial</p>
         <p>
@@ -41,7 +44,7 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         <p>
           <b>3:</b> If your ad is accepted, it will receive the{' '}
           <AdStatusText status="AWAITING PAYMENT" /> status, and you will receive an email
-          notification. Payment happens via PayPal at this point.
+          notification. Payment happens via Paypal at this point.
         </p>
         <p>
           <b>4:</b> Once payment is registered, your ad will receive the{' '}
