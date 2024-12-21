@@ -41,21 +41,19 @@ export default function Step1Info({ onNext }: { onNext: () => void }) {
         <p>
           <b>3:</b> If your ad is accepted, it will receive the{' '}
           <AdStatusText status="AWAITING PAYMENT" /> status, and you will receive an email
-          notification.{' '}
+          notification. Payment happens via PayPal at this point.
         </p>
         <p>
-          <b>4:</b> You can then go to the advertising dashboard and set up recurring
-          payments for your ad via credit card. Once completed, your ad will receive the{' '}
+          <b>4:</b> Once payment is registered, your ad will receive the{' '}
           <AdStatusText status="ACTIVE" /> status. You can make changes to your ad while
-          it is active. Until the subscription is cancelled, your ad will renew
-          automatically every month.
+          it is active.
         </p>
         <p>
-          <b>5:</b> To cancel your ad, simply go to the advertising dashboard and cancel
-          the subscription.
+          <b>5:</b> You can pay again at any point before your ad expires, for either 1,
+          4, or 12 months. We will extend the ad's expiry date accordingly.
         </p>
         <p>
-          <b>6:</b> You can reactivate canceled ads at any time from the advertising
+          <b>6:</b> You can reactivate expired ads at any time from the advertising
           dashboard.
         </p>
 

@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { addDays, addMonths, format, isSameDay } from 'date-fns';
 import { useMemo, useState } from 'react';
 import AdClickStats from '~/routes/advertising_.dashboard_.$adId/AdClickStats';
 import type { EditAdFormData } from '~/routes/api.edit-ad';
@@ -15,8 +15,9 @@ import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { capitalizeString, randomString } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { MdCheck, MdClose, MdDelete } from 'react-icons/md';
+import { MdCheck, MdClose, MdDelete, MdReplay } from 'react-icons/md';
 import { useNavigate } from '@remix-run/react';
+import IconButton from '~/ui-components/Buttons/IconButton';
 
 type Props = {
   adData: AdvertisementFullData;
@@ -38,8 +39,21 @@ export default function FullAdDisplay({
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const isChanged = useMemo(() => {
-    return updatedAd.link !== ad.link || updatedAd.status !== ad.status;
+    const isExpiryDateChanged =
+      (!!updatedAd.expiryDate && !ad.expiryDate) ||
+      (!updatedAd.expiryDate && !!ad.expiryDate) ||
+      (updatedAd.expiryDate &&
+        ad.expiryDate &&
+        !isSameDay(updatedAd.expiryDate, ad.expiryDate));
+
+    return (
+      updatedAd.link !== ad.link ||
+      updatedAd.status !== ad.status ||
+      updatedAd.correctionNote !== ad.correctionNote ||
+      isExpiryDateChanged
+    );
   }, [updatedAd, ad]);
 
   const queryStr = `?q=${randomString(3)}`;
@@ -132,6 +146,11 @@ export default function FullAdDisplay({
       secondaryText: updatedAd.secondaryText ?? null,
       notesComments: updatedAd.advertiserNotes ?? null,
       status: updatedAd.status !== ad.status ? updatedAd.status : null,
+      correctionNote:
+        updatedAd.status === 'NEEDS CORRECTION' && updatedAd.correctionNote
+          ? updatedAd.correctionNote
+          : null,
+      expiryDate: updatedAd.expiryDate ? updatedAd.expiryDate : null,
     };
 
     updateAdFetcher.submit({ body: JSON.stringify(body) });
@@ -155,6 +174,12 @@ export default function FullAdDisplay({
     const formData = new FormData();
     formData.append('adId', ad.id);
     markVideoAsConvertedFetcher.submit(formData);
+  }
+
+  function addMonthsToExpiryDate(months: number) {
+    let date = updatedAd.expiryDate ?? addDays(new Date(), 1);
+    date = addMonths(date, months);
+    setUpdatedAd({ ...updatedAd, expiryDate: date });
   }
 
   return (
@@ -227,10 +252,75 @@ export default function FullAdDisplay({
                           setUpdatedAd({ ...updatedAd, status: newStatus })
                         }
                       />
+
+                      {updatedAd.status === 'NEEDS CORRECTION' && (
+                        <TextInput
+                          value={updatedAd.correctionNote ?? ''}
+                          name="correctionNote"
+                          label="Correction note"
+                          className="mt-4"
+                          onChange={newText =>
+                            setUpdatedAd({ ...updatedAd, correctionNote: newText })
+                          }
+                        />
+                      )}
                     </>
                   ) : (
-                    <AdStatusText status={ad.status} />
+                    <>
+                      <AdStatusText status={ad.status} />
+                      {ad.status === 'NEEDS CORRECTION' && ad.correctionNote && (
+                        <p>{ad.correctionNote}</p>
+                      )}
+                    </>
                   )}
+                </TableCell>
+              </TableRow>
+            )}
+            {ad.expiryDate && (
+              <TableRow>
+                <TableCell className="font-semibold">Expires</TableCell>
+                <TableCell>{format(ad.expiryDate, 'PPP')}</TableCell>
+              </TableRow>
+            )}
+            {isEditing && (
+              <TableRow>
+                <TableCell className="font-semibold">Expires</TableCell>
+                <TableCell>
+                  <p className="mb-1">
+                    {updatedAd.expiryDate ? format(updatedAd.expiryDate, 'PPP') : '-'}
+                  </p>
+                  <div className="flex flex-row gap-2">
+                    <Button
+                      text="+1M"
+                      onClick={() => addMonthsToExpiryDate(1)}
+                      variant="outlined"
+                    />
+                    <Button
+                      text="+4M"
+                      onClick={() => addMonthsToExpiryDate(4)}
+                      variant="outlined"
+                    />
+                    <Button
+                      text="+12M"
+                      onClick={() => addMonthsToExpiryDate(12)}
+                      variant="outlined"
+                    />
+                    <IconButton
+                      icon={MdReplay}
+                      onClick={() =>
+                        setUpdatedAd({ ...updatedAd, expiryDate: ad.expiryDate })
+                      }
+                      variant="naked"
+                    />
+                    <IconButton
+                      icon={MdClose}
+                      onClick={() =>
+                        setUpdatedAd({ ...updatedAd, expiryDate: undefined })
+                      }
+                      variant="naked"
+                      className="-ml-2"
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -264,12 +354,6 @@ export default function FullAdDisplay({
               <TableRow>
                 <TableCell className="font-semibold">Secondary text</TableCell>
                 <TableCell>{ad.secondaryText}</TableCell>
-              </TableRow>
-            )}
-            {ad.expiryDate && (
-              <TableRow>
-                <TableCell className="font-semibold">Expiry date</TableCell>
-                <TableCell>{format(ad.expiryDate, 'PPP')}</TableCell>
               </TableRow>
             )}
             <TableRow>

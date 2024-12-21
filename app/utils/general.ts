@@ -132,9 +132,21 @@ export function validateAdData(data: SubmitAdFormData | EditAdFormData): {
     }
   }
 
+  if (isAdEditAdData(data)) {
+    if (data.status === 'ACTIVE' && !data.expiryDate) {
+      return { error: 'Expiry date must be set for active ads' };
+    }
+  }
+
   return { error: null };
 }
 
 export function areArraysEqual<T>(arr1: T[], arr2: T[]): boolean {
   return arr1.length === arr2.length && arr1.every((val, i) => val === arr2[i]);
+}
+
+export function isAdEditAdData(
+  data: SubmitAdFormData | EditAdFormData
+): data is EditAdFormData {
+  return !!(data as EditAdFormData).id;
 }

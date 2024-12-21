@@ -10,8 +10,15 @@ import {
 } from '~/utils/request-helpers';
 import isAdOwner from '~/route-funcs/is-ad-owner';
 import { getAdById } from '~/route-funcs/get-ads';
-import { differenceInDays } from 'date-fns';
-import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
+import { differenceInDays, format } from 'date-fns';
+import {
+  createModActiveAdChangedEmail,
+  createModCorrectionAdEditedEmail,
+  createNotifyUserAdActiveEmail,
+  createNotifyUserAdNeedsCorrectionEmail,
+  createNotifyUserAdReadyForPaymentEmail,
+  sendEmail,
+} from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 
@@ -27,6 +34,8 @@ export type EditAdFormData = {
   notesComments?: string | null;
   status?: AdStatus | null;
   wasMediaChanged?: boolean;
+  correctionNote?: string | null;
+  expiryDate?: Date | null;
 };
 
 export async function action(args: ActionFunctionArgs) {
@@ -77,36 +86,50 @@ export async function editAd(
 
   const existingAd = adRes.result.ad;
 
-  const shouldPutInActiveChangedState =
-    existingAd.status === 'ACTIVE' &&
-    !isMod &&
-    (wasMediaChanged ||
-      existingAd.link !== data.link ||
-      existingAd.mainText !== data.mainText ||
-      existingAd.secondaryText !== data.secondaryText);
+  const wasAdContentChanged =
+    wasMediaChanged ||
+    existingAd.link !== data.link ||
+    existingAd.mainText !== data.mainText ||
+    existingAd.secondaryText !== data.secondaryText;
 
-  if (shouldPutInActiveChangedState) {
+  const shouldNotifyActiveAdChanged =
+    existingAd.status === 'ACTIVE' && !isMod && wasAdContentChanged;
+
+  const shouldRemoveNeedsCorrectionStatus =
+    !isMod && existingAd.status === 'NEEDS CORRECTION' && wasAdContentChanged;
+
+  if (shouldNotifyActiveAdChanged) {
+    let changedText = '';
+    if (wasMediaChanged) {
+      changedText += 'Media was changed. ';
+    }
+    if (existingAd.link !== data.link) {
+      changedText += 'Link was changed. ';
+    }
+    if (existingAd.mainText !== data.mainText) {
+      changedText += 'Main text was changed. ';
+    }
+    if (existingAd.secondaryText !== data.secondaryText) {
+      changedText += 'Secondary text was changed. ';
+    }
     await sendEmail(
-      createAdStatusChangedEmail({
+      createModActiveAdChangedEmail({
         adId: existingAd.id,
         adName: existingAd.adName,
         adOwnerName: existingAd.user.username,
         adType: data.adType,
-        newAdStatus: 'ACTIVE but CHANGED',
+        changedText,
         frontEndUrlBase,
       }),
       postmarkToken
     );
   }
 
-  const maybeStatusStr = status ? `, status = ?` : '';
+  const maybeStatusStr =
+    status || shouldRemoveNeedsCorrectionStatus ? `, status = ?` : '';
 
   const maybeActivationStr =
     status === 'ACTIVE' ? `, lastActivationDate = CURRENT_TIMESTAMP` : '';
-
-  const maybeActiveChangedStr = shouldPutInActiveChangedState
-    ? ', isChangedWhileActive = 1'
-    : '';
 
   let maybeDeactivationStr = '';
   if (status === 'ENDED') {
@@ -118,8 +141,9 @@ export async function editAd(
   }
 
   const insertQuery = `UPDATE advertisement 
-    SET adName=?, link=?, mainText=?, secondaryText=?, advertiserNotes=?
-    ${maybeStatusStr} ${maybeActivationStr} ${maybeActiveChangedStr} ${maybeDeactivationStr}
+    SET adName=?, link=?, mainText=?, secondaryText=?, advertiserNotes=?, correctionNote=?,
+    expiryDate=?
+    ${maybeStatusStr} ${maybeActivationStr} ${maybeDeactivationStr}
     WHERE id = ?`;
 
   const insertParams = [
@@ -128,12 +152,77 @@ export async function editAd(
     data.mainText ?? null,
     data.secondaryText ?? null,
     data.notesComments,
+    data.correctionNote ?? null,
+    data.expiryDate ? format(data.expiryDate, 'yyyy-MM-dd') : null,
   ];
-  if (status) insertParams.push(status);
+  if (shouldRemoveNeedsCorrectionStatus) insertParams.push('PENDING');
+  else if (status) insertParams.push(status);
   insertParams.push(data.id);
 
   const dbRes = await queryDbExec(db, insertQuery, insertParams);
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating ad');
+  }
+
+  if (isMod && status === 'ACTIVE' && existingAd.status !== 'ACTIVE') {
+    await sendEmail(
+      createNotifyUserAdActiveEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        expiryDate: data.expiryDate
+          ? format(data.expiryDate, 'PPP')
+          : '((no expiry date set))',
+        recipientEmail: existingAd.user.email,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
+  if (
+    isMod &&
+    status === 'AWAITING PAYMENT' &&
+    existingAd.status !== 'AWAITING PAYMENT'
+  ) {
+    await sendEmail(
+      createNotifyUserAdReadyForPaymentEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        adType: existingAd.adType,
+        recipientEmail: existingAd.user.email,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
+  if (
+    isMod &&
+    status === 'NEEDS CORRECTION' &&
+    existingAd.status !== 'NEEDS CORRECTION'
+  ) {
+    await sendEmail(
+      createNotifyUserAdNeedsCorrectionEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        correctionNote: data.correctionNote ?? 'No correction note provided',
+        recipientEmail: existingAd.user.email,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
+  }
+
+  if (shouldRemoveNeedsCorrectionStatus) {
+    await sendEmail(
+      createModCorrectionAdEditedEmail({
+        adId: existingAd.id,
+        adName: existingAd.adName,
+        adOwnerName: existingAd.user.username,
+        adType: existingAd.adType,
+        frontEndUrlBase,
+      }),
+      postmarkToken
+    );
   }
 }

@@ -143,7 +143,7 @@ export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCar
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <div className="leading-5 pt-0.5 pb-1">
           {comic.isBookmarked && toggleBookmark && (
-            <button className="pr-1.5 group" onClick={() => toggleBookmark(comic.id)}>
+            <button className="pr-1.5 group" onClick={toggleBookmark}>
               <FaBookmark
                 size={14}
                 className={`inline-block transition-all text-theme1-primary dark:text-theme1-darker 

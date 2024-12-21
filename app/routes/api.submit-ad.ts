@@ -9,9 +9,14 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
-import { createAdStatusChangedEmail, sendEmail } from '~/utils/send-email';
+import {
+  createModNewAdEmail,
+  createNotifyUserNewAdEmail,
+  sendEmail,
+} from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { getUserById } from '~/route-funcs/get-user';
 
 export { noGetRoute as loader };
 
@@ -60,7 +65,10 @@ export async function submitAd(
   data: SubmitAdFormData,
   user: UserSession
 ): Promise<ApiError | undefined> {
-  const insertQuery = `INSERT INTO advertisement 
+  const fullUser = await getUserById(db, user.userId);
+  if (fullUser.err) return fullUser.err;
+
+  const insertQuery = `INSERT INTO advertisement
     (id, adType, mediaType, adName, link, mainText, secondaryText, userId, isAnimated, advertiserNotes, freeTrialState, videoSpecificFileType)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
 
@@ -85,12 +93,22 @@ export async function submitAd(
   }
 
   await sendEmail(
-    createAdStatusChangedEmail({
+    createModNewAdEmail({
       adId: data.id,
       adName: data.adName,
       adOwnerName: user.username,
       adType: data.adType,
-      newAdStatus: 'PENDING',
+      frontEndUrlBase,
+    }),
+    postmarkToken
+  );
+
+  await sendEmail(
+    createNotifyUserNewAdEmail({
+      adName: data.adName,
+      adId: data.id,
+      adType: data.adType,
+      recipientEmail: fullUser.result.email,
       frontEndUrlBase,
     }),
     postmarkToken

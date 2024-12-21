@@ -345,12 +345,7 @@ function AdTopInfo({
 
       {ad.status === 'AWAITING PAYMENT' && (
         <>
-          <p>
-            This ad has been approved. Once you set up recurring payments, it will
-            immediately be activated.
-          </p>
-
-          <Button onClick={setUpPayment} text="Set up payments" />
+          <p>This ad has been approved. TODO Paypal instructions here.</p>
         </>
       )}
 

@@ -6,6 +6,7 @@ import { capitalizeFirstRestLower } from '~/utils/general';
 import AdComicCard from './AdComicCard';
 import { useMemo } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
+import { differenceInDays, format } from 'date-fns';
 
 export default function AdListCard({
   ad,
@@ -18,6 +19,15 @@ export default function AdListCard({
   frontendAdsPath: string;
   showFullAdminData?: boolean;
 }) {
+  const activeDaysStr = useMemo(() => {
+    if (!ad.numDaysActive) return '';
+    if (Math.abs(ad.numDaysActive - ad.currentDaysActive) > 2) {
+      return `${ad.numDaysActive} active days (${ad.currentDaysActive + 1} current)`;
+    }
+
+    return `${ad.currentDaysActive + 1} active days`;
+  }, [ad.numDaysActive, ad.currentDaysActive]);
+
   const bgColor = useMemo(() => {
     if (ad.videoSpecificFileType && showFullAdminData) return 'bg-red-moreTrans';
 
@@ -38,7 +48,7 @@ export default function AdListCard({
         <div className="w-full flex flex-row justify-between items-center gap-6">
           <Link
             href={`${frontendAdsPath}/${ad.id}`}
-            text={`${ad.adName}`}
+            text={`${ad.adName} (${ad.id})`}
             showRightArrow
             className="whitespace-pre-wrap"
           />
@@ -56,13 +66,15 @@ export default function AdListCard({
           <p className="text-sm">
             {adTypeInfo?.shortTitle} ・ {capitalizeFirstRestLower(ad.mediaType)}
           </p>
-          <p className="text-sm">
-            {ad.numDaysActive} active days
-            {ad.numDaysActive !== ad.currentDaysActive
-              ? ` (${ad.currentDaysActive} current)`
-              : ''}
-          </p>
+          {ad.numDaysActive > 0 && <p className="text-sm">{activeDaysStr}</p>}
         </div>
+
+        {ad.expiryDate && (
+          <p className="text-sm">
+            Expires {format(ad.expiryDate, 'PPP')} (in{' '}
+            {differenceInDays(ad.expiryDate, new Date())} days)
+          </p>
+        )}
 
         {ad.clicks > 0 && showFullAdminData && (
           <p className="text-sm">
