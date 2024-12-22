@@ -29,6 +29,7 @@
     "isbot": "^4.1.0",
     "lodash.debounce": "^4.0.8",
     "pluralize": "^8.0.0",
+    "posthog-js": "^1.203.1",
     "react": "^18.2.0",
     "react-calendar": "^5.0.0",
     "react-cropper": "^2.3.3",

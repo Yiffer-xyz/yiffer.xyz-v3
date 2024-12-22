@@ -16,3 +16,9 @@ Sentry.init({
 startTransition(() => {
   hydrateRoot(document, <RemixBrowser />);
 });
+
+declare global {
+  interface Window {
+    shouldCaptureUser: boolean;
+  }
+}

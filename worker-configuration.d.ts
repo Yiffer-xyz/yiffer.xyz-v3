@@ -14,4 +14,6 @@ interface Env {
   DB: D1Database;
   CRON_KEY: string;
   GA_TRACKING_ID: string;
+  POSTHOG_API_KEY: string;
+  POSTHOG_HOST: string;
 }

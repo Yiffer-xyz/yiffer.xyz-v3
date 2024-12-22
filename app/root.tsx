@@ -36,6 +36,7 @@ import './main.css';
 import { getUserSession } from './utils/auth.server';
 import { YifferErrorBoundary } from './utils/error';
 import { useEffect, useMemo } from 'react';
+import posthog from 'posthog-js';
 
 import * as gtag from './utils/gtag.client';
 
@@ -79,6 +80,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     user: userSession,
     frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
     gaTrackingId,
+    posthogApiKey: context.cloudflare.env.POSTHOG_API_KEY,
+    posthogHost: context.cloudflare.env.POSTHOG_HOST,
   };
 
   return data;
@@ -103,29 +106,36 @@ function App() {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <html lang="en" className={clsx(theme)}>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body
-        className={`dark:bg-bgDark text-text-light dark:text-text-dark ${
-          isLoading ? 'opacity-70 dark:opacity-80' : ''
-        }`}
-      >
-        {!data.gaTrackingId ? null : (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${data.gaTrackingId}`}
-            />
-            <script
-              async
-              id="gtag-init"
-              dangerouslySetInnerHTML={{
-                __html: `
+    <>
+      <PosthogInit
+        apiKey={data.posthogApiKey}
+        host={data.posthogHost}
+        userSession={data.user}
+      />
+
+      <html lang="en" className={clsx(theme)}>
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <Meta />
+          <Links />
+        </head>
+        <body
+          className={`dark:bg-bgDark text-text-light dark:text-text-dark ${
+            isLoading ? 'opacity-70 dark:opacity-80' : ''
+          }`}
+        >
+          {!data.gaTrackingId ? null : (
+            <>
+              <script
+                async
+                src={`https://www.googletagmanager.com/gtag/js?id=${data.gaTrackingId}`}
+              />
+              <script
+                async
+                id="gtag-init"
+                dangerouslySetInnerHTML={{
+                  __html: `
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
@@ -134,19 +144,20 @@ function App() {
                   page_path: window.location.pathname,
                 });
               `,
-              }}
-            />
-          </>
-        )}
+                }}
+              />
+            </>
+          )}
 
-        <Layout user={data.user} gaTrackingId={data.gaTrackingId}>
-          <Outlet />
-        </Layout>
-        <ScrollRestoration />
-        <ToastContainer />
-        <Scripts />
-      </body>
-    </html>
+          <Layout user={data.user} gaTrackingId={data.gaTrackingId}>
+            <Outlet />
+          </Layout>
+          <ScrollRestoration />
+          <ToastContainer />
+          <Scripts />
+        </body>
+      </html>
+    </>
   );
 }
 
@@ -167,7 +178,6 @@ function Layout({
 
   useEffect(() => {
     if (gaTrackingId?.length) {
-      console.log('pageview', location.pathname, gaTrackingId);
       gtag.pageview(location.pathname, gaTrackingId);
     }
   }, [location, gaTrackingId]);
@@ -281,4 +291,30 @@ export function ErrorBoundary() {
       </body>
     </html>
   );
+}
+
+function PosthogInit({
+  apiKey,
+  host,
+  userSession,
+}: {
+  apiKey: string;
+  host: string;
+  userSession: UserSession | null;
+}) {
+  useEffect(() => {
+    if (!apiKey || !host) return;
+    posthog.init(apiKey, {
+      api_host: host,
+      person_profiles: 'always',
+      debug: true,
+    });
+    if (userSession) {
+      posthog.identify(userSession.userId.toString(), {
+        username: userSession.username,
+      });
+    }
+  }, [apiKey, host, userSession]);
+
+  return null;
 }

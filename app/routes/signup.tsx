@@ -89,6 +89,7 @@ export default function Signup() {
               isLoading={fetcher.isLoading}
               isSubmit
               onClick={e => {
+                window.shouldCaptureUser = true;
                 e.preventDefault();
                 fetcher.submit({
                   username,

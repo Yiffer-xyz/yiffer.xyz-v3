@@ -6,6 +6,8 @@ import type { Blog } from '~/types/types';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { authLoader } from '~/utils/loaders';
 import { colors } from 'tailwind.config';
+import { useEffect } from 'react';
+import posthog from 'posthog-js';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export { authLoader as loader };
@@ -18,6 +20,17 @@ export default function Index() {
     url: '/api/latest-blog',
     fetchGetOnLoad: true,
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (window.shouldCaptureUser && userSession) {
+        window.shouldCaptureUser = false;
+        posthog.identify(userSession.userId.toString(), {
+          username: userSession.username,
+        });
+      }
+    }
+  }, [userSession]);
 
   return (
     <div className="pb-8">
