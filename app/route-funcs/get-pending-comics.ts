@@ -12,7 +12,8 @@ type DbPendingComic = Omit<PendingComic, 'timestamp' | 'publishDate'> & {
 export async function getPendingComics(
   db: D1Database,
   scheduledOnly?: boolean,
-  topAmount?: number
+  topAmount?: number,
+  orderByPublishingQueuePos?: boolean
 ): ResultOrErrorPromise<PendingComic[]> {
   const pendingComicsQuery = `
     SELECT Q2.*, user.username AS scheduleModName FROM (
@@ -48,7 +49,7 @@ export async function getPendingComics(
       WHERE publishStatus = 'pending' OR publishStatus = 'scheduled' OR publishStatus = 'published'
     ) AS Q2
     LEFT JOIN user ON (Q2.scheduleModId = user.id)
-    ORDER BY timestamp ASC
+    ORDER BY ${orderByPublishingQueuePos ? 'publishingQueuePos ASC' : 'timestamp ASC'}
     ${topAmount ? `LIMIT ${topAmount}` : ''}
   `;
 

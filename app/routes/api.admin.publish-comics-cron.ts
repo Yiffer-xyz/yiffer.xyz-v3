@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { create400Json, processApiError } from '~/utils/request-helpers';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { publishComic } from './api.admin.publish-comic';
+import { recalculatePublishingQueue } from '~/route-funcs/publishing-queue';
 
 // To be called via a cron job from a Cloudfare worker
 // Authorizes via x-yiffer-api-key header that the worker has as a secret
@@ -19,7 +20,7 @@ export async function loader(args: LoaderFunctionArgs) {
     );
   }
 
-  const dbRes = await getPendingComics(db, true, schedulePerDay);
+  const dbRes = await getPendingComics(db, true, schedulePerDay, true);
   if (dbRes.err) {
     return processApiError('Error in /publish-comics-cron', dbRes.err);
   }
@@ -29,6 +30,10 @@ export async function loader(args: LoaderFunctionArgs) {
     if (err) {
       return processApiError(`Error in /publish-comics-cron, failed publishing`, err);
     }
+  }
+
+  if (dbRes.result.length > 0) {
+    await recalculatePublishingQueue(db);
   }
 
   return new Response(
