@@ -278,7 +278,8 @@ async function getTopScores(
   const dbRes = await queryDb<ContributionPointsEntry[]>(
     db,
     query,
-    yearMonth ? [yearMonth] : undefined
+    yearMonth ? [yearMonth] : undefined,
+    'Contrib scoreboard, top scores'
   );
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting top score list', {

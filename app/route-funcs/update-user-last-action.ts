@@ -14,5 +14,5 @@ export default async function updateUserLastActionTime({
 }) {
   const column = userId ? 'id' : 'username';
   const query = `UPDATE user SET lastActionTimestamp = CURRENT_TIMESTAMP WHERE ${column} = ?`;
-  await queryDbExec(db, query, [userId ?? username]);
+  await queryDbExec(db, query, [userId ?? username], 'User last action update');
 }

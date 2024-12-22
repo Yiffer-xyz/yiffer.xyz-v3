@@ -56,7 +56,12 @@ export async function submitComicProblem(
 
   const insertQuery = `INSERT INTO comicproblem (comicId, description, problemCategory, userId, userIP) VALUES (?, ?, ?, ?, ?)`;
   const insertParams = [comicId, problemDescription, problemTitle, userId, userIP];
-  const dbRes = await queryDbExec(db, insertQuery, insertParams);
+  const dbRes = await queryDbExec(
+    db,
+    insertQuery,
+    insertParams,
+    'Comic problem submission'
+  );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error inserting comic problem', logCtx);
   }

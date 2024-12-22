@@ -172,18 +172,22 @@ export async function loader(args: LoaderFunctionArgs) {
     {
       query: yourContributedComicsQuery,
       params: [user.userId],
+      queryName: 'Your contributions, comics',
     },
     {
       query: yourTagSuggestionsQuery,
       params: [user.userId],
+      queryName: 'Your contributions, tag suggestions',
     },
     {
       query: yourComicProblemsQuery,
       params: [user.userId],
+      queryName: 'Your contributions, comic problems',
     },
     {
       query: yourComicSuggestionsQuery,
       params: [user.userId],
+      queryName: 'Your contributions, comic suggestions',
     },
   ];
 

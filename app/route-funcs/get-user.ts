@@ -30,10 +30,12 @@ export async function searchUsers(
     WHERE username LIKE ? OR email LIKE ?
   `;
 
-  const dbRes = await queryDb<DbUser[]>(db, searchQuery, [
-    `%${searchText}%`,
-    `%${searchText}%`,
-  ]);
+  const dbRes = await queryDb<DbUser[]>(
+    db,
+    searchQuery,
+    [`%${searchText}%`, `%${searchText}%`],
+    'User search'
+  );
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error in user search', { searchText });
   }
@@ -54,7 +56,7 @@ export async function getUserById(
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<DbUser[]>(db, userQuery, [userId]);
+  const dbRes = await queryDb<DbUser[]>(db, userQuery, [userId], 'User by ID');
   if (dbRes.isError || !dbRes.result || dbRes.result.length === 0) {
     return makeDbErrObj(dbRes, 'Error getting user', { userId });
   }
@@ -76,7 +78,7 @@ export async function getUserByEmail(
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<DbUser[]>(db, userQuery, [email]);
+  const dbRes = await queryDb<DbUser[]>(db, userQuery, [email], 'User by email');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting user', { email });
   }

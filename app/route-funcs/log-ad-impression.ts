@@ -20,7 +20,7 @@ export async function logAdImpression({
   const date = new Date().toISOString().split('T')[0];
   const params = [adId, date, 1];
 
-  const res = await queryDbExec(db, query, params);
+  const res = await queryDbExec(db, query, params, 'Ad impression logging');
 
   if (res.isError) {
     return makeDbErr(res, 'Could not log ad impression', logCtx);

@@ -13,7 +13,7 @@ import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import type { SimilarComicResponse } from '../api.search-similarly-named-comic';
 import type { QueryWithParams } from '~/utils/database-facade';
-import { queryDb, queryDbMultiple } from '~/utils/database-facade';
+import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   create400Json,
@@ -442,7 +442,12 @@ export async function action(args: ActionFunctionArgs) {
     userIp,
   ];
 
-  const dbRes = await queryDb(args.context.cloudflare.env.DB, insertQuery, insertParams);
+  const dbRes = await queryDbExec(
+    args.context.cloudflare.env.DB,
+    insertQuery,
+    insertParams,
+    'Suggest comic'
+  );
 
   if (dbRes.isError) {
     return processApiError(undefined, {
@@ -463,10 +468,12 @@ async function checkForExistingComicOrSuggestion(
     {
       query: `SELECT COUNT(*) AS count FROM comicsuggestion WHERE Name = ?`,
       params: [comicName],
+      queryName: 'Comic suggestion check',
     },
     {
       query: 'SELECT COUNT(*) AS count FROM comic WHERE Name = ?',
       params: [comicName],
+      queryName: 'Comic suggestion comic check',
     },
   ];
 

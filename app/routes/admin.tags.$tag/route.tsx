@@ -190,7 +190,12 @@ export async function action(args: ActionFunctionArgs) {
     const fixedName = formNewName.toString().trim().toLowerCase();
     const query = 'UPDATE keyword SET keywordName = ? WHERE id = ?';
     const params = [fixedName, tagId];
-    const dbRes = await queryDbExec(args.context.cloudflare.env.DB, query, params);
+    const dbRes = await queryDbExec(
+      args.context.cloudflare.env.DB,
+      query,
+      params,
+      'Tag name update'
+    );
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error updating tag name', { formNewName });
     }

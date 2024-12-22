@@ -188,10 +188,11 @@ export async function getComicsPaginated({
   `;
 
   const queries = [
-    { query, params: queryParams },
+    { query, params: queryParams, queryName: 'Comics paginated' },
     {
       query: totalCountQuery,
       params: totalCountQueryParams,
+      queryName: 'Comics paginated count',
     },
   ];
 
@@ -203,6 +204,7 @@ export async function getComicsPaginated({
         ORDER BY RANDOM() LIMIT ${COMICS_PER_PAGE} 
       `,
       params: [],
+      queryName: 'Ads paginated',
     };
     queries.push(adsQueryAndParams);
   }

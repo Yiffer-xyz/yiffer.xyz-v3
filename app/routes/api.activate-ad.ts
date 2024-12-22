@@ -55,7 +55,7 @@ export async function activateAd(
     SET status = 'ACTIVE', lastActivationDate = CURRENT_TIMESTAMP
     WHERE id = ?`;
   const params = [adId];
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad activation');
 
   if (dbRes.isError) return makeDbErr(dbRes, 'Error activating ad');
 }

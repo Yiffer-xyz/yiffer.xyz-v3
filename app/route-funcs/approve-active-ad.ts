@@ -8,7 +8,7 @@ export async function approveActiveAd(
 ): Promise<ApiError | undefined> {
   const query = 'UPDATE advertisement SET isChangedWhileActive = 0 WHERE id = ?';
 
-  const dbRes = await queryDbExec(db, query, [adId]);
+  const dbRes = await queryDbExec(db, query, [adId], 'Ad approval');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error getting latest blog');
   }

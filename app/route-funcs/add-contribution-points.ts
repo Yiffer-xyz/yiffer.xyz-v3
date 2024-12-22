@@ -24,7 +24,8 @@ export async function addContributionPoints(
   const existingDbRes = await queryDb<{ yearMonth: string }[]>(
     db,
     getExistingPointsForMonthQuery,
-    getExistingPointsForMonthQueryParams
+    getExistingPointsForMonthQueryParams,
+    'Add contribution points'
   );
 
   if (existingDbRes.isError) {
@@ -45,7 +46,8 @@ export async function addContributionPoints(
       const insertDbRes = await queryDbExec(
         db,
         insertPointsQuery,
-        insertPointsQueryParams
+        insertPointsQueryParams,
+        'Contribution points insert'
       );
       if (insertDbRes.isError) {
         return makeDbErr(insertDbRes, 'Error adding contribution points', logCtx);
@@ -60,7 +62,8 @@ export async function addContributionPoints(
       const updateDbRes = await queryDbExec(
         db,
         updatePointsQuery,
-        updatePointsQueryParams
+        updatePointsQueryParams,
+        'Contribution points update'
       );
       if (updateDbRes.isError) {
         return makeDbErr(updateDbRes, 'Error updating contribution points', logCtx);

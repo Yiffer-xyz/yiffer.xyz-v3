@@ -58,7 +58,7 @@ async function unAssignActionToMod(
   const query = `UPDATE ${table} SET ${modIdColumn} = NULL WHERE ${identifyingColumn} = ?`;
   const queryParams = [actionId];
 
-  const dbRes = await queryDbExec(db, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams, 'Unassign action from mod');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error unassigning mod action', {
       actionId,

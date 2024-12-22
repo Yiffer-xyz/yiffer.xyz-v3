@@ -82,7 +82,7 @@ export async function getAds({
 
   getAdsQuery += ' GROUP BY advertisement.id';
 
-  const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, params);
+  const adsRes = await queryDb<DbAd[]>(db, getAdsQuery, params, 'Ads');
 
   if (adsRes.isError) {
     return makeDbErrObj(adsRes, 'Could not get ads', logCtx);
@@ -132,9 +132,9 @@ export async function getAdById({
 
   if (includeDetailedStats) {
     const queries = [
-      { query: getAdQuery, params: [adId] },
-      { query: getAdPaymentsQuery, params: [adId] },
-      { query: getClickStatsQuery, params: [adId] },
+      { query: getAdQuery, params: [adId], queryName: 'Ad by ID' },
+      { query: getAdPaymentsQuery, params: [adId], queryName: 'Ad payments' },
+      { query: getClickStatsQuery, params: [adId], queryName: 'Ad clicks' },
     ];
 
     const dbRes = await queryDbMultiple<
@@ -151,7 +151,7 @@ export async function getAdById({
 
     [adRes, payments, clicks] = dbRes.result;
   } else {
-    const dbRes = await queryDb<DbAd[]>(db, getAdQuery, [adId]);
+    const dbRes = await queryDb<DbAd[]>(db, getAdQuery, [adId], 'Ad by ID');
     if (dbRes.isError) {
       return makeDbErrObj(dbRes, 'Error getting ad by ID', logCtx);
     }

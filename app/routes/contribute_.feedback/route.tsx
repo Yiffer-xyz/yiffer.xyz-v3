@@ -152,7 +152,8 @@ export async function action(args: ActionFunctionArgs) {
   const dbRes = await queryDbExec(
     args.context.cloudflare.env.DB,
     insertQuery,
-    insertParams
+    insertParams,
+    'Feedback submission'
   );
   if (dbRes.isError) {
     logApiError(undefined, {

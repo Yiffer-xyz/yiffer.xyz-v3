@@ -59,7 +59,12 @@ export async function submitTagChanges(
 
   const makeGroupQuery = `INSERT INTO tagsuggestiongroup (comicId, userId, userIP) VALUES (?, ?, ?)`;
   const makeGroupParams = [comicId, userId, userIP];
-  const makeGroupRes = await queryDbExec(db, makeGroupQuery, makeGroupParams);
+  const makeGroupRes = await queryDbExec(
+    db,
+    makeGroupQuery,
+    makeGroupParams,
+    'Tag suggestion group creation'
+  );
   if (makeGroupRes.isError) {
     return makeDbErr(makeGroupRes, 'Error making tag suggestion group', logCtx);
   }
@@ -69,7 +74,8 @@ export async function submitTagChanges(
   const getGroupIdRes = await queryDb<{ id: number }[]>(
     db,
     getGroupIdQuery,
-    getGroupIdParams
+    getGroupIdParams,
+    'Tag suggestion group ID'
   );
   if (getGroupIdRes.isError) {
     return makeDbErr(getGroupIdRes, 'Error getting tag suggestion group ID', logCtx);
@@ -89,7 +95,8 @@ export async function submitTagChanges(
   const insertAllItemsRes = await queryDbExec(
     db,
     insertAllItemsQuery,
-    insertAllItemsParams
+    insertAllItemsParams,
+    'Tag suggestion creation'
   );
   if (insertAllItemsRes.isError) {
     return makeDbErr(insertAllItemsRes, 'Error inserting tag suggestion items', logCtx);

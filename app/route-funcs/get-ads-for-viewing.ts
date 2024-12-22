@@ -21,7 +21,12 @@ export async function getAdForViewing({
 
   const params = [adType];
 
-  const adsRes = await queryDb<AdForViewing[]>(db, getAdsQuery, params);
+  const adsRes = await queryDb<AdForViewing[]>(
+    db,
+    getAdsQuery,
+    params,
+    'Ad for viewing, single'
+  );
 
   if (adsRes.isError) {
     return makeDbErrObj(adsRes, 'Could not get ads', logCtx);

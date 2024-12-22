@@ -175,7 +175,7 @@ export async function action(args: ActionFunctionArgs) {
   const params = [fields.status, fields.applicationId];
 
   const db = args.context.cloudflare.env.DB;
-  const res = await queryDbExec(db, query, params);
+  const res = await queryDbExec(db, query, params, 'Mod application update');
 
   if (res.isError) {
     return makeDbErr(res, 'Error setting mod application status', {

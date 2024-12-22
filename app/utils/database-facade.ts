@@ -19,6 +19,7 @@ export type ExecDBResponse = {
 export type QueryWithParams = {
   query: string;
   params?: any[];
+  queryName?: string;
 };
 
 // T should be an array with the responses expected in order
@@ -47,8 +48,17 @@ export async function queryDbMultiple<T>(
           isError: true,
           errorMessage: `QueryDbMultiple caught err in statement #${i + 1}: ${res.error}`,
         };
+      } else {
+        if (
+          queriesWithParams[i]?.queryName &&
+          // @ts-ignore
+          queriesWithParams[i].queryName.length > 0
+        ) {
+          // @ts-ignore
+          processDbQueryMeta(db, 'read', queriesWithParams[i].queryName, res.meta);
+        }
+        results.push(res.results);
       }
-      results.push(res.results);
     }
 
     return {
@@ -68,7 +78,8 @@ export async function queryDbMultiple<T>(
 export async function queryDb<T>(
   db: D1Database,
   query: string,
-  params: any[] = []
+  params?: any[] | null,
+  queryName?: string
 ): Promise<DBResponse<T>> {
   try {
     let statement: D1PreparedStatement;
@@ -86,6 +97,9 @@ export async function queryDb<T>(
         errorMessage: response.error,
       };
     } else {
+      if (queryName && queryName.length > 0) {
+        processDbQueryMeta(db, 'read', queryName, response.meta);
+      }
       return {
         isError: false,
         result: response.results as T,
@@ -95,7 +109,7 @@ export async function queryDb<T>(
     return {
       isError: true,
       errorMessage: err.message,
-      queriesWithParams: [{ query, params }],
+      queriesWithParams: [{ query, params: params || [] }],
     };
   }
 }
@@ -103,14 +117,25 @@ export async function queryDb<T>(
 export async function queryDbExec(
   db: D1Database,
   query: string,
-  params: any[] = []
+  params: any[] = [],
+  queryName?: string
 ): Promise<ExecDBResponse> {
   try {
     const statement = db.prepare(query).bind(...params);
-    await statement.all();
-    return {
-      isError: false,
-    };
+    const res = await statement.run();
+    if (res.error) {
+      return {
+        isError: true,
+        errorMessage: res.error,
+      };
+    } else {
+      if (queryName && queryName.length > 0) {
+        processDbQueryMeta(db, 'write', queryName, res.meta);
+      }
+      return {
+        isError: false,
+      };
+    }
   } catch (err: any) {
     console.error(err);
     console.log({ query, params });
@@ -120,4 +145,25 @@ export async function queryDbExec(
       queriesWithParams: [{ query, params }],
     };
   }
+}
+
+function processDbQueryMeta(
+  db: D1Database,
+  queryType: 'read' | 'write',
+  queryName: string,
+  meta: D1Response['meta']
+) {
+  const numRows = queryType === 'read' ? meta.rows_read : meta.rows_written;
+
+  const analyticsQuery = db
+    .prepare(
+      `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time) VALUES (?, ?, ?, ?)`
+    )
+    .bind(queryName, numRows, queryType, meta.duration);
+
+  analyticsQuery.run();
+
+  console.log(
+    `${numRows.toString().padStart(6)} ${meta.duration.toString().padStart(3)}  ${queryType.substring(0, 1)}  ${queryName}`
+  );
 }

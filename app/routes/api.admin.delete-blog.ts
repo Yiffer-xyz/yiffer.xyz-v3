@@ -15,7 +15,8 @@ export async function action(args: ActionFunctionArgs) {
   const dbRes = await queryDbExec(
     args.context.cloudflare.env.DB,
     'DELETE FROM blog WHERE id = ?',
-    [id]
+    [id],
+    'Blog delete'
   );
 
   if (dbRes.isError) {

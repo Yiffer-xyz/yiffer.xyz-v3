@@ -460,3 +460,14 @@ ON DELETE CASCADE
 ON UPDATE CASCADE);
 
 CREATE INDEX IF NOT EXISTS idx_userId ON oldcomicrating(userId);
+
+------------------------------------------------------
+-- DB QUERY LOGS
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dbquerylogs` (
+`id` INTEGER NOT NULL,
+`queryName` TEXT NOT NULL,
+`rowsRead` INTEGER NOT NULL,
+`queryType` TEXT NOT NULL CHECK( queryType IN ('read', 'write') ),
+`time` REAL NOT NULL,
+PRIMARY KEY (`id`));

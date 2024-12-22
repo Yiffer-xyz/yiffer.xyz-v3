@@ -45,7 +45,8 @@ export async function toggleComicBookmark(
   const doesBookmarkExistRes = await queryDb<any[]>(
     db,
     doesBookmarkExistQuery,
-    doesBookmarkExistParams
+    doesBookmarkExistParams,
+    'Bookmark exists check'
   );
   if (doesBookmarkExistRes.isError) {
     return makeDbErr(doesBookmarkExistRes, 'Error checking if bookmark exists', logCtx);
@@ -53,7 +54,12 @@ export async function toggleComicBookmark(
 
   if (doesBookmarkExistRes.result.length > 0) {
     const deleteQuery = 'DELETE from comicbookmark WHERE userId = ? AND comicId = ?';
-    const dbRes = await queryDbExec(db, deleteQuery, [userId, comicId]);
+    const dbRes = await queryDbExec(
+      db,
+      deleteQuery,
+      [userId, comicId],
+      'Bookmark delete'
+    );
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error deleting bookmark', logCtx);
     }
@@ -62,7 +68,7 @@ export async function toggleComicBookmark(
 
   const insertQuery = 'INSERT INTO comicbookmark (userId, comicId) VALUES (?, ?)';
   const insertParams = [userId, comicId];
-  const insertRes = await queryDbExec(db, insertQuery, insertParams);
+  const insertRes = await queryDbExec(db, insertQuery, insertParams, 'Bookmark insert');
   if (insertRes.isError) {
     return makeDbErr(insertRes, 'Error inserting bookmark', logCtx);
   }

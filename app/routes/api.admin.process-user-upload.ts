@@ -1,5 +1,5 @@
 import type { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
-import { queryDb, queryDbExec } from '~/utils/database-facade';
+import { queryDbExec } from '~/utils/database-facade';
 import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -117,7 +117,7 @@ export async function processAnyUpload(
 
   const [artistRes, updateComicDbRes] = await Promise.all([
     getArtistByComicId(db, comicId),
-    queryDbExec(db, comicQuery, comicQueryParams),
+    queryDbExec(db, comicQuery, comicQueryParams, 'Comic update, upload'),
   ]);
 
   if (updateComicDbRes.isError) {
@@ -227,7 +227,12 @@ export async function processAnyUpload(
 
   if (!metadataQuery) return;
 
-  const metadataDbRes = await queryDb(db, metadataQuery, metadataQueryParams);
+  const metadataDbRes = await queryDbExec(
+    db,
+    metadataQuery,
+    metadataQueryParams,
+    'Comic metadata update'
+  );
   if (metadataDbRes.isError) {
     return makeDbErr(metadataDbRes, 'Error updating comic metadata in db');
   }

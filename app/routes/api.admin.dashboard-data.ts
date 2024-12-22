@@ -160,11 +160,11 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
 
 export async function loader(args: LoaderFunctionArgs) {
   const dataFetchStatements: QueryWithParams[] = [
-    { query: tagSuggestionsQuery },
-    { query: comicProblemsQuery },
-    { query: comicUploadsQuery },
-    { query: comicSuggestionsQuery },
-    { query: pendingComicsSimpleQuery },
+    { query: tagSuggestionsQuery, queryName: 'Tag suggestions, admin' },
+    { query: comicProblemsQuery, queryName: 'Comic problems, admin' },
+    { query: comicUploadsQuery, queryName: 'Comic uploads, admin' },
+    { query: comicSuggestionsQuery, queryName: 'Comic suggestions, admin' },
+    { query: pendingComicsSimpleQuery, queryName: 'Pending comics, admin' },
   ];
 
   const dbResList = await queryDbMultiple<

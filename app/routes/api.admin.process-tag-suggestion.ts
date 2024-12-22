@@ -60,7 +60,8 @@ async function processTagSuggestion(
   const existingTagsQuery = await queryDb<{ keywordId: number }[]>(
     db,
     getTagsQuery,
-    getTagsQueryParams
+    getTagsQueryParams,
+    'Tags by comic ID'
   );
   if (existingTagsQuery.isError) {
     return makeDbErr(
@@ -97,7 +98,12 @@ async function processTagSuggestion(
       .map(() => '(?, ?)')
       .join(', ')}`;
     const insertTagsQueryParams = tagIdsToInsert.flatMap(id => [comicId, id]);
-    const insertTagsQueryRes = await queryDb(db, insertTagsQuery, insertTagsQueryParams);
+    const insertTagsQueryRes = await queryDbExec(
+      db,
+      insertTagsQuery,
+      insertTagsQueryParams,
+      'Insert tags'
+    );
     if (insertTagsQueryRes.isError) {
       return makeDbErr(
         insertTagsQueryRes,
@@ -112,7 +118,12 @@ async function processTagSuggestion(
       .map(() => '?')
       .join(', ')})`;
     const deleteTagsQueryParams = [comicId, ...tagIdsToDelete];
-    const deleteTagsQueryRes = await queryDb(db, deleteTagsQuery, deleteTagsQueryParams);
+    const deleteTagsQueryRes = await queryDbExec(
+      db,
+      deleteTagsQuery,
+      deleteTagsQueryParams,
+      'Delete tags'
+    );
     if (deleteTagsQueryRes.isError) {
       return makeDbErr(deleteTagsQueryRes, 'Error deleting tags in processTagSuggestion');
     }
@@ -138,7 +149,8 @@ async function processTagSuggestion(
   const updateGroupQueryRes = await queryDbExec(
     db,
     updateGroupQuery,
-    updateGroupQueryParams
+    updateGroupQueryParams,
+    'Tag suggestion group update'
   );
   if (updateGroupQueryRes.isError) {
     return makeDbErr(

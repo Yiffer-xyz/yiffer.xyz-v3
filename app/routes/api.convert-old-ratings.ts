@@ -1,8 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import {
-  getAllComicNamesAndIDsQuery,
-  getComicNamesAndIDs,
-} from '~/route-funcs/get-comics';
+import { getComicNamesAndIDs } from '~/route-funcs/get-comics';
 import { getAllOldComicRatingsForUser } from '~/route-funcs/get-old-comic-ratings';
 import { queryDbExec } from '~/utils/database-facade';
 import { parseFormJson } from '~/utils/formdata-parser';
@@ -100,9 +97,12 @@ async function convertOldRatings(
 
     if (hasAnyConversion) {
       updateRatingsQuery = updateRatingsQuery.slice(0, -2);
-      console.log(updateRatingsQuery);
-      console.log(updateRatingsParams);
-      const updateRes = await queryDbExec(db, updateRatingsQuery, updateRatingsParams);
+      const updateRes = await queryDbExec(
+        db,
+        updateRatingsQuery,
+        updateRatingsParams,
+        'Convert old comic ratings'
+      );
       if (updateRes.isError) {
         return makeDbErr(updateRes, 'Could not convert old comic ratings', logCtx);
       }
@@ -110,12 +110,11 @@ async function convertOldRatings(
 
     if (hasAnyBookmark) {
       updateBookmarksQuery = updateBookmarksQuery.slice(0, -2);
-      console.log(updateBookmarksQuery);
-      console.log(updateBookmarksParams);
       const updateRes = await queryDbExec(
         db,
         updateBookmarksQuery,
-        updateBookmarksParams
+        updateBookmarksParams,
+        'Convert old comic bookmarks'
       );
       if (updateRes.isError) {
         return makeDbErr(updateRes, 'Could not convert old comic bookmarks', logCtx);
@@ -124,7 +123,12 @@ async function convertOldRatings(
   }
 
   const deleteQuery = 'DELETE FROM oldcomicrating WHERE userId = ?';
-  const deleteRes = await queryDbExec(db, deleteQuery, [userId]);
+  const deleteRes = await queryDbExec(
+    db,
+    deleteQuery,
+    [userId],
+    'Delete old comic ratings'
+  );
   if (deleteRes.isError) {
     return makeDbErr(deleteRes, 'Could not delete old comic ratings', logCtx);
   }

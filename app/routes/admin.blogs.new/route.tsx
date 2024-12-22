@@ -88,7 +88,12 @@ export async function action(args: ActionFunctionArgs) {
   const query = 'INSERT INTO blog (title, content, author) VALUES (?, ?, ?)';
   const params = [title.toString(), content.toString(), user.userId];
 
-  const dbRes = await queryDbExec(args.context.cloudflare.env.DB, query, params);
+  const dbRes = await queryDbExec(
+    args.context.cloudflare.env.DB,
+    query,
+    params,
+    'Blog creation'
+  );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating blog', {
       title: title.toString(),

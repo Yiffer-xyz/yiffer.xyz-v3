@@ -60,7 +60,9 @@ export async function getSimilarArtists(
   const allArtistsQuery = 'SELECT name, isBanned FROM artist';
   const allArtistsRes = await queryDb<{ name: string; isBanned: boolean }[]>(
     db,
-    allArtistsQuery
+    allArtistsQuery,
+    null,
+    'Artists, all, for similarity search'
   );
   if (allArtistsRes.isError || !allArtistsRes.result) {
     return makeDbErrObj(allArtistsRes, 'Error getting all artists from db', logCtx);

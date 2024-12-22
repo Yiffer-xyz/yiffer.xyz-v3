@@ -80,19 +80,25 @@ export const meta: MetaFunction = () => {
 
 export async function loader(args: LoaderFunctionArgs) {
   const dbStatements: QueryWithParams[] = [
-    { query: 'SELECT COUNT(*) AS count FROM user' },
-    { query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'` },
+    { query: 'SELECT COUNT(*) AS count FROM user', queryName: 'Users, stats' },
+    {
+      query: `SELECT COUNT(*) AS count FROM comic WHERE publishStatus = 'published'`,
+      queryName: 'Comics, stats',
+    },
     {
       query:
         'SELECT COUNT(*) AS count FROM artist WHERE isBanned = 0 AND isPending = 0 AND isRejected = 0',
+      queryName: 'Artists, stats',
     },
     {
       query: `SELECT SUM(numberOfpages) AS count FROM comic WHERE publishStatus = 'published'`,
+      queryName: 'Pages, stats',
     },
     {
       query: `SELECT
         COUNT(*) AS count, status, adType FROM advertisement WHERE status = 'ACTIVE' OR status = 'ENDED'
         GROUP BY status, adType`,
+      queryName: 'Ads, stats',
     },
     {
       query: `SELECT
@@ -117,10 +123,12 @@ export async function loader(args: LoaderFunctionArgs) {
           OR (user.UserType != 'moderator' AND user.userType != 'admin')
         )
         GROUP BY isGuest`,
+      queryName: 'Contributions, stats',
     },
     {
       query: `SELECT SUM(amount) AS amount, strftime('%Y', registeredDate) AS year
         FROM advertisementpayment GROUP BY year ORDER BY year desc`,
+      queryName: 'Ad payments, stats',
     },
   ];
 

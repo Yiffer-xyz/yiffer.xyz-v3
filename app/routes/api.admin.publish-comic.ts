@@ -42,7 +42,7 @@ export async function publishComic(
       updated = CURRENT_TIMESTAMP
     WHERE id = ?
   `;
-  const dbRes = await queryDbExec(db, query, [comicId]);
+  const dbRes = await queryDbExec(db, query, [comicId], 'Comic publish');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error publishing comic', { comicId });
   }

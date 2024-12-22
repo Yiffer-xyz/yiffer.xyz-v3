@@ -32,7 +32,7 @@ export async function updateThumbnailStatus(
   const query = `UPDATE comic SET hasHighresThumbnail=? WHERE id=?`;
   const params = [hasHighRes ? 1 : 0, comicId];
 
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Comic highres thumbnail update');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic highres thumbnail status');
   }

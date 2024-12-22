@@ -48,7 +48,7 @@ export async function updateStarRating(
 
   if (stars === 0) {
     const deleteQuery = 'DELETE from comicrating WHERE userId = ? AND comicId = ?';
-    const dbRes = await queryDbExec(db, deleteQuery, [userId, comicId]);
+    const dbRes = await queryDbExec(db, deleteQuery, [userId, comicId], 'Rating delete');
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error deleting rating', logCtx);
     }
@@ -61,7 +61,7 @@ export async function updateStarRating(
   `;
   const queryParams = [userId, comicId, stars, stars];
 
-  const dbRes = await queryDbExec(db, upsertQuery, queryParams);
+  const dbRes = await queryDbExec(db, upsertQuery, queryParams, 'Rating upsert');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
   }

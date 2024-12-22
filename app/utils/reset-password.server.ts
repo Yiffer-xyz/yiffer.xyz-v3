@@ -24,7 +24,12 @@ export async function resetPassword(
   const insertQuery = 'INSERT INTO resettoken (token, userId) VALUES (?, ?)';
   const insertParams = [resetToken, userRes.result.id];
 
-  const insertRes = await queryDbExec(db, insertQuery, insertParams);
+  const insertRes = await queryDbExec(
+    db,
+    insertQuery,
+    insertParams,
+    'Reset token insert'
+  );
   if (insertRes.isError) {
     return makeDbErr(insertRes, 'Error inserting reset token', { email });
   }
@@ -53,7 +58,12 @@ export async function resetPasswordByLink(
   const tokenQuery = 'SELECT userId FROM resettoken WHERE token = ?';
   const tokenParams = [token];
 
-  const tokenRes = await queryDb<{ userId: number }[]>(db, tokenQuery, tokenParams);
+  const tokenRes = await queryDb<{ userId: number }[]>(
+    db,
+    tokenQuery,
+    tokenParams,
+    'Password reset token'
+  );
   if (tokenRes.isError) {
     return makeDbErrObj(tokenRes, 'Error fetching reset token in resetPasswordByLink', {
       token,
@@ -67,7 +77,12 @@ export async function resetPasswordByLink(
   const deleteQuery = 'DELETE FROM resettoken WHERE token = ?';
   const deleteParams = [token];
 
-  const deleteRes = await queryDbExec(db, deleteQuery, deleteParams);
+  const deleteRes = await queryDbExec(
+    db,
+    deleteQuery,
+    deleteParams,
+    'Reset token delete'
+  );
   if (deleteRes.isError) {
     return makeDbErrObj(deleteRes, 'Error deleting reset token', { token });
   }
@@ -76,7 +91,7 @@ export async function resetPasswordByLink(
   const updateQuery = 'UPDATE user SET password = ? WHERE id = ?';
   const updateParams = [newPasswordHashed, tokenRes.result[0].userId];
 
-  const updateRes = await queryDbExec(db, updateQuery, updateParams);
+  const updateRes = await queryDbExec(db, updateQuery, updateParams, 'Password update');
   if (updateRes.isError) {
     return makeDbErrObj(updateRes, 'Error updating password in resetPasswordByLink', {
       token,

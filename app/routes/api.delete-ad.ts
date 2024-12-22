@@ -47,7 +47,7 @@ export async function deleteAd(
 
   const query = `DELETE FROM advertisement WHERE id = ?`;
   const params = [adId];
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad delete');
 
   if (dbRes.isError) return makeDbErr(dbRes, 'Error deleting ad');
 }

@@ -6,7 +6,12 @@ export default async function isAdOwner(
   adId: string
 ): Promise<boolean> {
   const fetchUserQuery = `SELECT userId FROM advertisement WHERE id = ?`;
-  const userRes = await queryDb<{ userId: number }[]>(db, fetchUserQuery, [adId]);
+  const userRes = await queryDb<{ userId: number }[]>(
+    db,
+    fetchUserQuery,
+    [adId],
+    'Ad owner check'
+  );
 
   if (userRes.isError) return false;
   if (userRes.result.length === 0) return false;

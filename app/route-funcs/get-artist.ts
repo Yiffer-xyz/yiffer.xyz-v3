@@ -27,7 +27,7 @@ export async function getArtistAndComicsByField(
 }> {
   const { query, params } = getArtistByFieldQuery(fieldName, fieldValue);
 
-  const dbResPromise = queryDb<DbArtist[]>(db, query, params);
+  const dbResPromise = queryDb<DbArtist[]>(db, query, params, 'Artist with comics');
 
   const comicsPromise = getComicsPaginated({
     db,
@@ -101,7 +101,12 @@ export async function getArtistByField(
 ): ResultOrNotFoundOrErrorPromise<Artist> {
   const dbStatement = getArtistByFieldQuery(fieldName, fieldValue);
 
-  const dbRes = await queryDb<DbArtist[]>(db, dbStatement.query, dbStatement.params);
+  const dbRes = await queryDb<DbArtist[]>(
+    db,
+    dbStatement.query,
+    dbStatement.params,
+    'Artist'
+  );
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, `Error getting artist by ${fieldName}`, {
       fieldName,
@@ -129,7 +134,12 @@ export async function getArtistByComicId(
     GROUP BY id, name, patreonName, e621Name, isPending, isBanned, isRejected
     LIMIT 1`;
 
-  const dbRes = await queryDb<DbArtist[]>(db, artistQuery, [comicId]);
+  const dbRes = await queryDb<DbArtist[]>(
+    db,
+    artistQuery,
+    [comicId],
+    'Artist by comic ID'
+  );
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting artist by comic id', { comicId });
   }

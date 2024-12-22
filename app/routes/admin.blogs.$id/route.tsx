@@ -155,7 +155,12 @@ export async function action(args: ActionFunctionArgs) {
   const query = 'UPDATE blog SET title = ?, content = ? WHERE id = ?';
   const params = [title.toString(), content.toString(), id];
 
-  const dbRes = await queryDbExec(args.context.cloudflare.env.DB, query, params);
+  const dbRes = await queryDbExec(
+    args.context.cloudflare.env.DB,
+    query,
+    params,
+    'Blog update'
+  );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating blog', {
       title: title.toString(),

@@ -232,6 +232,7 @@ function getDbComicByFieldQuery(
   return {
     query: comicQuery,
     params: userId ? [userId, userId, fieldValue] : [fieldValue],
+    queryName: 'Comic by field, multi',
   };
 }
 
@@ -259,6 +260,7 @@ function getLinksByComicFieldQuery(
   return {
     query: linksQuery,
     params,
+    queryName: 'Comic links, multi',
   };
 }
 
@@ -273,6 +275,7 @@ function getTagsByComicIdQuery(comicId: number): QueryWithParams {
   return {
     query: tagsQuery,
     params: [comicId],
+    queryName: 'Comic tags by comic ID',
   };
 }
 
@@ -288,5 +291,6 @@ function getTagsByComicNameQuery(comicName: string): QueryWithParams {
   return {
     query: tagsQuery,
     params: [comicName],
+    queryName: 'Comic tags by comic name',
   };
 }

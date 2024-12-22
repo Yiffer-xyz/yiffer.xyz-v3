@@ -39,7 +39,7 @@ export async function getAllFeedback(db: D1Database): ResultOrErrorPromise<Feedb
       ORDER BY feedback.timestamp DESC
   `;
 
-  const dbRes = await queryDb<DbFeedback[]>(db, query);
+  const dbRes = await queryDb<DbFeedback[]>(db, query, null, 'Feedback');
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Could not get all feedback');
   }

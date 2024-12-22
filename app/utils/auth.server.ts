@@ -2,7 +2,7 @@ import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';
-import { queryDb, queryDbMultiple } from './database-facade';
+import { queryDb, queryDbExec, queryDbMultiple } from './database-facade';
 import type { ApiError } from './request-helpers';
 import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
@@ -51,10 +51,12 @@ export async function signup(
     {
       query: usernameQuery,
       params: [username],
+      queryName: 'Signup username check',
     },
     {
       query: emailQuery,
       params: [email],
+      queryName: 'Signup email check',
     },
   ];
 
@@ -74,15 +76,20 @@ export async function signup(
 
   const hashedPassword = await hash(password, 8);
   const insertQuery = 'INSERT INTO user (username, password, email) VALUES (?, ?, ?)';
-  const insertResult = await queryDb(db, insertQuery, [username, hashedPassword, email]);
+  const insertResult = await queryDbExec(
+    db,
+    insertQuery,
+    [username, hashedPassword, email],
+    'Signup'
+  );
   if (insertResult.isError) {
     return makeDbErrObj(insertResult, 'Error inserting user');
   }
-  // TODO-db: insert id
   const newUserResult = await queryDb<{ id: number }[]>(
     db,
     'SELECT id FROM user WHERE username = ? LIMIT 1',
-    [username]
+    [username],
+    'New user ID'
   );
   if (newUserResult.isError) {
     return makeDbErrObj(newUserResult, 'Error fetching new user after creation');
@@ -117,7 +124,12 @@ export async function changePassword(
   newPassword: string
 ): Promise<{ friendlyErrorMsg: string | undefined }> {
   const userQuery = 'SELECT password FROM user WHERE id = ?';
-  const userQueryRes = await queryDb<UserWithPassword[]>(db, userQuery, [userId]);
+  const userQueryRes = await queryDb<UserWithPassword[]>(
+    db,
+    userQuery,
+    [userId],
+    'User for password change'
+  );
   if (userQueryRes.isError) {
     logApiError('Error fetching user for pw change', makeDbErr(userQueryRes), { userId });
     return { friendlyErrorMsg: 'Error fetching user for password change' };
@@ -134,7 +146,12 @@ export async function changePassword(
 
   const hashedPassword = await hash(newPassword, 8);
   const updateQuery = 'UPDATE user SET password = ? WHERE id = ?';
-  const updateQueryRes = await queryDb(db, updateQuery, [hashedPassword, userId]);
+  const updateQueryRes = await queryDbExec(
+    db,
+    updateQuery,
+    [hashedPassword, userId],
+    'Change password'
+  );
   if (updateQueryRes.isError) {
     logApiError('Error updating password', makeDbErr(updateQueryRes), { userId });
     return { friendlyErrorMsg: 'Error updating password' };
@@ -152,7 +169,12 @@ async function authenticate(
     'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
-  const fetchDbRes = await queryDb<UserWithPassword[]>(db, query, queryParams);
+  const fetchDbRes = await queryDb<UserWithPassword[]>(
+    db,
+    query,
+    queryParams,
+    'User, authentication'
+  );
   if (fetchDbRes.isError) {
     return makeDbErrObj(fetchDbRes, 'Login error fetching username/email');
   }

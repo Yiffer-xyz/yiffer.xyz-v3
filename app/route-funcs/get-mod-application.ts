@@ -21,7 +21,7 @@ export async function getAllModApplications(
       status
     FROM modapplication INNER JOIN user ON (user.id = modapplication.userId)`;
 
-  const dbRes = await queryDb<DbModApplication[]>(db, query);
+  const dbRes = await queryDb<DbModApplication[]>(db, query, null, 'Mod applications');
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting mod applications');
   }
@@ -50,7 +50,12 @@ export async function getModApplicationForUser(
     LIMIT 1`;
 
   const queryParams = [userId];
-  const dbRes = await queryDb<DbModApplication[]>(db, query, queryParams);
+  const dbRes = await queryDb<DbModApplication[]>(
+    db,
+    query,
+    queryParams,
+    'Mod application for user'
+  );
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting mod applications for user', { userId });
   }

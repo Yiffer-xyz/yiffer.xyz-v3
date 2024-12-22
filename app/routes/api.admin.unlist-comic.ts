@@ -43,7 +43,12 @@ export async function unlistComic(
   const logCtx = { comicId, unlistComment };
   const getDetailsQuery = 'SELECT comicId FROM comicmetadata WHERE comicId = ?';
 
-  const detailsDbRes = await queryDb<any[]>(db, getDetailsQuery, [comicId]);
+  const detailsDbRes = await queryDb<any[]>(
+    db,
+    getDetailsQuery,
+    [comicId],
+    'Comic metadata exists check'
+  );
   if (detailsDbRes.isError) {
     return makeDbErr(detailsDbRes, 'Could not get metadata', logCtx);
   }

@@ -136,7 +136,9 @@ export default function BrowsePage() {
         />
       </div>
 
-      {oldComicRatings.length > 0 && <OldComicRatingsInfo oldRatings={oldComicRatings} />}
+      {oldComicRatings.length > 0 && (
+        <OldComicRatingsInfo numOldRatings={oldComicRatings.length} />
+      )}
 
       <SearchFilter browseUtilities={browseUtilities} isLoggedIn={isLoggedIn} />
 

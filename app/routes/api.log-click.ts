@@ -34,7 +34,7 @@ export async function logAdClick(
   const date = new Date().toISOString().split('T')[0];
   const params = [adId, date, 1];
 
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad click logging');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error logging ad click');
   }

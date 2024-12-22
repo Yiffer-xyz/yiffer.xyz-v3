@@ -1,12 +1,11 @@
-import type { OldComicRating } from '~/types/types';
 import { CLOSED_SEARCHFILTER_WIDTH } from './SearchFilter/SearchFilterContainer';
 import { MdError } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 
 export default function OldComicRatingsInfo({
-  oldRatings,
+  numOldRatings,
 }: {
-  oldRatings: OldComicRating[];
+  numOldRatings: number;
 }) {
   return (
     <div
@@ -25,7 +24,7 @@ export default function OldComicRatingsInfo({
         forever.
       </p>
 
-      <p className="mt-2 text-sm">You have {oldRatings.length} rated comics.</p>
+      <p className="mt-2 text-sm">You have {numOldRatings} old rated comics.</p>
 
       <p className="mt-1.5">
         <Link

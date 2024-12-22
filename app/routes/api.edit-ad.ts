@@ -173,7 +173,7 @@ export async function editAd(
   else if (status) insertParams.push(status);
   insertParams.push(data.id);
 
-  const dbRes = await queryDbExec(db, insertQuery, insertParams);
+  const dbRes = await queryDbExec(db, insertQuery, insertParams, 'Ad edit');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating ad');
   }

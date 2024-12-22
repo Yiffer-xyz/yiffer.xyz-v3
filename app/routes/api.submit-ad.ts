@@ -87,7 +87,7 @@ export async function submitAd(
     data.videoSpecificFileType ?? null,
   ];
 
-  const dbRes = await queryDbExec(db, insertQuery, insertParams);
+  const dbRes = await queryDbExec(db, insertQuery, insertParams, 'Ad creation');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating ad');
   }

@@ -47,7 +47,7 @@ export function getAllComicNamesAndIDsQuery(options?: {
     params = [options.tagIDFilter];
   }
 
-  return { query, params };
+  return { query, params, queryName: 'Comics, all' };
 }
 
 export function mapDBComicTiny(
@@ -79,7 +79,7 @@ export async function getComicNamesAndIDs(
   const { query, params } = getAllComicNamesAndIDsQuery({
     tagIDFilter: options?.tagIDFilter,
   });
-  const response = await queryDb<DbComicTiny[]>(db, query, params);
+  const response = await queryDb<DbComicTiny[]>(db, query, params, 'Comics, all');
   if (response.isError || !response.result) {
     return makeDbErrObj(response, 'Error  getting comics', options);
   }
@@ -133,7 +133,7 @@ export async function getComicsByArtistField(
 ): ResultOrErrorPromise<ComicTiny[]> {
   const { query, params } = getComicsByArtistFieldQuery(fieldName, fieldValue);
 
-  const dbRes = await queryDb<ComicTiny[]>(db, query, params);
+  const dbRes = await queryDb<ComicTiny[]>(db, query, params, 'Comics by artist');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting comics by artist', {
       fieldName,

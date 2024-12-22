@@ -46,7 +46,12 @@ async function processComicProblem(
   const updateActionQuery = `UPDATE comicproblem SET status = ?, modId = ? WHERE id = ?`;
   const updateActionQueryParams = [isApproved ? 'approved' : 'rejected', modId, actionId];
 
-  const dbRes = await queryDbExec(db, updateActionQuery, updateActionQueryParams);
+  const dbRes = await queryDbExec(
+    db,
+    updateActionQuery,
+    updateActionQueryParams,
+    'Comic problem processing'
+  );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic problem');
   }

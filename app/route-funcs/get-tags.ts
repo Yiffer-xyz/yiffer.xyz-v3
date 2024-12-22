@@ -10,12 +10,13 @@ import { makeDbErrObj } from '~/utils/request-helpers';
 export function getAllTagsQuery(): QueryWithParams {
   return {
     query: 'SELECT id, keywordName AS name FROM keyword',
+    queryName: 'Tags, all',
   };
 }
 
 export async function getAllTags(db: D1Database): ResultOrErrorPromise<Tag[]> {
   const { query } = getAllTagsQuery();
-  const dbRes = await queryDb<Tag[]>(db, query);
+  const dbRes = await queryDb<Tag[]>(db, query, null, 'Tags, all');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting all tags');
   }
@@ -24,7 +25,12 @@ export async function getAllTags(db: D1Database): ResultOrErrorPromise<Tag[]> {
 
 export async function getAllTagNames(db: D1Database): ResultOrErrorPromise<string[]> {
   const keywordsQuery = 'SELECT keywordName AS name FROM keyword';
-  const dbRes = await queryDb<{ name: string }[]>(db, keywordsQuery);
+  const dbRes = await queryDb<{ name: string }[]>(
+    db,
+    keywordsQuery,
+    null,
+    'Tags, all names'
+  );
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting all tag names');
   }
@@ -47,7 +53,9 @@ export async function getTagsWithUsageCount(db: D1Database): ResultOrErrorPromis
 
   const dbRes = await queryDb<{ id: number; name: string; count: number }[]>(
     db,
-    tagCountQuery
+    tagCountQuery,
+    null,
+    'Tags with usage count'
   );
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting tags with usage count');
@@ -67,7 +75,7 @@ export async function getTagById(
 ): ResultOrNotFoundOrErrorPromise<Tag> {
   const tagQuery = 'SELECT id, keywordName AS name FROM keyword WHERE id = ? LIMIT 1';
 
-  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagId]);
+  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagId], 'Tag by ID');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting tag', { tagId });
   }
@@ -86,7 +94,7 @@ export async function getTagByName(
   const tagQuery =
     'SELECT id, keywordName AS name FROM keyword WHERE keywordName = ? LIMIT 1';
 
-  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagName]);
+  const dbRes = await queryDb<Tag[]>(db, tagQuery, [tagName], 'Tag by name');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting tag', { tagName });
   }

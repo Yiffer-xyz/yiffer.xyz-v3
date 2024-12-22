@@ -53,7 +53,12 @@ export async function getPendingComics(
     ${topAmount ? `LIMIT ${topAmount}` : ''}
   `;
 
-  const dbRes = await queryDb<DbPendingComic[]>(db, pendingComicsQuery);
+  const dbRes = await queryDb<DbPendingComic[]>(
+    db,
+    pendingComicsQuery,
+    null,
+    'Pending comics'
+  );
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting pending comics', {

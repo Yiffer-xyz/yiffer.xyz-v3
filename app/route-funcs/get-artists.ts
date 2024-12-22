@@ -27,7 +27,7 @@ export function getAllArtistsQuery(options: {
     query += ' AND IsBanned = 0';
   }
 
-  return { query };
+  return { query, queryName: 'Artists, all' };
 }
 
 export function mapArtistTiny(
@@ -65,7 +65,7 @@ export async function getAllArtists(
 ): ResultOrErrorPromise<ArtistTiny[]> {
   const { query } = getAllArtistsQuery(options);
 
-  const artistsRes = await queryDb<ArtistTiny[]>(db, query);
+  const artistsRes = await queryDb<ArtistTiny[]>(db, query, null, 'Artists, all');
   if (artistsRes.isError || !artistsRes.result) {
     return makeDbErrObj(artistsRes, 'Error getting artists from db', options);
   }

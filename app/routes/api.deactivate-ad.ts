@@ -59,7 +59,7 @@ export async function deactivateAd(
   const query = `UPDATE advertisement
     SET status = 'ENDED', numDaysActive = numDaysActive + ?, lastActivationDate = NULL WHERE id = ?`;
   const params = [newActiveDays, adId];
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad deactivate');
 
   if (dbRes.isError) return makeDbErr(dbRes, 'Error deactivating ad');
 }

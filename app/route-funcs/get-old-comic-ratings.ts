@@ -33,7 +33,12 @@ export async function getOldComicRatingSummary(
 
   const query =
     'SELECT rating, COUNT(*) as count FROM oldcomicrating WHERE userId = ? GROUP BY rating ORDER BY rating DESC';
-  const dbRes = await queryDb<RatingCount[]>(db, query, [userId]);
+  const dbRes = await queryDb<RatingCount[]>(
+    db,
+    query,
+    [userId],
+    'Old comic ratings summary'
+  );
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Could not get old comic ratings', { userId });
@@ -47,7 +52,12 @@ export async function getAllOldComicRatingsForUser(
   userId: number
 ): ResultOrErrorPromise<ComicIdWithRating[]> {
   const query = 'SELECT comicId, rating FROM oldcomicrating WHERE userId = ?';
-  const dbRes = await queryDb<ComicIdWithRating[]>(db, query, [userId]);
+  const dbRes = await queryDb<ComicIdWithRating[]>(
+    db,
+    query,
+    [userId],
+    'Old comic ratings for user'
+  );
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Could not get all old comic ratings');

@@ -69,7 +69,7 @@ async function createComicTags(
     }
   });
 
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Tag added to comic');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic tags');
   }
@@ -97,7 +97,7 @@ async function createComicLinks(
     query += ', (?, ?)';
   }
 
-  const dbRes = await queryDbExec(db, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams, 'Comic links creation');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic links');
   }
@@ -126,7 +126,7 @@ async function createComicMetadata(
     uploadBody.source,
   ];
 
-  const dbRes = await queryDbExec(db, query, values);
+  const dbRes = await queryDbExec(db, query, values, 'Comic metadata creation');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating comic metadata');
   }
@@ -158,7 +158,7 @@ async function createComic(
     skipApproval ? 'pending' : 'uploaded',
   ];
 
-  const result = await queryDb(db, query, values);
+  const result = await queryDbExec(db, query, values, 'Comic creation');
   if (result.isError) {
     return makeDbErrObj(result, 'Error inserting comic');
   }
@@ -166,7 +166,8 @@ async function createComic(
   const newComicIdRes = await queryDb<{ id: number }[]>(
     db,
     'SELECT id FROM comic WHERE name = ?',
-    [uploadBody.comicName]
+    [uploadBody.comicName],
+    'New comic ID'
   );
   if (newComicIdRes.isError) {
     return makeDbErrObj(newComicIdRes, 'Error getting new comic id');
@@ -194,7 +195,7 @@ async function createArtist(
     skipApproval ? 0 : 1,
   ];
   // TODO-db: insert id here..
-  const dbRes = await queryDb(db, insertQuery, insertValues);
+  const dbRes = await queryDbExec(db, insertQuery, insertValues, 'Artist creation');
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error inserting artist');
   }
@@ -204,7 +205,8 @@ async function createArtist(
   const artistRes = await queryDb<{ id: number }[]>(
     db,
     getNewArtistQuery,
-    getNewArtistValues
+    getNewArtistValues,
+    'New artist ID'
   );
   if (artistRes.isError) {
     return makeDbErrObj(artistRes, 'Error getting new artist id');
@@ -241,7 +243,12 @@ async function createArtistLinks(
     }
   }
 
-  const dbRes = await queryDbExec(db, linkInsertQuery, linkInsertValues);
+  const dbRes = await queryDbExec(
+    db,
+    linkInsertQuery,
+    linkInsertValues,
+    'Artist links creation'
+  );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error inserting artist links');
   }

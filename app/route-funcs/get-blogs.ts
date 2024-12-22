@@ -17,11 +17,11 @@ export async function getLatestBlog(
     SELECT blog.id, title, content, timestamp, user.id AS userId, user.username
     FROM blog
     INNER JOIN user ON blog.author = user.id
-    ORDER BY timestamp DESC
+    ORDER BY blog.id DESC
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<DbBlog[]>(db, blogQuery);
+  const dbRes = await queryDb<DbBlog[]>(db, blogQuery, null, 'Latest blog');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting latest blog');
   }
@@ -40,7 +40,7 @@ export async function getAllBlogs(db: D1Database): ResultOrErrorPromise<Blog[]> 
     ORDER BY timestamp DESC
   `;
 
-  const dbRes = await queryDb<DbBlog[]>(db, blogQuery);
+  const dbRes = await queryDb<DbBlog[]>(db, blogQuery, null, 'All blogs');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting all blogs');
   }
@@ -61,7 +61,7 @@ export async function getBlogById(
     WHERE blog.id = $1
   `;
 
-  const dbRes = await queryDb<DbBlog[]>(db, blogQuery, [blogId]);
+  const dbRes = await queryDb<DbBlog[]>(db, blogQuery, [blogId], 'Blog by ID');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error getting blog by id');
   }

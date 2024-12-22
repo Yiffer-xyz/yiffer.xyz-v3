@@ -38,7 +38,7 @@ export async function registerAdPayment(
 
   const params = [adId, amount];
 
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad payment registration');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error registering ad payment');
   }

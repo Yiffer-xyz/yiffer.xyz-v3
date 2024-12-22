@@ -15,9 +15,12 @@ export async function moveComicInQueue(
 ): Promise<ApiError | undefined> {
   const logCtx = { comicId, moveBy };
   const getPosQuery = 'SELECT publishingQueuePos FROM comicmetadata WHERE comicId = ?';
-  const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(db, getPosQuery, [
-    comicId,
-  ]);
+  const positionDbRes = await queryDb<{ publishingQueuePos: number }[]>(
+    db,
+    getPosQuery,
+    [comicId],
+    'Publishing queue position'
+  );
 
   if (positionDbRes.isError || !positionDbRes.result) {
     return makeDbErr(positionDbRes, 'Error moving comic in publishing queue', logCtx);
@@ -36,7 +39,8 @@ export async function moveComicInQueue(
   const moveOtherDbRes = await queryDbExec(
     db,
     moveOtherComicQuery,
-    moveOtherComicQueryParams
+    moveOtherComicQueryParams,
+    'Move comic in publishing queue'
   );
   if (moveOtherDbRes.isError) {
     return makeDbErr(
@@ -46,7 +50,12 @@ export async function moveComicInQueue(
     );
   }
 
-  const moveComicDbRes = await queryDbExec(db, moveComicQuery, moveComicQueryParams);
+  const moveComicDbRes = await queryDbExec(
+    db,
+    moveComicQuery,
+    moveComicQueryParams,
+    'Move comic in publishing queue'
+  );
   if (moveComicDbRes.isError) {
     return makeDbErr(
       moveComicDbRes,
@@ -68,7 +77,7 @@ export async function recalculatePublishingQueue(
     ORDER BY publishingQueuePos ASC
   `;
 
-  const queueDbRes = await queryDb<ComicInQueue[]>(db, query);
+  const queueDbRes = await queryDb<ComicInQueue[]>(db, query, null, 'Publishing queue');
   if (queueDbRes.isError) {
     return makeDbErr(queueDbRes, 'Error getting comics in queue');
   }

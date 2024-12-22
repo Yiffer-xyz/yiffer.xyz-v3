@@ -160,7 +160,12 @@ export async function action(args: ActionFunctionArgs) {
     VALUES (?, ?, ?)`;
   const insertParams = [user.userId, telegram.toString().trim(), notes];
 
-  const insertDbRes = await queryDbExec(db, insertQuery, insertParams);
+  const insertDbRes = await queryDbExec(
+    db,
+    insertQuery,
+    insertParams,
+    'Mod application creation'
+  );
   if (insertDbRes.isError) {
     logApiError(undefined, {
       logMessage: 'Error creating mod application',

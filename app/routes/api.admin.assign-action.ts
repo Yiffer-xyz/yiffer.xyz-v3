@@ -59,7 +59,7 @@ async function assignActionToMod(
   const query = `UPDATE ${table} SET ${modIdColumn} = ? WHERE ${identifyingColumn} = ?`;
   const queryParams = [modId, actionId];
 
-  const dbRes = await queryDbExec(db, query, queryParams);
+  const dbRes = await queryDbExec(db, query, queryParams, 'Assign action to mod');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error assigning action to mod', {
       actionId,

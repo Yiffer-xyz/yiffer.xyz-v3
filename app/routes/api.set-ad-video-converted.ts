@@ -33,7 +33,7 @@ export async function setAdVideoConverted(
 ): Promise<ApiError | undefined> {
   const query = `UPDATE advertisement SET videoSpecificFileType = NULL WHERE id = ?`;
   const params = [adId];
-  const dbRes = await queryDbExec(db, query, params);
+  const dbRes = await queryDbExec(db, query, params, 'Ad video converted');
 
   if (dbRes.isError) return makeDbErr(dbRes, 'Error setting ad video converted');
 }
