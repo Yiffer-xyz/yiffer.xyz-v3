@@ -213,6 +213,7 @@ export type User = {
   banTime?: Date;
   lastActionTime?: Date;
   modNotes?: string;
+  hasCompletedConversion: boolean;
 };
 
 export type ModApplication = {
@@ -458,3 +459,10 @@ export type UIPreferences = {
 };
 
 export type AdPaymentMethod = 'now' | 'free-trial';
+
+// Ratings from the old site, from 1-10. Let users convert.
+export type OldComicRating = {
+  comicId: number;
+  userId: number;
+  rating: number;
+};

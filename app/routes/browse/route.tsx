@@ -22,6 +22,8 @@ import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
+import { getOldComicRatingSummary } from '~/route-funcs/get-old-comic-ratings';
+import OldComicRatingsInfo from './OldComicRatings';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -50,14 +52,28 @@ export async function loader(args: LoaderFunctionArgs) {
     db: args.context.cloudflare.env.DB,
     adType: 'topSmall',
   });
+  const oldComicRatingsPromise = getOldComicRatingSummary(
+    args.context.cloudflare.env.DB,
+    user?.userId
+  );
 
-  const [comicsRes, adRes] = await Promise.all([comicsResPromise, adPromise]);
+  const [comicsRes, adRes, oldComicRatingsRes] = await Promise.all([
+    comicsResPromise,
+    adPromise,
+    oldComicRatingsPromise,
+  ]);
 
   if (comicsRes.err) {
     return processApiError('Error getting comics, getComicsPaginated', comicsRes.err);
   }
   if (adRes.err) {
     return processApiError('Error getting ad, getAdForViewing', adRes.err);
+  }
+  if (oldComicRatingsRes.err) {
+    return processApiError(
+      'Error getting old comic ratings, getOldComicRatings',
+      oldComicRatingsRes.err
+    );
   }
 
   return {
@@ -68,6 +84,7 @@ export async function loader(args: LoaderFunctionArgs) {
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     adsPath: args.context.cloudflare.env.ADS_PATH,
     isLoggedIn: !!user,
+    oldComicRatings: oldComicRatingsRes.result,
   };
 }
 
@@ -82,6 +99,7 @@ export default function BrowsePage() {
     adsPath,
     topAd,
     isLoggedIn,
+    oldComicRatings,
   } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
@@ -117,6 +135,8 @@ export default function BrowsePage() {
           IconRight={RiArrowRightLine}
         />
       </div>
+
+      {oldComicRatings.length > 0 && <OldComicRatingsInfo oldRatings={oldComicRatings} />}
 
       <SearchFilter browseUtilities={browseUtilities} isLoggedIn={isLoggedIn} />
 

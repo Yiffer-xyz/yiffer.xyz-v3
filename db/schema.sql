@@ -21,6 +21,7 @@ CREATE TABLE `user` (
 `banTimestamp` TIMESTAMP NULL DEFAULT NULL,
 `lastActionTimestamp` TIMESTAMP NULL DEFAULT NULL,
 `modNotes` TEXT NULL DEFAULT NULL,
+`hasCompletedConversion` TINYINTEGER NOT NULL DEFAULT '1',
 PRIMARY KEY (`id`)
 );
  
@@ -440,3 +441,22 @@ FOREIGN KEY (`keywordId`)
 REFERENCES `keyword` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+------------------------------------------------------
+-- OLD COMIC RATING
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `oldcomicrating` (
+`comicId` INTEGER  NOT NULL,
+`userId` INTEGER  NOT NULL,
+`rating` INTEGER  NOT NULL,
+PRIMARY KEY (`comicId`, `userId`),
+FOREIGN KEY (`comicId`)
+REFERENCES `comic` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_userId ON oldcomicrating(userId);

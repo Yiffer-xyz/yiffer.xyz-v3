@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 export type BaseCheckboxProps = {
-  label: string;
+  label?: string;
   disabled?: boolean;
   className?: string;
 };
@@ -32,7 +32,7 @@ export default function Checkbox({
   });
 
   const disabledClass = disabled ? 'text-gray-700' : 'hover:cursor-pointer';
-  const fullClassname = `block relative select-none pl-7 
+  const fullClassname = `block relative select-none pl-7
     outline-none w-fit ${disabledClass} ${className} `;
 
   function onKeyPressed(keyEvent: KeyboardEvent<HTMLLabelElement>) {
@@ -57,7 +57,12 @@ export default function Checkbox({
   }
 
   return (
-    <label className={fullClassname} {...props} onKeyPress={e => onKeyPressed(e)}>
+    <label
+      className={fullClassname}
+      {...props}
+      onKeyPress={e => onKeyPressed(e)}
+      style={{ minHeight: 22 }}
+    >
       {label}
 
       <input

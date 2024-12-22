@@ -7,11 +7,15 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-type DbUser = Omit<User, 'createdTime' | 'banTime' | 'lastActionTime' | 'isBanned'> & {
+type DbUser = Omit<
+  User,
+  'createdTime' | 'banTime' | 'lastActionTime' | 'isBanned' | 'hasCompletedConversion'
+> & {
   createdTime: string;
   banTime: string;
   lastActionTime: string;
   isBanned: 0 | 1;
+  hasCompletedConversion: 0 | 1;
 };
 
 export async function searchUsers(
@@ -20,7 +24,8 @@ export async function searchUsers(
 ): ResultOrErrorPromise<User[]> {
   const searchQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason,
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes,
+      hasCompletedConversion
     FROM user
     WHERE username LIKE ? OR email LIKE ?
   `;
@@ -43,7 +48,7 @@ export async function getUserById(
 ): ResultOrErrorPromise<User> {
   const userQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason, 
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes, hasCompletedConversion
     FROM user
     WHERE id = ?
     LIMIT 1
@@ -65,7 +70,7 @@ export async function getUserByEmail(
 ): ResultOrNotFoundOrErrorPromise<User> {
   const userQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes,
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion
     FROM user
     WHERE email = ?
     LIMIT 1
@@ -91,5 +96,6 @@ function dbUserToUser(user: DbUser): User {
     createdTime: parseDbDateStr(user.createdTime),
     banTime: user.banTime ? parseDbDateStr(user.banTime) : undefined,
     lastActionTime: user.lastActionTime ? parseDbDateStr(user.lastActionTime) : undefined,
+    hasCompletedConversion: !!user.hasCompletedConversion,
   };
 }
