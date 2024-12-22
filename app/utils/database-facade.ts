@@ -55,7 +55,7 @@ export async function queryDbMultiple<T>(
           queriesWithParams[i].queryName.length > 0
         ) {
           // @ts-ignore
-          processDbQueryMeta(db, 'read', queriesWithParams[i].queryName, res.meta);
+          await processDbQueryMeta(db, 'read', queriesWithParams[i].queryName, res.meta);
         }
         results.push(res.results);
       }
@@ -98,7 +98,7 @@ export async function queryDb<T>(
       };
     } else {
       if (queryName && queryName.length > 0) {
-        processDbQueryMeta(db, 'read', queryName, response.meta);
+        await processDbQueryMeta(db, 'read', queryName, response.meta);
       }
       return {
         isError: false,
@@ -130,7 +130,7 @@ export async function queryDbExec(
       };
     } else {
       if (queryName && queryName.length > 0) {
-        processDbQueryMeta(db, 'write', queryName, res.meta);
+        await processDbQueryMeta(db, 'write', queryName, res.meta);
       }
       return {
         isError: false,
@@ -147,21 +147,25 @@ export async function queryDbExec(
   }
 }
 
-function processDbQueryMeta(
+async function processDbQueryMeta(
   db: D1Database,
   queryType: 'read' | 'write',
   queryName: string,
   meta: D1Response['meta']
 ) {
+  const shouldLog = Math.random() > 0;
+
   const numRows = queryType === 'read' ? meta.rows_read : meta.rows_written;
 
-  const analyticsQuery = db
-    .prepare(
-      `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time) VALUES (?, ?, ?, ?)`
-    )
-    .bind(queryName, numRows, queryType, meta.duration);
+  if (shouldLog) {
+    const analyticsQuery = db
+      .prepare(
+        `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time) VALUES (?, ?, ?, ?)`
+      )
+      .bind(queryName, numRows, queryType, meta.duration);
 
-  analyticsQuery.run();
+    await analyticsQuery.run();
+  }
 
   console.log(
     `${numRows.toString().padStart(6)} ${meta.duration.toString().padStart(3)}  ${queryType.substring(0, 1)}  ${queryName}`
