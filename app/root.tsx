@@ -15,6 +15,7 @@ import {
   useMatches,
   useNavigation,
   useRouteError,
+  useLocation,
 } from '@remix-run/react';
 import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
 import clsx from 'clsx';
@@ -34,7 +35,9 @@ import './tailwind.css';
 import './main.css';
 import { getUserSession } from './utils/auth.server';
 import { YifferErrorBoundary } from './utils/error';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+
+import * as gtag from './utils/gtag.client';
 
 export const links: LinksFunction = () => [
   {
@@ -63,16 +66,21 @@ export const meta: MetaFunction = () => [
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const uiPrefSession = await getUIPrefSession(request);
+
   const userSession = await getUserSession(
     request,
     context.cloudflare.env.JWT_CONFIG_STR
   );
 
+  const gaTrackingId = context.cloudflare.env.GA_TRACKING_ID;
+
   const data = {
     uiPref: uiPrefSession.getUiPref(),
     user: userSession,
     frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
+    gaTrackingId,
   };
+
   return data;
 }
 
@@ -107,7 +115,31 @@ function App() {
           isLoading ? 'opacity-70 dark:opacity-80' : ''
         }`}
       >
-        <Layout frontPageUrl={data.frontPageUrl} user={data.user}>
+        {!data.gaTrackingId ? null : (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${data.gaTrackingId}`}
+            />
+            <script
+              async
+              id="gtag-init"
+              dangerouslySetInnerHTML={{
+                __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '${data.gaTrackingId}', {
+                  page_path: window.location.pathname,
+                });
+              `,
+              }}
+            />
+          </>
+        )}
+
+        <Layout user={data.user} gaTrackingId={data.gaTrackingId}>
           <Outlet />
         </Layout>
         <ScrollRestoration />
@@ -119,18 +151,26 @@ function App() {
 }
 
 function Layout({
-  frontPageUrl,
   user,
   excludeLogin = false,
+  gaTrackingId,
   children,
 }: {
-  frontPageUrl: string;
   user: UserSession | null;
   excludeLogin?: boolean;
+  gaTrackingId: string;
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
   const matches = useMatches();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (gaTrackingId?.length) {
+      console.log('pageview', location.pathname, gaTrackingId);
+      gtag.pageview(location.pathname, gaTrackingId);
+    }
+  }, [location, gaTrackingId]);
 
   const isLoggedIn = !!user;
   const isMod = user?.userType === 'admin' || user?.userType === 'moderator';
@@ -235,7 +275,7 @@ export function ErrorBoundary() {
         <Links />
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        <Layout frontPageUrl={'https://new.testyiffer.xyz'} user={null} excludeLogin>
+        <Layout user={null} excludeLogin gaTrackingId={data.gaTrackingId}>
           <YifferErrorBoundary />
         </Layout>
       </body>

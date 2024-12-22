@@ -13,4 +13,5 @@ interface Env {
   IMAGES_SERVER_URL: string;
   DB: D1Database;
   CRON_KEY: string;
+  GA_TRACKING_ID: string;
 }
