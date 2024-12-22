@@ -158,7 +158,7 @@ function Layout({
 }: {
   user: UserSession | null;
   excludeLogin?: boolean;
-  gaTrackingId: string;
+  gaTrackingId?: string;
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
@@ -275,7 +275,7 @@ export function ErrorBoundary() {
         <Links />
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        <Layout user={null} excludeLogin gaTrackingId={data.gaTrackingId}>
+        <Layout user={null} excludeLogin>
           <YifferErrorBoundary />
         </Layout>
       </body>
