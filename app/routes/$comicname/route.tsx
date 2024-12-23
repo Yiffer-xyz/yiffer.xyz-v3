@@ -172,6 +172,7 @@ export default function ComicPage() {
               comic={comic}
               setIsManagingTags={setIsManagingTags}
               isLoggedIn={isLoggedIn}
+              isMod={isMod}
             />
           )}
 

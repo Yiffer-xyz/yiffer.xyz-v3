@@ -167,7 +167,7 @@ async function processDbQueryMeta(
     await analyticsQuery.run();
   }
 
-  console.log(
-    `${numRows.toString().padStart(6)} ${meta.duration.toString().padStart(3)}  ${queryType.substring(0, 1)}  ${queryName}`
-  );
+  // console.log(
+  //   `${numRows.toString().padStart(6)} ${meta.duration.toString().padStart(3)}  ${queryType.substring(0, 1)}  ${queryName}`
+  // );
 }

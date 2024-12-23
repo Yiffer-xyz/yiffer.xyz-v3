@@ -13,12 +13,14 @@ type ComicContributeProps = {
   comic: Comic;
   setIsManagingTags: (isManagingTags: boolean) => void;
   isLoggedIn: boolean;
+  isMod: boolean;
 };
 
 export default function ComicManageTags({
   comic,
   setIsManagingTags,
   isLoggedIn,
+  isMod,
 }: ComicContributeProps) {
   const [newTagList, setNewTagList] = useState<Tag[]>(comic.tags);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -87,7 +89,7 @@ export default function ComicManageTags({
         overrideOnCloseFunc={onCancel}
       >
         <p className="font-normal">Thanks for your suggestion!</p>
-        {isLoggedIn ? (
+        {isLoggedIn && !isMod && (
           <p className="font-normal">
             You can follow your submission's progress on the{' '}
             <Link
@@ -98,7 +100,15 @@ export default function ComicManageTags({
               IconRight={MdArrowForward}
             />
           </p>
-        ) : (
+        )}
+
+        {isMod && (
+          <p className="font-normal">
+            Since you're a mod, your changes have been applied immediately.
+          </p>
+        )}
+
+        {!isLoggedIn && (
           <p className="font-normal">
             Next time, if you log in, you can follow your submission's progress and earn
             contribution points for it.

@@ -43,7 +43,7 @@ export async function action(args: ActionFunctionArgs) {
   return createSuccessJson();
 }
 
-async function processTagSuggestion(
+export async function processTagSuggestion(
   db: D1Database,
   modId: number,
   suggestionGroupId: number,

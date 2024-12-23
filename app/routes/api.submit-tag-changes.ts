@@ -8,6 +8,8 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { processTagSuggestion } from './api.admin.process-tag-suggestion';
+import { getTagSuggestionItemsByGroupId } from '~/route-funcs/get-tagsuggestion-items';
 
 export { noGetRoute as loader };
 
@@ -38,7 +40,8 @@ export async function action(args: ActionFunctionArgs) {
     body.newTagIDs,
     body.removedTagIDs,
     user?.userId,
-    args.request.headers.get('CF-Connecting-IP') || 'unknown'
+    args.request.headers.get('CF-Connecting-IP') || 'unknown',
+    user?.userType === 'moderator' || user?.userType === 'admin'
   );
 
   if (err) {
@@ -53,7 +56,8 @@ export async function submitTagChanges(
   newTagIDs: number[],
   removedTagIDs: number[],
   userId: number | undefined,
-  userIP: string
+  userIP: string,
+  isMod: boolean
 ): Promise<ApiError | undefined> {
   const logCtx = { userId, userIP, comicId, newTagIDs, removedTagIDs };
 
@@ -100,5 +104,23 @@ export async function submitTagChanges(
   );
   if (insertAllItemsRes.isError) {
     return makeDbErr(insertAllItemsRes, 'Error inserting tag suggestion items', logCtx);
+  }
+
+  // Approve immediately if mod
+  if (isMod && userId) {
+    const suggestionItemsRes = await getTagSuggestionItemsByGroupId(db, groupId);
+    if (suggestionItemsRes.err) {
+      return processApiError(
+        'Error getting tag suggestion items',
+        suggestionItemsRes.err
+      );
+    }
+
+    const approvedItems = suggestionItemsRes.result.map(i => ({
+      ...i,
+      isApproved: true,
+    }));
+
+    await processTagSuggestion(db, userId, groupId, comicId, approvedItems, userId);
   }
 }
