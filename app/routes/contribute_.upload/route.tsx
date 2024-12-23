@@ -67,6 +67,10 @@ export default function Upload() {
       if (submitFetcher.success) setStep('success');
       if (submitFetcher.isError) setError(submitFetcher.errorMessage);
     },
+    onError: () => {
+      setIsSubmitting(false);
+      setError('Error submitting upload');
+    },
   });
 
   useEffect(() => {

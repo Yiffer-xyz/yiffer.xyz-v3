@@ -42,7 +42,7 @@ export async function processUpload(
     // TODO-db: rollback artist and comic and metadata if failure
   }
 
-  if (uploadBody.tagIds) {
+  if (uploadBody.tagIds && uploadBody.tagIds.length > 0) {
     const err = await createComicTags(db, uploadBody.tagIds, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
     // TODO-db: rollback artist and comic and metadata (and links) if failure
