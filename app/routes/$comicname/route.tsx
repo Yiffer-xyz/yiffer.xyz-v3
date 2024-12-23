@@ -133,6 +133,7 @@ export default function ComicPage() {
                   updateStars={updateStars}
                   toggleBookmark={toggleBookmark}
                   isLoggedIn={isLoggedIn}
+                  source="comic-page"
                   className="flex"
                 />
 

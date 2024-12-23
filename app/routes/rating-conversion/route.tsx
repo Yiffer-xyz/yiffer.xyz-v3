@@ -19,6 +19,7 @@ import {
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import posthog from 'posthog-js';
 
 export function shouldRevalidate() {
   return false;
@@ -80,6 +81,7 @@ export default function RatingConversion() {
   }
 
   function convertRatings() {
+    posthog.capture('Old ratings converted');
     const validation = validateConversions(conversions);
     setValidationErrorMessage(validation.error ?? null);
     if (!validation.isValid) {

@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { RiArrowLeftLine, RiArrowRightLine } from 'react-icons/ri';
 import { colors } from 'tailwind.config';
 import { useUIPreferences } from '~/utils/theme-provider';
+import posthog from 'posthog-js';
 
 type PaginatorProps = {
   currentPage: number;
   numPages: number;
-  isLoading: boolean;
   onPageChange: (page: number) => void;
   className?: string;
 };
@@ -14,7 +14,6 @@ type PaginatorProps = {
 export default function Paginator({
   currentPage,
   numPages,
-  isLoading,
   onPageChange,
   className = '',
 }: PaginatorProps) {
@@ -38,7 +37,15 @@ export default function Paginator({
     >
       <button
         className="flex-grow bg-theme1-primary dark:bg-theme1-dark flex items-center justify-center h-full w-2"
-        onClick={() => currentPage >= 2 && onPageChange(currentPage - 1)}
+        onClick={() => {
+          if (currentPage >= 2) {
+            onPageChange(currentPage - 1);
+            posthog.capture('Paginated', {
+              page: currentPage - 1,
+              source: 'arrow-button',
+            });
+          }
+        }}
       >
         <RiArrowLeftLine className="text-text-light text-sm" />
       </button>
@@ -61,7 +68,10 @@ export default function Paginator({
                   }
                 : undefined
             }
-            onClick={() => !isDots && onPageChange(btnTxt as number)}
+            onClick={() => {
+              if (!isDots) onPageChange(btnTxt as number);
+              posthog.capture('Paginated', { page: btnTxt, source: 'number-button' });
+            }}
           >
             {btnTxt}
           </button>
@@ -69,7 +79,15 @@ export default function Paginator({
       })}
       <button
         className="flex-grow bg-theme2-primary dark:bg-theme2-dark flex items-center justify-center h-full w-2"
-        onClick={() => currentPage < numPages && onPageChange(currentPage + 1)}
+        onClick={() => {
+          if (currentPage < numPages) {
+            onPageChange(currentPage + 1);
+            posthog.capture('Paginated', {
+              page: currentPage + 1,
+              source: 'arrow-button',
+            });
+          }
+        }}
       >
         <RiArrowRightLine className="text-text-light text-sm" />
       </button>

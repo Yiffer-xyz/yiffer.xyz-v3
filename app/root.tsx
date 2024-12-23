@@ -260,7 +260,11 @@ function Layout({
           </div>
 
           <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            onClick={() => {
+              const newTheme = theme === 'light' ? 'dark' : 'light';
+              setTheme(newTheme);
+              posthog.capture('Color theme changed', { theme: newTheme });
+            }}
             className="text-gray-200 cursor-pointer dark:text-blue-strong-300"
           >
             <MdLightbulbOutline className="mb-1" />
@@ -308,6 +312,7 @@ function PosthogInit({
       api_host: host,
       person_profiles: 'always',
       debug: true,
+      autocapture: false,
     });
     if (userSession) {
       posthog.identify(userSession.userId.toString(), {

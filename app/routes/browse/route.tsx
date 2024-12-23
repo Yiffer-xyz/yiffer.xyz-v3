@@ -146,7 +146,6 @@ export default function BrowsePage() {
         <Paginator
           numPages={numberOfPages}
           currentPage={page}
-          isLoading={false}
           onPageChange={page => onPageChange(page, { scrollTop: false })}
           className="mt-6"
         />
@@ -178,7 +177,6 @@ export default function BrowsePage() {
           <Paginator
             numPages={numberOfPages}
             currentPage={page}
-            isLoading={false}
             onPageChange={page => onPageChange(page, { scrollTop: true })}
           />
         )}

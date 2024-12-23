@@ -7,6 +7,7 @@ import IconButton from '~/ui-components/Buttons/IconButton';
 import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 import { padPageNumber } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
+import posthog from 'posthog-js';
 
 const pageDisplays: PageDisplay[] = [
   'Fit',
@@ -80,18 +81,25 @@ export default function DisplayOptionsAndPages({
 
   function onChangeReverseOrder() {
     setIsSetDefaultHidden(false);
-    setIsReverseOrderLocal(!currentIsReverseOrder);
+    const newIsReverseOrder = !currentIsReverseOrder;
+    setIsReverseOrderLocal(newIsReverseOrder);
+    posthog.capture('Page order reverse toggled', { active: newIsReverseOrder });
   }
 
   function onChangeDisplay(newDisplay: PageDisplay) {
     setIsSetDefaultHidden(false);
     setIndividualPageStyles(Array(comic.numberOfPages).fill(undefined));
     setDisplayLocal(newDisplay);
+    posthog.capture('Page display changed', { display: newDisplay });
   }
 
   function onChangeClickToToggleDisplay() {
     setIsSetDefaultHidden(false);
-    setClickPageToToggleLocal(!currentClickToToggleDisplay);
+    const newClickToToggleDisplay = !currentClickToToggleDisplay;
+    setClickPageToToggleLocal(newClickToToggleDisplay);
+    posthog.capture('Tap page cycle display toggled', {
+      active: newClickToToggleDisplay,
+    });
   }
 
   const [style, setStyle] = useState(displayToPageStyle(displaySaved, true));
@@ -119,6 +127,8 @@ export default function DisplayOptionsAndPages({
     if (individualPageStyles[pageNumber] !== undefined) {
       newIndex = (individualPageStyles[pageNumber]! + 1) % pageDisplays.length;
     }
+
+    posthog.capture('Page clicked, cycle display');
 
     individualPageStyles[pageNumber] = newIndex;
     setIndividualPageStyles([...individualPageStyles]);

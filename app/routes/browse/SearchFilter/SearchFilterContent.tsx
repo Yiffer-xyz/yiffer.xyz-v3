@@ -15,6 +15,7 @@ import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
 import { areArraysEqual } from '~/utils/general';
 import SwitchToggleSmall from '~/ui-components/Buttons/SwitchToggleSmall';
+import posthog from 'posthog-js';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -82,6 +83,7 @@ export default function SearchFilterContent({
   const debouncedSearch = useDebounce(() => {
     setPage(1, { scrollTop: false });
     setSearch(internalSearch);
+    posthog.capture('Filter > Search changed');
   });
 
   function onSearchChange(newVal: string) {
@@ -115,6 +117,7 @@ export default function SearchFilterContent({
     _setTags([..._tags, tag]);
     addTagID(tag.id);
     setPage(1, { scrollTop: false });
+    posthog.capture('Filter > Tag selected');
   }
 
   function onTagDeselected(tag: Tag) {
@@ -132,6 +135,11 @@ export default function SearchFilterContent({
     if (areArraysEqual(_categories, categories)) return;
     setCategories(_categories);
     setPage(1, { scrollTop: false });
+    if (!(_categories.length === 1 && _categories[0] === 'All')) {
+      posthog.capture('Filter > Category changed', {
+        categories: _categories,
+      });
+    }
   }
 
   // Local vars for a more snappy feel
@@ -143,6 +151,7 @@ export default function SearchFilterContent({
     _setSort(newSort);
     setSort(newSort);
     setPage(1, { scrollTop: false });
+    posthog.capture('Filter > Sort changed', { sort: newSort });
   };
 
   // Local vars for a more snappy feel
@@ -154,6 +163,7 @@ export default function SearchFilterContent({
     _setBookmarkedOnly(newVal);
     setBookmarkedOnly(newVal);
     setPage(1, { scrollTop: false });
+    if (newVal) posthog.capture('Filter > Bookmarked only changed', { shown: newVal });
   };
 
   const availableSortTypes = isLoggedIn
@@ -256,7 +266,10 @@ export default function SearchFilterContent({
         <SwitchToggleSmall
           title={comicCardTags ? 'Tags shown' : 'Tags hidden'}
           checked={comicCardTags}
-          onChange={() => setComicCardTags(!comicCardTags)}
+          onChange={() => {
+            setComicCardTags(!comicCardTags);
+            posthog.capture('Filter > Tags shown changed', { shown: comicCardTags });
+          }}
           className="w-[130px]"
         />
 

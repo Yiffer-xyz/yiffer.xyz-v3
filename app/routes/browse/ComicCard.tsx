@@ -15,6 +15,7 @@ import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import { useMemo, useRef, useState } from 'react';
 import ComicRateBookmark from '../$comicname/ComicRateBookmark';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import posthog from 'posthog-js';
 
 const mouseLeaveTimeout = 25;
 
@@ -49,6 +50,7 @@ export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCar
 
   function toggleBookmark() {
     toggleBookmarkFetcher.submit({ comicId: comic.id });
+    posthog.capture('Comic bookmark toggled', { source: 'comic-card-title' });
   }
 
   const [isHovering, setIsHovering] = useState(false);
@@ -120,6 +122,7 @@ export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCar
             toggleBookmark={toggleBookmark}
             isLoggedIn
             small
+            source="comic-card"
             className="justify-evenly w-full pl-[7px]"
           />
         </div>
@@ -212,7 +215,11 @@ export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCar
               <TagElement
                 tag={tag}
                 isActive={!showStaticTags && tagIDs.includes(tag.id)}
-                onClick={tagId => !showStaticTags && addTagID(tagId)}
+                onClick={tagId => {
+                  if (showStaticTags) return;
+                  addTagID(tagId);
+                  posthog.capture('Card tag clicked');
+                }}
                 disableHoverEffects={showStaticTags}
                 key={tag.id}
               />

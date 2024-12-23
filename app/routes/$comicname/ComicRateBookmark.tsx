@@ -3,6 +3,7 @@ import { IoStar } from 'react-icons/io5';
 import type { Comic, ComicForBrowse } from '~/types/types';
 import clsx from 'clsx';
 import { useNavigate } from '@remix-run/react';
+import posthog from 'posthog-js';
 
 type ComicInfoProps = {
   comic: Comic | ComicForBrowse;
@@ -10,6 +11,7 @@ type ComicInfoProps = {
   toggleBookmark: () => void;
   isLoggedIn: boolean;
   small?: boolean;
+  source: 'comic-page' | 'comic-card';
   className?: string;
 };
 
@@ -19,6 +21,7 @@ export default function ComicRateBookmark({
   toggleBookmark,
   isLoggedIn,
   small = false,
+  source,
   className,
 }: ComicInfoProps) {
   const yourStars = comic.yourStars ?? 0;
@@ -29,7 +32,7 @@ export default function ComicRateBookmark({
       navigate('/login');
       return;
     }
-
+    posthog.capture('Comic rated', { source });
     if (yourStars === stars) {
       updateStars(0);
     } else {
@@ -42,6 +45,7 @@ export default function ComicRateBookmark({
       navigate('/login');
       return;
     }
+    posthog.capture('Comic bookmark toggled', { source });
     toggleBookmark();
   }
 
