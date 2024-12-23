@@ -1,13 +1,14 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
+import type { JwtConfig, SimpleUser, SpammableAction, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';
 import { queryDb, queryDbExec, queryDbMultiple } from './database-facade';
-import type { ApiError } from './request-helpers';
+import type { ApiError, ResultOrErrorPromise } from './request-helpers';
 import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-helpers';
 import { createWelcomeEmail, sendEmail } from './send-email';
 import bcrypt from 'bcryptjs';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
+import stringDistance from './string-distance';
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {
@@ -330,4 +331,78 @@ function cookiesStringToYifferSessionCookie(
     return;
   }
   return yifferSessionCookie.slice(cookieName.length + 1);
+}
+
+export async function logIPAndVerifyNoSignupSpam(
+  db: D1Database,
+  email: string,
+  ip?: string | null
+): ResultOrErrorPromise<{ isSpam: boolean }> {
+  if (!ip) {
+    return { result: { isSpam: false } };
+  }
+
+  const getRecentActionsQuery =
+    'SELECT * FROM spammableaction WHERE ip = ? AND actionType = ?';
+  const getRecentActionsQueryParams = [ip, 'signup'];
+  const getRecentActionsRes = await queryDb<SpammableAction[]>(
+    db,
+    getRecentActionsQuery,
+    getRecentActionsQueryParams,
+    'Get spammable actions'
+  );
+
+  if (getRecentActionsRes.isError) {
+    return makeDbErrObj(getRecentActionsRes, 'Error getting spammable actions');
+  }
+
+  if (getRecentActionsRes.result.length > 0) {
+    const vaguelySimilarEmails = [email];
+    for (const recentUser of getRecentActionsRes.result) {
+      if (!recentUser.email) continue;
+      const emailDistance = stringDistance(recentUser.email, email);
+      if (emailDistance < 8) {
+        vaguelySimilarEmails.push(recentUser.email);
+      }
+    }
+
+    const allSimilarEmails = getSimilarEmails(vaguelySimilarEmails);
+    if (allSimilarEmails.length >= 0) {
+      return { result: { isSpam: true } };
+    }
+  }
+
+  const insertQuery =
+    'INSERT INTO spammableaction (ip, email, actionType) VALUES (?, ?, ?, ?)';
+  const insertQueryParams = [ip, email, 'signup'];
+  const insertQueryRes = await queryDbExec(
+    db,
+    insertQuery,
+    insertQueryParams,
+    'Log spammable action'
+  );
+
+  if (insertQueryRes.isError) {
+    return makeDbErrObj(insertQueryRes, 'Error logging spammable action');
+  }
+
+  return { result: { isSpam: false } };
+}
+
+function getSimilarEmails(emailList: string[]) {
+  const similarEmails = new Set<string>();
+
+  for (let i = 0; i < emailList.length; i++) {
+    for (let j = 0; j < emailList.length; j++) {
+      if (i === j) {
+        continue;
+      }
+      if (stringDistance(emailList[i], emailList[j]) <= 3) {
+        similarEmails.add(emailList[i]);
+        similarEmails.add(emailList[j]);
+      }
+    }
+  }
+
+  return [...similarEmails];
 }

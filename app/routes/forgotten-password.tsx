@@ -1,9 +1,11 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/cloudflare';
+import { useEffect } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import TopGradientBox from '~/ui-components/TopGradientBox';
+import { logIPAndVerifyNoSignupSpam } from '~/utils/auth.server';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
   create400Json,
@@ -12,6 +14,7 @@ import {
 } from '~/utils/request-helpers';
 import { resetPassword } from '~/utils/reset-password.server';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import posthog from 'posthog-js';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -24,6 +27,12 @@ export default function ForgottenPassword() {
     method: 'post',
     toastError: false,
   });
+
+  useEffect(() => {
+    if (fetcher.errorMessage && fetcher.errorMessage.toLowerCase().includes('spam')) {
+      posthog.capture('Spam forgotten password detected');
+    }
+  }, [fetcher.errorMessage]);
 
   return (
     <div className="mx-auto w-full sm:w-[420px] px-8">
@@ -101,11 +110,28 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Invalid email');
   }
 
+  const ip =
+    args.request.headers.get('CF-Connecting-IP') ||
+    args.request.headers.get('cf-connecting-ip');
+
+  const spamResult = await logIPAndVerifyNoSignupSpam(
+    args.context.cloudflare.env.DB,
+    email,
+    ip
+  );
+
+  if (spamResult.err) {
+    return processApiError('Error in /forgotten-password', spamResult.err, { email });
+  } else if (spamResult.result.isSpam) {
+    return create400Json('Spam detected');
+  }
+
   const err = await resetPassword(
     args.context.cloudflare.env.DB,
     args.context.cloudflare.env.POSTMARK_TOKEN,
     args.context.cloudflare.env.FRONT_END_URL_BASE,
-    email
+    email,
+    ip
   );
 
   if (err) {

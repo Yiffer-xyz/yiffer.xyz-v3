@@ -466,3 +466,10 @@ export type OldComicRating = {
   userId: number;
   rating: number;
 };
+
+export type SpammableAction = {
+  ip: string;
+  actionType: string;
+  email?: string;
+  username?: string;
+};

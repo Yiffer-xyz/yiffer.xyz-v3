@@ -1,11 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { signup } from '~/utils/auth.server.js';
+import { logIPAndVerifyNoSignupSpam, signup } from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
   create400Json,
@@ -13,6 +13,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import posthog from 'posthog-js';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Signup() {
@@ -25,6 +26,15 @@ export default function Signup() {
     method: 'post',
     toastError: false,
   });
+
+  useEffect(() => {
+    if (fetcher.errorMessage && fetcher.errorMessage.toLowerCase().includes('spam')) {
+      posthog.capture('Spam signup detected', {
+        username,
+        email,
+      });
+    }
+  }, [email, fetcher.errorMessage, username]);
 
   return (
     <div className="mx-auto w-full sm:w-[400px] px-8">
@@ -140,6 +150,23 @@ export async function action(args: ActionFunctionArgs) {
   if (validationErr) {
     return create400Json(validationErr);
   }
+
+  const ip =
+    args.request.headers.get('CF-Connecting-IP') ||
+    args.request.headers.get('cf-connecting-ip');
+
+  const spamResult = await logIPAndVerifyNoSignupSpam(
+    args.context.cloudflare.env.DB,
+    email,
+    ip
+  );
+
+  if (spamResult.err) {
+    return processApiError('Error in /signup', spamResult.err, { username, email });
+  } else if (spamResult.result.isSpam) {
+    return create400Json('Spam signup detected');
+  }
+
   const { err, redirect, errorMessage } = await signup(
     username,
     email,
@@ -169,6 +196,9 @@ function getSignupValidationError(
   }
   if (username.length < 2 || username.length > 25) {
     return 'Username must be between 2 and 25 characters';
+  }
+  if (!username.match(/^[a-zA-Z0-9_-]+$/)) {
+    return 'Username can contain only letters, numbers, dashes, and underscores.';
   }
   if (!password || !password2) {
     return 'Missing password';
