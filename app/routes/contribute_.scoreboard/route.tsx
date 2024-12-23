@@ -99,8 +99,11 @@ export default function Scoreboard() {
       newExcludeMods === undefined ? excludeMods : newExcludeMods;
 
     let yearMonth = format(date, 'yyyy-MM');
-    if (newCategory === 'All time') yearMonth = 'all-time';
-    if (incrementBy !== undefined) yearMonth = format(newDate, 'yyyy-MM');
+    if (newCategory === 'All time' || (!newCategory && activeCategory === 'All time')) {
+      yearMonth = 'all-time';
+    } else if (incrementBy !== undefined) {
+      yearMonth = format(newDate, 'yyyy-MM');
+    }
 
     const foundCachedPoints = cachedPoints.find(
       cp => cp.yearMonth === yearMonth && cp.excludeMods === excludeMonthsValForQuery
@@ -217,7 +220,11 @@ export default function Scoreboard() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const scoresRes = await getTopScores(args.context.cloudflare.env.DB, undefined, false);
+  const scoresRes = await getTopScores(
+    args.context.cloudflare.env.DB,
+    format(new Date(), 'yyyy-MM'),
+    false
+  );
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
@@ -228,14 +235,16 @@ export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
   const yearMonthStr = yearMonth.toString();
+
   const res = await getTopScores(
     args.context.cloudflare.env.DB,
-    yearMonthStr === 'all-time' ? undefined : yearMonthStr,
+    yearMonthStr,
     excludeMods === 'true'
   );
   if (res.err) {
     return processApiError('Error in action of contribution scoreboard', res.err);
   }
+
   return {
     success: true,
     data: res.result,
@@ -287,6 +296,7 @@ async function getTopScores(
       excludeMods,
     });
   }
+
   return {
     result: topScoreEntriesToPointList(dbRes.result),
   };
@@ -319,5 +329,5 @@ function topScoreEntriesToPointList(
     };
   });
 
-  return topScoreRows;
+  return topScoreRows.sort((a, b) => b.points - a.points);
 }
