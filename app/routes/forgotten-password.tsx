@@ -130,8 +130,7 @@ export async function action(args: ActionFunctionArgs) {
     args.context.cloudflare.env.DB,
     args.context.cloudflare.env.POSTMARK_TOKEN,
     args.context.cloudflare.env.FRONT_END_URL_BASE,
-    email,
-    ip
+    email
   );
 
   if (err) {

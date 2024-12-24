@@ -15,6 +15,7 @@ import AdminSidebar, {
   mobileClosedBarW as mobileClosedSidebarW,
   sidebarWidth,
 } from './AdminSidebar';
+import { useEffect, useState } from 'react';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export type GlobalAdminContext = {
@@ -31,16 +32,27 @@ export default function Admin() {
   const { isLgUp, width } = useWindowSize();
   const globalContext = useLoaderData<typeof loader>();
 
+  // Little hack to avoid hydration errors & UI flickering while still
+  // having the sidebar behave nicely on both mobile and desktop
+  const [delay, setDelay] = useState(true);
+  useEffect(() => {
+    setTimeout(() => setDelay(false), 10);
+  }, []);
+
   return (
     <div className="pt-16 pb-20">
-      <AdminSidebar alwaysShow={isLgUp} delay={!width} />
+      {!delay && (
+        <>
+          <AdminSidebar alwaysShow={isLgUp} delay={!width} />
 
-      <div
-        className="pb-4 px-6 lg:px-8"
-        style={{ marginLeft: isLgUp ? sidebarWidth : mobileClosedSidebarW }}
-      >
-        <Outlet context={globalContext} />
-      </div>
+          <div
+            className="pb-4 px-6 lg:px-8"
+            style={{ marginLeft: isLgUp ? sidebarWidth : mobileClosedSidebarW }}
+          >
+            <Outlet context={globalContext} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

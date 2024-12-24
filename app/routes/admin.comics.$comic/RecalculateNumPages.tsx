@@ -41,7 +41,7 @@ export default function RecalculateNumPages({
       json;
     const wasNumPagesChanged = newNumPages !== comic.numberOfPages;
 
-    if (!wasChanged && !wasNumPagesChanged) {
+    if (!wasChanged) {
       setIsLoading(false);
       showSuccessToast(
         "No changes necessary, comic seems correct. Message admin if it's not.",
@@ -50,27 +50,41 @@ export default function RecalculateNumPages({
       );
       return;
     }
-
-    if (wasNumPagesChanged) {
-      const changes: ComicDataChanges = {
-        comicId: comic.id,
-        numberOfPages: newNumPages,
-      };
-      await updateComicFetcher.awaitSubmit({
-        body: JSON.stringify(changes),
-      });
+    if (wasChanged && !wasNumPagesChanged) {
+      setIsLoading(false);
+      showSuccessToast(
+        'Pages rearranged, num pages unchanged. Message admin if this is wrong.',
+        false,
+        theme
+      );
+      return;
     }
+
+    const changes: ComicDataChanges = {
+      comicId: comic.id,
+      numberOfPages: newNumPages,
+    };
+    await updateComicFetcher.awaitSubmit({
+      body: JSON.stringify(changes),
+    });
 
     setIsLoading(false);
     showSuccessToast('Successfully updated pages.', false, theme);
   }
 
   return (
-    <LoadingButton
-      text="Recalculate/fix pages"
-      onClick={onSubmit}
-      startIcon={LuRefreshCcw}
-      isLoading={isLoading || updateComicFetcher.isLoading}
-    />
+    <>
+      <LoadingButton
+        text="Recalculate/fix pages"
+        onClick={onSubmit}
+        startIcon={LuRefreshCcw}
+        isLoading={isLoading || updateComicFetcher.isLoading}
+      />
+      {(isLoading || updateComicFetcher.isLoading) && (
+        <p className="text-sm">
+          For large comics, this might take a while, patience please 🙏
+        </p>
+      )}
+    </>
   );
 }

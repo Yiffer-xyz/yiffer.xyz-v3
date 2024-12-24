@@ -96,6 +96,7 @@ export default function AdListCard({
               href={`/admin/users/${ad.user.id}`}
               text={ad.user.username}
               showRightArrow
+              isInsideParagraph
             />{' '}
             ・ {ad.user.email} ・ {ad.id}
           </p>
