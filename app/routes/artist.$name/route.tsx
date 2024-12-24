@@ -18,7 +18,7 @@ export const meta: MetaFunction = ({ data }) => {
 };
 
 export default function ArtistPage() {
-  const { artist, comics, notFound, queriedArtistName, pagesPath, isMod } =
+  const { artist, comics, notFound, queriedArtistName, pagesPath, isMod, isLoggedIn } =
     useLoaderData<LoaderData>();
 
   return (
@@ -60,6 +60,7 @@ export default function ArtistPage() {
                     comic={comic}
                     showStaticTags
                     pagesPath={pagesPath}
+                    isLoggedIn={isLoggedIn}
                   />
                 ))}
               </div>
@@ -80,6 +81,7 @@ type LoaderData = {
   queriedArtistName: string;
   pagesPath: string;
   isMod: boolean;
+  isLoggedIn: boolean;
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -92,6 +94,7 @@ export async function loader(args: LoaderFunctionArgs) {
     queriedArtistName: artistName ?? '',
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     isMod: user?.userType === 'admin' || user?.userType === 'moderator',
+    isLoggedIn: !!user,
   };
 
   if (!artistName) {

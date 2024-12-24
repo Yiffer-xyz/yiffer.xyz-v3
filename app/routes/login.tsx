@@ -13,16 +13,21 @@ import TopGradientBox from '~/ui-components/TopGradientBox';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { useState } from 'react';
 import TextInput from '~/ui-components/TextInput/TextInput';
+import { useLocation } from '@remix-run/react';
+import { useAuthRedirect } from '~/utils/general';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const location = useLocation();
 
   const fetcher = useGoodFetcher({
     method: 'post',
     toastError: false,
   });
+
+  const { redirectAfterAuthStr } = useAuthRedirect();
 
   return (
     <div className="mx-auto w-full sm:w-[400px] px-8">
@@ -73,7 +78,7 @@ export default function Login() {
               onClick={e => {
                 window.shouldCaptureUser = true;
                 e.preventDefault();
-                fetcher.submit({ username, password });
+                fetcher.submit({ username, password, redirect: redirectAfterAuthStr });
               }}
             />
           </div>
@@ -81,7 +86,7 @@ export default function Login() {
       </fetcher.Form>
 
       <div>
-        <Link href="/signup" text="Sign up" showRightArrow />
+        <Link href={`/signup${location.search}`} text="Sign up" showRightArrow />
       </div>
       <div className="mt-2">
         <Link href="/forgotten-password" text="Forgotten password?" showRightArrow />
@@ -97,21 +102,29 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
-  const { username: formUsername, password: formPassword } = Object.fromEntries(reqBody);
+  const {
+    username: formUsername,
+    password: formPassword,
+    redirect: formRedirect,
+  } = Object.fromEntries(reqBody);
 
   if (!formUsername || !formPassword) {
     return create400Json('Missing username or password');
   }
 
+  const redirectTo =
+    !formRedirect || formRedirect === 'null' ? undefined : formRedirect.toString().trim();
+
   const username = formUsername.toString().trim();
   const password = formPassword.toString().trim();
 
-  const { err, redirect, errorMessage } = await login(
+  const { err, redirect, errorMessage } = await login({
     username,
     password,
-    args.context.cloudflare.env.DB,
-    args.context.cloudflare.env.JWT_CONFIG_STR
-  );
+    db: args.context.cloudflare.env.DB,
+    jwtConfigStr: args.context.cloudflare.env.JWT_CONFIG_STR,
+    redirectTo,
+  });
 
   if (err) {
     return processApiError('Error in /login', err, { username, password });
@@ -119,5 +132,6 @@ export async function action(args: ActionFunctionArgs) {
   if (errorMessage) {
     return createAnyErrorCodeJson(401, errorMessage);
   }
+
   throw redirect;
 }

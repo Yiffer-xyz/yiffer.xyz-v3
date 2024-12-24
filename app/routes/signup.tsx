@@ -14,9 +14,12 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import posthog from 'posthog-js';
+import { useAuthRedirect } from '~/utils/general';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export default function Signup() {
+  const { redirectAfterAuthStr } = useAuthRedirect();
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -106,6 +109,7 @@ export default function Signup() {
                   email,
                   password,
                   password2,
+                  redirect: redirectAfterAuthStr,
                 });
               }}
             />
@@ -135,6 +139,7 @@ export async function action(args: ActionFunctionArgs) {
     email: formEmail,
     password: formPassword,
     password2: formPassword2,
+    redirect: formRedirect,
   } = Object.fromEntries(reqBody);
 
   if (!formUsername || !formEmail || !formPassword || !formPassword2) {
@@ -167,14 +172,18 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Spam signup detected');
   }
 
-  const { err, redirect, errorMessage } = await signup(
+  const redirectTo =
+    !formRedirect || formRedirect === 'null' ? undefined : formRedirect.toString().trim();
+
+  const { err, redirect, errorMessage } = await signup({
     username,
     email,
     password,
-    args.context.cloudflare.env.DB,
-    args.context.cloudflare.env.JWT_CONFIG_STR,
-    args.context.cloudflare.env.POSTMARK_TOKEN
-  );
+    db: args.context.cloudflare.env.DB,
+    jwtConfigStr: args.context.cloudflare.env.JWT_CONFIG_STR,
+    postmarkToken: args.context.cloudflare.env.POSTMARK_TOKEN,
+    redirectTo,
+  });
 
   if (err) {
     return processApiError('Error in /signup', err, { username, email });

@@ -39,6 +39,7 @@ import { useEffect, useMemo } from 'react';
 import posthog from 'posthog-js';
 
 import * as gtag from './utils/gtag.client';
+import { useAuthRedirect } from './utils/general';
 
 export const links: LinksFunction = () => [
   {
@@ -187,18 +188,20 @@ function Layout({
   const darkNavLinkColorStyle = 'dark:text-blue-strong-300';
   const navLinkStyle = `text-gray-200 font-semibold bg-none text-sm ${darkNavLinkColorStyle}`;
 
-  const isAdmin = useMemo(() => {
+  const isInAdminDashboard = useMemo(() => {
     return matches.some(
       match => match.pathname.includes('/admin/') || match.pathname.endsWith('/admin')
     );
   }, [matches]);
+
+  const { redirectSetOnLoginNavStr } = useAuthRedirect();
 
   return (
     <>
       <nav
         className={`flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:from-bgDark dark:to-bgDark
           px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20
-          ${isAdmin ? 'fixed lg:dark:border-b-3 lg:dark:border-b-gray-400' : ''}`}
+          ${isInAdminDashboard ? 'fixed lg:dark:border-b-3 lg:dark:border-b-gray-400' : ''}`}
       >
         <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">
@@ -252,7 +255,10 @@ function Layout({
               />
             </>
             {!isLoggedIn && !excludeLogin && (
-              <RemixLink to="/login" className={navLinkStyle}>
+              <RemixLink
+                to={`/login${redirectSetOnLoginNavStr}`}
+                className={navLinkStyle}
+              >
                 <RiLoginBoxLine className="inline-block" />
                 Log in
               </RemixLink>

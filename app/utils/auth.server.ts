@@ -19,12 +19,21 @@ type AuthResponse = {
 
 type UserWithPassword = SimpleUser & { password: string };
 
-export async function login(
-  username: string,
-  password: string,
-  db: D1Database,
-  jwtConfigStr: string
-): Promise<AuthResponse> {
+type LoginArgs = {
+  username: string;
+  password: string;
+  db: D1Database;
+  jwtConfigStr: string;
+  redirectTo?: string;
+};
+
+export async function login({
+  username,
+  password,
+  db,
+  jwtConfigStr,
+  redirectTo,
+}: LoginArgs): Promise<AuthResponse> {
   const { err, errorMessage, user } = await authenticate(db, username, password);
   if (err) {
     return { err: wrapApiError(err, 'Error in login func', { username, password }) };
@@ -33,18 +42,29 @@ export async function login(
     return { errorMessage };
   }
 
-  const redirect = await createUserSession(user as SimpleUser, jwtConfigStr);
+  const redirect = await createUserSession(user as SimpleUser, jwtConfigStr, redirectTo);
   return { redirect };
 }
 
-export async function signup(
-  username: string,
-  email: string,
-  password: string,
-  db: D1Database,
-  jwtConfigStr: string,
-  postmarkToken: string
-): Promise<AuthResponse> {
+type SignupArgs = {
+  username: string;
+  email: string;
+  password: string;
+  db: D1Database;
+  jwtConfigStr: string;
+  postmarkToken: string;
+  redirectTo?: string;
+};
+
+export async function signup({
+  username,
+  email,
+  password,
+  db,
+  jwtConfigStr,
+  postmarkToken,
+  redirectTo,
+}: SignupArgs): Promise<AuthResponse> {
   const usernameQuery = 'SELECT * FROM user WHERE username = ?';
   const emailQuery = 'SELECT * FROM user WHERE email = ?';
 
@@ -72,8 +92,6 @@ export async function signup(
   if (dbRes.result[1].length) {
     return { errorMessage: 'Email already exists' };
   }
-
-  // TODO: prevent spam, as in old api
 
   const hashedPassword = await hash(password, 8);
   const insertQuery = 'INSERT INTO user (username, password, email) VALUES (?, ?, ?)';
@@ -113,7 +131,7 @@ export async function signup(
     logApiError('Error sending welcome email in signup', err, { username, email });
   }
 
-  const redirect = await createUserSession(user, jwtConfigStr);
+  const redirect = await createUserSession(user, jwtConfigStr, redirectTo);
 
   return { redirect };
 }
@@ -253,7 +271,11 @@ export async function logout(jwtConfigStr: string) {
   return redirect('/', { headers });
 }
 
-export async function createUserSession(user: SimpleUser, jwtConfigStr: string) {
+export async function createUserSession(
+  user: SimpleUser,
+  jwtConfigStr: string,
+  redirectTo?: string
+) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
   // This one is for auth - will be verified on the server(s)
@@ -273,7 +295,7 @@ export async function createUserSession(user: SimpleUser, jwtConfigStr: string) 
   headers.append('Set-Cookie', sessionCookieHeader);
   headers.append('Set-Cookie', userDataCookieHeader);
 
-  return redirect('/', {
+  return redirect(redirectTo || '/', {
     headers,
   });
 }

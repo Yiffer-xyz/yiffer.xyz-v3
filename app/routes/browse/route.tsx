@@ -161,7 +161,12 @@ export default function BrowsePage() {
           {comicsAndAds
             ? comicsAndAds.map(comicOrAd =>
                 isComic(comicOrAd) ? (
-                  <ComicCard comic={comicOrAd} key={comicOrAd.id} pagesPath={pagesPath} />
+                  <ComicCard
+                    comic={comicOrAd}
+                    key={comicOrAd.id}
+                    pagesPath={pagesPath}
+                    isLoggedIn={isLoggedIn}
+                  />
                 ) : (
                   <AdComicCard
                     ad={comicOrAd}

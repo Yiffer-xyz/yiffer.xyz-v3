@@ -4,6 +4,7 @@ import type { Comic, ComicForBrowse } from '~/types/types';
 import clsx from 'clsx';
 import { useNavigate } from '@remix-run/react';
 import posthog from 'posthog-js';
+import { useAuthRedirect } from '~/utils/general';
 
 type ComicInfoProps = {
   comic: Comic | ComicForBrowse;
@@ -26,10 +27,11 @@ export default function ComicRateBookmark({
 }: ComicInfoProps) {
   const yourStars = comic.yourStars ?? 0;
   const navigate = useNavigate();
+  const { redirectSetOnLoginNavStr } = useAuthRedirect();
 
   function onUpdateStars(stars: number) {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate(`/login${redirectSetOnLoginNavStr}`);
       return;
     }
     posthog.capture('Comic rated', { source });
@@ -42,7 +44,7 @@ export default function ComicRateBookmark({
 
   function onToggleBookmark() {
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate(`/login${redirectSetOnLoginNavStr}`);
       return;
     }
     posthog.capture('Comic bookmark toggled', { source });

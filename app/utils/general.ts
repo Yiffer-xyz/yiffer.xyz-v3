@@ -1,3 +1,5 @@
+import { useLocation } from '@remix-run/react';
+import { useMemo } from 'react';
 import type { EditAdFormData } from '~/routes/api.edit-ad';
 import type { SubmitAdFormData } from '~/routes/api.submit-ad';
 import {
@@ -149,4 +151,23 @@ export function isAdEditAdData(
   data: SubmitAdFormData | EditAdFormData
 ): data is EditAdFormData {
   return !!(data as EditAdFormData).id;
+}
+
+export function useAuthRedirect() {
+  const location = useLocation();
+
+  const redirectAfterAuthStr = useMemo(() => {
+    const search = location.search;
+    if (!search || search.length === 0 || !search.includes('?redirect')) return null;
+    const redirect = search.split('?redirect=')[1];
+    if (!redirect || redirect.length === 0 || !redirect.startsWith('/')) return null;
+    return redirect;
+  }, [location]);
+
+  const redirectSetOnLoginNavStr = useMemo(() => {
+    if (location.pathname === '/') return '';
+    return `?redirect=${location.pathname + location.search}`;
+  }, [location]);
+
+  return { redirectAfterAuthStr, redirectSetOnLoginNavStr };
 }

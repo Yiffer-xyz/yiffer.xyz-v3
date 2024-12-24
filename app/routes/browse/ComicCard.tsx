@@ -23,9 +23,15 @@ type ComicCardProps = {
   comic: ComicForBrowse;
   pagesPath: string;
   showStaticTags?: boolean;
+  isLoggedIn: boolean;
 };
 
-export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCardProps) {
+export default function ComicCard({
+  comic,
+  pagesPath,
+  showStaticTags,
+  isLoggedIn,
+}: ComicCardProps) {
   const { comicCardTags } = useUIPreferences();
   const { tagIDs, addTagID } = useBrowseParams();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
@@ -120,7 +126,7 @@ export default function ComicCard({ comic, pagesPath, showStaticTags }: ComicCar
             comic={comic}
             updateStars={updateStars}
             toggleBookmark={toggleBookmark}
-            isLoggedIn
+            isLoggedIn={isLoggedIn}
             small
             source="comic-card"
             className="justify-evenly w-full pl-[7px]"
