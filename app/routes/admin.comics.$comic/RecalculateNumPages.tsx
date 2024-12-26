@@ -37,11 +37,10 @@ export default function RecalculateNumPages({
     }
 
     const json: any = await res.json();
-    const { wasChanged, newNumPages }: { wasChanged: boolean; newNumPages: number } =
-      json;
-    const wasNumPagesChanged = newNumPages !== comic.numberOfPages;
+    const { wasChanged, numPages }: { wasChanged: boolean; numPages: number } = json;
+    const shouldChangeNumPages = numPages !== comic.numberOfPages;
 
-    if (!wasChanged) {
+    if (!wasChanged && !shouldChangeNumPages) {
       setIsLoading(false);
       showSuccessToast(
         "No changes necessary, comic seems correct. Message admin if it's not.",
@@ -50,7 +49,7 @@ export default function RecalculateNumPages({
       );
       return;
     }
-    if (wasChanged && !wasNumPagesChanged) {
+    if (wasChanged && !shouldChangeNumPages) {
       setIsLoading(false);
       showSuccessToast(
         'Pages rearranged, num pages unchanged. Message admin if this is wrong.',
@@ -62,7 +61,7 @@ export default function RecalculateNumPages({
 
     const changes: ComicDataChanges = {
       comicId: comic.id,
-      numberOfPages: newNumPages,
+      numberOfPages: numPages,
     };
     await updateComicFetcher.awaitSubmit({
       body: JSON.stringify(changes),
