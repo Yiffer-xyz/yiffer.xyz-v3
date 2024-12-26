@@ -116,6 +116,7 @@ export default function ManageComicInner() {
               text="View live comic"
               IconRight={MdOpenInNew}
               newTab
+              isInsideParagraph
             />
           </p>
           {comic.published && comic.updated && (

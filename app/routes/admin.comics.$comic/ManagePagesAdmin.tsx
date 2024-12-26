@@ -19,6 +19,8 @@ import {
 import { useUIPreferences } from '~/utils/theme-provider';
 import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import RecalculateNumPages from './RecalculateNumPages';
+import useWindowSize from '~/utils/useWindowSize';
+import { mobileClosedBarW, sidebarWidth } from '../admin/AdminSidebar';
 
 type UpdatedComicPage = {
   previousPos?: number;
@@ -50,6 +52,12 @@ export default function ManagePagesAdmin({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | undefined>();
   const [randomString, setRandomString] = useState<string>(generateRandomId());
+  const { isMdUp } = useWindowSize();
+
+  const windowWidth = (typeof window !== 'undefined' ? window.innerWidth : 0) as number;
+  const renderedSidebarWidth = isMdUp ? sidebarWidth : mobileClosedBarW;
+  const contentPadding = isMdUp ? 32 : 24;
+  const pageManagerWidth = windowWidth - renderedSidebarWidth - 2 * contentPadding;
 
   const [initialPages, setInitialPages] = useState<{ url: string }[]>(
     Array.from({ length: comic.numberOfPages }, (_, i) => ({
@@ -70,6 +78,9 @@ export default function ManagePagesAdmin({
     setComicPages(newInitialPages);
     setInitialPages(newInitialPages);
     setRandomString(generateRandomId());
+    setTimeout(() => {
+      setRandomString(generateRandomId());
+    }, 500);
   }
 
   useEffect(() => {
@@ -196,11 +207,7 @@ export default function ManagePagesAdmin({
       resetComicPages();
     } else {
       setTimeout(() => revalidator.revalidate(), 50);
-      showSuccessToast(
-        'Changes submitted successfully! (sorry about the pages jumping)',
-        false,
-        theme
-      );
+      showSuccessToast('Pages changed', false, theme);
     }
   }
 
@@ -332,9 +339,9 @@ export default function ManagePagesAdmin({
       <PageManager
         files={comicPages}
         randomString={randomString}
-        onChange={newFiles => {
-          setComicPages(newFiles);
-        }}
+        onChange={setComicPages}
+        pageManagerWidth={pageManagerWidth}
+        source="admin"
       />
 
       {filesChanged.length > 0 && (

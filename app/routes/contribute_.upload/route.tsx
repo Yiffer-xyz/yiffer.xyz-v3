@@ -41,6 +41,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from '@remix-run/cloudflare';
+import useResizeObserver from '~/utils/useResizeObserver';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -245,8 +246,10 @@ export default function Upload() {
   //   });
   // }
 
+  const [divRef, { width }] = useResizeObserver<HTMLDivElement>();
+
   return (
-    <div className="container mx-auto pb-16">
+    <div ref={divRef} className="container mx-auto pb-16">
       <h1>Upload a comic</h1>
 
       <Breadcrumbs
@@ -286,7 +289,11 @@ export default function Upload() {
             comics={comics}
           />
 
-          <Step3Pagemanager comicData={comicData} onUpdate={setComicData} />
+          <Step3Pagemanager
+            comicData={comicData}
+            onUpdate={setComicData}
+            contentWidth={width}
+          />
 
           <Step4Thumbnail comicData={comicData} onUpdate={setComicData} />
 

@@ -10,9 +10,14 @@ import InfoBox from '~/ui-components/InfoBox';
 type Step3Props = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
+  contentWidth: number;
 };
 
-export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
+export default function Step3Pagemanager({
+  comicData,
+  onUpdate,
+  contentWidth,
+}: Step3Props) {
   const { isMobile } = useWindowSize();
   const [isClearingPages, setIsClearingPages] = useState(false);
   const [isLoadingFileContents, setIsLoadingFileContents] = useState(false);
@@ -88,6 +93,8 @@ export default function Step3Pagemanager({ comicData, onUpdate }: Step3Props) {
           <PageManager
             files={comicData.files}
             onChange={newFiles => onUpdate({ ...comicData, files: newFiles })}
+            pageManagerWidth={contentWidth}
+            source="comic-upload"
           />
 
           {!isClearingPages && (
