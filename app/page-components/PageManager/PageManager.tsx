@@ -2,12 +2,13 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
-import { MdDelete } from 'react-icons/md';
+import { MdArrowBack, MdArrowForward, MdDelete } from 'react-icons/md';
 import { DraggableCore } from 'react-draggable';
 import { FaExpandAlt } from 'react-icons/fa';
 
 const RATIO = Math.round(400 / 564);
 const PAGE_NAME_HEIGHT = 40;
+const MOBILE_PAGE_IMG_HEIGHT = 100;
 
 type HoveredPage = {
   pageNum: number;
@@ -42,7 +43,7 @@ export default function PageManager({
   const { isMobile } = useWindowSize();
   const [fullSizeImage, setFullSizeImage] = useState<ComicImage | undefined>(undefined);
 
-  const pageImgHeight = isMobile ? 100 : 160;
+  const pageImgHeight = isMobile ? MOBILE_PAGE_IMG_HEIGHT : 160;
   const pageContainerHeight = pageImgHeight + PAGE_NAME_HEIGHT;
   const pageImgWidth = pageImgHeight * RATIO;
 
@@ -121,6 +122,7 @@ export default function PageManager({
               setDidJustDelete={setDidJustDelete}
               showPageNames={showPageNames}
               setFullSizeImage={setFullSizeImage}
+              isLastPage={index === files.length - 1}
             />
           );
         } else {
@@ -207,6 +209,7 @@ type PageProps = {
   setDidJustDelete: (didJustDelete: boolean) => void;
   showPageNames: boolean;
   setFullSizeImage: (file: ComicImage) => void;
+  isLastPage: boolean;
 };
 
 function Page({
@@ -230,6 +233,7 @@ function Page({
   setDidJustDelete,
   showPageNames,
   setFullSizeImage,
+  isLastPage,
 }: PageProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -359,66 +363,76 @@ function Page({
               cursor-pointer bg-red-strong-100 hover:bg-red-strong-300 opacity-90 hover:opacity-100
               transition-all duration-100
             `}
+            role="button"
+            onClick={() => isMobile && deleteImage(index)}
           >
             <MdDelete className="deleteBtn pointer-events-none text-white mt-[3px]" />
           </div>
-          <div
-            className={`
-              absolute top-1 right-8 z-10 expandBtn rounded-full w-6 h-6 flex items-center justify-center
+          {!isMobile && (
+            <div
+              className={`
+              absolute top-1 z-10 expandBtn rounded-full w-6 h-6 flex items-center justify-center
               cursor-pointer opacity-90 hover:opacity-100 bg-gray-600 hover:bg-gray-750
-              transition-all duration-100
+              transition-all duration-100 ${isMobile ? 'left-1' : 'right-8'}
             `}
-          >
-            <FaExpandAlt
-              className="expandBtn pointer-events-none text-white mt-[3px]"
-              size={14}
-            />
-          </div>
+              role="button"
+              onClick={() => isMobile && setFullSizeImage(file)}
+            >
+              <FaExpandAlt
+                className="expandBtn pointer-events-none text-white mt-[3px]"
+                size={14}
+              />
+            </div>
+          )}
 
-          {/* Two half width divs to detect left vs right side hover */}
           <div className="h-full w-full flex flex-col items-center justify-center hover:cursor-move">
-            <div
-              className="absolute left-0 w-1/2 h-full opacity-0"
-              onMouseEnter={() => {
-                if (!startOffset) return;
-                if (index !== hoveredPage?.pageNum) {
-                  setHoveredPage({ pageNum: index, side: 'left' });
-                }
-              }}
-              onMouseMove={() => {
-                if (!startOffset) return;
-                if (index !== hoveredPage?.pageNum) {
-                  setHoveredPage({ pageNum: index, side: 'left' });
-                }
-              }}
-              onMouseLeave={() => {
-                if (!startOffset) return;
-                if (index === hoveredPage?.pageNum) {
-                  setHoveredPage(undefined);
-                }
-              }}
-            />
-            <div
-              className="absolute right-0 w-1/2 h-full opacity-0"
-              onMouseEnter={() => {
-                if (!startOffset) return;
-                if (index !== hoveredPage?.pageNum) {
-                  setHoveredPage({ pageNum: index, side: 'right' });
-                }
-              }}
-              onMouseMove={() => {
-                if (!startOffset) return;
-                if (index !== hoveredPage?.pageNum) {
-                  setHoveredPage({ pageNum: index, side: 'right' });
-                }
-              }}
-              onMouseLeave={() => {
-                if (!startOffset) return;
-                if (index === hoveredPage?.pageNum) {
-                  setHoveredPage(undefined);
-                }
-              }}
-            />
+            {/* Two half width divs to detect left vs right side hover */}
+            {!isMobile && (
+              <>
+                <div
+                  className="absolute left-0 w-1/2 h-full opacity-0"
+                  onMouseEnter={() => {
+                    if (!startOffset) return;
+                    if (index !== hoveredPage?.pageNum) {
+                      setHoveredPage({ pageNum: index, side: 'left' });
+                    }
+                  }}
+                  onMouseMove={() => {
+                    if (!startOffset) return;
+                    if (index !== hoveredPage?.pageNum) {
+                      setHoveredPage({ pageNum: index, side: 'left' });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (!startOffset) return;
+                    if (index === hoveredPage?.pageNum) {
+                      setHoveredPage(undefined);
+                    }
+                  }}
+                />
+                <div
+                  className="absolute right-0 w-1/2 h-full opacity-0"
+                  onMouseEnter={() => {
+                    if (!startOffset) return;
+                    if (index !== hoveredPage?.pageNum) {
+                      setHoveredPage({ pageNum: index, side: 'right' });
+                    }
+                  }}
+                  onMouseMove={() => {
+                    if (!startOffset) return;
+                    if (index !== hoveredPage?.pageNum) {
+                      setHoveredPage({ pageNum: index, side: 'right' });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (!startOffset) return;
+                    if (index === hoveredPage?.pageNum) {
+                      setHoveredPage(undefined);
+                    }
+                  }}
+                />
+              </>
+            )}
 
             <img
               src={getImgSource(file, randomString)}
@@ -431,6 +445,12 @@ function Page({
               }}
               draggable={false}
               alt={file.file?.name || file.url}
+              onClick={() => {
+                if (isMobile) {
+                  console.log('clicked');
+                  setFullSizeImage(file);
+                }
+              }}
             />
 
             <p
@@ -446,6 +466,43 @@ function Page({
                 </span>
               )}
             </p>
+
+            {isMobile && (
+              <>
+                {index !== 0 && (
+                  <div
+                    className={`
+                    absolute left-1 z-10 deleteBtn rounded-full w-6 h-6 flex items-center justify-center
+                    cursor-pointer bg-gray-600 hover:bg-gray-750 opacity-90 hover:opacity-100
+                    transition-all duration-100
+                  `}
+                    role="button"
+                    onClick={() => {
+                      setNewPosition(index - 1);
+                    }}
+                    style={{ bottom: pageContainerHeight - MOBILE_PAGE_IMG_HEIGHT }}
+                  >
+                    <MdArrowBack className="deleteBtn pointer-events-none text-white mt-[3px]" />
+                  </div>
+                )}
+                {!isLastPage && (
+                  <div
+                    className={`
+                    absolute right-1 z-10 deleteBtn rounded-full w-6 h-6 flex items-center justify-center
+                    cursor-pointer bg-gray-600 hover:bg-gray-750 opacity-90 hover:opacity-100
+                    transition-all duration-100
+                  `}
+                    role="button"
+                    onClick={() => {
+                      setNewPosition(index + 1);
+                    }}
+                    style={{ bottom: pageContainerHeight - MOBILE_PAGE_IMG_HEIGHT }}
+                  >
+                    <MdArrowForward className="deleteBtn pointer-events-none text-white mt-[3px]" />
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </DraggableCore>

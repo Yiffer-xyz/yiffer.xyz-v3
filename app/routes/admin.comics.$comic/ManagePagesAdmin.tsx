@@ -248,7 +248,7 @@ export default function ManagePagesAdmin({
 
       <p className="font-semibold mt-4 mb-1">Add pages</p>
 
-      <div className="flex flex-row gap-4 items-center mb-2">
+      <div className="flex flex-row flex-wrap gap-4 items-center mb-2">
         <FileInput onChange={onFileChange} multiple accept="image/*" />
 
         {filesChanged.length > 0 && (
@@ -316,22 +316,6 @@ export default function ManagePagesAdmin({
         <div className=" mb-4 mt-2">
           <div className="flex flex-row flex-wrap gap-2">
             <FileChangesDisplay changes={filesChanged} />
-            {/* {[...filesChanged.sort((a, b) => a.newPos ?? 0 - (b.newPos ?? 0))].map(fc => (
-              <span className="bg-theme1-primaryTrans p-1 rounded" key={fc.originalPos}>
-                {fc.isNewPage ? (
-                  <>New {fc.newPos}</>
-                ) : fc.isDeleted ? (
-                  <>
-                    <IoMdTrash className="mb-1" />
-                    {fc.originalPos}
-                  </>
-                ) : (
-                  <>
-                    {fc.originalPos} <MdArrowForward /> {fc.newPos}
-                  </>
-                )}
-              </span>
-            ))} */}
           </div>
         </div>
       )}
