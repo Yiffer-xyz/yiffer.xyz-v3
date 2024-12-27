@@ -232,9 +232,8 @@ function ViewArtistLink({
           <Link
             href={`/artists/${artist.name}`}
             text="View live"
-            IconRight={MdOpenInNew}
+            showRightArrow
             className="ml-4"
-            newTab
           />
         </>
       );
@@ -282,13 +281,7 @@ function ViewComicLink({
           IconRight={MdArrowForward}
           className="ml-2"
         />
-        <Link
-          href={`/${comic.name}`}
-          text="View live"
-          IconRight={MdOpenInNew}
-          className="ml-4"
-          newTab
-        />
+        <Link href={`/${comic.name}`} text="View live" showRightArrow className="ml-4" />
       </>
     );
   }

@@ -240,20 +240,28 @@ function getLinksByComicFieldQuery(
   fieldName: 'id' | 'name',
   fieldValue: string | number
 ): QueryWithParams {
-  const linksQuery = `SELECT
-    Q1.*, comic.name AS lastComicName
-    FROM (
-      SELECT 
-        firstComic AS firstComicId,
-        lastComic AS lastComicId,
-        comic.name AS firstComicName
-      FROM comiclink
-      INNER JOIN comic ON (firstComic = comic.id) 
-    ) AS Q1
-    INNER JOIN comic ON (lastComicId = comic.id)
-    WHERE 
-      ${fieldName === 'id' ? 'firstComicId' : 'firstComicName'} = ?
-      OR ${fieldName === 'id' ? 'lastComicId' : 'comic.name'} = ?`;
+  const linksQuery = `
+    SELECT
+      comiclink.firstComic AS firstComicId,
+      comiclink.lastComic AS lastComicId,
+      comic1.name AS firstComicName,
+      comic2.name AS lastComicName
+    FROM comiclink
+    INNER JOIN comic AS comic1 ON comiclink.firstComic = comic1.id
+    INNER JOIN comic AS comic2 ON comiclink.lastComic = comic2.id
+    WHERE comic1.${fieldName} = ?
+
+    UNION ALL
+
+    SELECT
+      comiclink.firstComic AS firstComicId,
+      comiclink.lastComic AS lastComicId,
+      comic1.name AS firstComicName,
+      comic2.name AS lastComicName
+    FROM comiclink
+    INNER JOIN comic AS comic1 ON comiclink.firstComic = comic1.id
+    INNER JOIN comic AS comic2 ON comiclink.lastComic = comic2.id
+    WHERE comic2.${fieldName} = ?`;
 
   const params = [fieldValue, fieldValue];
 

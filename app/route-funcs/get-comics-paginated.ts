@@ -70,6 +70,17 @@ export async function getComicsPaginated({
     artistName,
   };
 
+  const queryExtraInfos: string[] = [];
+  if (includeTags) queryExtraInfos.push(`includeTags`);
+  if (userId) queryExtraInfos.push(`userId`);
+  if (tagIDs && tagIDs.length > 0) queryExtraInfos.push(`tagIDs`);
+  if (categories) queryExtraInfos.push(`categories`);
+  if (search) queryExtraInfos.push(`search`);
+  if (artistId) queryExtraInfos.push(`artistId`);
+  if (artistName) queryExtraInfos.push(`artistName`);
+  if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
+  const queryExtraInfo = queryExtraInfos.join(', ');
+
   const [
     filterQueryString,
     filterQueryParams,
@@ -188,7 +199,12 @@ export async function getComicsPaginated({
   `;
 
   const queries = [
-    { query, params: queryParams, queryName: 'Comics paginated' },
+    {
+      query,
+      params: queryParams,
+      queryName: 'Comics paginated',
+      extraInfo: queryExtraInfo,
+    },
     {
       query: totalCountQuery,
       params: totalCountQueryParams,

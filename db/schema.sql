@@ -56,6 +56,8 @@ PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));
 
+CREATE INDEX idx_advertisement_active_adType ON advertisement(adType) WHERE status = 'ACTIVE';
+
 ------------------------------------------------------
 -- ADVERTISEMENT DAY CLICK
 ------------------------------------------------------
@@ -145,6 +147,10 @@ FOREIGN KEY (`artist`)
 REFERENCES `artist` (`id`)
 ON UPDATE CASCADE);
 
+CREATE INDEX IF NOT EXISTS idx_comicName ON comic (name);
+CREATE INDEX idx_comic_active_updated ON comic(updated) WHERE state = 'published';
+CREATE INDEX idx_comic_updated ON comic(updated);
+
 ------------------------------------------------------
 -- KEYWORD 👀
 ------------------------------------------------------
@@ -187,6 +193,9 @@ FOREIGN KEY (`lastComic`)
 REFERENCES `comic` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_comiclink_firstComic ON comiclink(firstComic);
+CREATE INDEX IF NOT EXISTS idx_comiclink_lastComic ON comiclink(lastComic);
 
 ------------------------------------------------------
 -- COMIC METADATA
@@ -379,6 +388,7 @@ ON UPDATE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicrating_unique_user_comic` ON `comicrating` (`userId`, `comicId`);
+CREATE INDEX IF NOT EXISTS idx_comicrating_comicId ON comicrating(comicId);
 
 ------------------------------------------------------
 -- COMIC BOOKMARK
@@ -467,7 +477,9 @@ CREATE INDEX IF NOT EXISTS idx_userId ON oldcomicrating(userId);
 CREATE TABLE IF NOT EXISTS `dbquerylogs` (
 `id` INTEGER NOT NULL,
 `queryName` TEXT NOT NULL,
+`extraInfo` TEXT NULL,
 `rowsRead` INTEGER NOT NULL,
 `queryType` TEXT NOT NULL CHECK( queryType IN ('read', 'write') ),
 `time` REAL NOT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`));

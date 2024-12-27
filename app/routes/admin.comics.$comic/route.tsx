@@ -1,6 +1,5 @@
 import { useLoaderData, useOutletContext, useRevalidator } from '@remix-run/react';
 import { format } from 'date-fns';
-import { MdOpenInNew } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import { getComicByField } from '~/route-funcs/get-comic';
@@ -114,9 +113,8 @@ export default function ManageComicInner() {
               href={`/${comic.name}`}
               className="ml-2"
               text="View live comic"
-              IconRight={MdOpenInNew}
-              newTab
               isInsideParagraph
+              showRightArrow
             />
           </p>
           {comic.published && comic.updated && (

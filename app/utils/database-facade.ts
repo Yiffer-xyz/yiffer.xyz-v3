@@ -20,6 +20,7 @@ export type QueryWithParams = {
   query: string;
   params?: any[];
   queryName?: string;
+  extraInfo?: string;
 };
 
 // T should be an array with the responses expected in order
@@ -54,8 +55,14 @@ export async function queryDbMultiple<T>(
           // @ts-ignore
           queriesWithParams[i].queryName.length > 0
         ) {
-          // @ts-ignore
-          await processDbQueryMeta(db, 'read', queriesWithParams[i].queryName, res.meta);
+          await processDbQueryMeta(
+            db,
+            'read',
+            // @ts-ignore
+            queriesWithParams[i].queryName,
+            queriesWithParams[i].extraInfo,
+            res.meta
+          );
         }
         results.push(res.results);
       }
@@ -79,7 +86,8 @@ export async function queryDb<T>(
   db: D1Database,
   query: string,
   params?: any[] | null,
-  queryName?: string
+  queryName?: string,
+  extraInfo?: string
 ): Promise<DBResponse<T>> {
   try {
     let statement: D1PreparedStatement;
@@ -98,7 +106,7 @@ export async function queryDb<T>(
       };
     } else {
       if (queryName && queryName.length > 0) {
-        await processDbQueryMeta(db, 'read', queryName, response.meta);
+        await processDbQueryMeta(db, 'read', queryName, extraInfo, response.meta);
       }
       return {
         isError: false,
@@ -118,7 +126,8 @@ export async function queryDbExec(
   db: D1Database,
   query: string,
   params: any[] = [],
-  queryName?: string
+  queryName?: string,
+  extraInfo?: string
 ): Promise<ExecDBResponse> {
   try {
     const statement = db.prepare(query).bind(...params);
@@ -130,7 +139,7 @@ export async function queryDbExec(
       };
     } else {
       if (queryName && queryName.length > 0) {
-        await processDbQueryMeta(db, 'write', queryName, res.meta);
+        await processDbQueryMeta(db, 'write', queryName, extraInfo, res.meta);
       }
       return {
         isError: false,
@@ -151,6 +160,7 @@ async function processDbQueryMeta(
   db: D1Database,
   queryType: 'read' | 'write',
   queryName: string,
+  extraInfo: string | undefined,
   meta: D1Response['meta']
 ) {
   const shouldLog = Math.random() > 0;
@@ -160,14 +170,10 @@ async function processDbQueryMeta(
   if (shouldLog) {
     const analyticsQuery = db
       .prepare(
-        `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time) VALUES (?, ?, ?, ?)`
+        `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time, extraInfo) VALUES (?, ?, ?, ?, ?)`
       )
-      .bind(queryName, numRows, queryType, meta.duration);
+      .bind(queryName, numRows, queryType, meta.duration, extraInfo ?? null);
 
     await analyticsQuery.run();
   }
-
-  // console.log(
-  //   `${numRows.toString().padStart(6)} ${meta.duration.toString().padStart(3)}  ${queryType.substring(0, 1)}  ${queryName}`
-  // );
 }

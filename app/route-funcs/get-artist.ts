@@ -27,7 +27,7 @@ export async function getArtistAndComicsByField(
 }> {
   const { query, params } = getArtistByFieldQuery(fieldName, fieldValue);
 
-  const dbResPromise = queryDb<DbArtist[]>(db, query, params, 'Artist with comics');
+  const dbResPromise = queryDb<DbArtist[]>(db, query, params, 'Artist');
 
   const comicsPromise = getComicsPaginated({
     db,
