@@ -41,7 +41,6 @@ export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProp
   });
 
   const persistUIPref = useFetcher();
-  // TODO: remove this when persistTheme is memoized properly (??)
   const persistUIPrefRef = useRef(persistUIPref);
   useEffect(() => {
     persistUIPrefRef.current = persistUIPref;
@@ -49,16 +48,11 @@ export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProp
 
   const prevUIRef = useRef<UIPreferences | null>(null);
 
-  // Only submit if ui pref actually changed
   useEffect(() => {
     if (!uiPref) return;
+    if (!areUIPrefsDifferent(prevUIRef?.current, uiPref)) return;
 
-    if (!prevUIRef.current) {
-      prevUIRef.current = { ...uiPref };
-      return;
-    }
-
-    if (!areUIPrefsDifferent(prevUIRef.current, uiPref)) return;
+    prevUIRef.current = { ...uiPref };
 
     persistUIPrefRef.current.submit(
       { uiPref: JSON.stringify(uiPref) },
@@ -160,7 +154,8 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
   }
 }
 
-function areUIPrefsDifferent(u1: UIPreferences, u2: UIPreferences): boolean {
+function areUIPrefsDifferent(u1: UIPreferences | null, u2: UIPreferences): boolean {
+  if (!u1) return true;
   return (
     u1.theme !== u2.theme ||
     u1.comicCardTags !== u2.comicCardTags ||

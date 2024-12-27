@@ -317,7 +317,6 @@ function PosthogInit({
     posthog.init(apiKey, {
       api_host: host,
       person_profiles: 'always',
-      debug: true,
       autocapture: false,
     });
     if (userSession) {
