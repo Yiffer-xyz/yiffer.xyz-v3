@@ -241,7 +241,7 @@ export default function ManagePagesAdmin({
     <>
       <p className="font-semibold mt-1">Recalculate number of pages</p>
       <p className="mb-1">
-        If there are pages not showing up, or seemingly broken pages at some spoit in the
+        If there are pages not showing up, or seemingly broken pages at some spot in the
         comic, try fixing it through the button below.
       </p>
       <RecalculateNumPages comic={comic} imagesServerUrl={IMAGES_SERVER_URL} />

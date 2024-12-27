@@ -108,7 +108,7 @@ export async function getComicsPaginated({
 
   const includeTagsJoinString = includeTags
     ? `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
-       INNER JOIN keyword ON (keyword.id = ck1.keywordId)`
+       LEFT JOIN keyword ON (keyword.id = ck1.keywordId)`
     : '';
   const includeTagsConcatString = includeTags
     ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
