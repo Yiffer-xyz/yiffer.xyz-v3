@@ -4,12 +4,10 @@ import { makeDbErr, wrapApiError } from '~/utils/request-helpers';
 import type { ComicsPaginatedResult } from './get-comics-paginated';
 import { getComicsPaginated } from './get-comics-paginated';
 import { isComic } from '~/utils/general';
-import type { ExecDBResponse } from '~/utils/database-facade';
 import { queryDbExec } from '~/utils/database-facade';
 
 type Args = {
   db: D1Database;
-  includeTags: boolean;
   pageNum: number;
   includeAds: boolean;
 };
@@ -19,7 +17,6 @@ export async function recalculateComicsPaginated(
 ): Promise<ApiError | undefined> {
   const res = await getAndCacheComicsPaginated({
     db,
-    includeTags: true,
     pageNum: 1,
     includeAds: false,
   });
@@ -28,7 +25,6 @@ export async function recalculateComicsPaginated(
 
 export async function getAndCacheComicsPaginated({
   db,
-  includeTags,
   pageNum,
   includeAds = false,
 }: Args): ResultOrErrorPromise<ComicsPaginatedResult> {
@@ -37,7 +33,7 @@ export async function getAndCacheComicsPaginated({
     limit: COMICS_PER_PAGE,
     offset: pageNum !== 1 ? (pageNum - 1) * COMICS_PER_PAGE : undefined,
     order: 'updated',
-    includeTags,
+    includeTags: true,
     includeAds,
   });
 
@@ -45,66 +41,30 @@ export async function getAndCacheComicsPaginated({
     return { err: wrapApiError(comicsRes.err, 'Error in getAndCacheComicsPaginated') };
   }
 
-  const dbExecResponses: Promise<ExecDBResponse>[] = [];
-
-  // always store the comics without tags. only store with tags if queried with includeTags = true
   const comicsWithoutAds = comicsRes.result.comicsAndAds.filter(comic => isComic(comic));
-
-  const comicsWithoutTagsToStore = {
+  const resultsWithoutAds: ComicsPaginatedResult = {
     ...comicsRes.result,
-    comicsAndAds: comicsWithoutAds.map(comic => ({ ...comic, tags: undefined })),
+    comicsAndAds: comicsWithoutAds,
   };
-  const upsertQuery = `
-    INSERT INTO comicspaginatedcache (comicsJson, includeTags, page) VALUES (?, ?, ?)
-    ON CONFLICT (includeTags, page) DO UPDATE SET comicsJson = ?
-  `;
-  const insertValues = [
-    JSON.stringify(comicsWithoutTagsToStore),
-    false,
-    pageNum,
-    JSON.stringify(comicsWithoutTagsToStore),
-  ];
+  const jsonResultsWithoutAds = JSON.stringify(resultsWithoutAds);
 
-  dbExecResponses.push(
-    queryDbExec(
-      db,
-      upsertQuery,
-      insertValues,
-      'Write comics paginated cache',
-      'includeTags: false'
-    )
+  const upsertQuery = `
+    INSERT INTO comicspaginatedcache (comicsJson, page) VALUES (?, ?)
+    ON CONFLICT (page) DO UPDATE SET comicsJson = ?
+  `;
+  const insertValues = [jsonResultsWithoutAds, pageNum, jsonResultsWithoutAds];
+
+  const execResponse = await queryDbExec(
+    db,
+    upsertQuery,
+    insertValues,
+    'Write comics paginated cache'
   );
 
-  if (includeTags) {
-    const comicsWithTagsToStore = {
-      ...comicsRes.result,
-      comicsAndAds: comicsWithoutAds,
+  if (execResponse.isError) {
+    return {
+      err: makeDbErr(execResponse, 'Error writing in getAndCacheComicsPaginated'),
     };
-    const upsertQuery = `
-      INSERT INTO comicspaginatedcache (comicsJson, includeTags, page) VALUES (?, ?, ?)
-      ON CONFLICT (includeTags, page) DO UPDATE SET comicsJson = ?
-    `;
-    const insertValues = [
-      JSON.stringify(comicsWithTagsToStore),
-      true,
-      pageNum,
-      JSON.stringify(comicsWithTagsToStore),
-    ];
-    dbExecResponses.push(
-      queryDbExec(
-        db,
-        upsertQuery,
-        insertValues,
-        'Write comics paginated cache',
-        'includeTags: true'
-      )
-    );
-  }
-
-  const execResponses = await Promise.all(dbExecResponses);
-  const err = execResponses.find(res => res.isError);
-  if (err) {
-    return { err: makeDbErr(err, 'Error writing in getAndCacheComicsPaginated') };
   }
 
   return { result: comicsRes.result };

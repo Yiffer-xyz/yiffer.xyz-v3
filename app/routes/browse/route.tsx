@@ -52,7 +52,7 @@ async function getComics(
   const canUseCached = isBasicPage1Query(params) && !user;
 
   if (canUseCached) {
-    const query = `SELECT comicsJson FROM comicspaginatedcache WHERE includeTags = ${includeTags ? 1 : 0} AND page = ?`;
+    const query = `SELECT comicsJson FROM comicspaginatedcache WHERE page = ?`;
     const cachedRes = await queryDb<{ comicsJson: string }[]>(
       args.context.cloudflare.env.DB,
       query,
@@ -99,7 +99,6 @@ async function getComics(
     // The rare case, should only happen literally once ever. User is not logged in.
     const comicsAndAdsRes = await getAndCacheComicsPaginated({
       db: args.context.cloudflare.env.DB,
-      includeTags,
       pageNum: params.page,
       includeAds: true,
     });

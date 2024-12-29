@@ -148,8 +148,8 @@ REFERENCES `artist` (`id`)
 ON UPDATE CASCADE);
 
 CREATE INDEX IF NOT EXISTS idx_comicName ON comic (name);
-CREATE INDEX idx_comic_active_updated ON comic(updated) WHERE state = 'published';
-CREATE INDEX idx_comic_updated ON comic(updated);
+CREATE INDEX IF NOT EXISTS idx_comic_artist ON comic(artist);
+CREATE INDEX IF NOT EXISTS idx_comic_updated ON comic(updated);
 
 ------------------------------------------------------
 -- KEYWORD 👀
@@ -490,9 +490,8 @@ PRIMARY KEY (`id`));
 CREATE TABLE IF NOT EXISTS `comicspaginatedcache` (
 `id` INTEGER NOT NULL,
 `comicsJson` TEXT NOT NULL,
-`includeTags` TINYINTEGER NOT NULL,
 `page` INTEGER NOT NULL,
 `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`));
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_comicspaginatedcache_unique_includeTags_page ON comicspaginatedcache (includeTags, page);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comicspaginatedcache_unique_page ON comicspaginatedcache (page);
