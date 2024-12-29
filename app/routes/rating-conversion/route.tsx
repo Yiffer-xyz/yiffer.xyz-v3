@@ -77,7 +77,10 @@ export default function RatingConversion() {
   });
 
   function discardRatings() {
-    console.log('discardRatings');
+    posthog.capture('Old ratings discarded');
+
+    const conversionsBody: ConvertOldRatingsBody = { conversions: [] };
+    convertRatingsFetcher.submit({ body: JSON.stringify(conversionsBody) });
   }
 
   function convertRatings() {
@@ -111,7 +114,7 @@ export default function RatingConversion() {
 
       {isSuccess && (
         <InfoBox variant="success" className="mt-4" boldText fitWidth>
-          Successfully converted ratings!
+          Successfully {isDiscarding ? 'discarded' : 'converted'} ratings!
         </InfoBox>
       )}
 

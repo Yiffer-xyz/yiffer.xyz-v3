@@ -132,4 +132,19 @@ async function convertOldRatings(
   if (deleteRes.isError) {
     return makeDbErr(deleteRes, 'Could not delete old comic ratings', logCtx);
   }
+
+  const updateQuery = 'UPDATE user SET hasCompletedConversion = 1 WHERE id = ?';
+  const updateRes = await queryDbExec(
+    db,
+    updateQuery,
+    [userId],
+    'Update user hasCompletedConversion'
+  );
+  if (updateRes.isError) {
+    return makeDbErr(
+      updateRes,
+      'Could not update user in hasCompletedConversion',
+      logCtx
+    );
+  }
 }
