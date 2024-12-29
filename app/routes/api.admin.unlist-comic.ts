@@ -1,4 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
@@ -8,6 +9,7 @@ import {
   createSuccessJson,
   makeDbErr,
   processApiError,
+  wrapApiError,
 } from '~/utils/request-helpers';
 
 export { noGetRoute as loader };
@@ -77,4 +79,7 @@ export async function unlistComic(
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating comic+metadata in unlistComic', logCtx);
   }
+
+  const recalcRes = await recalculateComicsPaginated(db);
+  if (recalcRes) return wrapApiError(recalcRes, 'Error in unlistComic', logCtx);
 }

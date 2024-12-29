@@ -54,18 +54,17 @@ export async function updateStarRating(
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error deleting rating', logCtx);
     }
-    return;
-  }
-
-  const upsertQuery = `
+  } else {
+    const upsertQuery = `
     INSERT INTO comicrating (userId, comicId, rating) VALUES (?, ?, ?)
     ON CONFLICT (userId, comicId) DO UPDATE SET rating = ?
   `;
-  const queryParams = [userId, comicId, stars, stars];
+    const queryParams = [userId, comicId, stars, stars];
 
-  const dbRes = await queryDbExec(db, upsertQuery, queryParams, 'Rating upsert');
-  if (dbRes.isError) {
-    return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
+    const dbRes = await queryDbExec(db, upsertQuery, queryParams, 'Rating upsert');
+    if (dbRes.isError) {
+      return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
+    }
   }
 
   const res = await getAndCacheComicsPaginated({
@@ -74,7 +73,5 @@ export async function updateStarRating(
     includeTags: true,
     pageNum: 1,
   });
-  if (res.err) {
-    return wrapApiError(res.err, 'Error in updateStarRating', logCtx);
-  }
+  if (res.err) return wrapApiError(res.err, 'Error in updateStarRating', logCtx);
 }

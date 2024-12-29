@@ -11,6 +11,7 @@ import {
 } from '~/utils/request-helpers';
 import { getComicByField } from '~/route-funcs/get-comic';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
 
 export { noGetRoute as loader };
 
@@ -105,6 +106,9 @@ export async function updateComicData(
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error updating various data in updateComicData', changes);
   }
+
+  const recalcRes = await recalculateComicsPaginated(db);
+  if (recalcRes) return wrapApiError(recalcRes, 'Error in updateComicData', changes);
 }
 
 function getUpdateTagsQuery(

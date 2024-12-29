@@ -1,5 +1,5 @@
 import { COMICS_PER_PAGE } from '~/types/constants';
-import type { ResultOrErrorPromise } from '~/utils/request-helpers';
+import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, wrapApiError } from '~/utils/request-helpers';
 import type { ComicsPaginatedResult } from './get-comics-paginated';
 import { getComicsPaginated } from './get-comics-paginated';
@@ -13,6 +13,18 @@ type Args = {
   pageNum: number;
   includeAds: boolean;
 };
+
+export async function recalculateComicsPaginated(
+  db: D1Database
+): Promise<ApiError | undefined> {
+  const res = await getAndCacheComicsPaginated({
+    db,
+    includeTags: true,
+    pageNum: 1,
+    includeAds: false,
+  });
+  if (res.err) return wrapApiError(res.err, 'Error in recalculateComicsPaginated');
+}
 
 export async function getAndCacheComicsPaginated({
   db,
