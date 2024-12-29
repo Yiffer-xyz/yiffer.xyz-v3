@@ -1,4 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { getAndCacheComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
@@ -7,6 +8,7 @@ import {
   createSuccessJson,
   makeDbErr,
   processApiError,
+  wrapApiError,
 } from '~/utils/request-helpers';
 
 export { noGetRoute as loader };
@@ -64,5 +66,15 @@ export async function updateStarRating(
   const dbRes = await queryDbExec(db, upsertQuery, queryParams, 'Rating upsert');
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
+  }
+
+  const res = await getAndCacheComicsPaginated({
+    db,
+    includeAds: false,
+    includeTags: true,
+    pageNum: 1,
+  });
+  if (res.err) {
+    return wrapApiError(res.err, 'Error in updateStarRating', logCtx);
   }
 }

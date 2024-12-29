@@ -39,3 +39,31 @@ export async function getAdForViewing({
   logAdImpression({ db, adId: adsRes.result[0].id, isServerSide: true });
   return { result: adsRes.result[0] };
 }
+
+export async function getCardAdForViewing({
+  db,
+  numberOfAds,
+}: {
+  db: D1Database;
+  numberOfAds: number;
+}): ResultOrErrorPromise<AdForViewing[]> {
+  const getAdsQuery = `
+    SELECT
+      id, link, mainText, secondaryText, isAnimated, mediaType, videoSpecificFileType
+    FROM advertisement
+    WHERE adType = 'card' AND status = 'ACTIVE'
+    ORDER BY RANDOM() LIMIT ${numberOfAds} `;
+
+  const adsRes = await queryDb<AdForViewing[]>(
+    db,
+    getAdsQuery,
+    null,
+    'Ads for viewing, card'
+  );
+
+  if (adsRes.isError) {
+    return makeDbErrObj(adsRes, 'Could not get ads');
+  }
+
+  return { result: adsRes.result };
+}

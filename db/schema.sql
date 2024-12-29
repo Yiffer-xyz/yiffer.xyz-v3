@@ -483,3 +483,16 @@ CREATE TABLE IF NOT EXISTS `dbquerylogs` (
 `time` REAL NOT NULL,
 `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`));
+
+------------------------------------------------------
+-- COMICS PAGINATED CACHE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `comicspaginatedcache` (
+`id` INTEGER NOT NULL,
+`comicsJson` TEXT NOT NULL,
+`includeTags` TINYINTEGER NOT NULL,
+`page` INTEGER NOT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`));
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comicspaginatedcache_unique_includeTags_page ON comicspaginatedcache (includeTags, page);

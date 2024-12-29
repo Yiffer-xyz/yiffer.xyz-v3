@@ -36,6 +36,13 @@ type GetComicsParams = {
   bookmarkedOnly?: boolean;
 };
 
+export type ComicsPaginatedResult = {
+  comicsAndAds: (ComicForBrowse | AdForViewing)[];
+  numberOfPages: number;
+  totalNumComics: number;
+  page: number;
+};
+
 export async function getComicsPaginated({
   db,
   userId,
@@ -50,12 +57,7 @@ export async function getComicsPaginated({
   includeTags,
   includeAds,
   bookmarkedOnly,
-}: GetComicsParams): ResultOrErrorPromise<{
-  comicsAndAds: (ComicForBrowse | AdForViewing)[];
-  numberOfPages: number;
-  totalNumComics: number;
-  page: number;
-}> {
+}: GetComicsParams): ResultOrErrorPromise<ComicsPaginatedResult> {
   search = search?.trim();
 
   const logCtx = {
@@ -79,6 +81,7 @@ export async function getComicsPaginated({
   if (artistId) queryExtraInfos.push(`artistId`);
   if (artistName) queryExtraInfos.push(`artistName`);
   if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
+  if (offset) queryExtraInfos.push(`offset`);
   const queryExtraInfo = queryExtraInfos.join(', ');
 
   const [
@@ -217,7 +220,7 @@ export async function getComicsPaginated({
       query: `SELECT id, link, mainText, secondaryText, isAnimated, mediaType, videoSpecificFileType
         FROM advertisement
         WHERE adType = 'card' AND status = 'ACTIVE'
-        ORDER BY RANDOM() LIMIT ${COMICS_PER_PAGE} 
+        ORDER BY RANDOM() LIMIT ${ADS_PER_PAGE} 
       `,
       params: [],
       queryName: 'Ads paginated',
@@ -276,7 +279,7 @@ function comicRatingsToPercent(sumStars: number, numTimesStarred: number) {
   return Math.round((sumStars / numTimesStarred - 1) * 50);
 }
 
-function addAdsToComics(
+export function addAdsToComics(
   comics: ComicForBrowse[],
   ads: AdForViewing[]
 ): (ComicForBrowse | AdForViewing)[] {
