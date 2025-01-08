@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
+import { Outlet, useNavigate, useOutlet, useOutletContext } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { User } from '~/types/types';
@@ -11,7 +11,16 @@ import {
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Button from '~/ui-components/Buttons/Button';
+import { debounce } from '~/utils/general';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeadRow,
+  TableRow,
+} from '~/ui-components/Table';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -21,14 +30,15 @@ export const meta: MetaFunction = () => {
 export default function UserManager() {
   const navigate = useNavigate();
   const globalContext: GlobalAdminContext = useOutletContext();
+  const outlet = useOutlet();
 
-  // TODO: Debounce.
   const [userSearch, setUserSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User>();
 
   const { data: userSearchResults, submit: searchUsers } = useGoodFetcher<User[]>({
     method: 'post',
   });
+  const debouncedSearchUsers = debounce(searchUsers, 500);
 
   function onUserSelect(user: User) {
     setSelectedUser(user);
@@ -36,7 +46,6 @@ export default function UserManager() {
   }
 
   function onUserSearchUpdate(newVal: string) {
-    if (!newVal) return;
     setUserSearch(newVal);
     setSelectedUser(undefined);
     navigate('/admin/users');
@@ -46,7 +55,7 @@ export default function UserManager() {
     if (!userSearch || userSearch.length < 3) {
       return;
     }
-    searchUsers({ searchText: userSearch });
+    debouncedSearchUsers({ searchText: userSearch });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSearch]);
 
@@ -57,25 +66,45 @@ export default function UserManager() {
 
   return (
     <>
-      <h1>User manager</h1>
-      <p className="font-bold mb-4">ℹ️ See the figma prototype.</p>
+      {!outlet && (
+        <>
+          <h1>User manager</h1>
 
-      <TextInput
-        value={userSearch}
-        onChange={onUserSearchUpdate} // TODO: Debounce this
-        label="Search username or email"
-        name="user-search"
-        className="mb-8"
-      />
+          <TextInput
+            value={userSearch}
+            onChange={onUserSearchUpdate}
+            label="Search username or email"
+            name="user-search"
+            className="mb-8 max-w-sm"
+          />
 
-      {userSearch &&
-        userSearchResults?.map(user => (
-          <div key={user.id} className="my-4">
-            <Button onClick={() => onUserSelect(user)} text="Select user" />
-            <pre>{JSON.stringify(user, null, 2)}</pre>
-          </div>
-        ))}
-
+          <Table className="mb-6">
+            <TableHeadRow isTableMaxHeight>
+              <TableCell> </TableCell>
+              <TableCell>Username</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Last Action</TableCell>
+            </TableHeadRow>
+            <TableBody>
+              {userSearch &&
+                userSearchResults?.map(user => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <Button onClick={() => onUserSelect(user)} text="Select user" />
+                    </TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.createdTime.toLocaleDateString()}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.userType}</TableCell>
+                    <TableCell>LAST ACTION DOES NOT EXIST</TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </>
+      )}
       <Outlet context={globalContext} />
     </>
   );

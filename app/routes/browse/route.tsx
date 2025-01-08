@@ -29,6 +29,7 @@ import OldComicRatingsInfo from './OldComicRatings';
 import type { ComicForBrowse, UserSession } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { getAndCacheComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
+import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 function isBasicPage1Query(params: BrowseParams) {
@@ -50,11 +51,16 @@ async function getComics(
   user: UserSession | null
 ): Promise<ComicsPaginatedResult> {
   const canUseCached = isBasicPage1Query(params) && !user;
+  const db = args.context.cloudflare.env.DB;
+
+  if (user) {
+    updateUserLastActionTime({ db, userId: user.userId });
+  }
 
   if (canUseCached) {
     const query = `SELECT comicsJson FROM comicspaginatedcache WHERE page = ?`;
     const cachedRes = await queryDb<{ comicsJson: string }[]>(
-      args.context.cloudflare.env.DB,
+      db,
       query,
       [params.page],
       'Comics paginated cache'
@@ -71,7 +77,7 @@ async function getComics(
       const parsed = JSON.parse(cachedRes.result[0].comicsJson) as ComicsPaginatedResult;
 
       const cardAdsRes = await getCardAdForViewing({
-        db: args.context.cloudflare.env.DB,
+        db,
         numberOfAds: ADS_PER_PAGE,
       });
 
@@ -98,7 +104,7 @@ async function getComics(
   if (canUseCached) {
     // The rare case, should only happen literally once ever. User is not logged in.
     const comicsAndAdsRes = await getAndCacheComicsPaginated({
-      db: args.context.cloudflare.env.DB,
+      db,
       pageNum: params.page,
       includeAds: true,
     });
@@ -112,7 +118,7 @@ async function getComics(
     // No caching for logged in users, for now.
     const categories = params.categories.includes('All') ? undefined : params.categories;
     const comicsAndAdsRes = await getComicsPaginated({
-      db: args.context.cloudflare.env.DB,
+      db,
       limit: COMICS_PER_PAGE,
       offset: params.page !== 1 ? (params.page - 1) * COMICS_PER_PAGE : undefined,
       search: params.search,

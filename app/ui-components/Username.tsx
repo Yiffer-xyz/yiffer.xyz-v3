@@ -1,6 +1,5 @@
 import { RiShieldFill, RiShieldStarFill } from 'react-icons/ri';
 import type { SimpleUser } from '~/types/types';
-import { UserType } from '~/types/types';
 
 type UsernameProps = {
   user: Omit<SimpleUser, 'email'>;
@@ -10,8 +9,8 @@ type UsernameProps = {
 const Username = ({ user, className }: UsernameProps) => {
   const { username, userType } = user;
 
-  const isMod = userType === UserType.Mod;
-  const isAdmin = userType === UserType.Admin;
+  const isMod = userType === 'moderator';
+  const isAdmin = userType === 'admin';
 
   const title = isMod ? 'Moderator' : isAdmin ? 'Admin' : '';
   const Icon = isAdmin ? RiShieldStarFill : isMod ? RiShieldFill : null;

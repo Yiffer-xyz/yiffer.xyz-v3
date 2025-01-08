@@ -95,7 +95,7 @@ export default function AdminSidebar({
           />
           <SidebarLink
             href="/admin/users"
-            text="🚧 User manager"
+            text="User manager"
             isSelected={isRoute('users')}
           />
           <SidebarLink
