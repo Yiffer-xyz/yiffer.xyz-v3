@@ -1,5 +1,8 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-
+import ImageCarousel from '~/ui-components/ImageCarousel/ImageCarousel';
+import type { MetaFunction } from '@remix-run/cloudflare';
+import Button from '~/ui-components/Buttons/Button';
+import { useState } from 'react';
 import v1Landing1 from '~/assets/about-history/v1/landing-1.jpg';
 import v1Landing2 from '~/assets/about-history/v1/landing-2.jpg';
 import v1Landing3 from '~/assets/about-history/v1/landing-3.jpg';
@@ -28,8 +31,8 @@ import v2AdminTags from '~/assets/about-history/v2/admin/admin-tags.png';
 import v2AdminProblems from '~/assets/about-history/v2/admin/admin-problems.png';
 import v2AdsDashboard from '~/assets/about-history/v2/ads-dashboard.png';
 import v2AdsManager from '~/assets/about-history/v2/ads-manager.png';
-import ImageCarousel from '~/ui-components/ImageCarousel/ImageCarousel';
-import type { MetaFunction } from '@remix-run/cloudflare';
+import v2Video from '~/assets/about-history/v2/yiffer-v2-modpanel.mp4';
+
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -37,6 +40,9 @@ export const meta: MetaFunction = () => {
 };
 
 export default function AboutPage() {
+  const [isV2VideoShown, setIsV2VideoShown] = useState(false);
+  const [isV3VideoShown, setIsV3VideoShown] = useState(false);
+
   return (
     <div className="container mx-auto pb-8">
       <h1>About Yiffer.xyz</h1>
@@ -132,7 +138,7 @@ export default function AboutPage() {
             {
               source: v2AdminMain,
               description:
-                'Mod panel, landing page. The expandable box design was not very practical when jumping between different tasks. Half of the mod panel was not mobile-friendly.',
+                'Mod panel, landing page. The expandable box design was not very practical when jumping between different tasks. Half of the mod panel was not mobile-friendly. See the video below for a quick demo.',
             },
             {
               source: v2AdminNewcomic,
@@ -180,6 +186,38 @@ export default function AboutPage() {
           ]}
         />
 
+        <div>
+          <p>
+            <b>V2 Mod panel video demo</b>
+          </p>
+          {!isV2VideoShown && (
+            <>
+              <p>
+                Click the button to load a quick video demo of this version's mod panel!
+              </p>
+
+              <Button
+                text="Show mod panel video"
+                className="mt-1"
+                onClick={() => setIsV2VideoShown(true)}
+              />
+            </>
+          )}
+
+          {isV2VideoShown && (
+            <div>
+              <p>
+                The expandable box design was not very practical when jumping between
+                different tasks. Many things you'd typically do together were in entirely
+                separate boxes. Half of the mod panel was not mobile-friendly, and even in
+                desktop mode the horizontal scrolling was annoying. Usable, but far from
+                ideal.
+              </p>
+              <video src={v2Video} controls className="mt-1" />
+            </div>
+          )}
+        </div>
+
         <h4 className="-mb-5">Third version: 2025-present</h4>
         <p>
           The third version is once again a complete rewrite, with the tech stack
@@ -200,6 +238,32 @@ export default function AboutPage() {
           rapid as possible with brand new scalable technology, but also to cut costs, as
           Google Cloud Platform (and all competitors such as AWS and Azure) is expensive.
         </p>
+
+        <div>
+          <p>
+            <b>V3 Mod panel video demo</b>
+          </p>
+          {!isV3VideoShown && (
+            <>
+              <p>
+                Click the button to load a quick video demo of this version's mod panel!
+              </p>
+
+              <Button
+                text="Show mod panel video"
+                className="mt-1"
+                onClick={() => setIsV3VideoShown(true)}
+              />
+            </>
+          )}
+
+          {isV3VideoShown && (
+            <div>
+              <p>Description</p>
+              {/* <video src={v3Video} controls className="mt-1" /> */}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
