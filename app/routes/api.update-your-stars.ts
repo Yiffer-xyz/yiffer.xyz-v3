@@ -70,7 +70,6 @@ export async function updateStarRating(
   const res = await getAndCacheComicsPaginated({
     db,
     includeAds: false,
-    includeTags: true,
     pageNum: 1,
   });
   if (res.err) return wrapApiError(res.err, 'Error in updateStarRating', logCtx);

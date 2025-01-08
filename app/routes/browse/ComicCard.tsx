@@ -37,18 +37,6 @@ export default function ComicCard({
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
 
-  const updateYourStarsFetcher = useGoodFetcher({
-    method: 'post',
-    url: '/api/update-your-stars',
-  });
-
-  function updateStars(stars: number) {
-    updateYourStarsFetcher.submit({
-      stars,
-      comicId: comic!.id,
-    });
-  }
-
   const toggleBookmarkFetcher = useGoodFetcher({
     method: 'post',
     url: '/api/toggle-bookmark',
@@ -104,7 +92,7 @@ export default function ComicCard({
         {/* <div className="w-[160px] h-[226px] bg-gray-500" /> */}
       </RemixLink>
 
-      {toggleBookmark && (isHovering || !!0) && (
+      {isHovering && (
         <div
           className="absolute -bottom-[30px] left-0 w-full h-[34px] 
                    bg-theme1-primaryMoreTransSolid dark:bg-gray-400
@@ -124,8 +112,6 @@ export default function ComicCard({
         >
           <ComicRateBookmark
             comic={comic}
-            updateStars={updateStars}
-            toggleBookmark={toggleBookmark}
             isLoggedIn={isLoggedIn}
             small
             source="comic-card"
@@ -151,7 +137,7 @@ export default function ComicCard({
 
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <div className="leading-5 pt-0.5 pb-1">
-          {comic.isBookmarked && toggleBookmark && (
+          {comic.isBookmarked && (
             <button className="pr-1.5 group" onClick={toggleBookmark}>
               <FaBookmark
                 size={14}

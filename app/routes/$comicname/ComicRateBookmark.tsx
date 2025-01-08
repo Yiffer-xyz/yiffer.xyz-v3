@@ -5,11 +5,11 @@ import clsx from 'clsx';
 import { useNavigate } from '@remix-run/react';
 import posthog from 'posthog-js';
 import { useAuthRedirect } from '~/utils/general';
+import { useState } from 'react';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type ComicInfoProps = {
   comic: Comic | ComicForBrowse;
-  updateStars: (stars: number) => void;
-  toggleBookmark: () => void;
   isLoggedIn: boolean;
   small?: boolean;
   source: 'comic-page' | 'comic-card';
@@ -18,8 +18,6 @@ type ComicInfoProps = {
 
 export default function ComicRateBookmark({
   comic,
-  updateStars,
-  toggleBookmark,
   isLoggedIn,
   small = false,
   source,
@@ -29,26 +27,56 @@ export default function ComicRateBookmark({
   const navigate = useNavigate();
   const { redirectSetOnLoginNavStr } = useAuthRedirect();
 
+  const [overrideStars, setOverrideStars] = useState<number | null>(null);
+  const [overrideBookmark, setOverrideBookmark] = useState<boolean | null>(null);
+
+  const shownStars = overrideStars ?? yourStars;
+
+  const updateYourStarsFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/update-your-stars',
+  });
+
   function onUpdateStars(stars: number) {
     if (!isLoggedIn) {
       navigate(`/login${redirectSetOnLoginNavStr}`);
       return;
     }
+
     posthog.capture('Comic rated', { source });
-    if (yourStars === stars) {
-      updateStars(0);
-    } else {
-      updateStars(stars);
-    }
+    const newStars =
+      overrideStars === null
+        ? yourStars === stars
+          ? 0
+          : stars
+        : shownStars === stars
+          ? 0
+          : stars;
+    updateYourStarsFetcher.submit({
+      stars,
+      comicId: comic.id,
+    });
+    setOverrideStars(newStars);
   }
+
+  const toggleBookmarkFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/toggle-bookmark',
+  });
 
   function onToggleBookmark() {
     if (!isLoggedIn) {
       navigate(`/login${redirectSetOnLoginNavStr}`);
       return;
     }
+
     posthog.capture('Comic bookmark toggled', { source });
-    toggleBookmark();
+    toggleBookmarkFetcher.submit({
+      comicId: comic!.id,
+    });
+    const newBookmark =
+      overrideBookmark !== null ? !overrideBookmark : !comic.isBookmarked;
+    setOverrideBookmark(newBookmark);
   }
 
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
@@ -61,7 +89,7 @@ export default function ComicRateBookmark({
     <div className={`flex flex-row items-center ${className}`}>
       {/* Bookmark */}
       <button onClick={onToggleBookmark} className="p-2 -ml-2 group">
-        {comic.isBookmarked ? (
+        {(overrideBookmark ?? comic.isBookmarked) ? (
           <FaBookmark
             size={small ? 16 : 20}
             className={`text-theme1-dark mt-[3px] ${hoverClass}`}
@@ -85,7 +113,7 @@ export default function ComicRateBookmark({
           <IoStar
             size={small ? 20 : 24}
             className={clsx(
-              yourStars >= 1 ? filledColorClass : unfilledColorClass,
+              shownStars >= 1 ? filledColorClass : unfilledColorClass,
               hoverClass
             )}
           />
@@ -94,7 +122,7 @@ export default function ComicRateBookmark({
           <IoStar
             size={small ? 20 : 24}
             className={clsx(
-              yourStars >= 2 ? filledColorClass : unfilledColorClass,
+              shownStars >= 2 ? filledColorClass : unfilledColorClass,
               hoverClass
             )}
           />
@@ -103,7 +131,7 @@ export default function ComicRateBookmark({
           <IoStar
             size={small ? 20 : 24}
             className={clsx(
-              yourStars >= 3 ? filledColorClass : unfilledColorClass,
+              shownStars >= 3 ? filledColorClass : unfilledColorClass,
               hoverClass
             )}
           />

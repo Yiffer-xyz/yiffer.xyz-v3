@@ -3,7 +3,6 @@ import { getComicByField } from '~/route-funcs/get-comic';
 import { processApiError } from '~/utils/request-helpers';
 import ComicRateBookmark from './ComicRateBookmark';
 import { authLoader } from '~/utils/loaders';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Link from '~/ui-components/Link';
 import ComicStats from './ComicStats';
@@ -46,29 +45,6 @@ export default function ComicPage() {
 
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [isReportingProblem, setIsReportingProblem] = useState(false);
-
-  const updateYourStarsFetcher = useGoodFetcher({
-    method: 'post',
-    url: '/api/update-your-stars',
-  });
-
-  const toggleBookmarkFetcher = useGoodFetcher({
-    method: 'post',
-    url: '/api/toggle-bookmark',
-  });
-
-  function updateStars(stars: number) {
-    updateYourStarsFetcher.submit({
-      stars,
-      comicId: comic!.id,
-    });
-  }
-
-  function toggleBookmark() {
-    toggleBookmarkFetcher.submit({
-      comicId: comic!.id,
-    });
-  }
 
   const comicNotFound = notFound || !comic || comic.name === null;
 
@@ -130,8 +106,6 @@ export default function ComicPage() {
               <div className="flex flex-col">
                 <ComicRateBookmark
                   comic={comic}
-                  updateStars={updateStars}
-                  toggleBookmark={toggleBookmark}
                   isLoggedIn={isLoggedIn}
                   source="comic-page"
                   className="flex"
