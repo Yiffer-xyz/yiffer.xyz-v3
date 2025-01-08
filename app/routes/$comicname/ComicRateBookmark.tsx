@@ -1,11 +1,10 @@
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
 import type { Comic, ComicForBrowse } from '~/types/types';
-import clsx from 'clsx';
 import { useNavigate } from '@remix-run/react';
 import posthog from 'posthog-js';
 import { useAuthRedirect } from '~/utils/general';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type ComicInfoProps = {
@@ -29,6 +28,7 @@ export default function ComicRateBookmark({
 
   const [overrideStars, setOverrideStars] = useState<number | null>(null);
   const [overrideBookmark, setOverrideBookmark] = useState<boolean | null>(null);
+  const [hoverStars, setHoverStars] = useState<number | null>(null);
 
   const shownStars = overrideStars ?? yourStars;
 
@@ -82,8 +82,27 @@ export default function ComicRateBookmark({
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
   const hoverClass = isLoggedIn
-    ? 'group-hover:text-theme1-darker dark:group-hover:text-theme1-darker2'
+    ? 'group-hover:text-theme1-darker2 dark:group-hover:text-theme1-darker3'
     : '';
+  const hoverOtherStarFilledClass = 'text-theme1-darker2 dark:text-theme1-darker3';
+
+  const starClassnames = useMemo(() => {
+    if (hoverStars === null) {
+      return [1, 2, 3].map(star =>
+        shownStars >= star ? filledColorClass : unfilledColorClass
+      );
+    } else {
+      return [1, 2, 3].map(star => {
+        if (hoverStars === star) {
+          return hoverClass;
+        }
+        if (hoverStars > star) {
+          return hoverOtherStarFilledClass;
+        }
+        return unfilledColorClass;
+      });
+    }
+  }, [hoverClass, hoverStars, shownStars]);
 
   return (
     <div className={`flex flex-row items-center ${className}`}>
@@ -109,31 +128,37 @@ export default function ComicRateBookmark({
 
       {/* Stars */}
       <div>
-        <button onClick={() => onUpdateStars(1)} className="p-1 group">
+        <button
+          onClick={() => onUpdateStars(1)}
+          className="p-1 group"
+          onMouseEnter={() => setHoverStars(1)}
+          onMouseLeave={() => setHoverStars(null)}
+        >
           <IoStar
             size={small ? 20 : 24}
-            className={clsx(
-              shownStars >= 1 ? filledColorClass : unfilledColorClass,
-              hoverClass
-            )}
+            className={`${starClassnames[0]} transition-all duration-75`}
           />
         </button>
-        <button onClick={() => onUpdateStars(2)} className="p-1 group">
+        <button
+          onClick={() => onUpdateStars(2)}
+          className="p-1 group"
+          onMouseEnter={() => setHoverStars(2)}
+          onMouseLeave={() => setHoverStars(null)}
+        >
           <IoStar
             size={small ? 20 : 24}
-            className={clsx(
-              shownStars >= 2 ? filledColorClass : unfilledColorClass,
-              hoverClass
-            )}
+            className={`${starClassnames[1]} transition-all duration-75`}
           />
         </button>
-        <button onClick={() => onUpdateStars(3)} className="p-1 group">
+        <button
+          onClick={() => onUpdateStars(3)}
+          className="p-1 group"
+          onMouseEnter={() => setHoverStars(3)}
+          onMouseLeave={() => setHoverStars(null)}
+        >
           <IoStar
             size={small ? 20 : 24}
-            className={clsx(
-              shownStars >= 3 ? filledColorClass : unfilledColorClass,
-              hoverClass
-            )}
+            className={`${starClassnames[2]} transition-all duration-75`}
           />
         </button>
       </div>
