@@ -1,4 +1,4 @@
-import { formatDistanceStrict, formatDistanceToNow } from 'date-fns';
+import { formatDistanceStrict, formatDistanceToNow, isSameYear } from 'date-fns';
 
 // All db times are UTC. Add the Z to make this execution (local CF edge point or user's device)
 // parse it as UTC and therefore make the Date object correct.
@@ -44,4 +44,16 @@ export function getTimeAgoShort(time: Date, includeSpace = true) {
     .replace(' month', 'mo')
     .replace(' years', 'yr')
     .replace(' year', 'yr');
+}
+
+export function formatContributionDate(date: Date) {
+  const mo = new Intl.DateTimeFormat('en', { month: 'short' }).format(date);
+  const da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
+
+  if (isSameYear(date, new Date())) {
+    return `${mo} ${da}`;
+  }
+
+  const yearTwoDigits = new Intl.DateTimeFormat('en', { year: '2-digit' }).format(date);
+  return `${mo} ${da}, ${yearTwoDigits}`;
 }

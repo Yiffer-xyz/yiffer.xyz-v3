@@ -13,12 +13,6 @@ export interface Env {
   DB: D1Database;
 }
 
-export enum UserType {
-  Admin = 'admin',
-  Mod = 'moderator',
-  User = 'normal',
-}
-
 export type Artist = {
   id: number;
   name: string;
@@ -180,10 +174,12 @@ export type JwtConfig = {
   };
 };
 
+export type UserType = 'admin' | 'moderator' | 'normal';
+
 export type UserSession = {
   userId: number;
   username: string;
-  userType: 'admin' | 'moderator' | 'normal';
+  userType: UserType;
 };
 
 // Used for auth, where we don't need all the fields
@@ -191,14 +187,10 @@ export type SimpleUser = {
   id: number;
   username: string;
   email: string;
-  userType: 'admin' | 'moderator' | 'normal';
+  userType: UserType;
 };
 
-export function isModOrAdmin({
-  userType,
-}: {
-  userType: 'admin' | 'moderator' | 'normal';
-}) {
+export function isModOrAdmin({ userType }: { userType: UserType }) {
   return userType === 'admin' || userType === 'moderator';
 }
 
@@ -206,7 +198,7 @@ export type User = {
   id: number;
   username: string;
   email: string;
-  userType: 'admin' | 'moderator' | 'normal';
+  userType: UserType;
   createdTime: Date;
   isBanned: boolean;
   banReason?: string;
