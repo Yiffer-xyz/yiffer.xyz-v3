@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { getUserById } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
+import type { ResultOrError } from '~/utils/request-helpers';
 import { processApiError } from '~/utils/request-helpers';
 import Select from '~/ui-components/Select/Select';
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import Button from '~/ui-components/Buttons/Button';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { UpdateUserBody } from '~/routes/api.admin.update-user';
-import type { UserType } from '~/types/types';
+import type { Contribution, User, UserType } from '~/types/types';
 import { format } from 'date-fns';
 import { Contributions } from '~/page-components/Contributions/Contributions';
 import Link from '~/ui-components/Link';
@@ -19,6 +20,9 @@ import { getTimeAgo } from '~/utils/date-utils';
 import { capitalizeString } from '~/utils/general';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { getContributions } from '~/route-funcs/get-contributions';
+import type { Feedback } from '~/route-funcs/get-feedback';
+import { getFeedback } from '~/route-funcs/get-feedback';
+import FeedbackItem from '~/page-components/UserFeedback/FeedbackItem';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -27,7 +31,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ManageSingleUser() {
-  const { user, contributions } = useLoaderData<typeof loader>();
+  const { user, contributions, feedback } = useLoaderData<typeof loader>();
   const [userType, setUserType] = useState<UserType>(user.userType);
   const [modNotes, setModNotes] = useState(user.modNotes || '');
   const [banReason, setBanReason] = useState('');
@@ -176,35 +180,62 @@ export default function ManageSingleUser() {
         <Button text="Ban user" onClick={() => setBanFlowActive(true)} color="error" />
       )}
 
-      <br />
+      <div className="max-w-2xl mt-6">
+        <h3>Feedback/support</h3>
+        {feedback.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {feedback.map(fb => (
+              <FeedbackItem feedback={fb} key={fb.id} />
+            ))}
+          </div>
+        ) : (
+          <p>User has not submitted any feedback/support.</p>
+        )}
+      </div>
 
-      <h3>Contributions</h3>
-      {contributions.length > 0 ? (
-        <Contributions contributions={contributions} className="mt-2 md:mt-1" />
-      ) : (
-        <p>User has no contributions yet.</p>
-      )}
+      <div className="max-w-4xl mt-6">
+        <h3>Contributions</h3>
+        {contributions.length > 0 ? (
+          <Contributions contributions={contributions} className="mt-2 md:mt-1" />
+        ) : (
+          <p>User has no contributions yet.</p>
+        )}
+      </div>
     </>
   );
 }
 
 export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotMod(args);
+  const db = args.context.cloudflare.env.DB;
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
 
-  const contributionsRes = await getContributions(args.context.cloudflare.env.DB, userId);
-  const userRes = await getUserById(args.context.cloudflare.env.DB, userId);
+  const userResPromise = getUserById(args.context.cloudflare.env.DB, userId);
+  const contributionsResPromise = getContributions(db, userId);
+  const feedbackResPromise = getFeedback({ db, userId });
 
-  if (userRes.err) {
-    return processApiError('Error getting user for admin>users', userRes.err);
-  }
-  if (contributionsRes.err) {
-    return processApiError(
-      'Error getting user contributions in admin>users',
-      contributionsRes.err
-    );
-  }
+  const responses: [
+    ResultOrError<User>,
+    ResultOrError<Contribution[]>,
+    ResultOrError<Feedback[]>,
+  ] = await Promise.all([userResPromise, contributionsResPromise, feedbackResPromise]);
 
-  return { user: userRes.result, contributions: contributionsRes.result };
+  responses.forEach(res => {
+    if (res.err) {
+      return processApiError('Error getting admin>users>user', res.err);
+    }
+  });
+
+  const [userRes, contributionRes, feedbackRes] = responses as [
+    { result: User },
+    { result: Contribution[] },
+    { result: Feedback[] },
+  ];
+
+  return {
+    user: userRes.result,
+    contributions: contributionRes.result,
+    feedback: feedbackRes.result,
+  };
 }

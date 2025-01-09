@@ -131,12 +131,14 @@ function ContributionDetails({
   contribution: Contribution;
   alignRight: boolean;
 }) {
+  const maybeTextEndClass = alignRight ? 'text-end' : '';
+
   if (contribution.type === 'ContributedComic') {
     return (
       <>
-        <p className="text-end">Comic: {contribution.comicName}</p>
-        <p className="text-end">Artist: {contribution.artistName}</p>
-        <p className="text-end">
+        <p className={maybeTextEndClass}>Comic: {contribution.comicName}</p>
+        <p className={maybeTextEndClass}>Artist: {contribution.artistName}</p>
+        <p className={maybeTextEndClass}>
           {contribution.numberOfPages} pages, {contribution.numberOfKeywords} tags
         </p>
       </>
@@ -164,18 +166,15 @@ function ComicProblemDetails({
   alignRight: boolean;
 }) {
   const [isViewingDetails, setIsViewingDetails] = useState(false);
+  const maybeTextEndClass = alignRight ? 'text-end' : '';
 
   return (
     <>
-      <p className="text-end">Comic: {contribution.comicName}</p>
-      <p className="text-end">Problem: {contribution.problemCategory}</p>
+      <p className={maybeTextEndClass}>Comic: {contribution.comicName}</p>
+      <p className={maybeTextEndClass}>Problem: {contribution.problemCategory}</p>
 
       {isViewingDetails && (
-        <p
-          className={`mt-2 text-end font-extralight whitespace-pre-wrap break-all ${
-            alignRight ? 'text-right' : 'text-left'
-          }`}
-        >
+        <p className={`mt-2 font-extralight whitespace-pre-wrap ${maybeTextEndClass}`}>
           {contribution.description}
         </p>
       )}
@@ -217,10 +216,14 @@ function TagSuggestionDetails({
     addRemoveString = `Remove ${pluralize('tag', contribution.removeTags.length, true)}`;
   }
 
+  const maybeTextEndClass = alignRight ? 'text-end' : '';
+
   return (
     <>
-      <p className="text-end">Comic: {contribution.comicName}</p>
-      <p className={isViewingDetails ? 'mb-2 text-end' : 'text-end'}>{addRemoveString}</p>
+      <p className={maybeTextEndClass}>Comic: {contribution.comicName}</p>
+      <p className={maybeTextEndClass + isViewingDetails ? ' mb-2 ' : ''}>
+        {addRemoveString}
+      </p>
 
       {isViewingDetails && (
         <>

@@ -8,6 +8,7 @@ import type {
 export type ResultOrErrorPromise<T> = Promise<
   { result: T; err?: undefined } | { err: ApiError }
 >;
+export type ResultOrError<T> = { result: T; err?: undefined } | { err: ApiError };
 
 export type ResultOrNotFoundOrErrorPromise<T> = Promise<
   | { err: ApiError }
