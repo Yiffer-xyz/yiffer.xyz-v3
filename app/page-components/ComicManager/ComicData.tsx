@@ -230,7 +230,7 @@ function ViewArtistLink({
             className="ml-2"
           />
           <Link
-            href={`/artists/${artist.name}`}
+            href={`/artist/${artist.name}`}
             text="View live"
             showRightArrow
             className="ml-4"

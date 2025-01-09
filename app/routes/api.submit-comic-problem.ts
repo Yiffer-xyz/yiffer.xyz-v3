@@ -34,12 +34,12 @@ export async function action(args: ActionFunctionArgs) {
     body.comicId,
     body.problemTitle,
     body.problemDescription,
-    user?.userId,
+    user?.userId ?? null,
     args.request.headers.get('CF-Connecting-IP') || 'unknown'
   );
 
   if (err) {
-    return processApiError('Error in /update-your-stars', err);
+    return processApiError('Error in /submit-comic-problem', err);
   }
   return createSuccessJson();
 }
@@ -49,7 +49,7 @@ export async function submitComicProblem(
   comicId: number,
   problemTitle: string,
   problemDescription: string,
-  userId: number | undefined,
+  userId: number | null,
   userIP: string
 ): Promise<ApiError | undefined> {
   const logCtx = { userId, userIP, comicId, problemTitle, problemDescription };

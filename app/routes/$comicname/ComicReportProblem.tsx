@@ -93,7 +93,7 @@ export default function ComicReportProblem({
       innerClassName="p-4 flex flex-col"
     >
       <p className="font-semibold text-lg">Report problem</p>
-      <p className="text-sm mb-2">Your suggestion will be reviewed by mods.</p>
+      <p className="text-sm mb-2">Your contribution will be reviewed by mods.</p>
       {!isLoggedIn && (
         <p className="text-sm mb-3">
           Log in or sign up to earn contribution points and track your suggestion's
@@ -117,6 +117,7 @@ export default function ComicReportProblem({
             className="mt-3 !px-3 !py-2"
             boldText={false}
             disableElevation
+            fitWidth
           >
             <p className="text-sm">{fullProblem.description}</p>
           </InfoBox>

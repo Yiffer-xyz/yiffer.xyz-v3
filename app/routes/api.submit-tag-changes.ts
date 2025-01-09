@@ -39,13 +39,13 @@ export async function action(args: ActionFunctionArgs) {
     body.comicId,
     body.newTagIDs,
     body.removedTagIDs,
-    user?.userId,
+    user?.userId ?? null,
     args.request.headers.get('CF-Connecting-IP') || 'unknown',
     user?.userType === 'moderator' || user?.userType === 'admin'
   );
 
   if (err) {
-    return processApiError('Error in /update-your-stars', err);
+    return processApiError('Error in /submit-tag-changes', err);
   }
   return createSuccessJson();
 }
@@ -55,7 +55,7 @@ export async function submitTagChanges(
   comicId: number,
   newTagIDs: number[],
   removedTagIDs: number[],
-  userId: number | undefined,
+  userId: number | null,
   userIP: string,
   isMod: boolean
 ): Promise<ApiError | undefined> {
@@ -73,8 +73,11 @@ export async function submitTagChanges(
     return makeDbErr(makeGroupRes, 'Error making tag suggestion group', logCtx);
   }
 
-  const getGroupIdQuery = `SELECT id FROM tagsuggestiongroup WHERE comicId = ? AND userId = ? AND userIP = ? ORDER BY id DESC LIMIT 1`;
-  const getGroupIdParams = [comicId, userId, userIP];
+  const getGroupIdQuery =
+    userId === null
+      ? 'SELECT id FROM tagsuggestiongroup WHERE comicId = ? AND userIP = ? ORDER BY id DESC LIMIT 1'
+      : `SELECT id FROM tagsuggestiongroup WHERE comicId = ? AND userId = ? ORDER BY id DESC LIMIT 1`;
+  const getGroupIdParams = userId === null ? [comicId, userIP] : [comicId, userId];
   const getGroupIdRes = await queryDb<{ id: number }[]>(
     db,
     getGroupIdQuery,
