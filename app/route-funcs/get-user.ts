@@ -22,20 +22,20 @@ export async function searchUsers(
   db: D1Database,
   searchText: string
 ): ResultOrErrorPromise<User[]> {
+  const whereQuery = searchText.length > 0 ? 'WHERE username LIKE ? OR email LIKE ?' : '';
+  const params = searchText.length > 0 ? [`%${searchText}%`, `%${searchText}%`] : [];
+
   const searchQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes,
       hasCompletedConversion
     FROM user
-    WHERE username LIKE ? OR email LIKE ?
+    ${whereQuery}
+    ORDER BY lastActionTimestamp ASC
+    LIMIT 50
   `;
 
-  const dbRes = await queryDb<DbUser[]>(
-    db,
-    searchQuery,
-    [`%${searchText}%`, `%${searchText}%`],
-    'User search'
-  );
+  const dbRes = await queryDb<DbUser[]>(db, searchQuery, params, 'User search');
   if (dbRes.isError || !dbRes.result) {
     return makeDbErrObj(dbRes, 'Error in user search', { searchText });
   }

@@ -28,10 +28,9 @@ export function Contributions({
 }) {
   return (
     <div className={className}>
-      <Table horizontalScroll={true} className="hidden md:block">
+      <Table className="hidden lg:block">
         <TableHeadRow isTableMaxHeight={false}>
           <TableCell>Contribution</TableCell>
-          <TableCell>Status</TableCell>
           <TableCell>Date</TableCell>
           <TableCell>Points</TableCell>
           <TableCell>Mod comment</TableCell>
@@ -45,8 +44,6 @@ export function Contributions({
             >
               <TableCell>
                 <p className="font-extralight">{getContributionName(contribution)}</p>
-              </TableCell>
-              <TableCell>
                 <p
                   className={`${getContributionStatusColor(
                     contribution.status
@@ -55,7 +52,7 @@ export function Contributions({
                   {capitalizeString(contribution.status)}
                 </p>
               </TableCell>
-              <TableCell>
+              <TableCell className="min-w-[110px]">
                 <p className="font-extralight">
                   {formatContributionDate(contribution.timestamp)}
                 </p>
@@ -71,7 +68,7 @@ export function Contributions({
                   {contribution.modComment || '-'}
                 </p>
               </TableCell>
-              <TableCell className="max-w-[300px] flex flex-col items-end">
+              <TableCell className="flex flex-col items-end">
                 <ContributionDetails contribution={contribution} alignRight />
               </TableCell>
             </TableRow>
@@ -79,7 +76,7 @@ export function Contributions({
         </TableBody>
       </Table>
 
-      <div className="md:hidden">
+      <div className="lg:hidden">
         {contributions.map((contribution, index) => (
           <div
             key={index}
@@ -112,7 +109,7 @@ export function Contributions({
             ) : null}
 
             {contribution.modComment && (
-              <p className="font-extralight whitespace-pre-wrap text-xl">
+              <p className="font-extralight whitespace-pre-wrap text-sm">
                 Mod comment: {contribution.modComment}
               </p>
             )}
@@ -137,9 +134,9 @@ function ContributionDetails({
   if (contribution.type === 'ContributedComic') {
     return (
       <>
-        <p>Comic: {contribution.comicName}</p>
-        <p>Artist: {contribution.artistName}</p>
-        <p>
+        <p className="text-end">Comic: {contribution.comicName}</p>
+        <p className="text-end">Artist: {contribution.artistName}</p>
+        <p className="text-end">
           {contribution.numberOfPages} pages, {contribution.numberOfKeywords} tags
         </p>
       </>
@@ -149,7 +146,7 @@ function ContributionDetails({
   } else if (contribution.type === 'ComicSuggestion') {
     return (
       <>
-        <p>Comic name: {contribution.comicName}</p>
+        <p className="text-end">Comic name: {contribution.comicName}</p>
       </>
     );
   } else if (contribution.type === 'TagSuggestion') {
@@ -170,12 +167,12 @@ function ComicProblemDetails({
 
   return (
     <>
-      <p>Comic: {contribution.comicName}</p>
-      <p>Problem: {contribution.problemCategory}</p>
+      <p className="text-end">Comic: {contribution.comicName}</p>
+      <p className="text-end">Problem: {contribution.problemCategory}</p>
 
       {isViewingDetails && (
         <p
-          className={`mt-2 font-extralight whitespace-pre-wrap break-all ${
+          className={`mt-2 text-end font-extralight whitespace-pre-wrap break-all ${
             alignRight ? 'text-right' : 'text-left'
           }`}
         >
@@ -222,8 +219,8 @@ function TagSuggestionDetails({
 
   return (
     <>
-      <p>Comic: {contribution.comicName}</p>
-      <p className={isViewingDetails ? 'mb-2' : ''}>{addRemoveString}</p>
+      <p className="text-end">Comic: {contribution.comicName}</p>
+      <p className={isViewingDetails ? 'mb-2 text-end' : 'text-end'}>{addRemoveString}</p>
 
       {isViewingDetails && (
         <>

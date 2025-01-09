@@ -1,7 +1,6 @@
 interface TableProps {
   horizontalScroll?: boolean;
-  /** A style value that'll be applied to the container - eg. 70vh, 20rem, etc. */
-  maxHeight?: string;
+  maxHeight?: number;
   children: React.ReactNode;
   className?: string;
 }
@@ -13,7 +12,7 @@ export default function Table({
   className = '',
 }: TableProps) {
   const horizontalScrollClass = `overflow-x-auto max-w-full whitespace-nowrap `;
-  const verticalScrollStyle = maxHeight ? { maxHeight } : {};
+  const verticalScrollStyle = maxHeight ? { maxHeight, overflowY: 'scroll' } : undefined;
   const fullClassName = `
     w-fit
     ${className} ${horizontalScroll ? horizontalScrollClass : ''}
@@ -21,6 +20,7 @@ export default function Table({
 
   if (horizontalScroll || maxHeight) {
     return (
+      // @ts-ignore
       <div className={fullClassName} style={verticalScrollStyle}>
         <table>{children}</table>
       </div>

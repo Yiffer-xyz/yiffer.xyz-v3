@@ -7,7 +7,6 @@ import Select from '~/ui-components/Select/Select';
 import { useState } from 'react';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import Button from '~/ui-components/Buttons/Button';
-import { loader as contributionLoader } from '~/routes/contribute_.your-contributions/route';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { UpdateUserBody } from '~/routes/api.admin.update-user';
@@ -19,6 +18,7 @@ import { MdArrowBack } from 'react-icons/md';
 import { getTimeAgo } from '~/utils/date-utils';
 import { capitalizeString } from '~/utils/general';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
+import { getContributions } from '~/route-funcs/get-contributions';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -190,16 +190,21 @@ export default function ManageSingleUser() {
 
 export async function loader(args: LoaderFunctionArgs) {
   await redirectIfNotMod(args);
-  const { contributions } = await contributionLoader(args);
-
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
 
+  const contributionsRes = await getContributions(args.context.cloudflare.env.DB, userId);
   const userRes = await getUserById(args.context.cloudflare.env.DB, userId);
 
   if (userRes.err) {
     return processApiError('Error getting user for admin>users', userRes.err);
   }
+  if (contributionsRes.err) {
+    return processApiError(
+      'Error getting user contributions in admin>users',
+      contributionsRes.err
+    );
+  }
 
-  return { user: userRes.result, contributions };
+  return { user: userRes.result, contributions: contributionsRes.result };
 }
