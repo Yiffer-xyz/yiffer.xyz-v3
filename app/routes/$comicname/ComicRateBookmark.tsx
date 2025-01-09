@@ -81,9 +81,8 @@ export default function ComicRateBookmark({
 
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
-  const hoverClass = isLoggedIn
-    ? 'group-hover:text-theme1-darker2 dark:group-hover:text-theme1-darker3'
-    : '';
+  const hoverClass =
+    'group-hover:text-theme1-darker2 dark:group-hover:text-theme1-darker3';
   const hoverOtherStarFilledClass = 'text-theme1-darker2 dark:text-theme1-darker3';
 
   const starClassnames = useMemo(() => {
@@ -116,9 +115,7 @@ export default function ComicRateBookmark({
         ) : (
           <FaRegBookmark
             size={small ? 16 : 20}
-            className={`${unfilledColorClass} mt-[3px] ${
-              isLoggedIn ? 'group-hover:text-theme1-dark' : ''
-            }`}
+            className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark`}
           />
         )}
       </button>

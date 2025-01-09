@@ -14,6 +14,7 @@ type ComicContributeProps = {
   setIsManagingTags: (isManagingTags: boolean) => void;
   isLoggedIn: boolean;
   isMod: boolean;
+  infoBoxesExtraMarginClass: string;
 };
 
 export default function ComicManageTags({
@@ -21,6 +22,7 @@ export default function ComicManageTags({
   setIsManagingTags,
   isLoggedIn,
   isMod,
+  infoBoxesExtraMarginClass,
 }: ComicContributeProps) {
   const [newTagList, setNewTagList] = useState<Tag[]>(comic.tags);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -83,7 +85,7 @@ export default function ComicManageTags({
     return (
       <InfoBox
         variant="success"
-        className="mt-4 md:mt-12 w-fit md:w-[728px]"
+        className={`mt-4 w-fit md:w-[728px] ${infoBoxesExtraMarginClass}`}
         closable
         fitWidth
         overrideOnCloseFunc={onCancel}
@@ -120,7 +122,7 @@ export default function ComicManageTags({
 
   return (
     <TopGradientBox
-      containerClassName="mt-4 md:mt-12 max-w-4xl md:w-[728px]"
+      containerClassName={`mt-4 max-w-4xl md:w-[728px] ${infoBoxesExtraMarginClass}`}
       innerClassName="p-4 flex flex-col"
     >
       <p className="font-semibold text-lg">Manage tags</p>

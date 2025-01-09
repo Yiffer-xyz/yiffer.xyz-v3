@@ -15,7 +15,7 @@ import type { AdForViewing, Comic } from '~/types/types';
 import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
@@ -47,6 +47,14 @@ export default function ComicPage() {
   const [isReportingProblem, setIsReportingProblem] = useState(false);
 
   const comicNotFound = notFound || !comic || comic.name === null;
+  const hasLinks = !!comic?.previousComic || !!comic?.nextComic;
+
+  const infoBoxesExtraMarginClass = useMemo(() => {
+    if (hasLinks || !comic) return 'md:mt-6';
+    if (comic.tags.length > 12) return 'md:mt-12';
+    if (comic.tags.length > 0) return 'md:mt-14';
+    return 'md:mt-[78px]';
+  }, [comic, hasLinks]);
 
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
@@ -111,6 +119,32 @@ export default function ComicPage() {
                   className="flex"
                 />
 
+                {hasLinks && (
+                  <div className="mt-2">
+                    <p>This comic is part of a series:</p>
+                    {comic.previousComic && (
+                      <p>
+                        Prev:{' '}
+                        <Link
+                          href={`/${comic.previousComic.name}`}
+                          text={comic.previousComic.name}
+                          isInsideParagraph
+                        />
+                      </p>
+                    )}
+                    {comic.nextComic && (
+                      <p>
+                        Next:{' '}
+                        <Link
+                          href={`/${comic.nextComic.name}`}
+                          text={comic.nextComic.name}
+                          isInsideParagraph
+                        />
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px]">
                   {comic.tags.map(tag => (
                     <TagElement tag={tag} key={tag.id} disableHoverEffects />
@@ -147,6 +181,7 @@ export default function ComicPage() {
               setIsManagingTags={setIsManagingTags}
               isLoggedIn={isLoggedIn}
               isMod={isMod}
+              infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
             />
           )}
 
@@ -155,6 +190,7 @@ export default function ComicPage() {
               comic={comic}
               setIsReportingProblem={setIsReportingProblem}
               isLoggedIn={isLoggedIn}
+              infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
             />
           )}
 
