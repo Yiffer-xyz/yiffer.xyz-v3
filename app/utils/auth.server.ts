@@ -17,7 +17,11 @@ type AuthResponse = {
   errorMessage?: string;
 };
 
-type UserWithPassword = SimpleUser & { password: string };
+type UserWithPwAndBan = SimpleUser & {
+  password: string;
+  isBanned: 0 | 1;
+  banReason: string | null;
+};
 
 type LoginArgs = {
   username: string;
@@ -143,7 +147,7 @@ export async function changePassword(
   newPassword: string
 ): Promise<{ friendlyErrorMsg: string | undefined }> {
   const userQuery = 'SELECT password FROM user WHERE id = ?';
-  const userQueryRes = await queryDb<UserWithPassword[]>(
+  const userQueryRes = await queryDb<{ password: string }[]>(
     db,
     userQuery,
     [userId],
@@ -157,8 +161,8 @@ export async function changePassword(
     return { friendlyErrorMsg: 'User not found' };
   }
 
-  const user = userQueryRes.result[0];
-  const isPasswordValid = await compare(oldPassword, user.password);
+  const userPassword = userQueryRes.result[0];
+  const isPasswordValid = await compare(oldPassword, userPassword.password);
   if (!isPasswordValid) {
     return { friendlyErrorMsg: 'Old password is incorrect' };
   }
@@ -185,10 +189,10 @@ async function authenticate(
   password: string
 ): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
   const query =
-    'SELECT id, username, email, userType, password FROM user WHERE username = ? OR email = ?';
+    'SELECT id, username, email, userType, password, isBanned, banReason FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
-  const fetchDbRes = await queryDb<UserWithPassword[]>(
+  const fetchDbRes = await queryDb<UserWithPwAndBan[]>(
     db,
     query,
     queryParams,
@@ -205,6 +209,12 @@ async function authenticate(
   const isPasswordValid = await compare(password, user.password);
   if (!isPasswordValid) {
     return { errorMessage: 'Username does not exist or wrong password' };
+  }
+
+  if (user.isBanned === 1) {
+    return {
+      errorMessage: `You have been banned. Reason: ${user.banReason ?? 'unspecified'}`,
+    };
   }
 
   updateUserLastActionTime({ db, userId: user.id });
