@@ -105,7 +105,7 @@ export default function AdminSidebar({
           />
           <SidebarLink
             href="/admin/feedback-support"
-            text="🚧 Feedback/support"
+            text="Feedback/support"
             isSelected={isRoute('feedback-support')}
           />
           <SidebarLink

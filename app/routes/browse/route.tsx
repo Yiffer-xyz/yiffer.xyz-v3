@@ -216,7 +216,7 @@ export default function BrowsePage() {
   return (
     <div>
       <h1
-        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-4xl md:text-6xl"
+        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[52px] md:text-[72px]"
         style={{
           fontFamily: 'Shrikhand,cursive',
           ...(theme === 'dark' ? darkHeaderStyle : lightHeaderStyle),

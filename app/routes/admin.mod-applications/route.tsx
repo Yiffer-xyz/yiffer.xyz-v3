@@ -16,6 +16,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from '@remix-run/cloudflare';
+import { MdOpenInNew } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const statusOptions: { key: ModApplication['status']; text: string }[] = [
@@ -88,7 +89,7 @@ export default function AdminModApplications() {
         disabled={showAll}
       />
 
-      <div className="mt-4 mb-4">
+      <div className="mt-4 mb-4 text-sm">
         <p>When accepting new mods:</p>
         <p>1. Set status to Approved</p>
         <p>2. Contact the user on Telegram</p>
@@ -139,7 +140,8 @@ export function ModApplicationCard({
       <Link
         href={`https://t.me/${application.telegramUsername}`}
         text={`Telegram: ${application.telegramUsername}`}
-        showRightArrow
+        newTab
+        IconRight={MdOpenInNew}
       />
 
       <p>{application.notes}</p>
