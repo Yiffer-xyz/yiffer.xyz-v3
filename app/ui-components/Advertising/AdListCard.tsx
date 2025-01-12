@@ -88,7 +88,13 @@ export default function AdListCard({
           <p className="text-sm">{ad.clicks} clicks</p>
         )}
 
-        <Link href={ad.link} newTab className="text-sm" text={ad.link} />
+        <Link
+          href={ad.link}
+          newTab
+          className="text-sm"
+          text={ad.link}
+          style={{ lineBreak: 'anywhere' }}
+        />
 
         {showFullAdminData && (
           <p className="text-sm break-all">

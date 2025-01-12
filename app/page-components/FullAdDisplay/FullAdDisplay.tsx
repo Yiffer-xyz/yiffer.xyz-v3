@@ -289,7 +289,7 @@ export default function FullAdDisplay({
                   <p className="mb-1">
                     {updatedAd.expiryDate ? format(updatedAd.expiryDate, 'PPP') : '-'}
                   </p>
-                  <div className="flex flex-row gap-2">
+                  <div className="flex flex-row gap-2 flex-wrap">
                     <Button
                       text="+1M"
                       onClick={() => addMonthsToExpiryDate(1)}
@@ -334,7 +334,12 @@ export default function FullAdDisplay({
                     onChange={newText => setUpdatedAd({ ...updatedAd, link: newText })}
                   />
                 ) : (
-                  <Link href={ad.link} text={ad.link} newTab />
+                  <Link
+                    href={ad.link}
+                    text={ad.link}
+                    newTab
+                    style={{ lineBreak: 'anywhere' }}
+                  />
                 )}
               </TableCell>
             </TableRow>
@@ -397,7 +402,7 @@ export default function FullAdDisplay({
           </TableBody>
         </Table>
 
-        {ad.isAnimated ? <>animated not supported yet</> : displayedAd}
+        {displayedAd}
       </div>
 
       {/* ADMIN EDITING */}

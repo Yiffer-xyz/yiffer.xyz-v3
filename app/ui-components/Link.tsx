@@ -13,6 +13,7 @@ type LinkProps = {
   showRightArrow?: boolean;
   iconMargin?: number;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 export default function Link({
@@ -27,6 +28,7 @@ export default function Link({
   iconMargin = 4,
   showRightArrow,
   className,
+  style,
   ...props
 }: LinkProps) {
   let colorClass = `text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
@@ -64,7 +66,8 @@ export default function Link({
       target={newTab ? '_blank' : '_self'}
       rel={newTab ? 'noreferrer' : undefined}
       className={`${linkClass}`}
-      style={{ paddingBottom: '1px' }}
+      style={{ paddingBottom: '1px', ...style }}
+      {...props}
     >
       {Icon ? (
         <Icon style={{ marginRight: iconMargin, marginBottom: '3px' }} />
@@ -83,7 +86,7 @@ export default function Link({
       target={newTab ? '_blank' : '_self'}
       rel={newTab ? 'noreferrer' : undefined}
       className={`${linkClass}`}
-      style={{ paddingBottom: '1px' }}
+      style={{ paddingBottom: '1px', ...style }}
       prefetch="intent"
       {...props}
     >

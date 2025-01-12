@@ -132,13 +132,13 @@ export default function RatingConversion() {
           </p>
           <p>
             The rationale behind this change is that people weren't using the old system
-            properly. If you're disappointed by this change, I'm sorry. I know there will
-            be some of you, but this change will be an improvement for the vast majority
-            of users - I hope you'll understand.
+            properly. If you're disappointed by this change, We're sorry. We know there
+            will be some of you, but this change will be an improvement for the vast
+            majority of users - we hope you'll understand.
           </p>
           <p>
-            I recommend you convert high ratings to stars, and discard low ratings if you
-            have any. The new system does not have an equivalent of a "1" in the old
+            We recommend converting high ratings to stars, and discarding low ratings if
+            there are any. The new system does not have the equivalent of a "1" in the old
             system. Now, even a single star should indicate that you like the comic.
           </p>
 

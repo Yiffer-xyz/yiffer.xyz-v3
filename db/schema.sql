@@ -9,13 +9,6 @@ CREATE TABLE `user` (
 `userType` TEXT CHECK( `userType` IN ('normal', 'moderator', 'admin') ) NOT NULL DEFAULT 'normal',
 `donator` TINYINTEGER NOT NULL DEFAULT '0',
 `createdTime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-`patreonTier` INTEGER  NULL DEFAULT NULL,
-`patreonAccessToken` TEXT NULL DEFAULT NULL,
-`patreonRefreshToken` TEXT NULL DEFAULT NULL,
-`patreonDisplayName` TEXT NULL DEFAULT NULL,
-`patreonDisplayLink` TEXT NULL DEFAULT NULL,
-`isPatreonLinkApproved` TINYINTEGER  NOT NULL DEFAULT '0',
-`hasPatreonPicture` TINYINTEGER  NOT NULL DEFAULT '0',
 `isBanned` TINYINTEGER  NOT NULL DEFAULT '0',
 `banReason` TEXT NULL DEFAULT NULL,
 `banTimestamp` TIMESTAMP NULL DEFAULT NULL,
@@ -52,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `advertisement` (
 `numDaysActive` INTEGER NOT NULL DEFAULT '0',
 `isChangedWhileActive` TINYINTEGER  NOT NULL DEFAULT '0',
 `videoSpecificFileType` TEXT NULL DEFAULT NULL,
+`isFromOldSystem` TINYINTEGER  NOT NULL DEFAULT '0',
 PRIMARY KEY (`id`),
 FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`));

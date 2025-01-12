@@ -14,7 +14,7 @@ import { capitalizeFirstRestLower } from '~/utils/general';
 import ImageAdMedia from './ImageAdMedia';
 import VideoOrGifAdMedia from './VideoOrGifAdMedia';
 
-type Step2DetailsProps = {
+type Step3DetailsProps = {
   isNewAd: boolean;
   adType: AdvertisementInfo;
   mediaType: AdMediaType;
@@ -58,7 +58,7 @@ export default function Step3Details({
   setCroppedFile,
   isSubmitting,
   submitError,
-}: Step2DetailsProps) {
+}: Step3DetailsProps) {
   const mainTextCharsLeft = CARD_AD_MAIN_TEXT_MAX_LENGTH - (mainText?.length ?? 0);
   const secondaryTextCharsLeft =
     CARD_AD_SECONDARY_TEXT_MAX_LENGTH - (secondaryText?.length ?? 0);

@@ -169,6 +169,7 @@ export default function ManageArtist() {
                 className="ml-2"
                 text="View live artist page"
                 showRightArrow
+                isInsideParagraph
               />
             </p>
           )}
