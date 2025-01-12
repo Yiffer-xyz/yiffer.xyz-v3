@@ -13,6 +13,30 @@ type ComicIdWithRating = {
   rating: number;
 };
 
+export async function getHasOldComicRatings(
+  db: D1Database,
+  userId?: number
+): ResultOrErrorPromise<boolean> {
+  if (!userId) {
+    return { result: false };
+  }
+
+  const query =
+    'SELECT EXISTS(SELECT 1 FROM oldcomicrating WHERE userId = ?) AS hasRatings';
+  const dbRes = await queryDb<{ hasRatings: boolean }[]>(
+    db,
+    query,
+    [userId],
+    'Has old comic ratings'
+  );
+
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, 'Could not get has old comic ratings');
+  }
+
+  return { result: dbRes.result.length > 0 && dbRes.result[0].hasRatings };
+}
+
 export async function getOldComicRatingSummary(
   db: D1Database,
   userId?: number

@@ -24,7 +24,10 @@ import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing, getCardAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
-import { getOldComicRatingSummary } from '~/route-funcs/get-old-comic-ratings';
+import {
+  getHasOldComicRatings,
+  getOldComicRatingSummary,
+} from '~/route-funcs/get-old-comic-ratings';
 import OldComicRatingsInfo from './OldComicRatings';
 import type { ComicForBrowse, UserSession } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
@@ -159,7 +162,7 @@ export async function loader(args: LoaderFunctionArgs) {
     db: args.context.cloudflare.env.DB,
     adType: 'topSmall',
   });
-  const oldComicRatingsPromise = getOldComicRatingSummary(
+  const oldComicRatingsPromise = getHasOldComicRatings(
     args.context.cloudflare.env.DB,
     user?.userId
   );
@@ -188,7 +191,7 @@ export async function loader(args: LoaderFunctionArgs) {
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     adsPath: args.context.cloudflare.env.ADS_PATH,
     isLoggedIn: !!user,
-    oldComicRatings: oldComicRatingsRes.result,
+    hasOldComicRatings: oldComicRatingsRes.result,
   };
 }
 
@@ -203,7 +206,7 @@ export default function BrowsePage() {
     adsPath,
     topAd,
     isLoggedIn,
-    oldComicRatings,
+    hasOldComicRatings,
   } = useLoaderData<typeof loader>();
   const { page, setPage } = browseUtilities;
 
@@ -240,9 +243,7 @@ export default function BrowsePage() {
         />
       </div>
 
-      {oldComicRatings.length > 0 && (
-        <OldComicRatingsInfo numOldRatings={oldComicRatings.length} />
-      )}
+      {hasOldComicRatings && <OldComicRatingsInfo />}
 
       <SearchFilter browseUtilities={browseUtilities} isLoggedIn={isLoggedIn} />
 

@@ -2,11 +2,7 @@ import { CLOSED_SEARCHFILTER_WIDTH } from './SearchFilter/SearchFilterContainer'
 import { MdError } from 'react-icons/md';
 import Link from '~/ui-components/Link';
 
-export default function OldComicRatingsInfo({
-  numOldRatings,
-}: {
-  numOldRatings: number;
-}) {
+export default function OldComicRatingsInfo() {
   return (
     <div
       className={`rounded shadow mt-4 text-text-white
@@ -23,8 +19,6 @@ export default function OldComicRatingsInfo({
         comic ratings from the old system. Decide soon - we won't keep old ratings
         forever.
       </p>
-
-      <p className="mt-2 text-sm">You have {numOldRatings} old rated comics.</p>
 
       <p className="mt-1.5">
         <Link

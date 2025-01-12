@@ -31,7 +31,7 @@ export async function searchUsers(
       hasCompletedConversion
     FROM user
     ${whereQuery}
-    ORDER BY lastActionTimestamp ASC
+    ORDER BY lastActionTimestamp DESC, createdTime DESC
     LIMIT 50
   `;
 
