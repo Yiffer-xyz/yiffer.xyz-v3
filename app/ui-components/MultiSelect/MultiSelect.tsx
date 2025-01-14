@@ -274,7 +274,7 @@ export default function MultiSelect<T>({
       {/* CLEAR CROSS ICON */}
       {value && value.length > 0 && includeClearAll && (
         <span
-          className="absolute right-2 top-4 hover:cursor-pointer"
+          className="absolute right-2 -top-[1px] hover:cursor-pointer"
           onClick={removeAllSelected}
         >
           <RiCloseLine />
