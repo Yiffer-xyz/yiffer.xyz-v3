@@ -84,14 +84,22 @@ export default function AdComicCard({
         )}
 
         {(ad.mediaType === 'gif' || ad.mediaType === 'video') && (
-          <video
-            src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
-            width={width}
-            height={height}
-            autoPlay
-            loop
-            muted
-          />
+          <video width={width} height={height} autoPlay loop muted>
+            {ad.videoSpecificFileType ? (
+              <source
+                src={`${adsPath}/${ad.id}-1x.${ad.videoSpecificFileType}${queryStr}`}
+                type={`video/${ad.videoSpecificFileType}`}
+              />
+            ) : (
+              <>
+                <source
+                  src={`${adsPath}/${ad.id}-1x.webm${queryStr}`}
+                  type="video/webm"
+                />
+                <source src={`${adsPath}/${ad.id}-1x.mp4${queryStr}`} type="video/mp4" />
+              </>
+            )}
+          </video>
         )}
       </a>
 
