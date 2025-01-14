@@ -19,6 +19,7 @@ import { MdCheck, MdClose, MdDelete, MdReplay } from 'react-icons/md';
 import { useNavigate } from '@remix-run/react';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import { FullAdPayments } from './FullAdPayments';
+import InfoBox from '~/ui-components/InfoBox';
 
 type Props = {
   adData: AdvertisementFullData;
@@ -186,6 +187,7 @@ export default function FullAdDisplay({
     <>
       <div className="flex flex-row items-center">
         <h3 className="mt-4 mb-1">Details</h3>
+
         {showAdminFeatures && (
           <div className="ml-4 mt-2.5 h-fit flex flex-row gap-2">
             {!isEditing ? (
@@ -218,6 +220,20 @@ export default function FullAdDisplay({
           </div>
         )}
       </div>
+
+      {adData.ad.isFromOldSystem && (
+        <InfoBox
+          showIcon
+          variant="info"
+          text="This ad was imported from the previous version of the site in Jan 2025. Activity stats from before this are not available."
+          className="mb-4"
+          fitWidth
+          disableElevation
+          small
+          boldText={false}
+        />
+      )}
+
       <div className="flex flex-row flex-wrap gap-x-8 gap-y-4">
         <Table>
           <TableBody>
@@ -326,12 +342,13 @@ export default function FullAdDisplay({
             )}
             <TableRow>
               <TableCell className="font-semibold">Link</TableCell>
-              <TableCell>
+              <TableCell className="max-w-[400px]">
                 {isEditing ? (
                   <TextInput
                     value={updatedAd.link}
                     name="link"
                     onChange={newText => setUpdatedAd({ ...updatedAd, link: newText })}
+                    className="min-w-max md:min-w-[500px]"
                   />
                 ) : (
                   <Link

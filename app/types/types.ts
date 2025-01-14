@@ -374,6 +374,7 @@ export type Advertisement = {
   numDaysActive: number;
   isChangedWhileActive: boolean;
   videoSpecificFileType?: string | null;
+  isFromOldSystem: boolean;
 };
 
 export type AdvertisementPoorlyTyped = Omit<

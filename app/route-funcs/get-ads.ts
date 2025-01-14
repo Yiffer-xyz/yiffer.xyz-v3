@@ -15,7 +15,12 @@ import { makeDbErrObj } from '~/utils/request-helpers';
 
 type DbAd = Omit<
   Advertisement,
-  'user' | 'isChangedWhileActive' | 'expiryDate' | 'createdDate' | 'lastActivationDate'
+  | 'user'
+  | 'isChangedWhileActive'
+  | 'expiryDate'
+  | 'createdDate'
+  | 'lastActivationDate'
+  | 'isFromOldSystem'
 > & {
   userId: number;
   username: string;
@@ -24,6 +29,7 @@ type DbAd = Omit<
   expiryDate: string;
   createdDate: string;
   lastActivationDate: string;
+  isFromOldSystem: 0 | 1;
 };
 
 type GetAdsProps = {
@@ -46,7 +52,7 @@ export async function getAds({
       advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      isChangedWhileActive, videoSpecificFileType,
+      isChangedWhileActive, videoSpecificFileType, isFromOldSystem,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -109,7 +115,7 @@ export async function getAdById({
       advertisement.id, adType, mediaType, adName, link, mainText, secondaryText, userId,
       username, email, status, isAnimated, expiryDate, createdDate, advertiserNotes,
       adminNotes, correctionNote, freeTrialState, lastActivationDate, numDaysActive,
-      isChangedWhileActive, videoSpecificFileType,
+      isChangedWhileActive, videoSpecificFileType, isFromOldSystem,
       COALESCE(SUM(advertisementdayclick.clicks), 0) AS clicks,
       COALESCE(SUM(advertisementdayclick.impressions), 0) AS impressions,
       COALESCE(SUM(advertisementdayclick.impressionsSrv), 0) AS impressionsSrv
@@ -231,5 +237,6 @@ function DbAdToFullAd(ad: DbAd): Advertisement {
       totalDaysActive === 0 ? 0 : Math.round(10 * (ad.clicks / totalDaysActive)) / 10,
     isChangedWhileActive: ad.isChangedWhileActive === 1,
     videoSpecificFileType: ad.videoSpecificFileType,
+    isFromOldSystem: ad.isFromOldSystem === 1,
   };
 }

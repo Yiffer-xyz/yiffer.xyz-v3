@@ -73,10 +73,6 @@ export default function AdvertisingAd() {
     setIsEditingAd(true);
   }
 
-  function reactivateAd() {
-    return null;
-  }
-
   return (
     <div className="container mx-auto pb-8">
       <h1>Manage ad</h1>
@@ -94,9 +90,7 @@ export default function AdvertisingAd() {
         <p>There is no ad with this ID.</p>
       ) : (
         <>
-          {!isEditingAd && (
-            <AdTopInfo ad={ad} editAd={editAd} reactivateAd={reactivateAd} />
-          )}
+          {!isEditingAd && <AdTopInfo ad={ad} editAd={editAd} />}
 
           {isEditingAd && (
             <AdEditing
@@ -180,8 +174,6 @@ function AdEditing({
     formData.append('adId', adId);
     formData.append('adType', adType);
 
-    console.log(formData);
-
     const res = await fetch(`${imagesServerUrl}/submit-ad`, {
       method: 'POST',
       body: formData,
@@ -225,15 +217,7 @@ function AdEditing({
   );
 }
 
-function AdTopInfo({
-  ad,
-  editAd,
-  reactivateAd,
-}: {
-  ad: Advertisement;
-  editAd: () => void;
-  reactivateAd: () => void;
-}) {
+function AdTopInfo({ ad, editAd }: { ad: Advertisement; editAd: () => void }) {
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();

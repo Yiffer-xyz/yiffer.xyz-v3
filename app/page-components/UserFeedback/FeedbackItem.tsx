@@ -47,7 +47,7 @@ export default function FeedbackItem({ feedback }: { feedback: Feedback }) {
               showRightArrow
             />
           ) : (
-            (' ' + user.ip ?? ' unknown user')
+            ' ' + (user.ip ?? 'unknown user')
           )}
         </p>
 

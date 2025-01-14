@@ -12,6 +12,7 @@ type InfoBoxProps = {
   centerText?: boolean;
   disableElevation?: boolean;
   fitWidth?: boolean;
+  small?: boolean;
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -28,6 +29,7 @@ export default function InfoBox({
   centerText = false,
   disableElevation = false,
   fitWidth = false,
+  small = false,
   children,
   className = '',
   style = {},
@@ -56,7 +58,9 @@ export default function InfoBox({
       break;
   }
 
-  let fullClassname = `px-6 py-4 flex flex-row justify-between items-center gap-2
+  const paddingClassName = small ? 'px-4 py-2' : 'px-6 py-4';
+
+  let fullClassname = `${paddingClassName} flex flex-row justify-between items-center gap-2
     rounded ${disableElevation ? '' : 'shadow-md'} bg-gradient-to-r 
     text-white ${variantClassname} ${className}`;
 
@@ -75,10 +79,15 @@ export default function InfoBox({
 
   return (
     <div className={fullClassname} {...props} style={style}>
-      {showIcon && <Icon size={36} className="-ml-2 flex-shrink-0 w-8 md:w-auto" />}
+      {showIcon && (
+        <Icon
+          size={small ? 20 : 36}
+          className={`${small ? '-ml-1 mt-[1px]' : '-ml-2'} flex-shrink-0 w-8 md:w-auto`}
+        />
+      )}
       <div className={`${textClassName} flex flex-col flex-grow`}>
         {title ? <p className="text-xl">{title}</p> : undefined}
-        {text ? <p>{text}</p> : undefined}
+        {text ? <p className={small ? 'text-sm' : ''}>{text}</p> : undefined}
         {children}
       </div>
       {closable && (

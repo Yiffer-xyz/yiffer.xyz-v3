@@ -1,4 +1,4 @@
-import { MdArrowBack, MdArrowForward, MdClose } from 'react-icons/md';
+import { MdArrowBack, MdArrowForward } from 'react-icons/md';
 import { ADVERTISEMENTS } from '~/types/constants';
 import type { AdMediaType, AdvertisementInfo } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
@@ -112,7 +112,7 @@ export default function Step2MediaType({
       <div className="mt-8 self-end flex flex-row gap-2">
         <Button
           text={isNewAd ? 'Back' : 'Cancel editing'}
-          startIcon={isNewAd ? MdArrowBack : MdClose}
+          startIcon={isNewAd ? MdArrowBack : undefined}
           onClick={onBack}
           variant="outlined"
           disableElevation

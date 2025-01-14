@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MdArrowBack, MdClose } from 'react-icons/md';
+import { MdArrowBack } from 'react-icons/md';
 import {
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
   CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
@@ -164,7 +164,7 @@ export default function Step3Details({
       <div className="mt-8 self-end flex flex-row gap-2">
         <Button
           text={isNewAd ? 'Back' : 'Cancel editing'}
-          startIcon={isNewAd ? MdArrowBack : MdClose}
+          startIcon={isNewAd ? MdArrowBack : undefined}
           onClick={() => {
             setSelectedFile(undefined);
             onBack();
