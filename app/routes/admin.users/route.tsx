@@ -69,11 +69,11 @@ export default function UserManager() {
           />
 
           {userSearchResults && userSearchResults.length > 0 && (
-            <Table className="mb-6">
+            <Table className="mb-6" horizontalScroll>
               <TableHeadRow>
                 <TableCell>Username</TableCell>
-                <TableCell>Email</TableCell>
                 <TableCell>Role</TableCell>
+                <TableCell>Email</TableCell>
                 <TableCell>Created</TableCell>
                 <TableCell>Seen</TableCell>
               </TableHeadRow>
