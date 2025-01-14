@@ -43,6 +43,7 @@ export default function ComicPage() {
     notFoundSimilarComicNames,
   } = useLoaderData<LoaderData>();
 
+  const [showMobileTags, setShowMobileTags] = useState(false);
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [isReportingProblem, setIsReportingProblem] = useState(false);
 
@@ -145,11 +146,32 @@ export default function ComicPage() {
                   </div>
                 )}
 
-                <div className="flex flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px]">
-                  {comic.tags.map(tag => (
-                    <TagElement tag={tag} key={tag.id} disableHoverEffects />
-                  ))}
-                </div>
+                {/* Desktop: tags always visible */}
+                {comic.tags.length > 0 && (
+                  <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] hidden md:flex">
+                    {comic.tags.map(tag => (
+                      <TagElement tag={tag} key={tag.id} disableHoverEffects />
+                    ))}
+                  </div>
+                )}
+
+                {/* Mobile: Button, tags hidden by default */}
+                {comic.tags.length > 0 && (
+                  <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] flex md:hidden">
+                    {!showMobileTags && (
+                      <Button
+                        text="Show tags"
+                        variant="naked"
+                        onClick={() => setShowMobileTags(true)}
+                        className="-ml-3 -mt-4"
+                      />
+                    )}
+                    {showMobileTags &&
+                      comic.tags.map(tag => (
+                        <TagElement tag={tag} key={tag.id} disableHoverEffects />
+                      ))}
+                  </div>
+                )}
               </div>
 
               <ComicStats comic={comic} />
