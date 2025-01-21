@@ -259,7 +259,10 @@ export default function BrowsePage() {
       </p>
 
       <div className="pb-20">
-        <div className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 px-2 md:px-4 max-w-[1780px] mx-auto mb-8">
+        <div
+          className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 
+          px-1 md:px-4 max-w-[1780px] mx-auto mb-8"
+        >
           {comicsAndAds
             ? comicsAndAds.map(comicOrAd =>
                 isComic(comicOrAd) ? (

@@ -66,8 +66,7 @@ export default function ComicCard({
   return (
     <div
       className={`w-[160px] rounded shadow 
-                bg-white hover:bg-theme1-primaryMoreTrans
-                dark:bg-gray-300 dark:hover:bg-gray-400
+                  bg-white hover:bg-theme1-primaryMoreTrans dark:bg-gray-300 dark:hover:bg-gray-400
                   flex flex-col relative transition-all duration-100
                   ${showTags ? 'h-fit' : ''}
                   ${isHovering ? 'shadow-lg' : ''}`}
@@ -193,12 +192,12 @@ export default function ComicCard({
                 </div>
               </div>
               {/* <div
-                    className="w-9 flex flex-col items-center"
-                    title="Average stars per rating, 1-3 (enjoyment)"
-                  >
-                    <FaPercent size={14} className="-mb-0.5" />
-                    <label className="text-sm">{comic.avgStarsPercent}</label>
-                  </div> */}
+                  className="w-9 flex flex-col items-center"
+                  title="Average stars per rating, 1-3 (enjoyment)"
+                >
+                  <FaPercent size={14} className="-mb-0.5" />
+                  <label className="text-sm">{comic.avgStarsPercent}</label>
+                </div> */}
             </>
           )}
           <div className="w-9 flex flex-col items-center" title="Last updated">
@@ -273,7 +272,7 @@ function NewCorner({ isHovered }: { isHovered: boolean }) {
     : 'border-t-white dark:border-t-gray-300';
 
   return (
-    <div className="absolute top-0 right-0 rounded-tr">
+    <div className="absolute top-0 right-0 rounded-tr overflow-hidden">
       <div
         className={`border-solid rounded-tr
               border-t-[60px] border-l-[60px] border-b-0 border-r-0

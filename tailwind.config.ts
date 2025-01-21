@@ -120,6 +120,7 @@ export default {
       maxWidth: {
         '80p': '80%',
         '90p': '90%',
+        '95p': '95%',
       },
       lineHeight: {
         '0': '0',
