@@ -16,6 +16,7 @@ import { useMemo, useRef, useState } from 'react';
 import ComicRateBookmark from '../$comicname/ComicRateBookmark';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import posthog from 'posthog-js';
+import useWindowSize from '~/utils/useWindowSize';
 
 const mouseLeaveTimeout = 25;
 
@@ -36,6 +37,8 @@ export default function ComicCard({
   const { tagIDs, addTagID } = useBrowseParams();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
+  const { isMobile } = useWindowSize();
+  const disablePopover = isMobile && !isLoggedIn;
 
   const toggleBookmarkFetcher = useGoodFetcher({
     method: 'post',
@@ -70,10 +73,12 @@ export default function ComicCard({
                   ${isHovering ? 'shadow-lg' : ''}`}
       key={comic.id}
       onMouseMove={() => {
+        if (disablePopover) return;
         clearIfTimeout();
         if (!isHovering) setIsHovering(true);
       }}
       onMouseLeave={() => {
+        if (disablePopover) return;
         clearIfTimeout();
         mouseLeaveTimeoutRef.current = setTimeout(
           () => setIsHovering(false),
@@ -89,7 +94,6 @@ export default function ComicCard({
           height={226}
           className="rounded-tl rounded-tr"
         />
-        {/* <div className="w-[160px] h-[226px] bg-gray-500" /> */}
       </RemixLink>
 
       {isHovering && (
@@ -99,10 +103,12 @@ export default function ComicCard({
                      rounded-b shadow px-2 flex flex-row items-center justify-between pb-1"
           style={{ zIndex: 2 }}
           onMouseEnter={() => {
+            if (disablePopover) return;
             setIsHovering(true);
             clearIfTimeout();
           }}
           onMouseLeave={() => {
+            if (disablePopover) return;
             clearIfTimeout();
             mouseLeaveTimeoutRef.current = setTimeout(
               () => setIsHovering(false),

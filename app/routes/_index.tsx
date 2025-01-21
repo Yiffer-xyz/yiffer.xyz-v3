@@ -35,7 +35,7 @@ export default function Index() {
   return (
     <div className="pb-8">
       <h1
-        className="text-center mt-12 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-5xl md:text-7xl"
+        className="text-center mt-12 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px] md:text-[72px]"
         style={{
           fontFamily: 'Shrikhand,cursive',
           ...(theme === 'dark' ? darkHeaderStyle : lightHeaderStyle),

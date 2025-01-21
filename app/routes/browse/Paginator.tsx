@@ -32,7 +32,7 @@ export default function Paginator({
 
   return (
     <div
-      className={`mx-auto w-[332px] sm:w-[300px] flex flex-row h-8 text-xs shadow
+      className={`mx-auto w-[332px] sm:w-[300px] flex flex-row h-8 text-xs shadow max-w-90p
         dark:bg-gray-300 rounded-sm overflow-hidden ${className}`}
     >
       <button
