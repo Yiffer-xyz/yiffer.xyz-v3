@@ -52,6 +52,11 @@ export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProp
     if (!uiPref) return;
     if (!areUIPrefsDifferent(prevUIRef?.current, uiPref)) return;
 
+    if (!prevUIRef.current) {
+      prevUIRef.current = { ...uiPref };
+      return;
+    }
+
     prevUIRef.current = { ...uiPref };
 
     persistUIPrefRef.current.submit(
@@ -156,6 +161,7 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
 
 function areUIPrefsDifferent(u1: UIPreferences | null, u2: UIPreferences): boolean {
   if (!u1) return true;
+
   return (
     u1.theme !== u2.theme ||
     u1.comicCardTags !== u2.comicCardTags ||

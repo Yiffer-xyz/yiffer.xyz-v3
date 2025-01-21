@@ -44,6 +44,7 @@ export default function ComicRateBookmark({
     }
 
     posthog.capture('Comic rated', { source });
+
     const newStars =
       overrideStars === null
         ? yourStars === stars
@@ -52,8 +53,9 @@ export default function ComicRateBookmark({
         : shownStars === stars
           ? 0
           : stars;
+
     updateYourStarsFetcher.submit({
-      stars,
+      stars: newStars,
       comicId: comic.id,
     });
     setOverrideStars(newStars);
