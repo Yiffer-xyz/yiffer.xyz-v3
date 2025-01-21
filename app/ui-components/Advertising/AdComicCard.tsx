@@ -90,6 +90,7 @@ export default function AdComicCard({
             autoPlay
             loop
             muted
+            playsInline
             style={{ width, height }}
           >
             {ad.videoSpecificFileType ? (

@@ -106,6 +106,7 @@ export default function Ad({
           autoPlay
           loop
           muted
+          playsInline
         >
           {ad.videoSpecificFileType ? (
             <source
