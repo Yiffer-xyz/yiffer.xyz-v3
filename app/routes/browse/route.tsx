@@ -24,10 +24,7 @@ import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing, getCardAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
-import {
-  getHasOldComicRatings,
-  getOldComicRatingSummary,
-} from '~/route-funcs/get-old-comic-ratings';
+import { getHasOldComicRatings } from '~/route-funcs/get-old-comic-ratings';
 import OldComicRatingsInfo from './OldComicRatings';
 import type { ComicForBrowse, UserSession } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
@@ -191,7 +188,7 @@ export async function loader(args: LoaderFunctionArgs) {
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     adsPath: args.context.cloudflare.env.ADS_PATH,
     isLoggedIn: !!user,
-    hasOldComicRatings: oldComicRatingsRes.result,
+    hasOldComicRatings: !!oldComicRatingsRes.result,
   };
 }
 
@@ -219,7 +216,7 @@ export default function BrowsePage() {
   return (
     <div>
       <h1
-        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[52px] md:text-[72px]"
+        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px] md:text-[72px]"
         style={{
           fontFamily: 'Shrikhand,cursive',
           ...(theme === 'dark' ? darkHeaderStyle : lightHeaderStyle),
