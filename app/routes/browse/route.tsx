@@ -258,7 +258,7 @@ export default function BrowsePage() {
         {pluralize('comic', totalNumComics)}
       </p>
 
-      <div className="pb-20">
+      <div className="pb-6">
         <div
           className="flex flex-row flex-wrap gap-4 items-stretch justify-center mt-4 
           px-1 md:px-4 max-w-[1780px] mx-auto mb-8"

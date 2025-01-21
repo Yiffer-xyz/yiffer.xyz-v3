@@ -9,7 +9,6 @@ import { IoCaretUp } from 'react-icons/io5';
 import MultiSelectDropdown from '~/ui-components/MultiSelectDropdown/MultiSelectDropdown';
 import useDebounce from '~/utils/useDebounce';
 import { useUIPreferences } from '~/utils/theme-provider';
-import { SEARCHFILTER_PADDING_HORIZ } from './SearchFilterContainer';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
@@ -170,11 +169,9 @@ export default function SearchFilterContent({
     ? allSortTypes
     : allSortTypes.filter(x => x !== 'Your score');
 
-  const categoryMinWidth = (openWidth - 2 * SEARCHFILTER_PADDING_HORIZ) * 0.49;
-
   return (
     <div className={`flex flex-col gap-6 mt-2 ${isVisible ? '' : 'hidden'}`} ref={ref}>
-      <div className="flex flex-row w-full justify-between">
+      <div className="flex flex-col md:flex-row w-full justify-between gap-5 md:gap-0">
         <MultiSelectDropdown
           values={_categories}
           name="Category"
@@ -182,8 +179,7 @@ export default function SearchFilterContent({
           options={allCategories.map(x => ({ text: x, value: x }))}
           allOption={{ text: 'All', value: 'All' as CategoryWithAll }}
           onClose={onCategoriesClose}
-          minWidth={categoryMinWidth}
-          forceWidth={categoryMinWidth}
+          className="w-full md:w-[49%]"
           onValueAdded={category => {
             const newCategories = [..._categories, category];
             if (category !== 'All' && newCategories.includes('All')) {
@@ -206,7 +202,8 @@ export default function SearchFilterContent({
           name="sort"
           title="Sorting"
           value={_sort}
-          style={{ width: '49%' }}
+          // style={{ width: '100%' }}
+          className="w-full md:w-[49%]"
           onChange={onSortChange}
           options={availableSortTypes.map(x => ({
             text: x,
@@ -215,14 +212,14 @@ export default function SearchFilterContent({
         />
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex flex-col md:flex-row justify-between gap-5 md:gap-0">
         <TextInput
           name="Search"
           value={internalSearch}
           onChange={e => onSearchChange(e)}
           label="Search"
           placeholder="Title or artist"
-          style={{ width: '49%' }}
+          className="w-full md:w-[49%]"
         />
 
         {/* Not normal use of SearchableSelect; we don't care about selected value, since we */}
@@ -232,7 +229,7 @@ export default function SearchFilterContent({
           title="Tags"
           placeholder="Search for tag"
           clearOnSelect
-          style={{ width: '49%' }}
+          className="w-full md:w-[49%]"
           onChange={(newVal: Tag) => onTagSelected(newVal)}
           onValueCleared={() => null}
           options={filteredTagOptions.map(tag => ({
