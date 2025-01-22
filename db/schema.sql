@@ -1,7 +1,7 @@
 ------------------------------------------------------
 -- USER
 ------------------------------------------------------
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
 `id` INTEGER  NOT NULL ,
 `username` TEXT NOT NULL,
 `password` TEXT NULL DEFAULT NULL,
@@ -15,10 +15,13 @@ CREATE TABLE `user` (
 `lastActionTimestamp` TIMESTAMP NULL DEFAULT NULL,
 `modNotes` TEXT NULL DEFAULT NULL,
 `hasCompletedConversion` TINYINTEGER NOT NULL DEFAULT '1',
+`patreonDollars` INTEGER NULL DEFAULT NULL,
+`patreonEmail` TEXT NULL DEFAULT NULL,
 PRIMARY KEY (`id`)
 );
- 
+
 CREATE UNIQUE INDEX IF NOT EXISTS `idx_user_unique_username` ON `user` (`Username`);
+CREATE INDEX IF NOT EXISTS `idx_user_patreonDollars` ON `user` (`patreonDollars`) WHERE `patreonDollars` IS NOT NULL;
 
 ------------------------------------------------------
 -- ADVERTISEMENT

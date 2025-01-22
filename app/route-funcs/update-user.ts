@@ -12,6 +12,7 @@ export async function updateUser(
     isBanned?: number;
     banReason?: string;
     modNotes?: string;
+    patreonEmail?: string;
   }
 ): Promise<ApiError | undefined> {
   updates = Object.fromEntries(

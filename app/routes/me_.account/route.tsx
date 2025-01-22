@@ -19,14 +19,14 @@ export const meta: MetaFunction = () => {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await fullUserLoader(args);
-  return user;
+  return { user };
 }
 
 export default function AccountPage() {
-  const user = useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto pb-8">
       <h1>Account settings</h1>
 
       <Breadcrumbs
@@ -52,13 +52,6 @@ export default function AccountPage() {
       </p>
 
       <ChangePassword />
-
-      <p className="mt-4 italic text-sm">
-        There's not too much interesting going on on this page right now, but keep your
-        eyes peeled!
-        <br />
-        We've got some neat customization options coming soon.
-      </p>
     </div>
   );
 }
@@ -72,7 +65,6 @@ function ChangePassword() {
   const submitFetcher = useGoodFetcher({
     url: '/api/change-password',
     method: 'post',
-    // onFinish: onSubmitResult,
   });
 
   function cancel() {

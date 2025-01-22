@@ -54,7 +54,7 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="/patreon"
+          href="/me/patreon"
           title="Patreon"
           includeRightArrow
           description="See and manage your Patreon subscription and rewards"

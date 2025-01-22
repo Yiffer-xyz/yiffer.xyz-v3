@@ -16,4 +16,9 @@ interface Env {
   GA_TRACKING_ID: string;
   POSTHOG_API_KEY: string;
   POSTHOG_HOST: string;
+  PATREON_CREATOR_ACCESS_TOKEN: string;
+  PATREON_CAMPAIGN_ID: string;
+  PATREON_CLIENT_ID: string;
+  PATREON_CLIENT_SECRET: string;
+  PATREON_REDIRECT_URL: string;
 }

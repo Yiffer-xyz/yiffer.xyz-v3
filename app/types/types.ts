@@ -206,6 +206,15 @@ export type User = {
   lastActionTime?: Date;
   modNotes?: string;
   hasCompletedConversion: boolean;
+  patreonEmail?: string;
+  patreonDollars?: number;
+};
+
+export type Patron = {
+  userId: number;
+  username: string;
+  patreonDollars: number;
+  patreonEmail: string;
 };
 
 export type ModApplication = {

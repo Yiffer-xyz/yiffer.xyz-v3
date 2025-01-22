@@ -28,7 +28,7 @@ export async function searchUsers(
   const searchQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes,
-      hasCompletedConversion
+      hasCompletedConversion, patreonEmail, patreonDollars
     FROM user
     ${whereQuery}
     ORDER BY lastActionTimestamp DESC, createdTime DESC
@@ -50,7 +50,8 @@ export async function getUserById(
 ): ResultOrErrorPromise<User> {
   const userQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason, 
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes, hasCompletedConversion
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes, hasCompletedConversion,
+      patreonEmail, patreonDollars
     FROM user
     WHERE id = ?
     LIMIT 1
@@ -72,7 +73,8 @@ export async function getUserByEmail(
 ): ResultOrNotFoundOrErrorPromise<User> {
   const userQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes,
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion
+      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion,
+      patreonEmail, patreonDollars
     FROM user
     WHERE email = ?
     LIMIT 1
@@ -100,4 +102,25 @@ function dbUserToUser(user: DbUser): User {
     lastActionTime: user.lastActionTime ? parseDbDateStr(user.lastActionTime) : undefined,
     hasCompletedConversion: !!user.hasCompletedConversion,
   };
+}
+
+export async function getUsersByPatreonEmails(
+  db: D1Database,
+  emails: string[]
+): ResultOrErrorPromise<{ patreonEmail: string; id: number }[]> {
+  const userQuery = `
+    SELECT id, patreonEmail FROM user WHERE patreonEmail IN (${emails.map(() => '?').join(',')})
+  `;
+
+  const dbRes = await queryDb<{ id: number; patreonEmail: string }[]>(
+    db,
+    userQuery,
+    emails,
+    'User IDs by Patreon emails'
+  );
+  if (dbRes.isError || !dbRes.result) {
+    return makeDbErrObj(dbRes, 'Error getting user IDs by Patreon emails', { emails });
+  }
+
+  return { result: dbRes.result };
 }
