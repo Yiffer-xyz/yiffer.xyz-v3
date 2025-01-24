@@ -124,6 +124,11 @@ export default function ManageSingleUser() {
           {format(user.lastActionTime, 'PPp')})
         </p>
       )}
+      {user.patreonEmail && user.patreonDollars && (
+        <p>
+          Patreon: ${user.patreonDollars} - patreon email: {user.patreonEmail}
+        </p>
+      )}
 
       <Select
         className="mt-4"

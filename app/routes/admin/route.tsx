@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { redirect } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData } from '@remix-run/react';
-import type { ArtistTiny, ComicTiny, Tag } from '~/types/types';
-import { redirectIfNotMod } from '~/utils/loaders';
+import type { ArtistTiny, ComicTiny, Tag, User } from '~/types/types';
+import { fullUserLoader } from '~/utils/loaders';
 import useWindowSize from '~/utils/useWindowSize';
 import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
 import type { DbComicTiny } from '~/route-funcs/get-comics';
@@ -22,6 +22,7 @@ export type GlobalAdminContext = {
   comics: ComicTiny[];
   artists: ArtistTiny[];
   tags: Tag[];
+  user: User;
 };
 
 export const meta: MetaFunction = () => {
@@ -43,7 +44,11 @@ export default function Admin() {
     <div className="pt-16 pb-20">
       {!delay && (
         <>
-          <AdminSidebar alwaysShow={isLgUp} delay={!width} />
+          <AdminSidebar
+            alwaysShow={isLgUp}
+            delay={!width}
+            userType={globalContext.user.userType}
+          />
 
           <div
             className="pb-4 px-6 lg:px-8"
@@ -58,7 +63,10 @@ export default function Admin() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  await redirectIfNotMod(args);
+  const user = await fullUserLoader(args);
+  if (user?.userType !== 'moderator' && user?.userType !== 'admin') {
+    throw redirect('/');
+  }
 
   const url = new URL(args.request.url);
   if (url.pathname === '/admin' || url.pathname === '/admin/') {
@@ -99,6 +107,7 @@ export async function loader(args: LoaderFunctionArgs) {
     comics,
     artists,
     tags,
+    user,
   };
 
   return globalContext;

@@ -111,7 +111,7 @@ export default function AccountPatreon() {
               window.location.href = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${patreonClientId}&redirect_uri=${patreonRedirectUrl}&state=${user.id}`;
             }}
             text="Log in to Patreon & sync"
-            className="mt-1"
+            className="mt-2"
           />
         </>
       )}

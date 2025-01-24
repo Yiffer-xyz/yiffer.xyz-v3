@@ -33,34 +33,14 @@ export default function JoinUs() {
 
       <h3 className="font-bold">What are a mod&apos;s tasks?</h3>
       <p>
-        In short, helping out with keeping comics up to date, adding new ones, and
-        processing user suggestions. We have built a very well functioning admin panel
-        which should make this as comfortable as possible, you should even be able to do
-        the last part - processing user suggestions - on your phone comfortably. Longer
-        and more comprehensive list of the tasks:
+        Your main tasks as a mod will be keeping comics up to date, and well as adding new
+        ones. With our new contributions system, much of this will be done through
+        processing user suggestions and submissions, but you're always free to add new
+        comics on your own too. We've built a functional mod panel, built for phones as
+        well as desktop.
       </p>
-      <ul className="pl-4 mb-4">
-        <li className="mt-3">
-          Processing comic suggestions from others (rejecting them, or uploading the comic
-          with pages, information, and tags)
-        </li>
-        <li className="mt-3">
-          Adding pages to existing comics as they are updated. Additionally swap, replace,
-          insert pages, and update thumbnails as needed
-        </li>
-        <li className="mt-3">
-          Processing tag suggestions from other users (suggestions of adding/removing tags
-          to a comic)
-        </li>
-        <li className="mt-3">Adding tags to comics where needed</li>
-        <li className="mt-3">Keeping artist information up to date</li>
-        <li className="mt-3">
-          When we implement comments at some point, moderating these will also be a
-          mod&apos;s job
-        </li>
-      </ul>
 
-      <h3 className="font-bold">How much do I have to &quot;work&quot;?</h3>
+      <h3 className="font-bold mt-4">How much do I have to &quot;work&quot;?</h3>
       <p className="mb-4">
         There is no defined lower requirement for how much a mod should contribute. In the
         admin panel, there is a &quot;Mod scoreboard&quot; that we hope might motivate

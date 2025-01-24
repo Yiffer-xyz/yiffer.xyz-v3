@@ -1,4 +1,4 @@
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useOutletContext } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ProcessTagSuggestionBody } from '../api.admin.process-tag-suggestion';
 import { useMemo, useState } from 'react';
@@ -18,6 +18,7 @@ import { ComicProblem } from './ComicProblem';
 import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const allActionTypes: DashboardActionType[] = [
@@ -42,7 +43,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function Dashboard() {
-  const { user } = useLoaderData<typeof loader>();
+  const globalContext: GlobalAdminContext = useOutletContext();
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -87,7 +88,7 @@ export default function Dashboard() {
     return dashboardDataFetcher.data.filter(action => {
       if (
         action.assignedMod &&
-        action.assignedMod.userId !== user.userId &&
+        action.assignedMod.userId !== globalContext.user.id &&
         !showOthersTasks
       ) {
         return false;
@@ -102,7 +103,7 @@ export default function Dashboard() {
     showOthersTasks,
     showCompleted,
     typeFilter,
-    user.userId,
+    globalContext.user.id,
   ]);
 
   async function processTagSuggestion(
@@ -126,7 +127,7 @@ export default function Dashboard() {
   function assignActionToMod(action: DashboardAction) {
     const body: AssignActionBody = {
       actionId: action.id,
-      modId: user.userId,
+      modId: globalContext.user.id,
       actionType: action.type,
     };
 
@@ -237,12 +238,12 @@ export default function Dashboard() {
         const isAssignedToOther =
           !action.isProcessed &&
           action.assignedMod &&
-          action.assignedMod.userId !== user.userId;
+          action.assignedMod.userId !== globalContext.user.id;
 
         const isAssignedToMe =
           !action.isProcessed &&
           action.assignedMod &&
-          action.assignedMod.userId === user.userId;
+          action.assignedMod.userId === globalContext.user.id;
 
         let assignationBgClass = 'bg-white dark:bg-gray-300 shadow-md';
         if (isAssignedToOther || action.isProcessed) {

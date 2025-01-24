@@ -1,6 +1,7 @@
 import { Link, useMatches } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { MdChevronRight } from 'react-icons/md';
+import type { UserType } from '~/types/types';
 
 export const sidebarWidth = 200;
 export const mobileClosedBarW = 24;
@@ -9,13 +10,17 @@ const mobileClosedBarTailwindUnits = mobileClosedBarW / 4;
 export default function AdminSidebar({
   alwaysShow,
   delay,
+  userType,
 }: {
   alwaysShow: boolean;
   delay: boolean;
+  userType: UserType;
 }) {
   const matches = useMatches();
   const [isOpen, setIsOpen] = useState(alwaysShow);
   const [lastRoute, setLastRoute] = useState('');
+
+  const isAdmin = userType === 'admin';
 
   function isRoute(matchString: string) {
     return matches.some(match => {
@@ -98,28 +103,44 @@ export default function AdminSidebar({
             text="User manager"
             isSelected={isRoute('users')}
           />
-          <SidebarLink
-            href="/admin/advertising"
-            text="Ads"
-            isSelected={isRoute('advertising')}
-          />
-          <SidebarLink
-            href="/admin/feedback-support"
-            text="Feedback/support"
-            isSelected={isRoute('feedback-support')}
-          />
-          <SidebarLink
-            href="/admin/mod-applications"
-            text="Mod applications"
-            isSelected={isRoute('mod-applications')}
-          />
+          {isAdmin && (
+            <SidebarLink
+              href="/admin/advertising"
+              text="Ads"
+              isSelected={isRoute('advertising')}
+            />
+          )}
+          {isAdmin && (
+            <SidebarLink
+              href="/admin/feedback-support"
+              text="Feedback/support"
+              isSelected={isRoute('feedback-support')}
+            />
+          )}
+          {isAdmin && (
+            <SidebarLink
+              href="/admin/mod-applications"
+              text="Mod applications"
+              isSelected={isRoute('mod-applications')}
+            />
+          )}
           <SidebarLink
             href="/admin/thumbnails"
             text="Update thumbnails"
             isSelected={isRoute('thumbnails')}
           />
-          <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
-          <SidebarLink href="/admin/blogs" text="Blogs" isSelected={isRoute('blogs')} />
+
+          {isAdmin && (
+            <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
+          )}
+          {isAdmin && (
+            <SidebarLink href="/admin/blogs" text="Blogs" isSelected={isRoute('blogs')} />
+          )}
+          <SidebarLink
+            href="/admin/instructions"
+            text="Instructions"
+            isSelected={isRoute('instructions')}
+          />
         </div>
       </div>
     </>
