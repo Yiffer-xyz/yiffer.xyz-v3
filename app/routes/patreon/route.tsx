@@ -3,19 +3,36 @@ import Link from '~/ui-components/Link';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import PatronList from './patronList';
 import { useLoaderData } from '@remix-run/react';
+import { getPatrons } from '~/route-funcs/get-patrons';
+import { processApiError } from '~/utils/request-helpers';
+import type { Patron } from '~/types/types';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
   return [{ title: `Patreon | Yiffer.xyz` }];
 };
 
-export function loader(args: LoaderFunctionArgs) {
-  const { IMAGES_SERVER_URL } = args.context.cloudflare.env;
-  return { IMAGES_SERVER_URL };
+export async function loader(args: LoaderFunctionArgs) {
+  const patrons = await getPatrons(args.context.cloudflare.env.DB);
+  if (patrons.err) {
+    return processApiError('Error in /patreon', patrons.err);
+  }
+
+  const tiers: { [key: number]: Patron[] } = {};
+  for (const patron of patrons.result) {
+    const dollars = patron.patreonDollars;
+    if (!tiers[dollars]) {
+      tiers[dollars] = [patron];
+    } else {
+      tiers[dollars].push(patron);
+    }
+  }
+
+  return { patronTiers: tiers };
 }
 
 export default function Patreon() {
-  const { IMAGES_SERVER_URL } = useLoaderData<typeof loader>();
+  const { patronTiers } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto pb-20">
@@ -26,13 +43,13 @@ export default function Patreon() {
       <p>
         The costs of running this website are significant. As of 2024, the total monthly
         sum is around $600, and the income from our hand-made advertising service is not
-        enough to cover this. We will not make this site "ugly" by resorting to your
-        typical adult site's 3rd party advertising service either. All expenses not
+        enough to cover these expenses. We will not make this site "ugly" by resorting to
+        your typical adult site's 3rd party advertising service either. All expenses not
         covered by advertising and Patreon income are paid for out-of-pocket by our owner.
         So if you have a few dollars to spare, please help keep this site alive!
         Additionally, if you have artist/creator/model friends who could use some more
-        attention, our advertising service is genuinely quite effective and easy to use,
-        so consider telling them about us and sending them to our{' '}
+        attention, our advertising service is genuinely quite effective and easy to use.
+        Consider telling them about us and sending them to our{' '}
         <Link href="/advertising" text="advertising page" isInsideParagraph />!
       </p>
 
@@ -66,16 +83,17 @@ export default function Patreon() {
 
       <h2 className="mt-6">Rewards</h2>
       <p>
-        We've prioritized getting the new version of this site up and running over syncing
-        Patreon subscriber lists for now. Instead, at least once per month, we import the
-        list of patrons and display them below. In the near future, we plan to sync this
-        automatically, add options for displaying your name and picture (like in the old
-        version of the site), and potentially add other perks too. If you have ideas for
-        other patron perks, please let us know via our{' '}
+        As a patron, you can link your Patreon account to your Yiffer account on your{' '}
+        <Link href="/me/patreon" text="patreon settings page" isInsideParagraph />. After
+        doing so, your support will be visible in the list below. Additionally, once we
+        implement public user profiles (soon!), your supporter status will display there
+        as well. For users in the $5 tier and up, usernames will get a supporter badge
+        next to them. We're open to other ideas for patron perks, feel free to share your
+        thoughts via our{' '}
         <Link href="/contribute/feedback" isInsideParagraph text="feedback form" />!
       </p>
 
-      <PatronList IMAGES_SERVER_URL={IMAGES_SERVER_URL} />
+      <PatronList patronTiers={patronTiers} />
     </div>
   );
 }
