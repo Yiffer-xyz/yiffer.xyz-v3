@@ -405,7 +405,7 @@ export async function logIPAndVerifyNoSignupSpam(
   }
 
   const insertQuery =
-    'INSERT INTO spammableaction (ip, email, actionType) VALUES (?, ?, ?, ?)';
+    'INSERT INTO spammableaction (ip, email, actionType) VALUES (?, ?, ?)';
   const insertQueryParams = [ip, email, 'signup'];
   const insertQueryRes = await queryDbExec(
     db,
