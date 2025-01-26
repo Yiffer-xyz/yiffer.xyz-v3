@@ -39,6 +39,7 @@ export default function ManageComics() {
         title="Select comic"
         name="comic"
         className="mb-8"
+        mobileFullWidth
       />
 
       <Outlet context={globalContext} />

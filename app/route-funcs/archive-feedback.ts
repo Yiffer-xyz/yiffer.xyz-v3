@@ -1,10 +1,11 @@
-import {ApiError, makeDbErr} from '~/utils/request-helpers'
-import {queryDbExec} from '~/utils/database-facade'
+import type { ApiError } from '~/utils/request-helpers';
+import { makeDbErr } from '~/utils/request-helpers';
+import { queryDbExec } from '~/utils/database-facade';
 
 export async function archiveFeedback(
   db: D1Database,
   feedbackId: number
-):  Promise<ApiError | undefined> {
+): Promise<ApiError | undefined> {
   const logCtx = { feedbackId };
 
   const query = `

@@ -40,6 +40,7 @@ export default function ManageArtists() {
         title="Select artist"
         name="artist"
         className="mb-8"
+        mobileFullWidth
       />
 
       <Outlet context={globalContext} />

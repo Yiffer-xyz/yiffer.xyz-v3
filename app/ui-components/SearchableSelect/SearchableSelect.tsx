@@ -12,11 +12,10 @@ export type BaseSearchableSelectProps<T> = {
   clearOnSelect?: boolean;
   error?: boolean;
   maxWidth?: number;
-  isFullWidth?: boolean;
+  mobileFullWidth?: boolean;
   placeholder?: string;
   name?: string;
   disabled?: boolean;
-  mobileCompact?: boolean;
   equalValueFunc?: (a: T, b: T | undefined) => boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -38,11 +37,10 @@ export default function SearchableSelect<T>({
   onChange,
   error = false,
   maxWidth = 999999,
-  isFullWidth = false,
+  mobileFullWidth: mobileFullWidthProp = false,
   placeholder = '',
   name,
   disabled = false,
-  mobileCompact = false,
   equalValueFunc,
   className = '',
   ...props
@@ -52,11 +50,11 @@ export default function SearchableSelect<T>({
   const [minWidth, setMinWidth] = useState(0);
   const [width, setWidth] = useState(0);
   const [currentlyHighlightedIndex, setCurrentlyHighlightedIndex] = useState(-1);
-  const windowSize = useWindowSize();
   const selectItemContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const windowWidth: number = windowSize.width || 0;
+  const { isMobile } = useWindowSize();
+  const mobileFullWidth = mobileFullWidthProp && isMobile;
 
   useEffect(() => {
     tryComputeWidth();
@@ -99,24 +97,24 @@ export default function SearchableSelect<T>({
   }
 
   const minWidthStyle = useMemo(() => {
-    if (width || isFullWidth) {
+    if (width || mobileFullWidth) {
       return {};
     }
     if (minWidth) {
       return { minWidth: `${minWidth}px` };
     }
     return {};
-  }, [isFullWidth, minWidth, width]);
+  }, [mobileFullWidth, minWidth, width]);
 
   const widthStyle = useMemo(() => {
-    if (isFullWidth) {
+    if (mobileFullWidth && isMobile) {
       return { width: '100%' };
     }
     if (width) {
       return { width: `${width}px` };
     }
     return {};
-  }, [isFullWidth, width]);
+  }, [mobileFullWidth, isMobile, width]);
 
   async function waitMillisec(millisec: number) {
     return new Promise<void>(resolve => {
@@ -295,15 +293,13 @@ export default function SearchableSelect<T>({
             onClick={() => onSelected(text, optionValue)}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
-            className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
+            className={`z-40 hover:cursor-pointer px-3 py-[9px] whitespace-nowrap text-wrap md:text-nowrap leading-[1rem] ${
               currentlyHighlightedIndex === index
                 ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
                 : ''
-            }}`}
+            }`}
           >
-            <p className={mobileCompact && windowWidth < 460 ? 'text-sm leading-7' : ''}>
-              {text}
-            </p>
+            <p>{text}</p>
           </div>
         ))}
         {filteredOptions.length === 0 && (
