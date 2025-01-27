@@ -111,12 +111,12 @@ export default function ManageComicInner() {
 
       {comic.publishStatus === 'published' && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
-          <p className="text-theme1-darker">
+          <p className="text-theme1-darker font-bold">
             This comic is live!
             <Link
               href={`/${comic.name}`}
               className="ml-2"
-              text="View live comic"
+              text="View comic"
               isInsideParagraph
               showRightArrow
             />

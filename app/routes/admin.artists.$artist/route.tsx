@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { MdArrowForward, MdCheck, MdClose, MdReplay } from 'react-icons/md';
+import { MdArrowBack, MdArrowForward, MdCheck, MdClose, MdReplay } from 'react-icons/md';
 import ArtistEditor from '~/page-components/ComicManager/ArtistEditor';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -119,7 +119,10 @@ export default function ManageArtist() {
 
   return (
     <>
-      <h2 className="mb-2">{artist.name}</h2>
+      <h2 className="mt-1">{artist.name}</h2>
+      <div className="mb-2">
+        <Link href="/admin/artists" text="Back" Icon={MdArrowBack} />
+      </div>
 
       {artist.isBanned && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit mb-6">
@@ -163,14 +166,14 @@ export default function ManageArtist() {
       )}
 
       {!artist.isBanned && (
-        <div className="mb-6">
+        <div className="mb-4 mt-2">
           {!artist.isPending && (
-            <p className="text-lg text-theme1-darker">
+            <p className="text-theme1-darker dark:text-theme1-dark font-bold">
               This artist is live!
               <Link
                 href={`/artist/${artist.name}`}
                 className="ml-2"
-                text="View live artist page"
+                text="View artist page"
                 showRightArrow
                 isInsideParagraph
               />

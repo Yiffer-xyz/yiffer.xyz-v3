@@ -1,9 +1,17 @@
-import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
-import { useEffect, useState } from 'react';
-import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
-import type { ArtistTiny } from '~/types/types';
-import type { GlobalAdminContext } from '../admin/route';
+import { Outlet, useOutlet, useOutletContext } from '@remix-run/react';
+import { useMemo, useState } from 'react';
+import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { MetaFunction } from '@remix-run/cloudflare';
+import Link from '~/ui-components/Link';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeadRow,
+  TableRow,
+} from '~/ui-components/Table';
+import TextInput from '~/ui-components/TextInput/TextInput';
+import { capitalizeString } from '~/utils/general';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -11,37 +19,65 @@ export const meta: MetaFunction = () => {
 };
 
 export default function ManageArtists() {
-  const navigate = useNavigate();
-
-  const [selectedArtist, setSelectedArtist] = useState<ArtistTiny>();
-
   const globalContext: GlobalAdminContext = useOutletContext();
+  const outlet = useOutlet();
 
-  const artistOptions = globalContext.artists.map(artist => ({
-    value: artist,
-    text: artist.name,
-  }));
+  const [search, setSearch] = useState('');
 
-  // update url on selected comic change
-  useEffect(() => {
-    if (!selectedArtist) return;
-    navigate(`/admin/artists/${selectedArtist.id}`);
-  }, [selectedArtist, navigate]);
+  const artistOptions = useMemo(() => {
+    const artists = globalContext.artists.map(artist => ({
+      value: artist,
+      text: artist.name,
+    }));
+
+    if (!search) {
+      return artists;
+    }
+
+    return artists.filter(artist =>
+      artist.text.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [globalContext.artists, search]);
 
   return (
     <>
       <h1>Artist manager</h1>
 
-      <SearchableSelect
-        options={artistOptions}
-        value={selectedArtist}
-        onChange={setSelectedArtist}
-        onValueCleared={() => setSelectedArtist(undefined)}
-        title="Select artist"
-        name="artist"
-        className="mb-8"
-        mobileFullWidth
-      />
+      {!outlet && (
+        <>
+          <TextInput
+            value={search}
+            onChange={setSearch}
+            label="Search artist name"
+            name="artist-search"
+            className="mb-4 mt-2 max-w-sm"
+            clearable
+          />
+
+          {artistOptions.length > 0 && (
+            <>
+              <Table className="mb-6" horizontalScroll>
+                <TableBody>
+                  {artistOptions.map((artist, index) => (
+                    <TableRow key={artist.value.id} includeBorderTop={index === 0}>
+                      <TableCell>
+                        <p>
+                          <Link
+                            href={`/admin/artists/${artist.value.id}`}
+                            text={artist.text}
+                            showRightArrow
+                            isInsideParagraph
+                          />
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          )}
+        </>
+      )}
 
       <Outlet context={globalContext} />
     </>
