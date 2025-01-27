@@ -492,3 +492,41 @@ CREATE TABLE IF NOT EXISTS `comicspaginatedcache` (
 PRIMARY KEY (`id`));
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_comicspaginatedcache_unique_page ON comicspaginatedcache (page);
+
+------------------------------------------------------
+-- MOD MESSAGES
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `modmessage` (
+`id` INTEGER NOT NULL,
+`title` TEXT NOT NULL,
+`message` TEXT NOT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`));
+
+------------------------------------------------------
+-- MOD MESSAGE READ RECEIPT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `modmessagereadreceipt` (
+`userId` INTEGER NOT NULL,
+`messageId` INTEGER NOT NULL,
+PRIMARY KEY (`userId`, `messageId`),
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`messageId`)
+REFERENCES `modmessage` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+------------------------------------------------------
+-- MOD INSTRUCTIONS READ RECEIPT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `modinstructionsreadreceipt` (
+`userId` INTEGER NOT NULL,
+`instructionId` TEXT NOT NULL,
+PRIMARY KEY (`userId`, `instructionId`),
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);

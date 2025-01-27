@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { MdArrowForward, MdClose } from 'react-icons/md';
+import { MdArrowForward, MdClose, MdOpenInNew } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 import FileInput from '~/ui-components/FileInput';
 import Select from '~/ui-components/Select/Select';
@@ -10,9 +10,11 @@ import type { Comic } from '~/types/types';
 import '~/utils/cropper.min.css';
 import { showErrorToast, showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
+import Link from '~/ui-components/Link';
 
 type Props = {
   comicData: Comic;
+  blockActions?: boolean;
   PAGES_PATH: string;
   IMAGES_SERVER_URL: string;
 };
@@ -21,6 +23,7 @@ export default function LiveComicThumbnailManager({
   comicData,
   PAGES_PATH,
   IMAGES_SERVER_URL,
+  blockActions,
 }: Props) {
   const { theme } = useUIPreferences();
   const [randomQueryStr, setRandomQueryStr] = useState(randomString(3));
@@ -97,11 +100,21 @@ export default function LiveComicThumbnailManager({
           text="Change thumbnail"
           onClick={() => setIsChanging(true)}
           className="mt-2"
+          disabled={blockActions}
         />
       )}
 
       {isChanging && (
         <>
+          <div className="mt-1">
+            <Link
+              href="/thumbnail-guidelines"
+              text="Thumbnail guidelines"
+              newTab
+              IconRight={MdOpenInNew}
+            />
+          </div>
+
           {!isSelectingPageNum && (
             <div className="flex flex-row gap-2 flex-wrap mt-2">
               <Button

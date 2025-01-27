@@ -38,12 +38,14 @@ type FileChangeRange = {
 
 type ManagePagesAdminProps = {
   comic: Comic;
+  blockActions?: boolean;
   PAGES_PATH: string;
   IMAGES_SERVER_URL: string;
 };
 
 export default function ManagePagesAdmin({
   comic,
+  blockActions,
   PAGES_PATH,
   IMAGES_SERVER_URL,
 }: ManagePagesAdminProps) {
@@ -244,7 +246,11 @@ export default function ManagePagesAdmin({
         If there are pages not showing up, or seemingly broken pages at some spot in the
         comic, try fixing it through the button below.
       </p>
-      <RecalculateNumPages comic={comic} imagesServerUrl={IMAGES_SERVER_URL} />
+      <RecalculateNumPages
+        comic={comic}
+        imagesServerUrl={IMAGES_SERVER_URL}
+        blockActions={blockActions}
+      />
 
       <p className="font-semibold mt-4 mb-1">Add pages</p>
 
@@ -266,6 +272,7 @@ export default function ManagePagesAdmin({
               text="Submit changes"
               onClick={submitPageChanges}
               isLoading={isSubmitting}
+              disabled={blockActions}
             />
           </>
         )}
@@ -343,6 +350,7 @@ export default function ManagePagesAdmin({
             text="Submit changes"
             onClick={submitPageChanges}
             isLoading={isSubmitting}
+            disabled={blockActions}
           />
         </div>
       )}

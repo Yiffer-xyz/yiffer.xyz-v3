@@ -9,9 +9,11 @@ import type { ComicDataChanges } from './LiveComic';
 export default function RecalculateNumPages({
   comic,
   imagesServerUrl,
+  blockActions,
 }: {
   comic: Comic;
   imagesServerUrl: string;
+  blockActions?: boolean;
 }) {
   const { theme } = useUIPreferences();
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +82,7 @@ export default function RecalculateNumPages({
         onClick={onSubmit}
         startIcon={LuRefreshCcw}
         isLoading={isLoading || updateComicFetcher.isLoading}
+        disabled={blockActions}
       />
       {(isLoading || updateComicFetcher.isLoading) && (
         <p className="text-sm">

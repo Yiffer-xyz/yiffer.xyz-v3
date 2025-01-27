@@ -20,6 +20,7 @@ type LiveComicProps = {
   allComics: ComicTiny[];
   allArtists: ArtistTiny[];
   allTags: Tag[];
+  blockActions?: boolean;
   PAGES_PATH: string;
   IMAGES_SERVER_URL: string;
 };
@@ -30,6 +31,7 @@ export default function LiveComic({
   allComics,
   allArtists,
   allTags,
+  blockActions,
   PAGES_PATH,
   IMAGES_SERVER_URL,
 }: LiveComicProps) {
@@ -230,7 +232,7 @@ export default function LiveComic({
                 isLoading={saveChangesFetcher.isLoading || isUpdatingName}
                 onClick={saveComicDataChanges}
                 startIcon={MdCheck}
-                disabled={!canSave}
+                disabled={!canSave || blockActions}
               />
             </div>
           </>
@@ -243,6 +245,7 @@ export default function LiveComic({
           comicData={comic}
           PAGES_PATH={PAGES_PATH}
           IMAGES_SERVER_URL={IMAGES_SERVER_URL}
+          blockActions={blockActions}
         />
       </div>
 
@@ -251,6 +254,7 @@ export default function LiveComic({
 
         <ManagePagesAdmin
           comic={comic}
+          blockActions={blockActions}
           PAGES_PATH={PAGES_PATH}
           IMAGES_SERVER_URL={IMAGES_SERVER_URL}
         />

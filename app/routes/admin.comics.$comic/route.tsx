@@ -107,7 +107,7 @@ export default function ManageComicInner() {
 
       {comic.publishStatus === 'published' && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
-          <p className="text-lg text-theme1-darker">
+          <p className="text-theme1-darker">
             This comic is live!
             <Link
               href={`/${comic.name}`}
@@ -136,6 +136,7 @@ export default function ManageComicInner() {
         allComics={globalContext.comics}
         allArtists={globalContext.artists}
         allTags={globalContext.tags}
+        blockActions={globalContext.numUnreadContent > 0}
         PAGES_PATH={PAGES_PATH}
         IMAGES_SERVER_URL={IMAGES_SERVER_URL}
       />

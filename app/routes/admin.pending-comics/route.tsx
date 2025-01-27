@@ -109,7 +109,7 @@ export default function PendingComics() {
         publishing queue.
       </p>
       <p className="mt-2">
-        Comics in the publishing queue are published daily at noon, ET.{' '}
+        Comics in the publishing queue are published daily.{' '}
         <b>{dailySchedulePublishCount}</b> comics are scheduled daily, as long as there
         are enough in the queue.
       </p>

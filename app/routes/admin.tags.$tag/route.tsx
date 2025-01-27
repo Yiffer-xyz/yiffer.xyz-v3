@@ -1,4 +1,4 @@
-import { redirect, useLoaderData, useNavigate } from '@remix-run/react';
+import { redirect, useLoaderData, useNavigate, useOutletContext } from '@remix-run/react';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { getTagById } from '~/route-funcs/get-tags';
 import { capitalizeString } from '~/utils/general';
@@ -16,6 +16,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from '@remix-run/cloudflare';
+import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -24,6 +25,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ManageTag() {
+  const globalContext: GlobalAdminContext = useOutletContext();
+  const blockActions = globalContext.numUnreadContent > 0;
   const navigate = useNavigate();
   const { tag, comics } = useLoaderData<typeof loader>();
 
@@ -59,8 +62,17 @@ export default function ManageTag() {
             startIcon={MdArrowBack}
             variant="outlined"
           />
-          <Button text="Edit tag" onClick={() => setIsEditing(true)} />
-          <Button text="Delete tag" onClick={() => setIsDeleting(true)} color="error" />
+          <Button
+            text="Edit tag"
+            onClick={() => setIsEditing(true)}
+            disabled={blockActions}
+          />
+          <Button
+            text="Delete tag"
+            onClick={() => setIsDeleting(true)}
+            color="error"
+            disabled={blockActions}
+          />
         </div>
       )}
 

@@ -4,6 +4,7 @@ import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect'
 import type { ComicTiny } from '~/types/types';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { MetaFunction } from '@remix-run/cloudflare';
+import Link from '~/ui-components/Link';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -41,6 +42,12 @@ export default function ManageComics() {
         className="mb-8"
         mobileFullWidth
       />
+
+      {!selectedComic && (
+        <div className="-mt-4">
+          <Link href="/contribute/upload" text="Upload new comic" showRightArrow />
+        </div>
+      )}
 
       <Outlet context={globalContext} />
     </>

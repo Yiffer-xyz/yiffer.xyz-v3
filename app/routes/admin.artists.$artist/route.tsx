@@ -14,7 +14,8 @@ import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import ComicAdminLink from '~/ui-components/ComicAdminLink/ComicAdminLink';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, useOutletContext } from '@remix-run/react';
+import type { GlobalAdminContext } from '../admin/route';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -25,6 +26,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function ManageArtist() {
   const { isMobile } = useWindowSize();
   const { artist, comics, user } = useLoaderData<typeof loader>();
+  const globalContext = useOutletContext<GlobalAdminContext>();
+  const blockActions = globalContext.numUnreadContent > 0;
 
   const banArtistFetcher = useGoodFetcher({
     url: '/api/admin/toggle-artist-ban',
@@ -261,7 +264,7 @@ export default function ManageArtist() {
               isLoading={saveChangesFetcher.isLoading}
               onClick={saveChanges}
               startIcon={MdCheck}
-              disabled={!canSave}
+              disabled={!canSave || blockActions}
             />
           </div>
         </>

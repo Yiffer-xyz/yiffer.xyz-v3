@@ -1,4 +1,4 @@
-import { useLoaderData, useOutletContext } from '@remix-run/react';
+import { useOutletContext } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ProcessTagSuggestionBody } from '../api.admin.process-tag-suggestion';
 import { useMemo, useState } from 'react';
@@ -44,6 +44,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const globalContext: GlobalAdminContext = useOutletContext();
+  const blockActions = globalContext.numUnreadContent > 0;
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
   const [latestSubmittedAction, setLatestSubmittedAction] = useState<string>();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -110,7 +111,7 @@ export default function Dashboard() {
     action: TagSuggestionAction,
     processedItems: TagSuggestionItem[]
   ) {
-    if (!action.comicId) return;
+    if (!action.comicId || blockActions) return;
 
     const body: ProcessTagSuggestionBody = {
       comicId: action.comicId,
@@ -125,6 +126,7 @@ export default function Dashboard() {
   }
 
   function assignActionToMod(action: DashboardAction) {
+    if (blockActions) return;
     const body: AssignActionBody = {
       actionId: action.id,
       modId: globalContext.user.id,
@@ -137,6 +139,7 @@ export default function Dashboard() {
   }
 
   function unassignActionFromMod(action: DashboardAction) {
+    if (blockActions) return;
     const body: UnAssignActionBody = {
       actionId: action.id,
       actionType: action.type,
@@ -148,6 +151,7 @@ export default function Dashboard() {
   }
 
   function processComicProblem(action: DashboardAction, isApproved: boolean) {
+    if (blockActions) return;
     const body: ProcessComicProblemBody = {
       isApproved,
       actionId: action.id,
@@ -165,6 +169,7 @@ export default function Dashboard() {
     verdict?: ComicSuggestionVerdict,
     modComment?: string
   ) {
+    if (blockActions) return;
     const body: ProcessComicSuggestionBody = {
       actionId: action.id,
       isApproved,
@@ -278,6 +283,7 @@ export default function Dashboard() {
                     unassignModFetcher.isLoading)
                 }
                 innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
               />
             )}
 
@@ -294,6 +300,7 @@ export default function Dashboard() {
                 isAssignedToOther={isAssignedToOther}
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
               />
             )}
 
@@ -313,6 +320,7 @@ export default function Dashboard() {
                 isAssignedToOther={isAssignedToOther}
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
               />
             )}
 
@@ -332,6 +340,7 @@ export default function Dashboard() {
                 isAssignedToOther={isAssignedToOther}
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
               />
             )}
 
@@ -348,6 +357,7 @@ export default function Dashboard() {
                 isAssignedToOther={isAssignedToOther}
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
               />
             )}
           </div>

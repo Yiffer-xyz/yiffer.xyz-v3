@@ -15,6 +15,7 @@ type PendingComicProblemProps = {
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
+  blockActions?: boolean;
 };
 
 export function PendingComicProblem({
@@ -26,6 +27,7 @@ export function PendingComicProblem({
   isAssignedToOther,
   isAssignedToMe,
   innerContainerClassName,
+  blockActions,
 }: PendingComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
@@ -68,6 +70,7 @@ export function PendingComicProblem({
                 onClick={() => onUnassignMe(action)}
                 text="Unassign from me"
                 isLoading={isLoading && loadingAction === 'unassign'}
+                disabled={blockActions}
               />
             )}
             {!action.isProcessed && !action.assignedMod && (
@@ -76,6 +79,7 @@ export function PendingComicProblem({
                 onClick={() => onAssignMe(action)}
                 text="I'm on it"
                 isLoading={isLoading && loadingAction === 'assign'}
+                disabled={blockActions}
               />
             )}
           </div>

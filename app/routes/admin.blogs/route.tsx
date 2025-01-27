@@ -37,6 +37,7 @@ export default function Stats() {
 
   const { pathname } = useLocation();
   const isCreatingOrEditing =
+    // eslint-disable-next-line no-useless-escape
     pathname.includes('/new') || pathname.match(/^\/admin\/blogs\/[^\/]+$/);
 
   return (
@@ -47,19 +48,27 @@ export default function Stats() {
 
       {!isCreatingOrEditing && (
         <>
-          <Button
-            text="New blog"
-            startIcon={MdAdd}
-            className="mb-4 mt-4"
-            onClick={() => {
-              navigate('/admin/blogs/new');
-            }}
-          />
+          <div className="flex flex-row gap-4 flex-wrap mt-4 mb-4">
+            <Button
+              text="New blog"
+              startIcon={MdAdd}
+              onClick={() => {
+                navigate('/admin/blogs/new');
+              }}
+            />
+            <Button
+              text="New mod message"
+              startIcon={MdAdd}
+              onClick={() => {
+                navigate('/admin/blogs/new?type=mod-message');
+              }}
+            />
+          </div>
 
           {blogs.length === 0 ? (
             <p>No blogs found.</p>
           ) : (
-            <Table className="w-full sm:w-fit mt-6">
+            <Table className="w-full sm:w-fit">
               <TableBody>
                 <TableRow includeBorderTop>
                   <TableCell>

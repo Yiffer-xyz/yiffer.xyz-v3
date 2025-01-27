@@ -26,6 +26,7 @@ type ComicSuggestionProps = {
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
+  blockActions?: boolean;
 };
 
 export function ComicSuggestion({
@@ -38,6 +39,7 @@ export function ComicSuggestion({
   isAssignedToOther,
   isAssignedToMe,
   innerContainerClassName,
+  blockActions,
 }: ComicSuggestionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isRejectingWithComment, setIsRejectingWithComment] = useState(false);
@@ -135,6 +137,7 @@ export function ComicSuggestion({
                 }}
                 text="I'm on it"
                 isLoading={isLoading && loadingAction === 'assign'}
+                disabled={blockActions}
               />
             )}
           </div>
@@ -172,7 +175,7 @@ export function ComicSuggestion({
                   <LoadingButton
                     color="primary"
                     onClick={finishRejectWithComment}
-                    disabled={!rejectComment}
+                    disabled={!rejectComment || blockActions}
                     text="Reject suggestion"
                     isSubmit
                     isLoading={isLoading && loadingAction === 'process-upload'}

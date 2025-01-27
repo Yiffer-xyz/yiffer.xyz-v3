@@ -6,7 +6,6 @@ import Chip from '~/ui-components/Chip';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
 import Link from '~/ui-components/Link';
-import { MdOpenInNew } from 'react-icons/md';
 import { getTimeAgo } from '~/utils/date-utils';
 
 type ComicProblemProps = {
@@ -19,6 +18,7 @@ type ComicProblemProps = {
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
+  blockActions?: boolean;
 };
 
 export function ComicProblem({
@@ -31,6 +31,7 @@ export function ComicProblem({
   isAssignedToOther,
   isAssignedToMe,
   innerContainerClassName,
+  blockActions,
 }: ComicProblemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
@@ -50,20 +51,14 @@ export function ComicProblem({
         <div className="flex flex-col justify-between gap-2">
           <Chip color={themedColor} text="Comic problem" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
-            <div className="flex flex-row gap-x-3">
+            <div className="flex flex-row gap-x-3 flex-wrap">
               <b>{action.primaryField}</b>
               <Link
                 href={`/admin/comics/${action.comicId}`}
                 text="Admin"
-                IconRight={MdOpenInNew}
-                newTab
+                showRightArrow
               />
-              <Link
-                href={`/${action.primaryField}`}
-                text="Live"
-                IconRight={MdOpenInNew}
-                newTab
-              />
+              <Link href={`/${action.primaryField}`} text="Live" showRightArrow />
             </div>
             <p>{action.secondaryField}</p>
           </div>
@@ -118,6 +113,7 @@ export function ComicProblem({
                 }}
                 text="I'm on it"
                 isLoading={isLoading && loadingAction === 'assign'}
+                disabled={blockActions}
               />
             )}
           </div>

@@ -1,4 +1,3 @@
-import { MdOpenInNew } from 'react-icons/md';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
 import Link from '~/ui-components/Link';
@@ -28,6 +27,7 @@ type TagSuggestionProps = {
   isAssignedToMe?: boolean;
   loadingAction?: string;
   innerContainerClassName: string;
+  blockActions?: boolean;
 };
 
 export function TagSuggestion({
@@ -40,6 +40,7 @@ export function TagSuggestion({
   isAssignedToMe,
   loadingAction,
   innerContainerClassName,
+  blockActions,
 }: TagSuggestionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
@@ -67,15 +68,9 @@ export function TagSuggestion({
               <Link
                 href={`/admin/comics/${action.comicId}`}
                 text="Admin"
-                IconRight={MdOpenInNew}
-                newTab
+                showRightArrow
               />
-              <Link
-                href={`/${action.primaryField}`}
-                text="Live"
-                IconRight={MdOpenInNew}
-                newTab
-              />
+              <Link href={`/${action.primaryField}`} text="Live" showRightArrow />
             </div>
             <p>{action.description}</p>
           </div>
@@ -121,6 +116,7 @@ export function TagSuggestion({
                 }}
                 text="I'm on it"
                 isLoading={isLoading && loadingAction === 'assign'}
+                disabled={blockActions}
               />
             )}
           </div>
@@ -137,14 +133,16 @@ export function TagSuggestion({
             />
           </div>
 
-          <LoadingButton
-            color="primary"
-            onClick={() => onProcessSuggestion(action, updatedItems)}
-            text="Submit"
-            isLoading={isLoading && loadingAction === 'approve'}
-            disabled={!readyForSubmit}
-            disableElevation
-          />
+          {!action.isProcessed && (
+            <LoadingButton
+              color="primary"
+              onClick={() => onProcessSuggestion(action, updatedItems)}
+              text="Submit"
+              isLoading={isLoading && loadingAction === 'approve'}
+              disabled={!readyForSubmit}
+              disableElevation
+            />
+          )}
 
           <IoCaretUp className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
         </>

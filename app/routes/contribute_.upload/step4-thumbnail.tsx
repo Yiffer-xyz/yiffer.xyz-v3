@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MdArrowForward } from 'react-icons/md';
+import { MdArrowForward, MdOpenInNew } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 import FileInput from '~/ui-components/FileInput';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
@@ -8,6 +8,7 @@ import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCroppe
 import type { ComicImage } from '~/utils/general';
 import { getFileWithBase64 } from '~/utils/general';
 import type { NewComicData } from './route';
+import Link from '~/ui-components/Link';
 
 type Step4Props = {
   comicData: NewComicData;
@@ -72,6 +73,15 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
   return (
     <>
       <h4 className="mt-8">Thumbnail</h4>
+
+      <div>
+        <Link
+          href="/thumbnail-guidelines"
+          text="Thumbnail guidelines - please read"
+          newTab
+          IconRight={MdOpenInNew}
+        />
+      </div>
 
       {/* Completed crop */}
       {comicData.thumbnail && (

@@ -25,6 +25,7 @@ export const meta: MetaFunction = () => {
 
 export default function ManageTags() {
   const globalContext: GlobalAdminContext = useOutletContext();
+  const blockActions = globalContext.numUnreadContent > 0;
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { tagsWithCounts } = useLoaderData<typeof loader>();
@@ -53,6 +54,7 @@ export default function ManageTags() {
               setSelectedTag(undefined);
               navigate('/admin/tags/new');
             }}
+            disabled={blockActions}
           />
 
           <SearchableSelect
@@ -69,6 +71,7 @@ export default function ManageTags() {
             title="Find tag"
             name="tag"
             className="mb-6 mt-6"
+            mobileFullWidth
           />
         </>
       )}

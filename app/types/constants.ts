@@ -114,3 +114,21 @@ export const ADVERTISEMENTS: AdvertisementInfo[] = [
     },
   },
 ];
+
+export const ADMIN_INSTRUCTIONS = [
+  {
+    id: 'modpanel',
+    title: 'Mod panel',
+    message: 'Quick intro to the new mod panel and how to use it',
+  },
+  {
+    id: 'comics',
+    title: 'Comic guidelines',
+    message: "Comic content dos and don'ts",
+  },
+  {
+    id: 'tagging',
+    title: 'Tagging',
+    message: 'How to tag comics correctly',
+  },
+];

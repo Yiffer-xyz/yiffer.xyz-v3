@@ -475,3 +475,11 @@ export type SpammableAction = {
   email?: string;
   username?: string;
 };
+
+export type ModPanelMessage = {
+  id: number;
+  title: string;
+  isRead: boolean;
+  message: string;
+  timestamp: Date;
+};

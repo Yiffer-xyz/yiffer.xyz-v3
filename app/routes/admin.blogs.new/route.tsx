@@ -1,4 +1,4 @@
-import { useNavigate } from '@remix-run/react';
+import { useNavigate, useSearchParams } from '@remix-run/react';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { useState } from 'react';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -17,6 +17,9 @@ export const meta: MetaFunction = () => {
 
 export default function NewBlog() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get('type');
+  const isModMessage = type === 'mod-message';
 
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
@@ -34,6 +37,7 @@ export default function NewBlog() {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
+    formData.append('type', isModMessage ? 'mod-message' : 'blog');
     await submitFetcher.awaitSubmit(formData);
   }
 
@@ -43,7 +47,7 @@ export default function NewBlog() {
 
   return (
     <div className="mt-2">
-      <h2>New blog</h2>
+      <h2>{isModMessage ? 'New mod message' : 'New blog'}</h2>
 
       <TextInput
         label="Title"
@@ -53,7 +57,7 @@ export default function NewBlog() {
       />
 
       <Textarea
-        label="Blog text"
+        label={isModMessage ? 'Message' : 'Blog text'}
         value={content}
         onChange={setContent}
         name="blogText"
@@ -65,7 +69,7 @@ export default function NewBlog() {
 
         <LoadingButton
           isLoading={false}
-          text="Create blog"
+          text={isModMessage ? 'Create message' : 'Create blog'}
           onClick={onSubmit}
           className="mt-4"
           disabled={content.length < 5 || title.length < 2}
@@ -81,24 +85,35 @@ export async function action(args: ActionFunctionArgs) {
   const data = await args.request.formData();
   const title = data.get('title');
   const content = data.get('content');
+  const type = data.get('type');
 
   if (!title) return create400Json('Title is required');
   if (!content) return create400Json('Blog text is required');
 
-  const query = 'INSERT INTO blog (title, content, author) VALUES (?, ?, ?)';
-  const params = [title.toString(), content.toString(), user.userId];
+  const isModMessage = type?.toString() === 'mod-message';
+
+  const query = isModMessage
+    ? 'INSERT INTO modmessage (title, message) VALUES (?, ?)'
+    : 'INSERT INTO blog (title, content, author) VALUES (?, ?, ?)';
+  const params = isModMessage
+    ? [title.toString(), content.toString()]
+    : [title.toString(), content.toString(), user.userId];
 
   const dbRes = await queryDbExec(
     args.context.cloudflare.env.DB,
     query,
     params,
-    'Blog creation'
+    isModMessage ? 'Mod message creation' : 'Blog creation'
   );
   if (dbRes.isError) {
-    return makeDbErr(dbRes, 'Error creating blog', {
-      title: title.toString(),
-      content: content.toString(),
-    });
+    return makeDbErr(
+      dbRes,
+      isModMessage ? 'Error creating mod message' : 'Error creating blog',
+      {
+        title: title.toString(),
+        content: content.toString(),
+      }
+    );
   }
 
   return createSuccessJson();

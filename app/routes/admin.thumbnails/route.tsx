@@ -34,21 +34,33 @@ export default function UpdateThumbnails() {
     }));
 
   return (
-    <>
+    <div className="max-w-6xl flex flex-col gap-4">
       <h1>Update old thumbnails</h1>
-      <p className="mb-2">
-        Thumbnails uploaded to old Yiffer were converted to a too low resolution. We
-        should work on replacing them with higher res ones until all have been replaced.
-        Doing so will give you points in the contributions score system.
-      </p>
-      <p className="mb-2">
-        <b>
-          Current progress: {numMissingComics}/{numTotalComics} need fixing.
-        </b>
+      <p>
+        Thumbnails uploaded to old Yiffer were saved in a too low resolution. We should
+        work on replacing them with higher res ones until all have been replaced. Doing so
+        will give you points in the contributions score system.
       </p>
 
-      <p className="mb-2">
-        Ordered by time since published date. More recent = more important.
+      <div>
+        <p className="font-bold">
+          Current progress: {numMissingComics}/{numTotalComics} need fixing.
+        </p>
+        <p>More recent = more important.</p>
+      </div>
+
+      <p>
+        ℹ️ Unless you see room for improvement, you can simply make another thumbnail
+        that's <b>exactly the same as the existing one</b> - this will fix the low res
+        issue. If you see room for improvement based on the rules in the mod instructions
+        page, feel free to make a new thumbnail.
+      </p>
+
+      <p>
+        ℹ️ If the comic's thumbnail is a <b>cover page</b> which is currently not part of
+        the comic's pages, you should find the cover page and make a new thumbnail of it,
+        but <b>also add the cover page as the comic's first full page</b>. This is
+        unfortunately the case with many existing comics.
       </p>
 
       <div
@@ -66,7 +78,7 @@ export default function UpdateThumbnails() {
           </React.Fragment>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
