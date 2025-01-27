@@ -1,27 +1,30 @@
 import type { ComicDataChanges } from './admin.comics.$comic/LiveComic';
 import type { QueryWithParams } from '~/utils/database-facade';
-import { queryDbMultiple } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
-import type { ApiError, noGetRoute } from '~/utils/request-helpers';
+import type { ApiError, noGetRoute, ResultOrErrorPromise } from '~/utils/request-helpers';
 import {
   createSuccessJson,
   makeDbErr,
+  makeDbErrObj,
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
 import { getComicByField } from '~/route-funcs/get-comic';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
+import { capitalizeString } from '~/utils/general';
 
 export { noGetRoute as loader };
 
 export async function action(args: ActionFunctionArgs) {
-  await redirectIfNotMod(args);
+  const user = await redirectIfNotMod(args);
 
   const formData = await args.request.formData();
   const body = JSON.parse(formData.get('body') as string) as ComicDataChanges;
 
-  const err = await updateComicData(args.context.cloudflare.env.DB, body);
+  const err = await updateComicData(args.context.cloudflare.env.DB, body, user.userId);
   if (err) {
     return processApiError(`Error in /update-comic-data`, err, body);
   }
@@ -30,8 +33,12 @@ export async function action(args: ActionFunctionArgs) {
 
 export async function updateComicData(
   db: D1Database,
-  changes: ComicDataChanges
+  changes: ComicDataChanges,
+  userId: number
 ): Promise<ApiError | undefined> {
+  const dataUpdatedTexts: string[] = [];
+  let isTagsUpdated = false;
+
   const comicRes = await getComicByField({
     db,
     fieldName: 'id',
@@ -52,6 +59,7 @@ export async function updateComicData(
   const dbStatements: QueryWithParams[] = [];
 
   if (changes.name) {
+    dataUpdatedTexts.push(`new name: ${changes.name}`);
     dbStatements.push({
       query: `UPDATE comic SET name = ? WHERE id = ?`,
       params: [changes.name, changes.comicId],
@@ -60,6 +68,7 @@ export async function updateComicData(
 
   if (changes.nextComicId !== undefined) {
     // Add or replace next comic id; changes.nextComicId is null removed
+    dataUpdatedTexts.push(`next comic`);
     dbStatements.push(
       ...getUpdateComicLinkQuery(
         changes.comicId,
@@ -72,6 +81,7 @@ export async function updateComicData(
 
   if (changes.previousComicId !== undefined) {
     // Add or replace previous comic id; changes.previousComicId is null removed
+    dataUpdatedTexts.push(`previous comic`);
     dbStatements.push(
       ...getUpdateComicLinkQuery(
         changes.comicId,
@@ -83,6 +93,7 @@ export async function updateComicData(
   }
 
   if (changes.tagIds) {
+    isTagsUpdated = true;
     dbStatements.push(
       ...getUpdateTagsQuery(
         changes.comicId,
@@ -99,6 +110,9 @@ export async function updateComicData(
     changes.numberOfPages ||
     changes.updateUpdatedTime
   ) {
+    if (changes.category) dataUpdatedTexts.push(`category: ${changes.category}`);
+    if (changes.artistId) dataUpdatedTexts.push(`artist`);
+    if (changes.state) dataUpdatedTexts.push(`state: ${changes.state}`);
     dbStatements.push(getUpdateGeneralDetailsQuery(changes));
   }
 
@@ -109,6 +123,54 @@ export async function updateComicData(
 
   const recalcRes = await recalculateComicsPaginated(db);
   if (recalcRes) return wrapApiError(recalcRes, 'Error in updateComicData', changes);
+
+  // Below: Mod logs
+  if (dataUpdatedTexts.length > 0) {
+    const modLogErr = await addModLogAndPoints({
+      db,
+      userId,
+      comicId: changes.comicId,
+      actionType: 'comic-data-updated',
+      text: dataUpdatedTexts.join(', '),
+    });
+    if (modLogErr) {
+      return wrapApiError(modLogErr, 'Error in updateComicData', changes);
+    }
+  }
+
+  if (isTagsUpdated) {
+    const newTagIds = changes.tagIds
+      ? changes.tagIds.filter(id => !existingComic.tags.map(t => t.id).includes(id))
+      : [];
+    const deletedTagIds = existingComic.tags
+      .map(t => t.id)
+      .filter(id => !changes.tagIds?.includes(id));
+    const tagNamesRes = await getTagNames(db, deletedTagIds, newTagIds);
+
+    if (tagNamesRes.err) {
+      return wrapApiError(tagNamesRes.err, 'Error in updateComicData', changes);
+    }
+
+    let tagNamesText = '';
+    if (tagNamesRes.result.removedTagNames.length > 0) {
+      tagNamesText += `Removed: ${tagNamesRes.result.removedTagNames.join(', ')}`;
+    }
+    if (tagNamesRes.result.newTagNames.length > 0) {
+      const maybeNewline = tagNamesText.length > 0 ? '\n' : '';
+      tagNamesText += `${maybeNewline}Added: ${tagNamesRes.result.newTagNames.join(', ')}`;
+    }
+
+    const modLogErr = await addModLogAndPoints({
+      db,
+      userId,
+      comicId: changes.comicId,
+      actionType: 'comic-tags-updated',
+      text: capitalizeString(tagNamesText),
+    });
+    if (modLogErr) {
+      return wrapApiError(modLogErr, 'Error in updateComicData', changes);
+    }
+  }
 }
 
 function getUpdateTagsQuery(
@@ -141,6 +203,42 @@ function getUpdateTagsQuery(
   }
 
   return dbStatements;
+}
+
+async function getTagNames(
+  db: D1Database,
+  removedTagIds: number[],
+  newTagIds: number[]
+): ResultOrErrorPromise<{ removedTagNames: string[]; newTagNames: string[] }> {
+  const allTagIds = [...removedTagIds, ...newTagIds];
+  const tagNamesQuery = `SELECT id, keywordName AS name FROM keyword WHERE id IN (${allTagIds
+    .map(() => '?')
+    .join(', ')})`;
+  const params = allTagIds.map(id => id);
+
+  const tagNamesRes = await queryDb<{ id: number; name: string }[]>(
+    db,
+    tagNamesQuery,
+    params,
+    'Tag names by id'
+  );
+
+  if (tagNamesRes.isError) {
+    return makeDbErrObj(tagNamesRes, 'Error getting tag names by id', allTagIds);
+  }
+
+  const removedTagNames: string[] = [];
+  const newTagNames: string[] = [];
+  for (const tag of tagNamesRes.result) {
+    if (removedTagIds.includes(tag.id)) {
+      removedTagNames.push(tag.name);
+    }
+    if (newTagIds.includes(tag.id)) {
+      newTagNames.push(tag.name);
+    }
+  }
+
+  return { result: { removedTagNames, newTagNames } };
 }
 
 function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParams {

@@ -530,3 +530,32 @@ FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+------------------------------------------------------
+-- MOD ACTIONS
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `modaction` (
+`id` INTEGER NOT NULL,
+`userId` INTEGER NOT NULL,
+`comicId` INTEGER NULL DEFAULT NULL,
+`artistId` INTEGER NULL DEFAULT NULL,
+`dashboardActionId` INTEGER NULL DEFAULT NULL,
+`text` TEXT NULL DEFAULT NULL,
+`actionType` TEXT NOT NULL,
+`points` INTEGER NOT NULL DEFAULT 0,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`comicId`)
+REFERENCES `comic` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (`artistId`)
+REFERENCES `artist` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_modaction_userId ON modaction(userId);

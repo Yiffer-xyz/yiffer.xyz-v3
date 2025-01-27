@@ -9,6 +9,7 @@ import {
 } from '~/utils/request-helpers';
 import { processAnyUpload } from './api.admin.process-user-upload';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 
 export { noGetRoute as loader };
 
@@ -18,6 +19,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const formComicId = formDataBody.get('comicId');
   if (!formComicId) return create400Json('Missing comicId');
+  const comicId = parseInt(formComicId.toString());
 
   const comicName = formDataBody.get('comicName');
   if (!comicName) return create400Json('Missing comicName');
@@ -41,7 +43,7 @@ export async function action(args: ActionFunctionArgs) {
   const err = await processAnyUpload(
     user.userId,
     args.context.cloudflare.env.DB,
-    parseInt(formComicId.toString()),
+    comicId,
     comicName.toString(),
     undefined,
     publishStatus,
@@ -51,9 +53,21 @@ export async function action(args: ActionFunctionArgs) {
 
   if (err) {
     processApiError('Error in /process-anon-upload', err, {
-      comicId: formComicId.toString(),
+      comicId,
       verdict,
     });
+  }
+
+  const logText = `Verdict: ${verdict}`;
+  const modLogErr = await addModLogAndPoints({
+    db: args.context.cloudflare.env.DB,
+    userId: user.userId,
+    comicId,
+    actionType: 'upload-processed',
+    text: logText,
+  });
+  if (modLogErr) {
+    return processApiError('Error in /process-user-upload', modLogErr);
   }
 
   return createSuccessJson();

@@ -4,6 +4,7 @@ import { queryDb, queryDbExec } from '~/utils/database-facade';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 
 export async function processUpload(
   db: D1Database,
@@ -11,7 +12,8 @@ export async function processUpload(
   user: UserSession | null,
   userIP?: string
 ): Promise<ApiError | undefined> {
-  const skipApproval = !!user && ['moderator', 'admin'].includes(user?.userType);
+  const isMod = !!user && ['moderator', 'admin'].includes(user?.userType);
+  const skipApproval = isMod;
 
   if (uploadBody.newArtist) {
     const createRes = await createArtist(db, uploadBody.newArtist, skipApproval);
@@ -46,6 +48,18 @@ export async function processUpload(
     const err = await createComicTags(db, uploadBody.tagIds, comicId);
     if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
     // TODO-db: rollback artist and comic and metadata (and links) if failure
+  }
+
+  if (isMod) {
+    const modLogErr = await addModLogAndPoints({
+      db,
+      userId: user?.userId,
+      comicId: comicId,
+      actionType: 'comic-uploaded',
+    });
+    if (modLogErr) {
+      return wrapApiError(modLogErr, 'Error uploading', { uploadBody });
+    }
   }
 }
 

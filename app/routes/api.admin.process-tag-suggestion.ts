@@ -10,6 +10,7 @@ import {
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { TagSuggestionItem } from '~/types/types';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 
 export { noGetRoute as loader };
 
@@ -25,10 +26,10 @@ export async function action(args: ActionFunctionArgs) {
     args,
     'mod'
   );
-  if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
+  if (isUnauthorized || !user) return new Response('Unauthorized', { status: 401 });
   const err = await processTagSuggestion(
     args.context.cloudflare.env.DB,
-    user?.userId as number,
+    user.userId,
     fields.suggestionGroupId,
     fields.comicId,
     fields.processedItems,
@@ -40,6 +41,18 @@ export async function action(args: ActionFunctionArgs) {
       ...fields,
     });
   }
+
+  const modLogErr = await addModLogAndPoints({
+    db: args.context.cloudflare.env.DB,
+    userId: user.userId,
+    comicId: fields.comicId,
+    actionType: 'tagsuggestion-processed',
+    dashboardActionId: fields.suggestionGroupId,
+  });
+  if (modLogErr) {
+    return processApiError('Error in /process-user-upload', modLogErr);
+  }
+
   return createSuccessJson();
 }
 

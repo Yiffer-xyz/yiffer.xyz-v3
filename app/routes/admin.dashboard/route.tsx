@@ -156,6 +156,7 @@ export default function Dashboard() {
       isApproved,
       actionId: action.id,
       reportingUserId: action.user.userId,
+      comicId: action.comicId!,
     };
 
     setLatestSubmittedId(action.id);
@@ -176,6 +177,7 @@ export default function Dashboard() {
       verdict, // always if approved, otherwise none
       modComment, // only potentially if rejected
       suggestingUserId: action.user.userId,
+      comicName: action.primaryField,
     };
 
     setLatestSubmittedId(action.id);

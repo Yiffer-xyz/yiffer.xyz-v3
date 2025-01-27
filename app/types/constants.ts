@@ -1,4 +1,4 @@
-import type { AdvertisementInfo } from './types';
+import type { AdvertisementInfo, ModActionType } from './types';
 
 export const EMAIL_ENDPOINT = 'https://api.postmarkapp.com/email';
 
@@ -132,3 +132,26 @@ export const ADMIN_INSTRUCTIONS = [
     message: 'How to tag comics correctly',
   },
 ];
+
+export const ModActions: { [key in ModActionType]: { points: number; name: string } } = {
+  'upload-processed': { points: 20, name: 'Upload processed' },
+  'suggestion-processed': { points: 5, name: 'Suggestion processed' },
+  'tagsuggestion-processed': { points: 5, name: 'Tag sugg. processed' },
+  'problem-processed': { points: 5, name: 'Problem processed' },
+  'comic-uploaded': { points: 150, name: 'Comic uploaded' },
+  'comic-data-updated': { points: 10, name: 'Comic data updated' },
+  'comic-tags-updated': { points: 15, name: 'Tags updated' },
+  'comic-thumbnail-changed': { points: 30, name: 'Thumbnail changed' },
+  'comic-pages-changed': { points: 30, name: 'Pages changed' },
+  'artist-updated': { points: 10, name: 'Artist updated' },
+  'tag-updated': { points: 20, name: 'Tag updated' },
+  'pending-published': { points: 10, name: 'Pending published' },
+};
+
+export function getModActionPoints(actionType: ModActionType) {
+  return ModActions[actionType].points;
+}
+
+export function getModActionName(actionType: ModActionType) {
+  return ModActions[actionType].name;
+}

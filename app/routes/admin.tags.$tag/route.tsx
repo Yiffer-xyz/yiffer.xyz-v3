@@ -1,5 +1,10 @@
 import { redirect, useLoaderData, useNavigate, useOutletContext } from '@remix-run/react';
-import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
+import {
+  create400Json,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
 import { getTagById } from '~/route-funcs/get-tags';
 import { capitalizeString } from '~/utils/general';
 import { getComicNamesAndIDs } from '~/route-funcs/get-comics';
@@ -18,6 +23,8 @@ import type {
 } from '@remix-run/cloudflare';
 import type { GlobalAdminContext } from '../admin/route';
 import Link from '~/ui-components/Link';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
+import { redirectIfNotMod } from '~/utils/loaders';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -179,12 +186,23 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export async function action(args: ActionFunctionArgs) {
+  const user = await redirectIfNotMod(args);
   const data = await args.request.formData();
   const tagId = parseInt(args.params.tag as string);
   const formNewName = data.get('newName');
   const formIsDeleting = data.get('isDeleting');
+  const isDeleting = formIsDeleting && formIsDeleting === 'true';
 
-  if (formIsDeleting && formIsDeleting === 'true') {
+  const fullTagRes = await getTagById(args.context.cloudflare.env.DB, tagId);
+  if (fullTagRes.err) {
+    return processApiError('Error getting tag when editing/deleting', fullTagRes.err);
+  }
+  if (fullTagRes.notFound) {
+    return create400Json('Tag not found');
+  }
+  const fullTag = fullTagRes.result;
+
+  if (isDeleting) {
     const deleteTagLinkQuery = 'DELETE FROM comicKeyword WHERE keywordId = ?';
     const deleteTagQuery = 'DELETE FROM keyword WHERE id = ?';
     const params = [tagId];
@@ -212,6 +230,22 @@ export async function action(args: ActionFunctionArgs) {
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error updating tag name', { formNewName });
     }
+  }
+
+  let text = '';
+  if (isDeleting) {
+    text = `Tag ${fullTag.name} deleted`;
+  } else {
+    text = `Tag ${fullTag.name} -> ${formNewName}`;
+  }
+  const modLogErr = await addModLogAndPoints({
+    db: args.context.cloudflare.env.DB,
+    userId: user.userId,
+    actionType: 'tag-updated',
+    text,
+  });
+  if (modLogErr) {
+    return processApiError('Error logging in tag update/delete', modLogErr, { tagId });
   }
 
   return createSuccessJson();

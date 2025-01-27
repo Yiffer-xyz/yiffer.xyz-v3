@@ -5,10 +5,17 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Button from '~/ui-components/Buttons/Button';
 import { MdCheckCircle } from 'react-icons/md';
 import { IoMdCloseCircle } from 'react-icons/io';
-import { create400Json, createSuccessJson, makeDbErr } from '~/utils/request-helpers';
+import {
+  create400Json,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
 import { queryDbExec } from '~/utils/database-facade';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
+import { redirectIfNotMod } from '~/utils/loaders';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -108,6 +115,7 @@ export default function ManageTag() {
 }
 
 export async function action(args: ActionFunctionArgs) {
+  const user = await redirectIfNotMod(args);
   const data = await args.request.formData();
   const tagName = data.get('tagName');
 
@@ -124,6 +132,16 @@ export async function action(args: ActionFunctionArgs) {
   );
   if (dbRes.isError) {
     return makeDbErr(dbRes, 'Error creating tag', { tagName });
+  }
+
+  const modLogErr = await addModLogAndPoints({
+    db: args.context.cloudflare.env.DB,
+    userId: user.userId,
+    actionType: 'tag-updated',
+    text: `Tag ${tagName} created`,
+  });
+  if (modLogErr) {
+    return processApiError('Error logging in tag creation', modLogErr, { tagName });
   }
 
   return createSuccessJson();

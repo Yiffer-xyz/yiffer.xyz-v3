@@ -5,6 +5,7 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import TextInputUncontrolled from '~/ui-components/TextInput/TextInputUncontrolled';
 import type { Comic } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import InfoBox from '~/ui-components/InfoBox';
 
 type PendingComicErrorParams = {
   comicData: Comic;
@@ -25,6 +26,15 @@ export function SetError({ comicData, onCancel, onFinish }: PendingComicErrorPar
       <h4>Set error</h4>
       <fetcher.Form>
         <input type="hidden" name="comicId" value={comicData.id} />
+
+        <InfoBox
+          variant="info"
+          text="Ideally, fix the error yourself instead of setting it here."
+          small
+          boldText={false}
+          fitWidth
+          className="mt-1 mb-2"
+        />
 
         <TextInputUncontrolled
           label="Short error text"

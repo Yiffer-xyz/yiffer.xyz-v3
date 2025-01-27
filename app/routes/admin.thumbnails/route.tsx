@@ -38,8 +38,7 @@ export default function UpdateThumbnails() {
       <h1>Update old thumbnails</h1>
       <p>
         Thumbnails uploaded to old Yiffer were saved in a too low resolution. We should
-        work on replacing them with higher res ones until all have been replaced. Doing so
-        will give you points in the contributions score system.
+        work on replacing them with higher res ones until all have been replaced.
       </p>
 
       <div>

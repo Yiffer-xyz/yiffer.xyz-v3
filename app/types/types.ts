@@ -483,3 +483,38 @@ export type ModPanelMessage = {
   message: string;
   timestamp: Date;
 };
+
+export type ModActionType =
+  | 'upload-processed'
+  | 'suggestion-processed'
+  | 'tagsuggestion-processed'
+  | 'problem-processed'
+  | 'comic-uploaded'
+  | 'comic-data-updated'
+  | 'comic-tags-updated'
+  | 'comic-thumbnail-changed'
+  | 'comic-pages-changed'
+  | 'artist-updated'
+  | 'tag-updated'
+  | 'pending-published';
+
+export type ModAction = {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+  };
+  comic?: {
+    id: number;
+    name: string;
+  };
+  artist?: {
+    id: number;
+    name: string;
+  };
+  dashboardActionId?: number;
+  actionType: ModActionType;
+  text?: string;
+  points: number;
+  timestamp: Date;
+};

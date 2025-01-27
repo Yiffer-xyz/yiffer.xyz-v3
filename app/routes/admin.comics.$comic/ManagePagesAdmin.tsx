@@ -21,6 +21,7 @@ import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import RecalculateNumPages from './RecalculateNumPages';
 import useWindowSize from '~/utils/useWindowSize';
 import { mobileClosedBarW, sidebarWidth } from '../admin/AdminSidebar';
+import type { LogPagesChangeBody } from '../api.admin.log-pages.change';
 
 type UpdatedComicPage = {
   previousPos?: number;
@@ -92,6 +93,11 @@ export default function ManagePagesAdmin({
 
   const { awaitSubmit: updateNumberOfPages } = useGoodFetcher({
     url: '/api/admin/update-comic-data',
+    method: 'post',
+  });
+
+  const logFetcher = useGoodFetcher({
+    url: '/api/admin/log-pages-change',
     method: 'post',
   });
 
@@ -204,6 +210,19 @@ export default function ManagePagesAdmin({
       }
     }
 
+    const numNewPages = filesChanged.filter(
+      c => !isFileChangeRange(c) && c.isNewPage
+    ).length;
+    const numDeletedPages = filesChanged.filter(
+      c => !isFileChangeRange(c) && c.isDeleted
+    ).length;
+    const logBody: LogPagesChangeBody = {
+      comicId: comic.id,
+      numNewPages,
+      numDeletedPages,
+    };
+    await logFetcher.awaitSubmit({ body: JSON.stringify(logBody) });
+
     setIsSubmitting(false);
     if (isUploadError) {
       resetComicPages();
@@ -314,9 +333,8 @@ export default function ManagePagesAdmin({
         Manage pages{filesChanged.length > 0 ? ' (unsaved changes)' : ''}
       </p>
       <p className="text-sm mb-2">
-        Click an image to see it full size. You can add files in multiple batches as long
-        as there are no duplicate file names. You can drop files onto the file selector
-        button.
+        You can add files in multiple batches as long as there are no duplicate file
+        names. You can drop files onto the file selector button.
       </p>
 
       {filesChanged.length > 0 && (

@@ -137,6 +137,11 @@ export default function AdminSidebar({
             <SidebarLink href="/admin/blogs" text="Blogs" isSelected={isRoute('blogs')} />
           )}
           <SidebarLink
+            href="/admin/actions-and-points"
+            text="Actions & points"
+            isSelected={isRoute('actions-and-points')}
+          />
+          <SidebarLink
             href="/admin/instructions"
             text="Instructions"
             isSelected={isRoute('instructions')}

@@ -381,6 +381,7 @@ export async function action(args: ActionFunctionArgs) {
     logApiError('Error in upload comic submit', err, body);
     return create500Json();
   }
+
   return createSuccessJson();
 }
 

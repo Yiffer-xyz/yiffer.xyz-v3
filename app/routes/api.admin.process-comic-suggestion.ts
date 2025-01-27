@@ -5,12 +5,14 @@ import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
+import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 
 export { noGetRoute as loader };
 
 export type ProcessComicSuggestionBody = {
   actionId: number;
   isApproved: boolean;
+  comicName: string;
   verdict?: ComicSuggestionVerdict;
   modComment?: string;
   suggestingUserId?: number;
@@ -19,7 +21,7 @@ export type ProcessComicSuggestionBody = {
 export async function action(args: ActionFunctionArgs) {
   const { fields, user, isUnauthorized } =
     await parseFormJson<ProcessComicSuggestionBody>(args, 'mod');
-  if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
+  if (isUnauthorized || !user) return new Response('Unauthorized', { status: 401 });
 
   const err = await processComicSuggestion(
     args.context.cloudflare.env.DB,
@@ -36,6 +38,22 @@ export async function action(args: ActionFunctionArgs) {
       ...fields,
     });
   }
+
+  let verdictText = fields.isApproved ? 'Approved' : 'Rejected';
+  if (fields.verdict) verdictText += ` - ${fields.verdict}`;
+  let logText = `Comic: ${fields.comicName} \n${verdictText}`;
+  if (fields.modComment) logText += ` \nMod comment: ${fields.modComment}`;
+  const modLogErr = await addModLogAndPoints({
+    db: args.context.cloudflare.env.DB,
+    userId: user.userId,
+    dashboardActionId: fields.actionId,
+    actionType: 'suggestion-processed',
+    text: logText,
+  });
+  if (modLogErr) {
+    return processApiError('Error in /process-user-upload', modLogErr);
+  }
+
   return createSuccessJson();
 }
 
