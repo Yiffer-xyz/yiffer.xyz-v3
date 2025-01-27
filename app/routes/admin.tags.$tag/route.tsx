@@ -17,6 +17,7 @@ import type {
   MetaFunction,
 } from '@remix-run/cloudflare';
 import type { GlobalAdminContext } from '../admin/route';
+import Link from '~/ui-components/Link';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -52,28 +53,28 @@ export default function ManageTag() {
 
   return (
     <>
-      <h2 className="mb-1">{capitalizeString(tag.name)}</h2>
+      <h2 className="mt-2">{capitalizeString(tag.name)}</h2>
 
       {!isEditing && !isDeleting && (
-        <div className="flex flex-row gap-3">
-          <Button
-            text="Back"
-            onClick={() => navigate('/admin/tags')}
-            startIcon={MdArrowBack}
-            variant="outlined"
-          />
-          <Button
-            text="Edit tag"
-            onClick={() => setIsEditing(true)}
-            disabled={blockActions}
-          />
-          <Button
-            text="Delete tag"
-            onClick={() => setIsDeleting(true)}
-            color="error"
-            disabled={blockActions}
-          />
-        </div>
+        <>
+          <div className="mb-2">
+            <Link href="/admin/tags" text="Back" Icon={MdArrowBack} />
+          </div>
+
+          <div className="flex flex-row gap-3">
+            <Button
+              text="Edit tag"
+              onClick={() => setIsEditing(true)}
+              disabled={blockActions}
+            />
+            <Button
+              text="Delete tag"
+              onClick={() => setIsDeleting(true)}
+              color="error"
+              disabled={blockActions}
+            />
+          </div>
+        </>
       )}
 
       {isEditing && (

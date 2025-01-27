@@ -25,7 +25,7 @@ export default function ManageComics() {
   const [search, setSearch] = useState('');
 
   const { comicOptions, totalNum } = useMemo(() => {
-    const comics = globalContext.comics.map(comic => ({
+    let comics = globalContext.comics.map(comic => ({
       value: comic,
       text: comic.name,
     }));
@@ -34,9 +34,10 @@ export default function ManageComics() {
     if (!search) {
       slicedComics = comics.slice(0, 50);
     } else {
-      slicedComics = comics
-        .filter(comic => comic.text.toLowerCase().includes(search.toLowerCase()))
-        .slice(0, 50);
+      comics = comics.filter(comic =>
+        comic.text.toLowerCase().includes(search.toLowerCase())
+      );
+      slicedComics = comics.slice(0, 50);
     }
 
     return {

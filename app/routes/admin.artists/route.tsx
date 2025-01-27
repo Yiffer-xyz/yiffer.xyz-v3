@@ -3,15 +3,8 @@ import { useMemo, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { MetaFunction } from '@remix-run/cloudflare';
 import Link from '~/ui-components/Link';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeadRow,
-  TableRow,
-} from '~/ui-components/Table';
+import { Table, TableBody, TableCell, TableRow } from '~/ui-components/Table';
 import TextInput from '~/ui-components/TextInput/TextInput';
-import { capitalizeString } from '~/utils/general';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
