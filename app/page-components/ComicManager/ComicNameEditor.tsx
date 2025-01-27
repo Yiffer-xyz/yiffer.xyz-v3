@@ -97,6 +97,7 @@ export default function ComicNameEditor({
           name="comicName"
           value={comicName}
           onChange={onUpdate}
+          className="w-full md:w-[350px]"
         />
       </div>
 

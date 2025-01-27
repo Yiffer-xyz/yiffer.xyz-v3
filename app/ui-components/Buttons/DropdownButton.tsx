@@ -139,7 +139,8 @@ export default function DropdownButton({
       />
       <div
         className={`
-          origin-top-right absolute left-0 shadow-lg bg-white dark:bg-gray-400 focus:outline-none rounded overflow-hidden
+          origin-top-right absolute left-0 shadow-lg bg-white dark:bg-gray-400 focus:outline-none rounded
+          overflow-hidden z-10
           ${isOpen ? '' : 'invisible'}`}
         onMouseLeave={closeSoonIfOpen}
         onMouseEnter={cancelCloseTimeout}

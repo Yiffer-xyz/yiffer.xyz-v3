@@ -74,7 +74,7 @@ export default function ComicDataEditor({
         existingComic={existingComic}
       />
 
-      <div className="flex flex-row flex-wrap mt-6 items-end gap-4">
+      <div className="flex flex-col md:flex-row flex-wrap mt-6 gap-4">
         <div className="flex flex-row flex-wrap gap-x-4 gap-y-1 items-end">
           <SearchableSelect
             value={comicData.artistId}
@@ -84,6 +84,7 @@ export default function ComicDataEditor({
             disabled={artistNotInList}
             title="Artist"
             name="artistId"
+            mobileFullWidth
           />
           {comicData.artistId && (
             <div>
@@ -98,6 +99,7 @@ export default function ComicDataEditor({
           <CheckboxUncontrolled
             label="Artist is not in the list"
             name="artistNotInList"
+            className="self-start md:self-end"
             onChange={newVal => {
               setArtistNotInList(newVal);
               if (newVal === true) {
@@ -160,7 +162,7 @@ export default function ComicDataEditor({
       )}
 
       <div className="flex flex-row flex-wrap gap-4 mt-2">
-        <div>
+        <div className="w-full">
           <SearchableSelect
             value={comicData.previousComic}
             onChange={newVal => onUpdate({ ...comicData, previousComic: newVal })}
@@ -169,8 +171,8 @@ export default function ComicDataEditor({
             title="Previous comic"
             name="previousComicId"
             placeholder="Leave blank if none"
-            mobileCompact
             equalValueFunc={(a, b) => a.id === b?.id}
+            mobileFullWidth
           />
           {comicData.previousComic && getComicLink(comicData.previousComic) && (
             <div className="mt-1">
@@ -182,7 +184,7 @@ export default function ComicDataEditor({
           )}
         </div>
 
-        <div>
+        <div className="w-full">
           <SearchableSelect
             value={comicData.nextComic}
             onChange={newVal => onUpdate({ ...comicData, nextComic: newVal })}
@@ -191,8 +193,8 @@ export default function ComicDataEditor({
             title="Next comic"
             name="nextComicId"
             placeholder="Leave blank if none"
-            mobileCompact
             equalValueFunc={(a, b) => a.id === b?.id}
+            mobileFullWidth
           />
           {comicData.nextComic && getComicLink(comicData.nextComic) && (
             <div className="mt-1">
