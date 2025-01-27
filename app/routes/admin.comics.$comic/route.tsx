@@ -13,6 +13,7 @@ import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import { MdArrowBack } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -48,7 +49,10 @@ export default function ManageComicInner() {
 
   return (
     <>
-      <h2 className="mb-2">{comic.name}</h2>
+      <h2 className="mt-1">{comic.name}</h2>
+      <div className="mb-2">
+        <Link href="/admin/comics" text="Back" Icon={MdArrowBack} />
+      </div>
 
       {isRejected && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">

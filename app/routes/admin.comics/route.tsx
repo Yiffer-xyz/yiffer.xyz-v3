@@ -1,10 +1,17 @@
-import { Outlet, useNavigate, useOutletContext } from '@remix-run/react';
-import { useEffect, useState } from 'react';
-import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
-import type { ComicTiny } from '~/types/types';
+import { Outlet, useOutlet, useOutletContext } from '@remix-run/react';
+import { useMemo, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { MetaFunction } from '@remix-run/cloudflare';
 import Link from '~/ui-components/Link';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeadRow,
+  TableRow,
+} from '~/ui-components/Table';
+import TextInput from '~/ui-components/TextInput/TextInput';
+import { capitalizeString } from '~/utils/general';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -12,41 +19,85 @@ export const meta: MetaFunction = () => {
 };
 
 export default function ManageComics() {
-  const navigate = useNavigate();
   const globalContext: GlobalAdminContext = useOutletContext();
+  const outlet = useOutlet();
 
-  const [selectedComic, setSelectedComic] = useState<ComicTiny>();
+  const [search, setSearch] = useState('');
 
-  const comicOptions = globalContext.comics.map(comic => ({
-    value: comic,
-    text: comic.name,
-  }));
+  const { comicOptions, totalNum } = useMemo(() => {
+    const comics = globalContext.comics.map(comic => ({
+      value: comic,
+      text: comic.name,
+    }));
 
-  // update url on selected comic change
-  useEffect(() => {
-    if (!selectedComic) return;
-    navigate(`/admin/comics/${selectedComic.id}`);
-  }, [selectedComic, navigate]);
+    let slicedComics: typeof comics;
+    if (!search) {
+      slicedComics = comics.slice(0, 50);
+    } else {
+      slicedComics = comics
+        .filter(comic => comic.text.toLowerCase().includes(search.toLowerCase()))
+        .slice(0, 50);
+    }
+
+    return {
+      comicOptions: slicedComics,
+      totalNum: comics.length,
+    };
+  }, [globalContext.comics, search]);
 
   return (
     <>
       <h1>Comic manager</h1>
 
-      <SearchableSelect
-        options={comicOptions}
-        value={selectedComic}
-        onChange={setSelectedComic}
-        onValueCleared={() => setSelectedComic(undefined)}
-        title="Select comic"
-        name="comic"
-        className="mb-8"
-        mobileFullWidth
-      />
+      {!outlet && (
+        <>
+          <div className="mt-2 mb-4">
+            <Link href="/contribute/upload" text="Upload new comic" showRightArrow />
+          </div>
 
-      {!selectedComic && (
-        <div className="-mt-4">
-          <Link href="/contribute/upload" text="Upload new comic" showRightArrow />
-        </div>
+          <TextInput
+            value={search}
+            onChange={setSearch}
+            label="Search comic name"
+            name="comic-search"
+            className="mb-4 max-w-sm"
+            clearable
+          />
+
+          {comicOptions.length > 0 && (
+            <>
+              {totalNum > comicOptions.length && (
+                <p className="text-sm text-gray-500">
+                  Showing {comicOptions.length} of {totalNum} comics
+                </p>
+              )}
+              <Table className="mb-6" horizontalScroll>
+                <TableHeadRow>
+                  <TableCell>Comic name</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableHeadRow>
+
+                <TableBody>
+                  {comicOptions.map(comic => (
+                    <TableRow key={comic.value.id}>
+                      <TableCell>
+                        <p>
+                          <Link
+                            href={`/admin/comics/${comic.value.id}`}
+                            text={comic.text}
+                            showRightArrow
+                            isInsideParagraph
+                          />
+                        </p>
+                      </TableCell>
+                      <TableCell>{capitalizeString(comic.value.publishStatus)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          )}
+        </>
       )}
 
       <Outlet context={globalContext} />

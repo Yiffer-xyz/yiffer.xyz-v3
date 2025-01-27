@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useOutlet, useOutletContext } from '@remix-run/react';
+import { Outlet, useOutlet, useOutletContext } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { User } from '~/types/types';
@@ -26,12 +26,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function UserManager() {
-  const navigate = useNavigate();
   const globalContext: GlobalAdminContext = useOutletContext();
   const outlet = useOutlet();
 
   const [userSearch, setUserSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<User>();
 
   const { data: userSearchResults, submit: searchUsers } = useGoodFetcher<User[]>({
     method: 'post',
@@ -40,19 +38,12 @@ export default function UserManager() {
 
   function onUserSearchUpdate(newVal: string) {
     setUserSearch(newVal);
-    setSelectedUser(undefined);
-    navigate('/admin/users');
   }
 
   useEffect(() => {
     debouncedSearchUsers({ searchText: userSearch });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSearch]);
-
-  useEffect(() => {
-    if (!selectedUser) return;
-    navigate(`/admin/users/${selectedUser.id}`);
-  }, [selectedUser, navigate]);
 
   return (
     <>
@@ -116,6 +107,7 @@ export default function UserManager() {
           )}
         </>
       )}
+
       <Outlet context={globalContext} />
     </>
   );
