@@ -91,15 +91,13 @@ export default function ComicNameEditor({
 
   return (
     <>
-      <div className="flex flex-row gap-4 flex-wrap">
-        <TextInput
-          label="Comic name"
-          name="comicName"
-          value={comicName}
-          onChange={onUpdate}
-          className="w-full md:w-[350px]"
-        />
-      </div>
+      <TextInput
+        label="Comic name"
+        name="comicName"
+        value={comicName}
+        onChange={onUpdate}
+        className="w-full md:w-[350px]"
+      />
 
       {similarComics && (
         <>

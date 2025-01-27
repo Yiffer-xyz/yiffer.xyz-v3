@@ -4,7 +4,7 @@ import {
   processApiError,
   wrapApiError,
 } from '~/utils/request-helpers';
-import stringDistance from '~/utils/string-distance';
+import { stringDistance } from '~/utils/string-utils';
 import { getComicNamesAndIDs } from '../route-funcs/get-comics';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 

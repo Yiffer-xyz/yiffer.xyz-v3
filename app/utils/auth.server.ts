@@ -8,7 +8,7 @@ import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-he
 import { createWelcomeEmail, sendEmail } from './send-email';
 import bcrypt from 'bcryptjs';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
-import stringDistance from './string-distance';
+import { stringDistance } from './string-utils';
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {

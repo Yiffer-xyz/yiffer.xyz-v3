@@ -6,7 +6,7 @@ import {
   makeDbErrObj,
   processApiError,
 } from '~/utils/request-helpers';
-import stringDistance from '~/utils/string-distance';
+import { stringDistance } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 

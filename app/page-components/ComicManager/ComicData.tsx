@@ -8,6 +8,7 @@ import ComicNameEditor from './ComicNameEditor';
 import Step2NewArtist from './ArtistEditor';
 import Link from '~/ui-components/Link';
 import { MdArrowForward, MdOpenInNew } from 'react-icons/md';
+import { toTitleCase } from '~/utils/string-utils';
 
 const categoryOptions = ['M', 'F', 'MF', 'MM', 'FF', 'MF+', 'I'].map(c => ({
   value: c,
@@ -70,7 +71,7 @@ export default function ComicDataEditor({
             validation: { ...comicData.validation, isLegalComicName: isLegal },
           })
         }
-        onUpdate={newVal => onUpdate({ ...comicData, name: newVal })}
+        onUpdate={newVal => onUpdate({ ...comicData, name: toTitleCase(newVal) })}
         existingComic={existingComic}
       />
 
