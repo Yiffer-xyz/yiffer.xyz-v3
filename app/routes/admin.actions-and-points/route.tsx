@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
-import { useLoaderData, useNavigate } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { processApiError } from '~/utils/request-helpers';
 import { getModActions } from '~/route-funcs/get-mod-actions';
 import ModActionLog from './ModActionLog';
