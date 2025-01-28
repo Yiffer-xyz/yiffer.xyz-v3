@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { MdArrowForward, MdOpenInNew } from 'react-icons/md';
 import Button from '~/ui-components/Buttons/Button';
 import FileInput from '~/ui-components/FileInput';
-import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
 import Select from '~/ui-components/Select/Select';
 import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
 import type { ComicImage } from '~/utils/general';
@@ -17,11 +16,8 @@ type Step4Props = {
 
 export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
   const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>(undefined);
-  const [thumbnailMode, setThumbnailMode] = useState<'upload' | 'page-file' | 'page-1'>(
-    'page-1'
-  );
-  const [pageFileToCropNumber, setPageFileToCropNumber] = useState<number>(1);
-  const [pageFileToCrop, setPageFileToCrop] = useState<ComicImage | undefined>(undefined);
+  const [isSelectingPageNum, setIsSelectingPageNum] = useState(false);
+  const [tempSelectedPageNum, setTempSelectedPageNum] = useState<number>(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function onThumbnailFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -32,20 +28,9 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
     }
   }
 
-  const onPageFileNumChange = useCallback(
-    (newNum: number) => {
-      setPageFileToCropNumber(newNum);
-      if (!comicData.files) {
-        setPageFileToCrop(undefined);
-      } else {
-        const file = comicData.files[newNum - 1];
-        setPageFileToCrop(file);
-      }
-    },
-    [comicData.files]
-  );
-
   function onCropFinished(croppedThumb: ComicImage) {
+    setIsSelectingPageNum(false);
+    setTempSelectedPageNum(1);
     onUpdate({
       ...comicData,
       thumbnail: croppedThumb,
@@ -54,27 +39,16 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
 
   function onCancelCrop() {
     setFileToCrop(undefined);
-    setPageFileToCropNumber(1);
-    setPageFileToCrop(undefined);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   }
 
-  useEffect(() => {
-    if (thumbnailMode === 'page-file' && comicData.files) {
-      onPageFileNumChange(1);
-    }
-    if (thumbnailMode === 'page-1' && comicData.files) {
-      setFileToCrop(comicData.files[0]);
-    }
-  }, [comicData.files, onPageFileNumChange, thumbnailMode]);
-
   return (
     <>
       <h4 className="mt-8">Thumbnail</h4>
 
-      <div>
+      <div className="mb-1">
         <Link
           href="/thumbnail-guidelines"
           text="Thumbnail guidelines - please read"
@@ -103,71 +77,64 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
       {/* Not completed crop */}
       {!comicData.thumbnail && (
         <>
-          <RadioButtonGroup
-            name="thumbnailMode"
-            onChange={newMode => {
-              setThumbnailMode(newMode as 'upload' | 'page-file');
-              if (newMode === 'page-file') {
-                onPageFileNumChange(1);
-              }
-              if (newMode === 'page-1') {
-                setFileToCrop(comicData.files[0]);
-              }
-            }}
-            value={thumbnailMode}
-            className="my-2"
-            options={[
-              { text: 'Crop page 1', value: 'page-1' },
-              { text: 'Crop another page', value: 'page-file' },
-              { text: 'Upload a file', value: 'upload' },
-            ]}
-          />
-
-          {thumbnailMode === 'upload' && (
+          <div className="flex flex-row gap-2 flex-wrap mt-1">
+            <Button
+              text="Crop page 1"
+              onClick={() => {
+                setFileToCrop(comicData.files?.[0]);
+              }}
+              disabled={!comicData.files?.length}
+            />
+            <Button
+              text="Crop another page"
+              onClick={() => {
+                setIsSelectingPageNum(true);
+              }}
+              disabled={!comicData.files?.length}
+            />
             <FileInput
               onChange={onThumbnailFileUpload}
               ref={fileInputRef}
               accept="image/*"
             />
-          )}
+          </div>
 
-          {thumbnailMode === 'page-file' && (
+          {/* Existing page selector  */}
+          {isSelectingPageNum && (
             <>
-              {comicData.files.length > 0 ? (
-                <>
-                  <Select
-                    value={pageFileToCropNumber}
-                    onChange={newNum => onPageFileNumChange(newNum)}
-                    name="pageFileToCropNumber"
-                    minWidth={150}
-                    title="Page to crop from"
-                    className="mt-3"
-                    options={comicData.files.map((file, i) => ({
-                      text: `Page ${i + 1}`,
-                      value: i + 1,
-                    }))}
-                  />
+              <Select
+                value={tempSelectedPageNum}
+                onChange={newNum => setTempSelectedPageNum(newNum)}
+                name="pageFileToCropNumber"
+                minWidth={150}
+                title="Page to crop from"
+                className="mt-3"
+                options={Array.from({ length: comicData.files?.length ?? 1 }).map(
+                  (_, i) => ({
+                    text: `Page ${i + 1}`,
+                    value: i + 1,
+                  })
+                )}
+              />
 
-                  {pageFileToCrop && (
-                    <>
-                      <img
-                        src={pageFileToCrop.base64}
-                        className="mt-2"
-                        width={100}
-                        alt=""
-                      />
-                      <Button
-                        onClick={() => setFileToCrop(pageFileToCrop)}
-                        text="Crop"
-                        className="mt-1"
-                        style={{ width: 100 }}
-                        endIcon={MdArrowForward}
-                      />
-                    </>
-                  )}
+              {tempSelectedPageNum && (
+                <>
+                  <img
+                    src={comicData.files?.[tempSelectedPageNum - 1].base64}
+                    className="mt-2"
+                    width={100}
+                    alt=""
+                  />
+                  <Button
+                    onClick={() =>
+                      setFileToCrop(comicData.files?.[tempSelectedPageNum - 1])
+                    }
+                    text="Crop"
+                    className="mt-1"
+                    style={{ width: 100 }}
+                    endIcon={MdArrowForward}
+                  />
                 </>
-              ) : (
-                <p>No pages uploaded yet.</p>
               )}
             </>
           )}

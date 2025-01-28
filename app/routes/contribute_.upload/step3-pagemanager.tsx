@@ -109,7 +109,7 @@ export default function Step3Pagemanager({
               <Button
                 variant="outlined"
                 onClick={() => setIsClearingPages(false)}
-                text="Cancel"
+                text="Cancel, keep pages"
               />
               <Button
                 text="Clear pages"
