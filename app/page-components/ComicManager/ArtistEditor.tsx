@@ -8,6 +8,7 @@ import type { Artist } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { NewArtist } from '~/routes/contribute_.upload/route';
 import IconButton from '~/ui-components/Buttons/IconButton';
+import e621Pic from '~/assets/misc/e621-instruction.png';
 
 type ArtistEditorProps = {
   newArtistData: NewArtist;
@@ -214,7 +215,7 @@ export default function ArtistEditor({
           onChange={newVal => updateArtist({ ...newArtistData, e621Name: newVal })}
           className="mt-2 h-auto"
           helperText="Only the name - not the full link"
-          placeholder='e.g. "braeburned"'
+          placeholder='e.g. "meesh"'
           disabled={newArtistData.hasConfirmedNoE621Name}
         />
       )}
@@ -240,7 +241,7 @@ export default function ArtistEditor({
           onChange={newVal => updateArtist({ ...newArtistData, patreonName: newVal })}
           className="mt-6 h-auto"
           helperText="Only the name - not the full link"
-          placeholder='e.g. "braeburned"'
+          placeholder='e.g. "meesh"'
           disabled={newArtistData.hasConfirmedNoPatreonName}
         />
       )}
@@ -269,13 +270,13 @@ export default function ArtistEditor({
       )}
 
       <p>
-        Tips for finding good links: Check FurAffinity, and check the e621 artist page, by
-        clicking the “?” next to the artist's name in the top left of any post tagged by
-        them, as illustrated in the picture below. If you cannot find any other sites,
-        make one last attempt by Googling "furry &lt;artist name&gt;"".
+        <b>Tips for finding good links</b>: Check FurAffinity, and check the e621 artist
+        page, by clicking the “?” next to the artist's name in the top left of any post
+        tagged by them, as illustrated in the picture below. If you cannot find any other
+        sites, make one last attempt by Googling "furry &lt;artist name&gt;".
       </p>
 
-      <p>!!!!e621 pic here!!!!</p>
+      <img src={e621Pic} alt="e621 instruction" className="mt-2" style={{ width: 260 }} />
 
       <div className="flex flex-col gap-2 mt-4">
         {!noLinks && (
@@ -292,7 +293,7 @@ export default function ArtistEditor({
                     label={`Link:`}
                     name={`otherLink${i}`}
                     value={link}
-                    placeholder="e.g. https://twitter.com/braeburned"
+                    placeholder="e.g. https://twitter.com/meesh"
                     onChange={newVal => onLinkChanged(i, newVal)}
                     className="mt-2 grow"
                     disabled={noLinks}
@@ -325,7 +326,7 @@ export default function ArtistEditor({
 
         {newArtistData.links.every(l => l.length === 0) && (
           <Checkbox
-            label="Artist has no links (unlikely!)"
+            label="Artist has no links (extremely unlikely!)"
             checked={noLinks}
             onChange={setNoLinks}
             className="mt-2"

@@ -68,7 +68,7 @@ export default function ManageComics() {
           {comicOptions.length > 0 && (
             <>
               {totalNum > comicOptions.length && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-900">
                   Showing {comicOptions.length} of {totalNum} comics
                 </p>
               )}
