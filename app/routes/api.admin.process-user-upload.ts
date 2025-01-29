@@ -162,16 +162,19 @@ export async function processAnyUpload(
 
   let metadataQuery = 'UPDATE comicmetadata SET modId = ? WHERE comicId = ?';
   let metadataQueryParams: any[] = [modId, comicId];
+  const maybeModCommentStr = modComment ? ' modComment = ?, ' : '';
 
   if (metadataVerdict) {
     metadataQuery = `
     UPDATE comicmetadata 
     SET
       verdict = ?,
-      modComment = ?,
+      ${maybeModCommentStr}
       modId = ?
     WHERE comicId = ?`;
-    metadataQueryParams = [metadataVerdict, modComment, modId, comicId];
+    metadataQueryParams = modComment
+      ? [metadataVerdict, modComment, modId, comicId]
+      : [metadataVerdict, modId, comicId];
   }
 
   if (frontendVerdict === 'rejected') {
@@ -181,19 +184,14 @@ export async function processAnyUpload(
         UPDATE comicmetadata
         SET
           verdict = ?,
-          modComment = ?,
+          ${maybeModCommentStr}
           modId = ?,
           originalNameIfRejected = ?,
           originalArtistIfRejected = ?
         WHERE comicId = ?`;
-      metadataQueryParams = [
-        metadataVerdict,
-        modComment,
-        modId,
-        comicName,
-        artist.name,
-        comicId,
-      ];
+      metadataQueryParams = modComment
+        ? [metadataVerdict, modComment, modId, comicName, artist.name, comicId]
+        : [metadataVerdict, modId, comicName, artist.name, comicId];
     } else {
       // For anon: Only names
       metadataQuery = `
@@ -214,11 +212,13 @@ export async function processAnyUpload(
       UPDATE comicmetadata
       SET
         verdict = ?,
-        modComment = ?,
+        ${maybeModCommentStr}
         modId = ?,
         originalArtistIfRejected = ?
       WHERE comicId = ?`;
-      metadataQueryParams = [metadataVerdict, modComment, modId, artist.name, comicId];
+      metadataQueryParams = modComment
+        ? [metadataVerdict, modComment, modId, artist.name, comicId]
+        : [metadataVerdict, modId, artist.name, comicId];
     } else {
       // For anon: Only names
       metadataQuery = `

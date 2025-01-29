@@ -26,7 +26,8 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Invalid message ID');
   }
 
-  const query = 'INSERT INTO modmessagereadreceipt (userId, messageId) VALUES (?, ?)';
+  const query =
+    'INSERT OR IGNORE INTO modmessagereadreceipt (userId, messageId) VALUES (?, ?)';
   const params = [user.userId, Number(messageId)];
 
   const res = await queryDbExec(

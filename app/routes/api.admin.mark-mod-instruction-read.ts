@@ -22,7 +22,6 @@ export async function action(args: ActionFunctionArgs) {
 
   const formData = await args.request.formData();
   const instructionId = formData.get('instructionId');
-  console.log(formData);
   if (!instructionId?.toString()) {
     return create400Json('Invalid instruction ID');
   }
@@ -45,6 +44,5 @@ export async function action(args: ActionFunctionArgs) {
     );
   }
 
-  console.log('bbb');
   return createSuccessJson();
 }

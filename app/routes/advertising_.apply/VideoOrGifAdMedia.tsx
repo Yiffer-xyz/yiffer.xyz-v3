@@ -66,8 +66,6 @@ export default function VideoOrGifAdMedia({
       isCorrectDimensions = true;
     }
 
-    console.log(ad.alternativeDimensions, ad.idealDimensions);
-
     // Check alternative dimensions with the same ±1 pixel tolerance
     if (ad.alternativeDimensions) {
       isCorrectDimensions =
@@ -84,7 +82,6 @@ export default function VideoOrGifAdMedia({
 
     if (isCorrectDimensions) {
       setDimensionErrorTxt(null);
-      console.log('setting selected file', file);
       setSelectedFile({ file });
     } else {
       setDimensionErrorTxt(

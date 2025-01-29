@@ -71,7 +71,6 @@ export function toTitleCase(input: string): string {
   // Split the string into words
   const words = input.match(/\b\w+\b|[\p{P}\p{S}]+|\s+/gu) || []; // Split words but keep spaces and punctuation as separate tokens
 
-  console.log(words);
   // Map over the words and apply capitalization rules
   const titleCasedWords = words.map((word, index, array) => {
     const lowerCaseWord = word.toLowerCase();
@@ -79,8 +78,6 @@ export function toTitleCase(input: string): string {
     // Check if the word is an excluded word and not followed by a space and punctuation
     const isExcluded = excludedWords.includes(lowerCaseWord);
     const isFollowedBySymbol = array[index + 1] && /[\p{P}\p{S}]/u.test(array[index + 2]);
-
-    console.log(array[index + 2]);
 
     // Always capitalize the first and last word, or if it's not in the excludedWords list,
     // or if it's followed by punctuation/symbols

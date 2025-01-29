@@ -447,7 +447,6 @@ function Page({
               alt={file.file?.name || file.url}
               onClick={() => {
                 if (isMobile) {
-                  console.log('clicked');
                   setFullSizeImage(file);
                 }
               }}

@@ -87,8 +87,6 @@ export default function AdvertisingApply() {
       ? getFileExtension(file.file.name)
       : null;
 
-    console.log('🃏videoSpecificFileType', videoSpecificFileType);
-
     const body: SubmitAdFormData = {
       id,
       isRequestingTrial,

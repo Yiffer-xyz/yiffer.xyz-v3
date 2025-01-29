@@ -140,8 +140,6 @@ function AdEditing({
     const file = croppedFile ?? selectedFile;
     setError(null);
 
-    console.log(file);
-
     if (file?.file) {
       setIsSubmitting(true);
       const isSubmitOk = await submitFile(newAd.id, file.file, newAd.adType);

@@ -147,7 +147,6 @@ export async function queryDbExec(
     }
   } catch (err: any) {
     console.error(err);
-    console.log({ query, params });
     return {
       isError: true,
       errorMessage: err.message,
