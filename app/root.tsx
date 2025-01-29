@@ -322,6 +322,11 @@ function Layout({
               better.
             </p>
             <p className="mt-4">
+              Do NOT spend time uploading <b>quality content correctly</b>! It'll all be
+              reset when we go live. Feel free to upload whatever random files you have
+              lying around.
+            </p>
+            <p className="mt-4">
               Try submitting stuff in the new <b>Contribute section</b>! You can also try
               applying as an advertiser, or a moderator. We want to test the mod panel, so
               we might make you a mod here in the beta - though this does <i>not</i> mean
