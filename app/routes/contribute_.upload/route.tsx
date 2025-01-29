@@ -120,12 +120,17 @@ export default function Upload() {
     filesFormDatas.push(currentFormData);
 
     for (const formData of filesFormDatas) {
-      const res = await fetch(`${IMAGES_SERVER_URL}/comic-upload`, {
-        method: 'POST',
-        body: formData,
-      });
+      try {
+        const res = await fetch(`${IMAGES_SERVER_URL}/comic-upload`, {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (!res.ok) {
+        if (!res.ok) {
+          return { error: 'Error uploading files to server' };
+        }
+      } catch (e) {
+        console.error(e);
         return { error: 'Error uploading files to server' };
       }
     }
