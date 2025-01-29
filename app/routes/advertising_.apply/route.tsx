@@ -51,14 +51,20 @@ export default function AdvertisingApply() {
     formData.append('adId', adId);
     formData.append('adType', adType);
 
-    const res = await fetch(`${IMAGES_SERVER_URL}/submit-ad`, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${IMAGES_SERVER_URL}/submit-ad`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      setFileSubmitErr(`Error submitting file: ${text}`);
+      if (!res.ok) {
+        const text = await res.text();
+        setFileSubmitErr(`Error submitting file: ${text}`);
+        return false;
+      }
+    } catch (e) {
+      console.error(e);
+      setFileSubmitErr('Error submitting file');
       return false;
     }
 
