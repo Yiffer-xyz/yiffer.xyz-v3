@@ -9459,15 +9459,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-js@npm:^1.203.1":
-  version: 1.203.1
-  resolution: "posthog-js@npm:1.203.1"
+"posthog-js@npm:^1.212.1":
+  version: 1.212.1
+  resolution: "posthog-js@npm:1.212.1"
   dependencies:
     core-js: "npm:^3.38.1"
     fflate: "npm:^0.4.8"
     preact: "npm:^10.19.3"
     web-vitals: "npm:^4.2.0"
-  checksum: 10c0/818778dce43fe57a730837edee5f9109198f08d28b1ed227b5977278a3e85ae0587eec2b10d7d0b88543c8034c064a1d1e917f1a4024425ec9aea54e81052e21
+  checksum: 10c0/09a9f0783ddafcbc808f1c319eb5faac99ca39ada63345188a45425a354a0f43281bd0cd81bd307fe8909e97fde0c8451c5a690f5353e6f8f50698442f6bddf3
   languageName: node
   linkType: hard
 
@@ -12190,7 +12190,7 @@ __metadata:
     lodash.debounce: "npm:^4.0.8"
     pluralize: "npm:^8.0.0"
     postcss: "npm:^8.4.38"
-    posthog-js: "npm:^1.203.1"
+    posthog-js: "npm:^1.212.1"
     prettier: "npm:^3.3.3"
     react: "npm:^18.2.0"
     react-calendar: "npm:^5.0.0"
