@@ -30,11 +30,13 @@ export const colors = {
     primaryTrans: '#9aebe740',
     primaryMoreTrans: '#9aebe71a',
     primaryTransDarker: '#7ce9e460',
+    light: '#d8fefd',
     dark: '#49ded7',
     darker: '#08ccc2',
     darker2: '#02c1b7',
     darker3: '#00b8ad',
     verydark: '#007a74',
+    verydarker: '#005450',
     darkFaded: '#007a7440',
     primaryMoreTransSolid: '#eff8f8', // Color of primaryMoreTrans on white bg
   },

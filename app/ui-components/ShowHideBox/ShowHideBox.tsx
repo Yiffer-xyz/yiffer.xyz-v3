@@ -5,6 +5,8 @@ import { FaChevronDown } from 'react-icons/fa';
 export default function ShowHideBox({
   showButtonText,
   hideButtonText,
+  showHideClassName,
+  showHideColorClassName,
   border = true,
   underline = true,
   children,
@@ -14,6 +16,8 @@ export default function ShowHideBox({
 }: {
   showButtonText: string;
   hideButtonText?: string;
+  showHideClassName?: HTMLAttributes<HTMLDivElement>['className'];
+  showHideColorClassName?: HTMLAttributes<HTMLDivElement>['className'];
   border?: boolean;
   underline?: boolean;
   children: React.ReactNode;
@@ -43,14 +47,14 @@ export default function ShowHideBox({
         openClassName && showInfo ? openClassName : '',
       ].join(' ')}
     >
-      <p className="text-left">
+      <p className={`text-left ${showHideClassName ?? ''}`}>
         <button
           onClick={() => {
             setShowInfo(!showInfo);
             onExpand?.();
           }}
           className={`w-fit h-fit text-blue-weak-200 dark:text-blue-strong-300 font-semibold
-          cursor-pointer text-left ${underlineClass}`}
+          cursor-pointer text-left ${underlineClass} ${showHideColorClassName ?? ''}`}
         >
           {showInfo ? (hideButtonText ?? showButtonText) : showButtonText}
           <FaChevronDown
