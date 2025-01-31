@@ -21,6 +21,8 @@ export default function ArtistPage() {
   const { artist, comics, notFound, queriedArtistName, pagesPath, isMod, isLoggedIn } =
     useLoaderData<LoaderData>();
 
+  const comicsGridClassName = comics.length > 4 ? 'lg:justify-center' : 'md:w-[728px]';
+
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
       <div className="md:w-[728px]">
@@ -51,9 +53,11 @@ export default function ArtistPage() {
 
       {!notFound && artist && (
         <>
-          <div className="mt-6 w-fit">
+          <div className="mt-6 md:mt-2 md:container block md:mx-auto md:flex md:flex-col md:items-center">
             {comics.length > 0 ? (
-              <div className="flex flex-row flex-wrap justify-center gap-4">
+              <div
+                className={`flex flex-row flex-wrap justify-start w-full ${comicsGridClassName} gap-4`}
+              >
                 {comics.map(comic => (
                   <ComicCard
                     key={comic.id}
