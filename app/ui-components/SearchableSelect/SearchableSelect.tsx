@@ -151,7 +151,7 @@ export default function SearchableSelect<T>({
         filteredOptions.length > 0 &&
         isOpen
       ) {
-        const { text, value } = filteredOptions[currentlyHighlightedIndex];
+        const { text, value } = filteredOptions[0];
         onSelected(text, value);
       }
     } else if (event.key === 'ArrowDown') {
@@ -267,7 +267,13 @@ export default function SearchableSelect<T>({
           style={{ ...borderStyle }}
           className={inputClassname}
           placeholder={placeholder}
-          onBlur={() => clearAndCloseSearch({ avoidIfHighlighted: true })}
+          onBlur={() => {
+            // On mobile, this sometimes happens when clicking an option, before the click triggers,
+            // closing the dropdown. Timeout is a hack to prevent this.
+            setTimeout(() => {
+              clearAndCloseSearch({ avoidIfHighlighted: true });
+            }, 10);
+          }}
           ref={inputRef}
         />
       )}
