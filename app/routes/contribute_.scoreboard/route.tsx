@@ -329,5 +329,5 @@ function topScoreEntriesToPointList(
     };
   });
 
-  return topScoreRows.sort((a, b) => b.points - a.points);
+  return topScoreRows.sort((a, b) => b.points - a.points).filter(row => row.points > 0);
 }
