@@ -57,12 +57,11 @@ export default function AboutPage() {
         <p>
           At Yiffer.xyz we strive to only host content which is publicly available, and we
           will remove any content from artists who ask us to do so. As the primary site
-          for furry comics, we do believe that artists gain significant amounts of
-          followers through our website, as we display links to any profile we can find in
-          the artist page. We do have a soft quality requirement, meaning that not just
-          any comic will be accepted. Censored comics, comics in foreign languages, or
-          poorly drawn comics will all be excluded by the moderators. Naturally, underage
-          content is not allowed.
+          for furry comics, we believe that artists gain significant amounts of followers
+          through our website, as we display links to any profile we can find in the
+          artist page. We have a soft quality requirement, meaning that not just any comic
+          will be accepted. Censored comics, comics in foreign languages, or poorly drawn
+          comics will all be rejected. Underage content is not allowed.
         </p>
 
         <h2 className="-mb-5">Technology</h2>
@@ -71,8 +70,13 @@ export default function AboutPage() {
           via Cloudflare. Front and back-ends are written in combination in Remix.js,
           hosted on Cloudflare Pages. This means all page loads are server-side rendered
           at blazing speeds. Our database is Cloudflare D1 SQL, an edge database. File
-          storage is Cloudflare R2. Naturally, all of this is CDN-ed via Cloudflare too.
-          This tech stack is a dream to work with.
+          storage is Cloudflare R2. Naturally, all of this is served via Cloudflare's CDN.
+          This tech stack is a dream to work with!
+        </p>
+        <p className="-mt-2">
+          In addition to the main parts described above, we have a small permanent server
+          where image processing happens when things are uploaded, as that's harder to do
+          on the edge. This is a simple Express/NodeJS server.
         </p>
 
         <h2 className="-mb-5">History</h2>
@@ -113,9 +117,9 @@ export default function AboutPage() {
           hues.
         </p>
         <p>
-          This front-end was built with Vue.js (v2), with the api still Express/NodeJS and
-          database still MySQL, but now hosted on Google Cloud. File storage was moved to
-          Google Cloud too. Moreover, the site was containerized via Docker, and the
+          This front-end was built with Vue.js (Vue 2), with the api still Express/NodeJS
+          and database still MySQL, but now hosted on Google Cloud. File storage was moved
+          to Google Cloud too. Moreover, the site was containerized via Docker, and the
           front-end was split into three parts each hosted as their own web app via
           subdomains: The main site, the advertising part, and the mod panel.
         </p>
@@ -235,7 +239,7 @@ export default function AboutPage() {
         </p>
         <p>
           The reason for this rewrite was to make further development as enjoyable and
-          rapid as possible with brand new scalable technology, but also to cut costs, as
+          rapid as possible with brand new scalable technology. It also to cuts costs, as
           Google Cloud Platform (and all competitors such as AWS and Azure) is expensive.
         </p>
 
@@ -246,6 +250,10 @@ export default function AboutPage() {
           {!isV3VideoShown && (
             <>
               <p>
+                A video of the new mod panel will be added here once the site has been
+                live for a bit, to showcase it with real data.
+              </p>
+              {/* <p>
                 Click the button to load a quick video demo of this version's mod panel!
               </p>
 
@@ -253,7 +261,7 @@ export default function AboutPage() {
                 text="Show mod panel video"
                 className="mt-1"
                 onClick={() => setIsV3VideoShown(true)}
-              />
+              /> */}
             </>
           )}
 
