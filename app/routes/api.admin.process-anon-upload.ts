@@ -40,16 +40,17 @@ export async function action(args: ActionFunctionArgs) {
     comicUploadVerdict = 'rejected-list';
   }
 
-  const err = await processAnyUpload(
-    user.userId,
-    args.context.cloudflare.env.DB,
+  const err = await processAnyUpload({
+    modId: user.userId,
+    db: args.context.cloudflare.env.DB,
     comicId,
-    comicName.toString(),
-    undefined,
+    comicName: comicName.toString(),
+    modComment: undefined,
     publishStatus,
-    comicUploadVerdict,
-    undefined
-  );
+    frontendVerdict: comicUploadVerdict,
+    metadataVerdict: undefined,
+    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
+  });
 
   if (err) {
     processApiError('Error in /process-anon-upload', err, {
@@ -67,7 +68,7 @@ export async function action(args: ActionFunctionArgs) {
     text: logText,
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /process-anon-upload', modLogErr);
   }
 
   return createSuccessJson();

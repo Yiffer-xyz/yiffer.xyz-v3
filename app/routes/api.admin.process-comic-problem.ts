@@ -44,7 +44,7 @@ export async function action(args: ActionFunctionArgs) {
     text: `${fields.isApproved ? 'Approved' : 'Rejected'}`,
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /process-comic-problem', modLogErr);
   }
 
   return createSuccessJson();

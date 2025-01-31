@@ -85,7 +85,11 @@ export default function ManageComicInner() {
       {isUserUpload && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>User-uploaded comic</h3>
-          <UserUploadSection comicData={comic} updateComic={updateComic} />
+          <UserUploadSection
+            comicData={comic}
+            updateComic={updateComic}
+            imagesServerUrl={IMAGES_SERVER_URL}
+          />
         </div>
       )}
 

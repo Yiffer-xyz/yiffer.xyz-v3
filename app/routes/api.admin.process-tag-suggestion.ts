@@ -50,7 +50,7 @@ export async function action(args: ActionFunctionArgs) {
     dashboardActionId: fields.suggestionGroupId,
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /process-tag-suggestion', modLogErr);
   }
 
   return createSuccessJson();

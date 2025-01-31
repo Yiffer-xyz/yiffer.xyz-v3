@@ -51,7 +51,7 @@ export async function action(args: ActionFunctionArgs) {
     text: logText,
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /process-comic-suggestion', modLogErr);
   }
 
   return createSuccessJson();

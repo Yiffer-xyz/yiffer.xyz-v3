@@ -78,6 +78,10 @@ export async function getComicNamesAndIDs(
 ): ResultOrErrorPromise<ComicTiny[]> {
   const { query, params } = getAllComicNamesAndIDsQuery({
     tagIDFilter: options?.tagIDFilter,
+    includeRejectedList: options?.includeRejectedList,
+    includeThumbnailStatus: options?.includeThumbnailStatus,
+    includeUnlisted: options?.includeUnlisted,
+    modifyNameIncludeType: options?.modifyNameIncludeType,
   });
   const response = await queryDb<DbComicTiny[]>(db, query, params, 'Comics, all');
   if (response.isError || !response.result) {

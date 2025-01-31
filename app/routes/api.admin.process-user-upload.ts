@@ -15,6 +15,7 @@ import { getArtistByComicId } from '~/route-funcs/get-artist';
 import { rejectArtistIfEmpty, setArtistNotPending } from '../route-funcs/manage-artist';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
+import { getComicByField } from '~/route-funcs/get-comic';
 
 export { noGetRoute as loader };
 
@@ -38,15 +39,16 @@ export async function action(args: ActionFunctionArgs) {
   const comicId = parseInt(formComicId.toString());
   const uploaderId = parseInt(formUploaderId.toString());
 
-  const err = await processUserUpload(
-    user.userId,
-    args.context.cloudflare.env.DB,
+  const err = await processUserUpload({
+    modId: user.userId,
+    db: args.context.cloudflare.env.DB,
     comicId,
-    formComicName.toString(),
-    verdict,
+    comicName: formComicName.toString(),
+    frontendVerdict: verdict,
     modComment,
-    uploaderId
-  );
+    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
+    uploaderId,
+  });
 
   if (err) {
     return processApiError('Error in /process-user-upload', err);
@@ -68,15 +70,25 @@ export async function action(args: ActionFunctionArgs) {
   return createSuccessJson();
 }
 
-export async function processUserUpload(
-  modId: number,
-  db: D1Database,
-  comicId: number,
-  comicName: string,
-  frontendVerdict: ComicUploadVerdict,
-  modComment: string | undefined,
-  uploaderId?: number
-): Promise<ApiError | undefined> {
+export async function processUserUpload({
+  modId,
+  db,
+  comicId,
+  comicName,
+  frontendVerdict,
+  modComment,
+  imagesServerUrl,
+  uploaderId,
+}: {
+  modId: number;
+  db: D1Database;
+  comicId: number;
+  comicName: string;
+  frontendVerdict: ComicUploadVerdict;
+  modComment: string | undefined;
+  imagesServerUrl: string;
+  uploaderId?: number;
+}): Promise<ApiError | undefined> {
   let publishStatus: ComicPublishStatus = 'pending';
   let metadataVerdict: ComicUploadVerdict =
     frontendVerdict.toString() as ComicUploadVerdict;
@@ -86,7 +98,7 @@ export async function processUserUpload(
     metadataVerdict = 'rejected';
   }
 
-  const err = await processAnyUpload(
+  const err = await processAnyUpload({
     modId,
     db,
     comicId,
@@ -95,8 +107,9 @@ export async function processUserUpload(
     publishStatus,
     frontendVerdict,
     metadataVerdict,
-    uploaderId
-  );
+    imagesServerUrl,
+    userUploadId: uploaderId,
+  });
 
   if (err) {
     return wrapApiError(err, 'Error processing logged-in-user upload', {
@@ -108,17 +121,29 @@ export async function processUserUpload(
   }
 }
 
-export async function processAnyUpload(
-  modId: number,
-  db: D1Database,
-  comicId: number,
-  comicName: string,
-  modComment: string | undefined,
-  publishStatus: ComicPublishStatus,
-  frontendVerdict: ComicUploadVerdict,
-  metadataVerdict: ComicUploadVerdict | undefined,
-  userUploadId?: number
-): Promise<ApiError | undefined> {
+export async function processAnyUpload({
+  modId,
+  db,
+  comicId,
+  comicName,
+  modComment,
+  publishStatus,
+  frontendVerdict,
+  metadataVerdict,
+  imagesServerUrl,
+  userUploadId,
+}: {
+  modId: number;
+  db: D1Database;
+  comicId: number;
+  comicName: string;
+  modComment: string | undefined;
+  publishStatus: ComicPublishStatus;
+  frontendVerdict: ComicUploadVerdict;
+  metadataVerdict: ComicUploadVerdict | undefined;
+  imagesServerUrl: string;
+  userUploadId?: number;
+}): Promise<ApiError | undefined> {
   let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
   let comicQueryParams: any[] = [publishStatus, comicId];
   const isRejected = publishStatus === 'rejected' || publishStatus === 'rejected-list';
@@ -126,6 +151,40 @@ export async function processAnyUpload(
   if (frontendVerdict === 'rejected') {
     const randomStr = randomString(6);
     const newComicName = `${comicName}-REJECTED-${randomStr}`;
+
+    const comicRes = await getComicByField({
+      db,
+      fieldName: 'id',
+      fieldValue: comicId,
+      includeMetadata: false,
+    });
+    if (comicRes.err) {
+      return wrapApiError(comicRes.err, `Error getting comic`);
+    }
+    if (comicRes.notFound) {
+      return {
+        logMessage: 'Comic not found',
+        context: { comicId },
+      };
+    }
+    const fullComic = comicRes.result;
+
+    const response = await fetch(`${imagesServerUrl}/rename-comic`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prevComicName: comicName,
+        newComicName,
+        numPages: fullComic.numberOfPages,
+      }),
+    });
+    if (!response.ok) {
+      return {
+        logMessage: 'Error renaming comic pages',
+        context: { comicId },
+      };
+    }
+
     comicQuery = `UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?`;
     comicQueryParams = [publishStatus, newComicName, comicId];
   }

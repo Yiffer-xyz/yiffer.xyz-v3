@@ -53,6 +53,6 @@ export async function updateThumbnailStatus(
     actionType: 'comic-thumbnail-changed',
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /update-thumbnail-status', modLogErr);
   }
 }

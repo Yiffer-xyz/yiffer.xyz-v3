@@ -34,6 +34,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const err = await toggleArtistBan(
     args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.IMAGES_SERVER_URL,
     parseInt(formArtistId.toString()),
     formIsBanned === 'true',
     user.userId
@@ -46,6 +47,7 @@ export async function action(args: ActionFunctionArgs) {
 
 export async function toggleArtistBan(
   db: D1Database,
+  imagesServerUrl: string,
   artistId: number,
   isBanned: boolean,
   modId: number
@@ -75,7 +77,16 @@ export async function toggleArtistBan(
     ...liveComics.map(c => unlistComic(db, c.id, 'Artist banned')),
     ...pendingComics.map(c => rejectComic(db, c.id)),
     ...uploadedComics.map(c =>
-      processUserUpload(modId, db, c.id, c.name, 'rejected', 'Artist rejected/banned')
+      processUserUpload({
+        modId,
+        db,
+        comicId: c.id,
+        comicName: c.name,
+        frontendVerdict: 'rejected',
+        modComment: 'Artist rejected/banned',
+        imagesServerUrl,
+        uploaderId: undefined,
+      })
     ),
   ];
 

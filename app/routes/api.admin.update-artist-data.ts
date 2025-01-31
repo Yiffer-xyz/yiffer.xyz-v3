@@ -43,7 +43,7 @@ export async function action(args: ActionFunctionArgs) {
     actionType: 'artist-updated',
   });
   if (modLogErr) {
-    return processApiError('Error in /process-user-upload', modLogErr);
+    return processApiError('Error in /update-artist-data', modLogErr);
   }
 
   return createSuccessJson();
