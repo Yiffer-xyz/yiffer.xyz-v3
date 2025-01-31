@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
 import InfoBox from '~/ui-components/InfoBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import Link from '~/ui-components/Link';
 
 export type AllowedAnonComicVerdict = 'approved' | 'rejected' | 'rejected-list';
 
@@ -42,13 +43,16 @@ export default function AnonUploadSection({
         This comic is not live. It has been uploaded by a user and is now up for mod
         review.
       </p>
-      <p>
+      <Link href={`/c/${comicData.name}`} text="Preview comic page" showRightArrow />
+      <p className="mt-2">
         You should <b>fix errors</b> before approving. If the quality of the uploaded
         content is not good enough, you should <b>reject it</b>.
       </p>
-      <p>Uploaded by a guest user with IP {comicData.metadata?.uploadUserIP}.</p>
+      <p className="mt-4">
+        Uploaded by a guest user with IP {comicData.metadata?.uploadUserIP}.
+      </p>
       <p>Uploaded {format(comicData.metadata?.timestamp || '', 'PPPPp')}</p>
-      <p className="mt-2">
+      <p className="mt-4">
         <b>Source</b>: {comicData.metadata?.source ?? 'Not provided.'}
       </p>
 

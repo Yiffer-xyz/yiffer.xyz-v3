@@ -1,5 +1,6 @@
 import type { Comic, UserSession } from '~/types/types';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
+import Link from '~/ui-components/Link';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 type UnlistedComicSectionProps = {
@@ -29,6 +30,15 @@ export default function UnlistedComicSection({
 
       <p>
         <b>Reason for unlisting</b>: {comicData.metadata?.unlistComment}
+      </p>
+
+      <p className="my-2">
+        <Link
+          href={`/c/${comicData.name}`}
+          text="Preview comic page"
+          showRightArrow
+          isInsideParagraph
+        />
       </p>
 
       {user.userType === 'admin' && (

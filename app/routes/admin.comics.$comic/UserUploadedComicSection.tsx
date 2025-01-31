@@ -26,14 +26,15 @@ export default function UserUploadSection({
   comicData,
   updateComic,
 }: UserUploadSectionProps) {
+  const [verdict, setVerdict] = useState<string | null>();
+  const [modComment, setModComment] = useState<string>('');
+
   const fetcher = useGoodFetcher({
     url: '/api/admin/process-user-upload',
     method: 'post',
     toastSuccessMessage: 'Comic processed',
     onFinish: updateComic,
   });
-  const [verdict, setVerdict] = useState<string | null>();
-  const [modComment, setModComment] = useState<string>('');
 
   function submitReview() {
     if (!verdict) return;
@@ -55,6 +56,14 @@ export default function UserUploadSection({
         This comic is not live. It has been uploaded by a user and is now up for mod
         review.
       </p>
+      <p className="mb-2">
+        <Link
+          href={`/c/${comicData.name}`}
+          text="Preview comic page"
+          showRightArrow
+          isInsideParagraph
+        />
+      </p>
       <p>
         Uploaded by{' '}
         <Link
@@ -65,7 +74,7 @@ export default function UserUploadSection({
         />
         , {format(comicData.metadata?.timestamp || '', 'PPPPp')}
       </p>
-      <p className="mt-2">
+      <p className="mt-4">
         <b>Source</b>: {comicData.metadata?.source ?? 'Not provided.'}
       </p>
 

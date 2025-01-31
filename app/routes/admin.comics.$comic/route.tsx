@@ -96,10 +96,18 @@ export default function ManageComicInner() {
       {isPendingOrScheduled && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>Pending comic</h3>
-          <p className="mb-4">
+          <p>
             This comic is not live. It has been uploaded by a mod, or by a user and then
             passed mod review. Once all data is correct, an admin can schedule or publish
             the comic.
+          </p>
+          <p className="mb-4 mt-2">
+            <Link
+              href={`/c/${comic.name}`}
+              text="Preview comic page"
+              showRightArrow
+              isInsideParagraph
+            />
           </p>
 
           <PendingComicSection comicData={comic} updateComic={updateComic} />

@@ -190,7 +190,7 @@ export type SimpleUser = {
   userType: UserType;
 };
 
-export function isModOrAdmin({ userType }: { userType: UserType }) {
+export function isModOrAdmin({ userType }: { userType: UserType | undefined }) {
   return userType === 'admin' || userType === 'moderator';
 }
 

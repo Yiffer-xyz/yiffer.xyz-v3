@@ -11,7 +11,7 @@ import DropdownButton from '~/ui-components/Buttons/DropdownButton';
 import ComicReportProblem from './ComicReportProblem';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
-import type { AdForViewing, Comic } from '~/types/types';
+import { isModOrAdmin, type AdForViewing, type Comic } from '~/types/types';
 import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
@@ -57,6 +57,8 @@ export default function ComicPage() {
     return 'md:mt-[78px]';
   }, [comic, hasLinks]);
 
+  const isPublished = comic?.publishStatus === 'published';
+
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
       <div className="md:w-[728px]">
@@ -80,7 +82,7 @@ export default function ComicPage() {
           className="!mb-1"
         />
 
-        {isMod && !notFound && (
+        {isMod && !notFound && isPublished && (
           <div className="mt-2.5 mb-1 flex-row items-center">
             <RiShieldFill className="text-blue-weak-200 dark:text-blue-strong-300 mr-1 mb-1" />
             <Link
@@ -110,92 +112,106 @@ export default function ComicPage() {
 
       {!comicNotFound && (
         <>
-          <div className="md:w-[728px]">
-            <div className="flex flex-row justify-between relative">
-              <div className="flex flex-col">
-                <ComicRateBookmark
-                  comic={comic}
-                  isLoggedIn={isLoggedIn}
-                  source="comic-page"
-                  className="flex"
-                />
+          {isPublished && (
+            <div className="md:w-[728px]">
+              <div className="flex flex-row justify-between relative">
+                <div className="flex flex-col">
+                  <ComicRateBookmark
+                    comic={comic}
+                    isLoggedIn={isLoggedIn}
+                    source="comic-page"
+                    className="flex"
+                  />
 
-                {hasLinks && (
-                  <div className="mt-2">
-                    <p>This comic is part of a series:</p>
-                    {comic.previousComic && (
-                      <p>
-                        Prev:{' '}
-                        <Link
-                          href={`/c/${comic.previousComic.name}`}
-                          text={comic.previousComic.name}
-                          isInsideParagraph
-                        />
-                      </p>
-                    )}
-                    {comic.nextComic && (
-                      <p>
-                        Next:{' '}
-                        <Link
-                          href={`/c/${comic.nextComic.name}`}
-                          text={comic.nextComic.name}
-                          isInsideParagraph
-                        />
-                      </p>
-                    )}
-                  </div>
-                )}
+                  {hasLinks && (
+                    <div className="mt-2">
+                      <p>This comic is part of a series:</p>
+                      {comic.previousComic && (
+                        <p>
+                          Prev:{' '}
+                          <Link
+                            href={`/c/${comic.previousComic.name}`}
+                            text={comic.previousComic.name}
+                            isInsideParagraph
+                          />
+                        </p>
+                      )}
+                      {comic.nextComic && (
+                        <p>
+                          Next:{' '}
+                          <Link
+                            href={`/c/${comic.nextComic.name}`}
+                            text={comic.nextComic.name}
+                            isInsideParagraph
+                          />
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                {/* Desktop: tags always visible */}
-                {comic.tags.length > 0 && (
-                  <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] hidden md:flex">
-                    {comic.tags.map(tag => (
-                      <TagElement tag={tag} key={tag.id} disableHoverEffects />
-                    ))}
-                  </div>
-                )}
-
-                {/* Mobile: Button, tags hidden by default */}
-                {comic.tags.length > 0 && (
-                  <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] flex md:hidden">
-                    {!showMobileTags && (
-                      <Button
-                        text="Show tags"
-                        variant="naked"
-                        onClick={() => setShowMobileTags(true)}
-                        className="-ml-3 -mt-4"
-                      />
-                    )}
-                    {showMobileTags &&
-                      comic.tags.map(tag => (
+                  {/* Desktop: tags always visible */}
+                  {comic.tags.length > 0 && (
+                    <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] hidden md:flex">
+                      {comic.tags.map(tag => (
                         <TagElement tag={tag} key={tag.id} disableHoverEffects />
                       ))}
-                  </div>
-                )}
+                    </div>
+                  )}
+
+                  {/* Mobile: Button, tags hidden by default */}
+                  {comic.tags.length > 0 && (
+                    <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] flex md:hidden">
+                      {!showMobileTags && (
+                        <Button
+                          text="Show tags"
+                          variant="naked"
+                          onClick={() => setShowMobileTags(true)}
+                          className="-ml-3 -mt-4"
+                        />
+                      )}
+                      {showMobileTags &&
+                        comic.tags.map(tag => (
+                          <TagElement tag={tag} key={tag.id} disableHoverEffects />
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                <ComicStats comic={comic} />
               </div>
 
-              <ComicStats comic={comic} />
+              {!isManagingTags && !isReportingProblem && (
+                <div className="mt-6 w-full">
+                  <DropdownButton
+                    text="Contribute"
+                    style={{ width: 154 }}
+                    options={[
+                      {
+                        text: 'Add or remove tags',
+                        onClick: () => setIsManagingTags(true),
+                      },
+                      {
+                        text: 'Report problem',
+                        onClick: () => setIsReportingProblem(true),
+                      },
+                    ]}
+                  />
+                </div>
+              )}
             </div>
+          )}
 
-            {!isManagingTags && !isReportingProblem && (
-              <div className="mt-6 w-full">
-                <DropdownButton
-                  text="Contribute"
-                  style={{ width: 154 }}
-                  options={[
-                    {
-                      text: 'Add or remove tags',
-                      onClick: () => setIsManagingTags(true),
-                    },
-                    {
-                      text: 'Report problem',
-                      onClick: () => setIsReportingProblem(true),
-                    },
-                  ]}
-                />
-              </div>
-            )}
-          </div>
+          {!isPublished && (
+            <div className="bg-theme1-primaryTrans p-4 pt-3 w-full md:w-[728px] mt-2 -mb-4">
+              <h4>Comic preview</h4>
+              <p>This comic is not live, and is inaccessible to non-mod users.</p>
+              <Link
+                href={`/admin/comics/${comic?.id}`}
+                text="Edit comic in mod panel"
+                showRightArrow
+              />
+            </div>
+          )}
 
           {isManagingTags && (
             <ComicManageTags
@@ -297,6 +313,10 @@ export async function loader(args: LoaderFunctionArgs) {
       res.notFoundSimilarComicNames = similarComicsRes.result.similarComics;
     }
 
+    return Response.json(res, { status: 404 });
+  }
+
+  if (comicRes.result.publishStatus !== 'published' && (!user || !isModOrAdmin(user))) {
     return Response.json(res, { status: 404 });
   }
 

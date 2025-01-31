@@ -41,7 +41,7 @@ export function ScheduledComic({
       <fetcher.Form>
         <div className="flex flex-row gap-4">
           <input type="hidden" name="comicId" value={comicData.id} />
-          <div className="flex flex-row gap-4">
+          <div className="flex flex-row flex-wrap gap-x-4 gap-y-2">
             <LoadingButton
               text={
                 hasDate ? 'Unschedule (set pending)' : 'Remove from queue (set pending)'

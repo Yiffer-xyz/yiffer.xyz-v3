@@ -118,8 +118,8 @@ export default function PendingComicSection({
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row gap-4 flex-wrap">
+      <div className="flex flex-col gap-2 md:gap-4">
+        <div className="flex flex-row gap-x-4 gap-y-2 flex-wrap">
           <LoadingButton
             text="Add to publishing queue"
             onClick={() => addToQueueFetcher.submit({ comicId: comicData.id.toString() })}
