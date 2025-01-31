@@ -1,3 +1,5 @@
+import { DB_ANALYTICS_SAMPLE_RATE } from '~/types/constants';
+
 export type DBResponse<T> =
   | {
       isError: true;
@@ -162,11 +164,9 @@ async function processDbQueryMeta(
   extraInfo: string | undefined,
   meta: D1Response['meta']
 ) {
-  const shouldLog = Math.random() > 0;
+  if (Math.random() > 1 - DB_ANALYTICS_SAMPLE_RATE) {
+    const numRows = queryType === 'read' ? meta.rows_read : meta.rows_written;
 
-  const numRows = queryType === 'read' ? meta.rows_read : meta.rows_written;
-
-  if (shouldLog) {
     const analyticsQuery = db
       .prepare(
         `INSERT INTO dbquerylogs (queryName, rowsRead, queryType, time, extraInfo) VALUES (?, ?, ?, ?, ?)`
