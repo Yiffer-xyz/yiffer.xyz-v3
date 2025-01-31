@@ -70,7 +70,7 @@ export function TagSuggestion({
                 text="Admin"
                 showRightArrow
               />
-              <Link href={`/${action.primaryField}`} text="Live" showRightArrow />
+              <Link href={`/c/${action.primaryField}`} text="Live" showRightArrow />
             </div>
             <p>{action.description}</p>
           </div>

@@ -58,7 +58,7 @@ export function ComicProblem({
                 text="Admin"
                 showRightArrow
               />
-              <Link href={`/${action.primaryField}`} text="Live" showRightArrow />
+              <Link href={`/c/${action.primaryField}`} text="Live" showRightArrow />
             </div>
             <p>{action.secondaryField}</p>
           </div>

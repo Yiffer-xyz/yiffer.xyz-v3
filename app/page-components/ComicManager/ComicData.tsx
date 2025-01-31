@@ -284,7 +284,12 @@ function ViewComicLink({
           IconRight={MdArrowForward}
           className="ml-2"
         />
-        <Link href={`/${comic.name}`} text="View live" showRightArrow className="ml-4" />
+        <Link
+          href={`/c/${comic.name}`}
+          text="View live"
+          showRightArrow
+          className="ml-4"
+        />
       </>
     );
   }
@@ -303,7 +308,7 @@ function ViewComicLink({
   if (comic.publishStatus === 'published') {
     return (
       <Link
-        href={`/${comic.name}`}
+        href={`/c/${comic.name}`}
         text="View comic"
         IconRight={MdOpenInNew}
         newTab

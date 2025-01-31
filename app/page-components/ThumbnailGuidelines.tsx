@@ -49,21 +49,21 @@ export default function ThumbnailGuidelines({ isModPanel }: { isModPanel: boolea
         <ThumbnailExample
           imageSrc={cinderfrost}
           comicName="CinderFrost"
-          comicUrl="/CinderFrost"
+          comicUrl="/c/CinderFrost"
         >
           ✅Good: When a cover page exists, use this regardless of all other instructions.
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={daddys1}
           comicName="Daddy's Little Secrets"
-          comicUrl="/Daddy's%20Little%20Secrets"
+          comicUrl="/c/Daddy's%20Little%20Secrets"
         >
           ❌Very bad: White border included (view site in dark mode to see what we mean).
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={daddys2}
           comicName="Daddy's Little Secrets"
-          comicUrl="/Daddy's%20Little%20Secrets"
+          comicUrl="/c/Daddy's%20Little%20Secrets"
         >
           🤷Okay-ish: Crop is fine, but page 1 doesn't necessarily give the best
           indication of what the comic is about.
@@ -71,7 +71,7 @@ export default function ThumbnailGuidelines({ isModPanel }: { isModPanel: boolea
         <ThumbnailExample
           imageSrc={daddys3}
           comicName="Daddy's Little Secrets"
-          comicUrl="/Daddy's%20Little%20Secrets"
+          comicUrl="/c/Daddy's%20Little%20Secrets"
         >
           ✅Good: Main characters present and easily visible. Comic is recognizable
           immediately by this thumbnail.
@@ -79,35 +79,35 @@ export default function ThumbnailGuidelines({ isModPanel }: { isModPanel: boolea
         <ThumbnailExample
           imageSrc={pridefest1}
           comicName="Pride Fest"
-          comicUrl="/Pride%20Fest"
+          comicUrl="/c/Pride%20Fest"
         >
           ❌Bad: Needlessly many panels included, hard to see things.
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={pridefest2}
           comicName="Pride Fest"
-          comicUrl="/Pride%20Fest"
+          comicUrl="/c/Pride%20Fest"
         >
           ✅Good: Main characters are visible, easily recognizable.
         </ThumbnailExample>
-        <ThumbnailExample imageSrc={a609_1} comicName="609" comicUrl="/609">
+        <ThumbnailExample imageSrc={a609_1} comicName="609" comicUrl="/c/609">
           ❌Bad: Page 1 is not the one best representing the comic. Main char is not in
           it.
         </ThumbnailExample>
-        <ThumbnailExample imageSrc={a609_2} comicName="609" comicUrl="/609">
+        <ThumbnailExample imageSrc={a609_2} comicName="609" comicUrl="/c/609">
           ✅Good: This page (2) better represents the comic.
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={sizeplay1}
           comicName="Size Play"
-          comicUrl="/Size%20Play"
+          comicUrl="/c/Size%20Play"
         >
           ❌Bad: Needlessly explicit, when...
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={sizeplay2}
           comicName="Size Play"
-          comicUrl="/Size%20Play"
+          comicUrl="/c/Size%20Play"
         >
           ✅Good: The page can be cropped instead, making it more recognizable and less
           explicit.
@@ -115,14 +115,14 @@ export default function ThumbnailGuidelines({ isModPanel }: { isModPanel: boolea
         <ThumbnailExample
           imageSrc={bifurcation}
           comicName="Bifurcation"
-          comicUrl="/Bifurcation"
+          comicUrl="/c/Bifurcation"
         >
           ✅Good: In this case, page 5 is the one with the title in it.
         </ThumbnailExample>
         <ThumbnailExample
           imageSrc={interned2}
           comicName="Interned: Vol. 4"
-          comicUrl="/Interned:%20Vol%204"
+          comicUrl="/c/Interned:%20Vol%204"
         >
           ✅Good: This is okay - the full page is still recognizable, panels not too
           small.
@@ -130,7 +130,7 @@ export default function ThumbnailGuidelines({ isModPanel }: { isModPanel: boolea
         <ThumbnailExample
           imageSrc={interned}
           comicName="Interned: Vol. 4"
-          comicUrl="/Interned:%20Vol%204"
+          comicUrl="/c/Interned:%20Vol%204"
         >
           ✅Good: The closer crop also works well. Slightly better.
         </ThumbnailExample>

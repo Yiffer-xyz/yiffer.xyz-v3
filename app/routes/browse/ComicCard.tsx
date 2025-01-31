@@ -13,7 +13,7 @@ import clsx from 'clsx';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import { useMemo, useRef, useState } from 'react';
-import ComicRateBookmark from '../$comicname/ComicRateBookmark';
+import ComicRateBookmark from '../c_.$comicname/ComicRateBookmark';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import posthog from 'posthog-js';
 import useWindowSize from '~/utils/useWindowSize';
@@ -85,7 +85,7 @@ export default function ComicCard({
         );
       }}
     >
-      <RemixLink to={`/${comic.name}`}>
+      <RemixLink to={`/c/${comic.name}`}>
         <img
           src={`${pagesPath}/${comic.name}/thumbnail-${multiplier}x.webp`}
           alt="comic thumbnail"
@@ -152,7 +152,7 @@ export default function ComicCard({
             </button>
           )}
           <Link
-            href={`/${comic.name}`}
+            href={`/c/${comic.name}`}
             text={comic.name}
             color="text"
             className="text-sm leading-0"

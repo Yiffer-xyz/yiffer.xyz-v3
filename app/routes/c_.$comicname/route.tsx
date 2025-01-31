@@ -99,7 +99,7 @@ export default function ComicPage() {
                 <p className="mt-4">Comics with similar names:</p>
                 {notFoundSimilarComicNames.map(comicName => (
                   <p key={comicName} className="mt-1">
-                    <Link href={`/${comicName}`} text={comicName} showRightArrow />
+                    <Link href={`/c/${comicName}`} text={comicName} showRightArrow />
                   </p>
                 ))}
               </>
@@ -127,7 +127,7 @@ export default function ComicPage() {
                       <p>
                         Prev:{' '}
                         <Link
-                          href={`/${comic.previousComic.name}`}
+                          href={`/c/${comic.previousComic.name}`}
                           text={comic.previousComic.name}
                           isInsideParagraph
                         />
@@ -137,7 +137,7 @@ export default function ComicPage() {
                       <p>
                         Next:{' '}
                         <Link
-                          href={`/${comic.nextComic.name}`}
+                          href={`/c/${comic.nextComic.name}`}
                           text={comic.nextComic.name}
                           isInsideParagraph
                         />

@@ -118,7 +118,7 @@ export default function ManageComicInner() {
           <p className="text-theme1-darker font-bold">
             This comic is live!
             <Link
-              href={`/${comic.name}`}
+              href={`/c/${comic.name}`}
               className="ml-2"
               text="View comic"
               isInsideParagraph
