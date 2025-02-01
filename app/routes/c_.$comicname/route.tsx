@@ -125,31 +125,7 @@ export default function ComicPage() {
                     className="flex"
                   />
 
-                  {hasLinks && (
-                    <div className="mt-2">
-                      <p>This comic is part of a series:</p>
-                      {comic.previousComic && (
-                        <p>
-                          Prev:{' '}
-                          <Link
-                            href={`/c/${comic.previousComic.name}`}
-                            text={comic.previousComic.name}
-                            isInsideParagraph
-                          />
-                        </p>
-                      )}
-                      {comic.nextComic && (
-                        <p>
-                          Next:{' '}
-                          <Link
-                            href={`/c/${comic.nextComic.name}`}
-                            text={comic.nextComic.name}
-                            isInsideParagraph
-                          />
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <ComicSeriesLinks comic={comic} className="mt-2" />
 
                   {/* Desktop: tags always visible */}
                   {comic.tags.length > 0 && (
@@ -237,6 +213,8 @@ export default function ComicPage() {
           <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
             {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
           </DisplayOptionsAndPages>
+
+          <ComicSeriesLinks comic={comic} className="mt-6 -mb-4" />
 
           <Button
             text="To top"
@@ -331,4 +309,34 @@ export async function loader(args: LoaderFunctionArgs) {
   res.comic = comicRes.result;
   res.ad = adRes.result;
   return res;
+}
+
+function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: string }) {
+  if (!comic?.previousComic && !comic?.nextComic) return null;
+
+  return (
+    <div className={className}>
+      <p>This comic is part of a series:</p>
+      {comic.previousComic && (
+        <p>
+          Prev:{' '}
+          <Link
+            href={`/c/${comic.previousComic.name}`}
+            text={comic.previousComic.name}
+            isInsideParagraph
+          />
+        </p>
+      )}
+      {comic.nextComic && (
+        <p>
+          Next:{' '}
+          <Link
+            href={`/c/${comic.nextComic.name}`}
+            text={comic.nextComic.name}
+            isInsideParagraph
+          />
+        </p>
+      )}
+    </div>
+  );
 }
