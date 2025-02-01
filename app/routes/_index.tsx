@@ -54,8 +54,8 @@ export default function Index() {
           <p className="text-center">
             We are struggling financially.
             <br />
-            Please read more and <br />
-            <Link text="support us on Patreon" href="/patreon" isInsideParagraph />!
+            Please read more and <b>go ad-free</b> by <br />
+            <Link text="supporting us on Patreon" href="/patreon" isInsideParagraph />!
           </p>
         </div>
 

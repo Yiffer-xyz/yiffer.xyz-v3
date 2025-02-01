@@ -11,7 +11,7 @@ export default function PatronList({
 
   return (
     <>
-      <h2 className="mt-6">Patrons</h2>
+      <h2 className="mt-4">Patrons</h2>
 
       {Object.keys(patronTiers).length > 0 ? (
         <>
