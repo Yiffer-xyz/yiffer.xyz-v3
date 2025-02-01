@@ -6,13 +6,14 @@ import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import LoadingIconButton from '~/ui-components/Buttons/LoadingIconButton';
 import Link from '~/ui-components/Link';
 import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
-import type { PendingComic } from '~/types/types';
+import { isAdmin, type PendingComic } from '~/types/types';
 import { processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { getPendingComics } from '~/route-funcs/get-pending-comics';
 import { LuRefreshCcw } from 'react-icons/lu';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import { authLoader } from '~/utils/loaders';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 type PendingComicsFilter = 'all' | 'scheduled' | 'unscheduled' | 'problematic';
@@ -29,7 +30,8 @@ export const meta: MetaFunction = () => {
 };
 
 export default function PendingComics() {
-  const { pendingComics, dailySchedulePublishCount } = useLoaderData<typeof loader>();
+  const { pendingComics, dailySchedulePublishCount, user } =
+    useLoaderData<typeof loader>();
   const { isMobile } = useWindowSize();
   const moveUpFetcher = useGoodFetcher({
     url: '/api/admin/move-queued-comic',
@@ -160,21 +162,25 @@ export default function PendingComics() {
                   <MdCheck /> Publishing queue, {comic.publishingQueuePos ?? '?'}/
                   {totalPublishingQueueLength}
                 </p>
-                <LoadingIconButton
-                  icon={MdArrowDownward}
-                  variant="naked"
-                  isLoading={moveDownFetcher.isLoading}
-                  onClick={() => moveComic(comic.comicId, 'down')}
-                  disabled={comic.publishingQueuePos === totalPublishingQueueLength}
-                  className="ml-2"
-                />
-                <LoadingIconButton
-                  icon={MdArrowUpward}
-                  variant="naked"
-                  isLoading={moveUpFetcher.isLoading}
-                  disabled={comic.publishingQueuePos === 1}
-                  onClick={() => moveComic(comic.comicId, 'up')}
-                />
+                {isAdmin(user) && false && (
+                  <>
+                    <LoadingIconButton
+                      icon={MdArrowDownward}
+                      variant="naked"
+                      isLoading={moveDownFetcher.isLoading}
+                      onClick={() => moveComic(comic.comicId, 'down')}
+                      disabled={comic.publishingQueuePos === totalPublishingQueueLength}
+                      className="ml-2"
+                    />
+                    <LoadingIconButton
+                      icon={MdArrowUpward}
+                      variant="naked"
+                      isLoading={moveUpFetcher.isLoading}
+                      disabled={comic.publishingQueuePos === 1}
+                      onClick={() => moveComic(comic.comicId, 'up')}
+                    />
+                  </>
+                )}
               </div>
             );
 
@@ -249,6 +255,7 @@ export default function PendingComics() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
+  const user = await authLoader(args);
   const dbRes = await getPendingComics(args.context.cloudflare.env.DB);
 
   if (dbRes.err) {
@@ -260,6 +267,7 @@ export async function loader(args: LoaderFunctionArgs) {
     dailySchedulePublishCount: parseInt(
       args.context.cloudflare.env.DAILY_SCHEDULE_PUBLISH_COUNT
     ),
+    user: user!,
   };
 }
 

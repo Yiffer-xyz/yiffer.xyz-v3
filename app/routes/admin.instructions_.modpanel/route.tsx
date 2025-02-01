@@ -112,6 +112,30 @@ export default function ModPanelInstructions() {
             published. Please help fix them!
           </p>
         </div>
+
+        <div>
+          <h4>Mod and Admin roles</h4>
+          <p>
+            Most of you are mods. This means you have access to most functionality, but
+            not everything. Admins, of which there are only a few, have the following
+            extra capabilities and responsibilities:
+          </p>
+          <ul>
+            <li>Adding pending comics to the publishing queue, as a final 👍</li>
+            <li>Removing comics and artists</li>
+            <li>
+              Managing ads and mod applications - though this should normally only be done
+              by the owner, Melon
+            </li>
+          </ul>
+          <p className="mt-2">
+            To become an admin, you'll need to have proven yourself as a reliable mod. You
+            must be capable of reliably catching mistakes in uploads, such as bad
+            thumbnails, page errors, tags, and comic title spelling. This is important, as
+            admins are the final quality control checkpoint before content is published.
+            If you think you've got what it takes, you can contact Melon on Telegram.
+          </p>
+        </div>
       </div>
     </div>
   );

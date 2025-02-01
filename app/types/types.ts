@@ -196,6 +196,10 @@ export function isModOrAdmin({ userType }: { userType: UserType | undefined }) {
   return userType === 'admin' || userType === 'moderator';
 }
 
+export function isAdmin({ userType }: { userType: UserType | undefined }) {
+  return userType === 'admin';
+}
+
 export type User = {
   id: number;
   username: string;

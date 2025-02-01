@@ -11,7 +11,7 @@ export default function ComicAdminLink({ comic }: { comic: ComicTiny }) {
       <p>{comic.name}</p>
       <div className="flex flex-row gap-3">
         {comic.publishStatus === 'published' && (
-          <Link href={`/${comic.name}`} text="Live" newTab IconRight={MdOpenInNew} />
+          <Link href={`/c/${comic.name}`} text="Live" newTab IconRight={MdOpenInNew} />
         )}
         <Link
           href={`/admin/comics/${comic.id}`}
