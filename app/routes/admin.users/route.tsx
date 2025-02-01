@@ -56,54 +56,62 @@ export default function UserManager() {
             onChange={onUserSearchUpdate}
             label="Search username or email"
             name="user-search"
-            className="mb-8 max-w-sm"
+            className="mb-4 max-w-sm"
           />
 
           {userSearchResults && userSearchResults.length > 0 && (
-            <Table className="mb-6" horizontalScroll>
-              <TableHeadRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Created</TableCell>
-                <TableCell>Seen</TableCell>
-              </TableHeadRow>
+            <>
+              <p className="text-xs mb-1">
+                Visits for "Seen" are only recorded from the browse and comic pages, for
+                technical reasons.
+              </p>
+              <Table className="mb-6" horizontalScroll>
+                <TableHeadRow>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Created</TableCell>
+                  <TableCell>Seen</TableCell>
+                </TableHeadRow>
 
-              <TableBody>
-                {userSearchResults?.map(user => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <p>
-                        <Link
-                          href={`/admin/users/${user.id}`}
-                          text={user.username}
-                          showRightArrow
-                          isInsideParagraph
-                        />
-                      </p>
-                    </TableCell>
-                    <TableCell>{capitalizeString(user.userType)}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <p title={format(user.createdTime, 'PPPppp')}>
-                        {user.createdTime ? getTimeAgoShort(user.createdTime) : '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p
-                        title={
-                          user.lastActionTime
-                            ? format(user.lastActionTime, 'PPPppp')
-                            : undefined
-                        }
-                      >
-                        {user.lastActionTime ? getTimeAgoShort(user.lastActionTime) : '-'}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                <TableBody>
+                  {userSearchResults?.map(user => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <p>
+                          <Link
+                            href={`/admin/users/${user.id}`}
+                            text={user.username}
+                            showRightArrow
+                            isInsideParagraph
+                          />
+                        </p>
+                      </TableCell>
+                      <TableCell>{capitalizeString(user.userType)}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <p title={format(user.createdTime, 'PPPppp')}>
+                          {user.createdTime ? getTimeAgoShort(user.createdTime) : '-'}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <p
+                          title={
+                            user.lastActionTime
+                              ? format(user.lastActionTime, 'PPPppp')
+                              : undefined
+                          }
+                        >
+                          {user.lastActionTime
+                            ? getTimeAgoShort(user.lastActionTime)
+                            : '-'}
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           )}
         </>
       )}

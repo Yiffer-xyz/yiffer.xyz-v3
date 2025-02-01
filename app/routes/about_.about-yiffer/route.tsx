@@ -41,7 +41,7 @@ export const meta: MetaFunction = () => {
 
 export default function AboutPage() {
   const [isV2VideoShown, setIsV2VideoShown] = useState(false);
-  const [isV3VideoShown, setIsV3VideoShown] = useState(false);
+  // const [isV3VideoShown, setIsV3VideoShown] = useState(false);
 
   return (
     <div className="container mx-auto pb-8">
@@ -247,13 +247,13 @@ export default function AboutPage() {
           <p>
             <b>V3 Mod panel video demo</b>
           </p>
-          {!isV3VideoShown && (
-            <>
-              <p>
-                A video of the new mod panel will be added here once the site has been
-                live for a bit, to showcase it with real data.
-              </p>
-              {/* <p>
+          {/* {!isV3VideoShown && ( */}
+          <>
+            <p>
+              A video of the new mod panel will be added here once the site has been live
+              for a bit, to showcase it with real data.
+            </p>
+            {/* <p>
                 Click the button to load a quick video demo of this version's mod panel!
               </p>
 
@@ -262,15 +262,15 @@ export default function AboutPage() {
                 className="mt-1"
                 onClick={() => setIsV3VideoShown(true)}
               /> */}
-            </>
-          )}
+          </>
+          {/* )} */}
 
-          {isV3VideoShown && (
+          {/* {isV3VideoShown && (
             <div>
               <p>Description</p>
-              {/* <video src={v3Video} controls className="mt-1" /> */}
+              <video src={v3Video} controls className="mt-1" />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

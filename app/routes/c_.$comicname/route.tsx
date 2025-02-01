@@ -20,6 +20,7 @@ import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
 import { RiShieldFill } from 'react-icons/ri';
+import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
@@ -263,6 +264,10 @@ type LoaderData = {
 export async function loader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   const comicName = args.params.comicname as string;
+
+  if (user) {
+    updateUserLastActionTime({ db: args.context.cloudflare.env.DB, userId: user.userId });
+  }
 
   const res: LoaderData = {
     comic: null,
