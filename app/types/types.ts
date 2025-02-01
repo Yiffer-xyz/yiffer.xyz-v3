@@ -180,6 +180,7 @@ export type UserSession = {
   userId: number;
   username: string;
   userType: UserType;
+  patreonDollars?: number | null;
 };
 
 // Used for auth, where we don't need all the fields
@@ -188,6 +189,7 @@ export type SimpleUser = {
   username: string;
   email: string;
   userType: UserType;
+  patreonDollars?: number | null;
 };
 
 export function isModOrAdmin({ userType }: { userType: UserType | undefined }) {

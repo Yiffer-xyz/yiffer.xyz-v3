@@ -123,6 +123,7 @@ export async function signup({
     username,
     email,
     userType: 'normal',
+    patreonDollars: null,
   };
 
   let err: any;
@@ -189,7 +190,7 @@ async function authenticate(
   password: string
 ): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
   const query =
-    'SELECT id, username, email, userType, password, isBanned, banReason FROM user WHERE username = ? OR email = ?';
+    'SELECT id, username, email, userType, password, isBanned, banReason, patreonDollars FROM user WHERE username = ? OR email = ?';
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
   const fetchDbRes = await queryDb<UserWithPwAndBan[]>(
@@ -229,7 +230,7 @@ async function authenticate(
   };
 }
 
-// To get the user data - {userId, username}
+// To get the user data - {userId, username, userType, patreonDollars}
 // Basically, use this from components/routes
 export async function getUserSession(
   request: Request,
@@ -265,6 +266,7 @@ export async function getUserSession(
     userId: tokenContent.payload.id,
     username: tokenContent.payload.username,
     userType: tokenContent.payload.userType,
+    patreonDollars: tokenContent.payload.patreonDollars ?? null,
   };
 }
 
@@ -293,6 +295,7 @@ export async function createUserSession(
     user.id,
     user.username,
     user.userType,
+    user.patreonDollars ?? null,
     jwtConfig
   );
 
@@ -314,9 +317,13 @@ async function createJwtAuthCookieHeader(
   userId: number,
   username: string,
   userType: string,
+  patreonDollars: number | null,
   jwtConfig: JwtConfig
 ) {
-  const token = await jwt.sign({ id: userId, username, userType }, jwtConfig.tokenSecret);
+  const token = await jwt.sign(
+    { id: userId, username, userType, patreonDollars },
+    jwtConfig.tokenSecret
+  );
   // Creating it manually, because the Remix methods transform it for some reason??
   return `${jwtConfig.cookie.name}=${token}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
     jwtConfig.cookie.domain

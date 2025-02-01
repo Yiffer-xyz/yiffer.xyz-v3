@@ -21,6 +21,7 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
 import { RiShieldFill } from 'react-icons/ri';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
+import { shouldShowAdsForUser } from '~/utils/user-utils';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
@@ -281,10 +282,12 @@ export async function loader(args: LoaderFunctionArgs) {
     notFoundSimilarComicNames: [],
   };
 
-  const adPromise = getAdForViewing({
-    adType: 'banner',
-    db: args.context.cloudflare.env.DB,
-  });
+  const adPromise = shouldShowAdsForUser(user)
+    ? getAdForViewing({
+        adType: 'banner',
+        db: args.context.cloudflare.env.DB,
+      })
+    : Promise.resolve({ err: undefined, result: null });
 
   const comicPromise = getComicByField({
     db: args.context.cloudflare.env.DB,

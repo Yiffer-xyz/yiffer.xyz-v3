@@ -26,10 +26,11 @@ import Ad from '~/ui-components/Advertising/Ad';
 import pluralize from 'pluralize';
 import { getHasOldComicRatings } from '~/route-funcs/get-old-comic-ratings';
 import OldComicRatingsInfo from './OldComicRatings';
-import type { ComicForBrowse, UserSession } from '~/types/types';
+import type { AdForViewing, ComicForBrowse, UserSession } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { getAndCacheComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
+import { shouldShowAdsForUser } from '~/utils/user-utils';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 function isBasicPage1Query(params: BrowseParams) {
@@ -48,7 +49,8 @@ async function getComics(
   args: LoaderFunctionArgs,
   params: BrowseParams,
   includeTags: boolean,
-  user: UserSession | null
+  user: UserSession | null,
+  includeAds = true
 ): Promise<ComicsPaginatedResult> {
   const canUseCached = isBasicPage1Query(params) && !user;
   const db = args.context.cloudflare.env.DB;
@@ -75,25 +77,28 @@ async function getComics(
 
     if (cachedRes.result.length > 0) {
       const parsed = JSON.parse(cachedRes.result[0].comicsJson) as ComicsPaginatedResult;
+      let comicsAndMaybeAds = parsed.comicsAndAds as (ComicForBrowse | AdForViewing)[];
 
-      const cardAdsRes = await getCardAdForViewing({
-        db,
-        numberOfAds: ADS_PER_PAGE,
-      });
+      if (includeAds) {
+        const cardAdsRes = await getCardAdForViewing({
+          db,
+          numberOfAds: ADS_PER_PAGE,
+        });
 
-      if (cardAdsRes.err) {
-        return processApiError('Error getting card ads', cardAdsRes.err);
+        if (cardAdsRes.err) {
+          return processApiError('Error getting card ads', cardAdsRes.err);
+        }
+
+        const cardAds = cardAdsRes.result;
+        comicsAndMaybeAds = addAdsToComics(
+          parsed.comicsAndAds as ComicForBrowse[],
+          cardAds
+        );
       }
-
-      const cardAds = cardAdsRes.result;
-      const comicsWithAds = addAdsToComics(
-        parsed.comicsAndAds as ComicForBrowse[],
-        cardAds
-      );
 
       return {
         ...parsed,
-        comicsAndAds: comicsWithAds,
+        comicsAndAds: comicsAndMaybeAds,
       };
     }
   }
@@ -106,7 +111,7 @@ async function getComics(
     const comicsAndAdsRes = await getAndCacheComicsPaginated({
       db,
       pageNum: params.page,
-      includeAds: true,
+      includeAds,
     });
     if (comicsAndAdsRes.err) {
       return processApiError('Error in getComics, /browse', comicsAndAdsRes.err, {
@@ -128,7 +133,7 @@ async function getComics(
       includeTags,
       userId: user?.userId,
       bookmarkedOnly: params.bookmarkedOnly,
-      includeAds: true,
+      includeAds,
     });
 
     if (comicsAndAdsRes.err) {
@@ -152,13 +157,16 @@ export async function loader(args: LoaderFunctionArgs) {
     args,
     params,
     uiPrefSession.getUiPref().comicCardTags,
-    user
+    user,
+    shouldShowAdsForUser(user)
   );
 
-  const adPromise = getAdForViewing({
-    db: args.context.cloudflare.env.DB,
-    adType: 'topSmall',
-  });
+  const adPromise = shouldShowAdsForUser(user)
+    ? getAdForViewing({
+        db: args.context.cloudflare.env.DB,
+        adType: 'topSmall',
+      })
+    : Promise.resolve({ err: undefined, result: null });
   const oldComicRatingsPromise = getHasOldComicRatings(
     args.context.cloudflare.env.DB,
     user?.userId
