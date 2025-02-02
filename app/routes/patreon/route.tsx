@@ -50,7 +50,12 @@ export default function Patreon() {
         receive some neat benefits.
       </p>
       <p className="font-bold mt-4 md:mt-2">Ad-free browsing</p>
-      <p>As an advertiser on the $5 and up tiers, you'll see no ads 🙌</p>
+      <p>Patrons on the $5 and up tiers see no ads 🙌</p>
+      <p className="font-bold mt-4 md:mt-2">Early feature access</p>
+      <p>
+        Patrons on the $15 and up tiers will get access to new major features a few weeks
+        before the general public, as a little thank you for supporting.
+      </p>
       <p className="font-bold mt-4 md:mt-2">Supporter recognition</p>
       <p>
         Your support will be visible in the list below. Additionally, once we implement
