@@ -113,7 +113,7 @@ export default function Patreon() {
       <Button
         variant="naked"
         text={showWhyPatreon ? 'Read less' : `Read more`}
-        className={`-ml-3 ${showWhyPatreon ? 'mt-2' : ''}`}
+        className={`-ml-3 ${showWhyPatreon ? 'mt-2' : '-mt-1'}`}
         onClick={() => setShowWhyPatreon(!showWhyPatreon)}
       />
       <PatronList patronTiers={patronTiers} />

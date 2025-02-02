@@ -1,4 +1,4 @@
-name = "schedule-cron"
+name = "yiffer-v3-crons"
 main = "src/index.ts"
 compatibility_date = "2023-04-01"
 

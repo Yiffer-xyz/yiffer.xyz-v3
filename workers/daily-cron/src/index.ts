@@ -28,7 +28,9 @@ export default {
 };
 
 async function callCronScheduleEndpoint(env: Env) {
-  const response = await fetch(`${env.SCHEDULE_URL_BASE}/api/admin/publish-comics-cron`, {
+  const endpoint = `${env.SCHEDULE_URL_BASE}/api/admin/publish-comics-cron`;
+  console.log('Calling', endpoint, 'with key', env.CRON_KEY);
+  const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
       'x-yiffer-api-key': env.CRON_KEY,
@@ -42,7 +44,9 @@ async function callCronScheduleEndpoint(env: Env) {
 }
 
 async function callCronUpdateExpiredAdsEndpoint(env: Env) {
-  const response = await fetch(`${env.SCHEDULE_URL_BASE}/api/admin/update-expired-ads`, {
+  const endpoint = `${env.SCHEDULE_URL_BASE}/api/admin/update-expired-ads`;
+  console.log('Calling', endpoint, 'with key', env.CRON_KEY);
+  const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
       'x-yiffer-api-key': env.CRON_KEY,
@@ -56,15 +60,14 @@ async function callCronUpdateExpiredAdsEndpoint(env: Env) {
 }
 
 async function callClearSpammableActionsEndpoint(env: Env) {
-  const response = await fetch(
-    `${env.SCHEDULE_URL_BASE}/api/admin/clear-spammable-actions`,
-    {
-      method: 'GET',
-      headers: {
-        'x-yiffer-api-key': env.CRON_KEY,
-      },
-    }
-  );
+  const endpoint = `${env.SCHEDULE_URL_BASE}/api/admin/clear-spammable-actions`;
+  console.log('Calling', endpoint, 'with key', env.CRON_KEY);
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers: {
+      'x-yiffer-api-key': env.CRON_KEY,
+    },
+  });
 
   const responseText = await response.text();
   const resultMessage = `Ran clear spammable actions cron job. Status from yiffer endpoint: ${response.status} ${response.statusText} - ${responseText}`;
@@ -73,7 +76,9 @@ async function callClearSpammableActionsEndpoint(env: Env) {
 }
 
 async function syncPatreonTiers(env: Env) {
-  const response = await fetch(`${env.SCHEDULE_URL_BASE}/api/sync-patrons`, {
+  const endpoint = `${env.SCHEDULE_URL_BASE}/api/sync-patrons`;
+  console.log('Calling', endpoint, 'with key', env.CRON_KEY);
+  const response = await fetch(endpoint, {
     method: 'GET',
     headers: {
       'x-yiffer-api-key': env.CRON_KEY,
