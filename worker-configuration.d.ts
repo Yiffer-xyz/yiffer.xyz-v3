@@ -3,7 +3,6 @@
 
 interface Env {
   FRONT_END_URL_BASE: string;
-  FRONT_PAGE_URL: string;
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;
   DAILY_SCHEDULE_PUBLISH_COUNT: string;

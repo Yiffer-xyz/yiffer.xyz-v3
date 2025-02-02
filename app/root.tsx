@@ -40,7 +40,6 @@ import posthog from 'posthog-js';
 
 import * as gtag from './utils/gtag.client';
 import { useAuthRedirect } from './utils/general';
-import ShowHideBox from './ui-components/ShowHideBox/ShowHideBox';
 
 export const links: LinksFunction = () => [
   {
@@ -80,7 +79,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const data = {
     uiPref: uiPrefSession.getUiPref(),
     user: userSession,
-    frontPageUrl: context.cloudflare.env.FRONT_PAGE_URL,
     gaTrackingId,
     posthogApiKey: context.cloudflare.env.POSTHOG_API_KEY,
     posthogHost: context.cloudflare.env.POSTHOG_HOST,

@@ -40,6 +40,8 @@ export async function action(args: ActionFunctionArgs) {
   return createSuccessJson();
 }
 
+const BATCH_SIZE = 20;
+
 async function convertOldRatings(
   db: D1Database,
   conversions: ConvertOldRatingsBody['conversions'],
@@ -59,65 +61,64 @@ async function convertOldRatings(
     }
     const allComicIds = new Set(allComicsRes.result.map(c => c.id));
 
-    let updateRatingsQuery =
-      'INSERT OR IGNORE INTO comicrating (userId, comicId, rating) VALUES ';
-    const updateRatingsParams: any[] = [];
+    // Process ratings in batches
+    const validRatings = allOldRatingsRes.result.filter(oldRating => {
+      const conversion = conversions.find(c => c.oldRating === oldRating.rating);
+      return allComicIds.has(oldRating.comicId) && conversion && conversion.newRating;
+    });
 
-    let updateBookmarksQuery =
-      'INSERT OR IGNORE INTO comicbookmark (userId, comicId) VALUES ';
-    const updateBookmarksParams: any[] = [];
+    for (let i = 0; i < validRatings.length; i += BATCH_SIZE) {
+      const batchRatings = validRatings.slice(i, i + BATCH_SIZE);
 
-    let hasAnyConversion = false;
-    let hasAnyBookmark = false;
+      let updateRatingsQuery =
+        'INSERT OR IGNORE INTO comicrating (userId, comicId, rating) VALUES ';
+      const updateRatingsParams: any[] = [];
 
-    for (const oldRating of allOldRatingsRes.result) {
-      const newRating = conversions.find(
-        c => c.oldRating === oldRating.rating
-      )?.newRating;
-      if (!allComicIds.has(oldRating.comicId)) {
-        continue;
+      let updateBookmarksQuery =
+        'INSERT OR IGNORE INTO comicbookmark (userId, comicId) VALUES ';
+      const updateBookmarksParams: any[] = [];
+
+      let hasAnyConversion = false;
+      let hasAnyBookmark = false;
+
+      for (const oldRating of batchRatings) {
+        const conversion = conversions.find(c => c.oldRating === oldRating.rating)!;
+
+        updateRatingsQuery += `(?, ?, ?), `;
+        updateRatingsParams.push(userId, oldRating.comicId, conversion.newRating);
+        hasAnyConversion = true;
+
+        if (conversion.bookmark) {
+          updateBookmarksQuery += `(?, ?), `;
+          updateBookmarksParams.push(userId, oldRating.comicId);
+          hasAnyBookmark = true;
+        }
       }
-      if (!conversions.find(c => c.oldRating === oldRating.rating)) {
-        continue;
-      }
-      if (!newRating) {
-        continue;
+
+      if (hasAnyConversion) {
+        updateRatingsQuery = updateRatingsQuery.slice(0, -2);
+        const updateRes = await queryDbExec(
+          db,
+          updateRatingsQuery,
+          updateRatingsParams,
+          'Convert old comic ratings'
+        );
+        if (updateRes.isError) {
+          return makeDbErr(updateRes, 'Could not convert old comic ratings', logCtx);
+        }
       }
 
-      updateRatingsQuery += `(?, ?, ?), `;
-      updateRatingsParams.push(userId, oldRating.comicId, newRating);
-      hasAnyConversion = true;
-
-      if (conversions.find(c => c.oldRating === oldRating.rating)?.bookmark) {
-        updateBookmarksQuery += `(?, ?), `;
-        updateBookmarksParams.push(userId, oldRating.comicId);
-        hasAnyBookmark = true;
-      }
-    }
-
-    if (hasAnyConversion) {
-      updateRatingsQuery = updateRatingsQuery.slice(0, -2);
-      const updateRes = await queryDbExec(
-        db,
-        updateRatingsQuery,
-        updateRatingsParams,
-        'Convert old comic ratings'
-      );
-      if (updateRes.isError) {
-        return makeDbErr(updateRes, 'Could not convert old comic ratings', logCtx);
-      }
-    }
-
-    if (hasAnyBookmark) {
-      updateBookmarksQuery = updateBookmarksQuery.slice(0, -2);
-      const updateRes = await queryDbExec(
-        db,
-        updateBookmarksQuery,
-        updateBookmarksParams,
-        'Convert old comic bookmarks'
-      );
-      if (updateRes.isError) {
-        return makeDbErr(updateRes, 'Could not convert old comic bookmarks', logCtx);
+      if (hasAnyBookmark) {
+        updateBookmarksQuery = updateBookmarksQuery.slice(0, -2);
+        const updateRes = await queryDbExec(
+          db,
+          updateBookmarksQuery,
+          updateBookmarksParams,
+          'Convert old comic bookmarks'
+        );
+        if (updateRes.isError) {
+          return makeDbErr(updateRes, 'Could not convert old comic bookmarks', logCtx);
+        }
       }
     }
   }

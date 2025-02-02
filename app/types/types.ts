@@ -3,7 +3,6 @@
 // arguments (see package.json, --r2=<BUCKET> etc).
 export interface Env {
   FRONT_END_URL_BASE: string;
-  FRONT_PAGE_URL: string;
   IMAGES_SERVER_URL: string;
   PAGES_PATH: string;
   ADS_PATH: string;
