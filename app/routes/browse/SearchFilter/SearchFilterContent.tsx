@@ -154,7 +154,8 @@ export default function SearchFilterContent({
   };
 
   // Local vars for a more snappy feel
-  const [_bookmarkedOnly, _setBookmarkedOnly] = useState(bookmarkedOnly);
+  // const [_bookmarkedOnly, _setBookmarkedOnly] = useState(bookmarkedOnly);
+  const [_bookmarkedOnly, _setBookmarkedOnly] = useState(false);
   useEffect(() => {
     _setBookmarkedOnly(bookmarkedOnly);
   }, [bookmarkedOnly]);
@@ -276,9 +277,16 @@ export default function SearchFilterContent({
             checked={_bookmarkedOnly}
             onChange={onBookmarkedOnlyChange}
             className="ml-4"
+            disabled
           />
         )}
       </div>
+
+      {isLoggedIn && (
+        <p className="text-xs -mt-5 -mb-4">
+          Bookmark filter is not working right now - fix coming soon!
+        </p>
+      )}
 
       <div
         className="w-full flex justify-center cursor-pointer -mb-2 -mt-2 pb-2 pt-2 relative"

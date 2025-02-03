@@ -4,6 +4,7 @@ type SwitchToggleProps = {
   title?: string;
   checked?: boolean;
   onChange: (checked: boolean) => void;
+  disabled?: boolean;
   className?: HTMLAttributes<HTMLDivElement>['className'];
 };
 
@@ -11,6 +12,7 @@ export default function SwitchToggleSmall({
   title,
   checked,
   onChange,
+  disabled = false,
   className = '',
 }: SwitchToggleProps) {
   return (
@@ -21,6 +23,7 @@ export default function SwitchToggleSmall({
           className="peer hidden"
           checked={checked}
           onChange={e => onChange(e.target.checked)}
+          disabled={disabled}
         />
         <div
           className={`relative w-8 h-5 bg-gray-700 peer-focus:outline-none 
