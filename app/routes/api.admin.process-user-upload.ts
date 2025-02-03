@@ -169,16 +169,23 @@ export async function processAnyUpload({
     }
     const fullComic = comicRes.result;
 
-    const response = await fetch(`${imagesServerUrl}/rename-comic`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prevComicName: comicName,
-        newComicName,
-        numPages: fullComic.numberOfPages,
-      }),
-    });
-    if (!response.ok) {
+    try {
+      const response = await fetch(`${imagesServerUrl}/rename-comic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prevComicName: comicName,
+          newComicName,
+          numPages: fullComic.numberOfPages,
+        }),
+      });
+      if (!response.ok) {
+        return {
+          logMessage: 'Error renaming comic pages',
+          context: { comicId },
+        };
+      }
+    } catch (err) {
       return {
         logMessage: 'Error renaming comic pages',
         context: { comicId },

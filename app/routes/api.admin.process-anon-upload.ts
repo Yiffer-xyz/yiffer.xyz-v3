@@ -53,7 +53,7 @@ export async function action(args: ActionFunctionArgs) {
   });
 
   if (err) {
-    processApiError('Error in /process-anon-upload', err, {
+    return processApiError('Error in /process-anon-upload', err, {
       comicId,
       verdict,
     });
