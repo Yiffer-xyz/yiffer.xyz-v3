@@ -99,6 +99,18 @@ export default function ManagePagesAdmin({
     setIsSubmitting(true);
     const isOnlyAddingPages = filesChanged.every(f => f.isNewPage);
 
+    // If only making changes to later pages, we don't need to process earlier pages.
+    let skipProcessingPagesUntilIncl = 0;
+    for (let i = 0; i < unchangedFiles.length; i++) {
+      const page = unchangedFiles[i];
+      console.log(page);
+      if (page.originalPos === i + 1) {
+        skipProcessingPagesUntilIncl++;
+      } else {
+        break;
+      }
+    }
+
     if (!isOnlyAddingPages) {
       // STEP 1: Deletes and copy all pages
       const deletedPagesNumbers: number[] = [];
@@ -117,6 +129,7 @@ export default function ManagePagesAdmin({
           body: JSON.stringify({
             comicName: comic.name,
             deletedPagesNumbers,
+            skipProcessingPagesUntilIncl,
           }),
         }
       );
@@ -209,6 +222,7 @@ export default function ManagePagesAdmin({
         body: JSON.stringify({
           comicName: comic.name,
           pageChanges,
+          skipProcessingPagesUntilIncl,
         }),
       });
 
