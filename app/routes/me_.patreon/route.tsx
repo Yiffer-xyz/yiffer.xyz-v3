@@ -72,6 +72,10 @@ export default function AccountPatreon() {
             Your Patreon subscription of ${user.patreonDollars} is recognized and
             appreciated ❤️
           </p>
+          <p>
+            If you just linked, you might have to <b>log out and back in again</b> to have
+            your perks take effect.
+          </p>
 
           <h4 className="mt-6">Rewards</h4>
           <p>
