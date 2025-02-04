@@ -226,6 +226,7 @@ async function authenticate(
       username: user.username,
       email: user.email,
       userType: user.userType,
+      patreonDollars: user.patreonDollars ?? null,
     },
   };
 }
