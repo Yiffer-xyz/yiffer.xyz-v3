@@ -21,7 +21,7 @@ import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import RecalculateNumPages from './RecalculateNumPages';
 import useWindowSize from '~/utils/useWindowSize';
 import { mobileClosedBarW, sidebarWidth } from '../admin/AdminSidebar';
-import type { LogPagesChangeBody } from '../api.admin.log-pages.change';
+import type { LogPagesChangeBody } from '../api.admin.log-pages-change';
 
 type UpdatedComicPage = {
   previousPos?: number;
@@ -236,6 +236,16 @@ export default function ManagePagesAdmin({
     return calculateFilesChanged(initialPages, comicPages, initialPages);
   }, [comicPages, initialPages]);
 
+  const isRearranging = filesChanged.some(f => {
+    if (isFileChangeRange(f)) {
+      return f.changes.some(sf => !sf.isNewPage);
+    } else {
+      return !f.isNewPage;
+    }
+  });
+  const hasUploadedFiles = comicPages.some(f => f.file);
+  const disableForDoubleAction = hasUploadedFiles && isRearranging;
+
   const [duplicateFilenames, setDuplicateFilenames] = useState<string[]>([]);
 
   async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -291,7 +301,7 @@ export default function ManagePagesAdmin({
               text="Submit changes"
               onClick={submitPageChanges}
               isLoading={isSubmitting}
-              disabled={blockActions}
+              disabled={blockActions || disableForDoubleAction}
             />
           </>
         )}
@@ -353,6 +363,14 @@ export default function ManagePagesAdmin({
         source="admin"
       />
 
+      {disableForDoubleAction && (
+        <InfoBox
+          variant="error"
+          text="Can't upload and rearrange at the same time. Submit the new files, then rearrange as a second action after the upload."
+          className="mb-4"
+        />
+      )}
+
       {filesChanged.length > 0 && (
         <div className="flex flex-row gap-4">
           <Button
@@ -368,7 +386,7 @@ export default function ManagePagesAdmin({
             text="Submit changes"
             onClick={submitPageChanges}
             isLoading={isSubmitting}
-            disabled={blockActions}
+            disabled={blockActions || disableForDoubleAction}
           />
         </div>
       )}
