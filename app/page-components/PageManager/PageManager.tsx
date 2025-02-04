@@ -359,7 +359,7 @@ function Page({
           {/* Custom buttons, because we need pointer-events-none on the icon */}
           <div
             className={`
-              absolute top-1 right-1 z-10 deleteBtn rounded-full w-6 h-6 flex items-center justify-center
+              absolute top-1 right-1 z-10 deleteBtn rounded-full w-7 h-7 flex items-center justify-center
               cursor-pointer bg-red-strong-100 hover:bg-red-strong-300 opacity-90 hover:opacity-100
               transition-all duration-100
             `}
@@ -371,9 +371,9 @@ function Page({
           {!isMobile && (
             <div
               className={`
-              absolute top-1 z-10 expandBtn rounded-full w-6 h-6 flex items-center justify-center
+              absolute top-1 z-10 expandBtn rounded-full w-7 h-7 flex items-center justify-center
               cursor-pointer opacity-90 hover:opacity-100 bg-gray-600 hover:bg-gray-750
-              transition-all duration-100 ${isMobile ? 'left-1' : 'right-8'}
+              transition-all duration-100 ${isMobile ? 'left-1' : 'right-9'}
             `}
               role="button"
               onClick={() => isMobile && setFullSizeImage(file)}
@@ -471,7 +471,7 @@ function Page({
                 {index !== 0 && (
                   <div
                     className={`
-                    absolute left-1 z-10 deleteBtn rounded-full w-6 h-6 flex items-center justify-center
+                    absolute left-1 z-10 deleteBtn rounded-full w-7 h-7 flex items-center justify-center
                     cursor-pointer bg-gray-600 hover:bg-gray-750 opacity-90 hover:opacity-100
                     transition-all duration-100
                   `}
@@ -487,7 +487,7 @@ function Page({
                 {!isLastPage && (
                   <div
                     className={`
-                    absolute right-1 z-10 deleteBtn rounded-full w-6 h-6 flex items-center justify-center
+                    absolute right-1 z-10 deleteBtn rounded-full w-7 h-7 flex items-center justify-center
                     cursor-pointer bg-gray-600 hover:bg-gray-750 opacity-90 hover:opacity-100
                     transition-all duration-100
                   `}

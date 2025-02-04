@@ -58,7 +58,6 @@ export default function RecalculateNumPages({
         false,
         theme
       );
-      setTimeout(() => window.location.reload(), 1000);
       return;
     }
 
@@ -72,7 +71,6 @@ export default function RecalculateNumPages({
 
     setIsLoading(false);
     showSuccessToast('Successfully updated pages.', false, theme);
-    setTimeout(() => window.location.reload(), 1000);
   }
 
   return (
