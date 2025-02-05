@@ -1,7 +1,7 @@
 import { useRevalidator } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import { IoMdTrash } from 'react-icons/io';
-import { MdArrowDownward, MdArrowUpward } from 'react-icons/md';
+import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
 import PageManager from '~/page-components/PageManager/PageManager';
 import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import type { Comic } from '~/types/types';
@@ -97,13 +97,11 @@ export default function ManagePagesAdmin({
 
   async function submitPageChanges() {
     setIsSubmitting(true);
-    const isOnlyAddingPages = filesChanged.every(f => f.isNewPage);
 
     // If only making changes to later pages, we don't need to process earlier pages.
     let skipProcessingPagesUntilIncl = 0;
     for (let i = 0; i < unchangedFiles.length; i++) {
       const page = unchangedFiles[i];
-      console.log(page);
       if (page.originalPos === i + 1) {
         skipProcessingPagesUntilIncl++;
       } else {
@@ -120,7 +118,6 @@ export default function ManagePagesAdmin({
         }
       }
 
-      // TODO: submit to images server -> delete and rename
       const deleteAndRenameRes = await fetch(
         `${IMAGES_SERVER_URL}/delete-and-copy-step1`,
         {
@@ -235,12 +232,12 @@ export default function ManagePagesAdmin({
 
     const needsUpdateNumPages = comicPages.length !== comic.numberOfPages;
 
-    if (needsUpdateNumPages) {
+    if (needsUpdateNumPages || needsUpdateUpdatedTimestamp) {
       await updateNumberOfPages({
         body: JSON.stringify({
           comicId: comic.id,
           numberOfPages: comicPages.length,
-          updateUpdatedTime: true,
+          updateUpdatedTime: needsUpdateUpdatedTimestamp,
         }),
       });
     }
@@ -263,16 +260,51 @@ export default function ManagePagesAdmin({
     }
   }
 
-  const { filesChanged, unchangedFiles, visualChanges } = useMemo(() => {
-    const { visualChanges, allChanges, unchanged } = calculateFilesChanged(
-      initialPages,
-      comicPages,
-      initialPages
-    );
-    return {
-      filesChanged: allChanges,
-      unchangedFiles: unchanged,
+  const {
+    filesChanged,
+    unchangedFiles,
+    visualChanges,
+    needsUpdateUpdatedTimestamp,
+    isOnlyAddingPages,
+  } = useMemo(() => {
+    const {
       visualChanges,
+      filesChanged: newFilesChanged,
+      unchangedFiles: newUnchangedFiles,
+    } = calculateFilesChanged(initialPages, comicPages, initialPages);
+
+    const isOnlyAddingPages =
+      newFilesChanged.length > 0 && newFilesChanged.every(f => f.isNewPage);
+    let newNeedsUpdateUpdatedTimestamp = isOnlyAddingPages;
+
+    if (!newNeedsUpdateUpdatedTimestamp && newFilesChanged.some(f => f.isNewPage)) {
+      const lastNewPage =
+        newFilesChanged
+          .filter(f => f.isNewPage && f.newPos)
+          .sort((a, b) => a.newPos! - b.newPos!)[0]?.newPos ?? 0;
+      const lastUnchangedPage =
+        newUnchangedFiles[newUnchangedFiles.length - 1]?.newPos ?? 0;
+      const lastNotNewChangedPage =
+        newFilesChanged
+          .filter(f => !f.isNewPage && f.newPos)
+          .sort((a, b) => a.newPos! - b.newPos!)[0]?.newPos ?? 0;
+
+      const highestNotNewPage = Math.max(
+        lastNotNewChangedPage ?? 0,
+        lastUnchangedPage ?? 0
+      );
+
+      if ((lastNewPage ?? 0) > highestNotNewPage) {
+        newNeedsUpdateUpdatedTimestamp = true;
+      }
+    }
+
+    return {
+      filesChanged: newFilesChanged,
+      unchangedFiles: newUnchangedFiles,
+      visualChanges,
+      needsUpdateUpdatedTimestamp: newNeedsUpdateUpdatedTimestamp,
+      isOnlyAddingPages,
     };
   }, [comicPages, initialPages]);
 
@@ -315,26 +347,6 @@ export default function ManagePagesAdmin({
 
       <div className="flex flex-row flex-wrap gap-4 items-center mb-2">
         <FileInput onChange={onFileChange} multiple accept="image/*" />
-
-        {filesChanged.length > 0 && (
-          <>
-            <Button
-              text="Reset"
-              variant="outlined"
-              color="error"
-              onClick={() => {
-                setComicPages(initialPages);
-              }}
-            />
-
-            <LoadingButton
-              text="Submit changes"
-              onClick={submitPageChanges}
-              isLoading={isSubmitting}
-              disabled={blockActions}
-            />
-          </>
-        )}
       </div>
 
       {duplicateFilenames.length > 0 && (
@@ -394,23 +406,43 @@ export default function ManagePagesAdmin({
       />
 
       {filesChanged.length > 0 && (
-        <div className="flex flex-row gap-4">
-          <Button
-            text="Reset"
-            variant="outlined"
-            color="error"
-            onClick={() => {
-              setComicPages(initialPages);
-            }}
-          />
+        <>
+          <div className="mb-2">
+            {needsUpdateUpdatedTimestamp ? (
+              <p>
+                <MdCheck className="inline-block" />
+                Comic's last updated time will be updated
+              </p>
+            ) : (
+              <p>
+                <MdClose className="inline-block" />
+                Comic's last updated time will not change
+              </p>
+            )}
+            <p className="text-xs">
+              Updated times should only be changed when adding <i>new pages</i> to the{' '}
+              <i>end</i> of a comic - updates, not fixes.
+            </p>
+          </div>
 
-          <LoadingButton
-            text="Submit changes"
-            onClick={submitPageChanges}
-            isLoading={isSubmitting}
-            disabled={blockActions}
-          />
-        </div>
+          <div className="flex flex-row gap-4">
+            <Button
+              text="Reset"
+              variant="outlined"
+              color="error"
+              onClick={() => {
+                setComicPages(initialPages);
+              }}
+            />
+
+            <LoadingButton
+              text="Submit changes"
+              onClick={submitPageChanges}
+              isLoading={isSubmitting}
+              disabled={blockActions}
+            />
+          </div>
+        </>
       )}
     </>
   );
@@ -469,8 +501,8 @@ function calculateFilesChanged(
 
   return {
     visualChanges: combineSequentialFileChanges(filesThatHaveChanged),
-    allChanges: filesThatHaveChanged,
-    unchanged: filesThatHaveNotChanged,
+    filesChanged: filesThatHaveChanged,
+    unchangedFiles: filesThatHaveNotChanged,
   };
 }
 
