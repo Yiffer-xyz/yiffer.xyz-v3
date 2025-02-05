@@ -24,7 +24,7 @@ export default function YourContributions() {
         currentRoute="Your contributions"
       />
 
-      <ContributionPointInfo showInfoAboutUploadedComics />
+      <ContributionPointInfo />
 
       {contributions.length > 0 && (
         <Contributions contributions={contributions} className="mt-4" />

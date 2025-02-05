@@ -2,11 +2,7 @@ import { Fragment } from 'react';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import ShowHideBox from './ShowHideBox/ShowHideBox';
 
-export default function ContributionPointInfo({
-  showInfoAboutUploadedComics = false,
-}: {
-  showInfoAboutUploadedComics?: boolean;
-}) {
+export default function ContributionPointInfo() {
   return (
     <ShowHideBox showButtonText="Show point info" hideButtonText="Hide point info">
       <>
@@ -83,6 +79,10 @@ export default function ContributionPointInfo({
         <p className="text-sm mt-0.5 italic text-text-weakLight dark:text-text-weakDark">
           Sometimes good suggestions might show up as rejected, if someone else suggested
           the same before you.
+        </p>
+
+        <p className="text-sm mt-4 italic text-text-weakLight dark:text-text-weakDark">
+          Mods have different scoring criteria and actions.
         </p>
       </>
     </ShowHideBox>

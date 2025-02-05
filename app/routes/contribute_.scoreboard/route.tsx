@@ -3,7 +3,6 @@ import { add, format, sub } from 'date-fns';
 import { useState } from 'react';
 import { MdArrowBack, MdArrowForward } from 'react-icons/md';
 import IconButton from '~/ui-components/Buttons/IconButton';
-import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import Spinner from '~/ui-components/Spinner';
 import {
   Table,
@@ -12,9 +11,8 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
-import Username from '~/ui-components/Username';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
-import type { ContributionPointsEntry, UserType } from '~/types/types';
+import type { ContributionPointsEntry } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj, processApiError } from '~/utils/request-helpers';
@@ -27,6 +25,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from '@remix-run/cloudflare';
+import { getModScoreboard } from '~/route-funcs/get-mod-scoreboard';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -34,8 +33,8 @@ export const meta: MetaFunction = () => {
 };
 
 type CachedPoints = {
-  yearMonth: string;
-  excludeMods: boolean;
+  yearMonth?: string;
+  isModScores?: boolean;
   points: TopContributionPointsRow[];
 };
 
@@ -48,7 +47,7 @@ export default function Scoreboard() {
         ...prev,
         {
           yearMonth: activeCategory === 'All time' ? 'all-time' : format(date, 'yyyy-MM'),
-          excludeMods,
+          isModScores: activeCategory === 'Mods',
           points: fetcher.data || [],
         },
       ]);
@@ -57,8 +56,9 @@ export default function Scoreboard() {
 
   const allTimePoints = useLoaderData<typeof loader>();
 
-  const [activeCategory, setActiveCategory] = useState<'Monthly' | 'All time'>('Monthly');
-  const [excludeMods, setExcludeMods] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<'Monthly' | 'All time' | 'Mods'>(
+    'Monthly'
+  );
   const [date, setDate] = useState(new Date());
 
   const [points, setPoints] = useState<TopContributionPointsRow[]>(
@@ -68,15 +68,13 @@ export default function Scoreboard() {
   const [cachedPoints, setCachedPoints] = useState<CachedPoints[]>([
     {
       yearMonth: format(new Date(), 'yyyy-MM'),
-      excludeMods: false,
       points: allTimePoints.topScores || [],
     },
   ]);
 
   function changeDisplayInterval(
     incrementBy: 1 | -1 | undefined,
-    newCategory: 'Monthly' | 'All time' | undefined,
-    newExcludeMods: boolean | undefined
+    newCategory: 'Monthly' | 'All time' | 'Mods' | undefined
   ) {
     let newDate = new Date();
     if (incrementBy === 1) {
@@ -91,30 +89,28 @@ export default function Scoreboard() {
     if (newCategory) {
       setActiveCategory(newCategory);
     }
-    if (newExcludeMods !== undefined) {
-      setExcludeMods(newExcludeMods);
-    }
-
-    const excludeMonthsValForQuery =
-      newExcludeMods === undefined ? excludeMods : newExcludeMods;
 
     let yearMonth = format(date, 'yyyy-MM');
+    let isModScores = false;
     if (newCategory === 'All time' || (!newCategory && activeCategory === 'All time')) {
       yearMonth = 'all-time';
+    } else if (newCategory === 'Mods') {
+      isModScores = true;
     } else if (incrementBy !== undefined) {
       yearMonth = format(newDate, 'yyyy-MM');
     }
 
-    const foundCachedPoints = cachedPoints.find(
-      cp => cp.yearMonth === yearMonth && cp.excludeMods === excludeMonthsValForQuery
-    );
+    const foundCachedPoints = isModScores
+      ? cachedPoints.find(cp => cp.isModScores)
+      : cachedPoints.find(cp => cp.yearMonth === yearMonth);
 
+    console.log('foundCachedPoints', foundCachedPoints);
     if (foundCachedPoints) {
       setPoints(foundCachedPoints.points);
       return;
     }
 
-    fetcher.submit({ yearMonth, excludeMods: excludeMonthsValForQuery.toString() });
+    fetcher.submit({ yearMonth, isModScores });
   }
 
   const canIncrementMonth =
@@ -144,23 +140,17 @@ export default function Scoreboard() {
       <ContributionPointInfo />
 
       <div className="flex flex-col justify-start min-w-[300px] mx-auto sm:mx-0 mt-8">
-        <Checkbox
-          label="Include mods"
-          checked={!excludeMods}
-          onChange={() => changeDisplayInterval(undefined, undefined, !excludeMods)}
-          className="mb-4"
-        />
-
         <ToggleButton
           className="mb-4"
           buttons={[
             { text: 'Monthly', value: 'Monthly' },
             { text: 'All time', value: 'All time' },
+            { text: 'Mods', value: 'Mods' },
           ]}
           value={activeCategory}
-          onChange={(value: 'Monthly' | 'All time') => {
+          onChange={(value: 'Monthly' | 'All time' | 'Mods') => {
             setActiveCategory(value);
-            changeDisplayInterval(undefined, value, undefined);
+            changeDisplayInterval(undefined, value);
           }}
         />
 
@@ -168,7 +158,7 @@ export default function Scoreboard() {
           <div className="flex justify-between items-center w-fit mb-2 text-lg">
             <IconButton
               icon={MdArrowBack}
-              onClick={() => changeDisplayInterval(-1, undefined, undefined)}
+              onClick={() => changeDisplayInterval(-1, undefined)}
               disabled={fetcher.isLoading}
               variant="naked"
             />
@@ -177,7 +167,7 @@ export default function Scoreboard() {
 
             <IconButton
               icon={MdArrowForward}
-              onClick={() => changeDisplayInterval(1, undefined, undefined)}
+              onClick={() => changeDisplayInterval(1, undefined)}
               disabled={!canIncrementMonth}
               variant="naked"
             />
@@ -193,21 +183,13 @@ export default function Scoreboard() {
         {points.length > 0 && !fetcher.isLoading && (
           <Table className="mb-6">
             <TableHeadRow isTableMaxHeight>
-              <TableCell>User</TableCell>
+              <TableCell>{activeCategory === 'Mods' ? 'Mod' : 'User'}</TableCell>
               <TableCell>Score</TableCell>
             </TableHeadRow>
             <TableBody>
               {points.map((point, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <Username
-                      user={{
-                        username: point.username,
-                        id: point.userId,
-                        userType: point.userType,
-                      }}
-                    />
-                  </TableCell>
+                  <TableCell>{point.username}</TableCell>
                   <TableCell>{point.points}</TableCell>
                 </TableRow>
               ))}
@@ -223,7 +205,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const scoresRes = await getTopScores(
     args.context.cloudflare.env.DB,
     format(new Date(), 'yyyy-MM'),
-    false
+    true
   );
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
@@ -233,21 +215,31 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
-  const { yearMonth, excludeMods } = Object.fromEntries(reqBody);
+  const { yearMonth, isModScores } = Object.fromEntries(reqBody);
   const yearMonthStr = yearMonth.toString();
+  const isModScoresBool = isModScores.toString() === 'true';
 
-  const res = await getTopScores(
-    args.context.cloudflare.env.DB,
-    yearMonthStr,
-    excludeMods === 'true'
-  );
-  if (res.err) {
-    return processApiError('Error in action of contribution scoreboard', res.err);
+  console.log('isModScoresBool', isModScoresBool);
+  console.log('yearMonthStr', yearMonthStr);
+
+  let scores: TopContributionPointsRow[] = [];
+  if (isModScoresBool) {
+    const res = await getModScoreboard(args.context.cloudflare.env.DB);
+    if (res.err) {
+      return processApiError('Error in action of contribution scoreboard', res.err);
+    }
+    scores = res.result;
+  } else {
+    const res = await getTopScores(args.context.cloudflare.env.DB, yearMonthStr, true);
+    if (res.err) {
+      return processApiError('Error in action of contribution scoreboard', res.err);
+    }
+    scores = res.result;
   }
 
   return {
     success: true,
-    data: res.result,
+    data: scores,
     error: null,
   };
 }
@@ -255,7 +247,6 @@ export async function action(args: ActionFunctionArgs) {
 type TopContributionPointsRow = {
   userId: number;
   username: string;
-  userType: UserType;
   points: number;
 };
 
@@ -268,7 +259,6 @@ async function getTopScores(
     SELECT 
       user.id AS userId, 
       user.username,
-      user.userType,
       tagSuggestion,
       comicProblem,
       comicSuggestiongood,
@@ -324,7 +314,6 @@ function topScoreEntriesToPointList(
     return {
       userId: userContrib.userId,
       username: userContrib.username,
-      userType: userContrib.userType,
       points,
     };
   });
