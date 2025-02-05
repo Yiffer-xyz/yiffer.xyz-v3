@@ -36,30 +36,30 @@ export function stringDistance(aCased: string, bCased: string): number {
   return matrix[b.length][a.length];
 }
 
-export function toTitleCase(input: string): string {
-  // List of words to exclude from capitalization, except when they are the first or last word
-  const excludedWords = [
-    'a',
-    'an',
-    'and',
-    'the',
-    'but',
-    'or',
-    'nor',
-    'for',
-    'so',
-    'yet',
-    'at',
-    'by',
-    'in',
-    'of',
-    'on',
-    'to',
-    'up',
-    'with',
-    'as',
-  ];
+// List of words to exclude from capitalization, except when they are the first or last word
+const excludedWords = [
+  'a',
+  'an',
+  'and',
+  'the',
+  'but',
+  'or',
+  'nor',
+  'for',
+  'so',
+  'yet',
+  'at',
+  'by',
+  'in',
+  'of',
+  'on',
+  'to',
+  'up',
+  'with',
+  'as',
+];
 
+export function toTitleCase(input: string): string {
   // Helper function to capitalize the first letter of a word
   const capitalize = (word: string): string => {
     if (word === word.toUpperCase()) {
@@ -69,19 +69,26 @@ export function toTitleCase(input: string): string {
   };
 
   // Split the string into words
-  const words = input.match(/\b\w+\b|[\p{P}\p{S}]+|\s+/gu) || []; // Split words but keep spaces and punctuation as separate tokens
+  const words = input.match(/\b\w+(?:'\w+)?\b|[\p{P}\p{S}]+|\s+/gu) || [];
 
   // Map over the words and apply capitalization rules
   const titleCasedWords = words.map((word, index, array) => {
     const lowerCaseWord = word.toLowerCase();
 
-    // Check if the word is an excluded word and not followed by a space and punctuation
+    // Check if the word is in the excluded list
     const isExcluded = excludedWords.includes(lowerCaseWord);
-    const isFollowedBySymbol = array[index + 1] && /[\p{P}\p{S}]/u.test(array[index + 2]);
+
+    // Check if the next word contains an apostrophe (e.g., "day's")
+    const nextWordHasApostrophe = array[index + 1] && /'\w+/u.test(array[index + 1]);
 
     // Always capitalize the first and last word, or if it's not in the excludedWords list,
-    // or if it's followed by punctuation/symbols
-    if (index === 0 || index === array.length - 1 || !isExcluded || isFollowedBySymbol) {
+    // or if it's followed by punctuation/symbols, or if the next word has an apostrophe
+    if (
+      index === 0 ||
+      index === array.length - 1 ||
+      !isExcluded ||
+      nextWordHasApostrophe
+    ) {
       return capitalize(word);
     } else {
       return lowerCaseWord; // Convert excluded words to lowercase
