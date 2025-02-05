@@ -71,14 +71,6 @@ export default function AccountPage() {
 
         <LinkCard
           href="#"
-          title="Bookmarked and rated comics"
-          description="Coming soon"
-          className="mt-4"
-          disabled
-        />
-
-        <LinkCard
-          href="#"
           title="Activity center"
           description="Coming soon"
           className="mt-4"

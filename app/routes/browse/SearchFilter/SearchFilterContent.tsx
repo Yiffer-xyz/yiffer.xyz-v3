@@ -282,11 +282,10 @@ export default function SearchFilterContent({
         )}
       </div>
 
-      {isLoggedIn && (
-        <p className="text-xs -mt-5 -mb-4">
-          Bookmark filter is not working right now - fix coming soon!
-        </p>
-      )}
+      <div className="text-xs -mt-4 -mb-3">
+        {isLoggedIn && <p>Bookmark filter is not working right now - fix coming soon!</p>}
+        <p>Sorting by score is not working right now - fix coming soon!</p>
+      </div>
 
       <div
         className="w-full flex justify-center cursor-pointer -mb-2 -mt-2 pb-2 pt-2 relative"
