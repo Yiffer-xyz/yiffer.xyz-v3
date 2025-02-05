@@ -10,15 +10,6 @@ export async function loader(args: LoaderFunctionArgs) {
   const oauthGrantCode = new URL(args.request.url).searchParams.get('code');
   const userId = new URL(args.request.url).searchParams.get('state');
 
-  await logErrorExternally({
-    error: {
-      isClientError: true,
-      isServerError: false,
-      logMessage:
-        'Enter, userid is and grant code is ' + userId + ' and ' + oauthGrantCode,
-    },
-  });
-
   if (!oauthGrantCode || !userId) {
     return create400Json('Missing code or state');
   }
