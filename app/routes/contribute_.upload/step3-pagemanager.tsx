@@ -20,6 +20,7 @@ export default function Step3Pagemanager({
 }: Step3Props) {
   const { isMobile } = useWindowSize();
   const [isClearingPages, setIsClearingPages] = useState(false);
+  const [isSortingPages, setIsSortingPages] = useState(false);
   const [isLoadingFileContents, setIsLoadingFileContents] = useState(false);
   const [duplicateFilenames, setDuplicateFilenames] = useState<string[]>([]);
 
@@ -43,6 +44,17 @@ export default function Step3Pagemanager({
       const newFiles = [...comicData.files, ...filesWithString];
       onUpdate({ ...comicData, files: newFiles });
     }
+  }
+
+  function onSortPagesByFilename() {
+    const newFiles = comicData.files.sort((a, b) => {
+      const nameA = a.file?.name?.toLowerCase();
+      const nameB = b.file?.name?.toLowerCase();
+      if (!nameA || !nameB) return 0;
+      return nameA.localeCompare(nameB);
+    });
+    onUpdate({ ...comicData, files: newFiles });
+    setIsSortingPages(false);
   }
 
   return (
@@ -97,30 +109,53 @@ export default function Step3Pagemanager({
             source="comic-upload"
           />
 
-          {!isClearingPages && (
-            <Button
-              variant="outlined"
-              text="Clear pages"
-              onClick={() => setIsClearingPages(true)}
-            />
-          )}
-          {isClearingPages && (
-            <div className="flex flex-row gap-2">
-              <Button
-                variant="outlined"
-                onClick={() => setIsClearingPages(false)}
-                text="Cancel, keep pages"
-              />
-              <Button
-                text="Clear pages"
-                color="error"
-                onClick={() => {
-                  onUpdate({ ...comicData, files: [] });
-                  setIsClearingPages(false);
-                }}
-              />
-            </div>
-          )}
+          <div className="flex flex-row gap-2">
+            {!isClearingPages && !isSortingPages && (
+              <>
+                <Button
+                  variant="outlined"
+                  text="Clear pages"
+                  onClick={() => setIsClearingPages(true)}
+                />
+                <Button
+                  variant="outlined"
+                  text="Sort pages by filename"
+                  onClick={() => setIsSortingPages(true)}
+                />
+              </>
+            )}
+            {isClearingPages && (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsClearingPages(false)}
+                  text="Cancel, keep pages"
+                />
+                <Button
+                  text="Clear pages"
+                  color="error"
+                  onClick={() => {
+                    onUpdate({ ...comicData, files: [] });
+                    setIsClearingPages(false);
+                  }}
+                />
+              </>
+            )}
+            {isSortingPages && (
+              <>
+                <Button
+                  variant="outlined"
+                  text="Cancel"
+                  onClick={() => setIsSortingPages(false)}
+                />
+                <Button
+                  color="error"
+                  text="Confirm sort by filename"
+                  onClick={onSortPagesByFilename}
+                />
+              </>
+            )}
+          </div>
         </div>
       )}
     </>
