@@ -27,6 +27,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
 import { MdArrowForward } from 'react-icons/md';
+import { isMaliciousString } from '~/utils/string-utils';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -405,6 +406,10 @@ export async function action(args: ActionFunctionArgs) {
 
   if (!comicName || !artist || !linksComments) {
     return create400Json('Some field is missing');
+  }
+
+  if (isMaliciousString(comicName as string, artist as string, linksComments as string)) {
+    return create400Json('Malicious input detected');
   }
 
   const errors = await checkForExistingComicOrSuggestion(

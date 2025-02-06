@@ -7,10 +7,16 @@ import Textarea from '~/ui-components/Textarea/Textarea';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { queryDbExec } from '~/utils/database-facade';
 import { authLoader } from '~/utils/loaders';
-import { create500Json, createSuccessJson, logApiError } from '~/utils/request-helpers';
+import {
+  create400Json,
+  create500Json,
+  createSuccessJson,
+  logApiError,
+} from '~/utils/request-helpers';
 import type { FeedbackType } from '~/types/types';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import { isMaliciousString } from '~/utils/string-utils';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export { authLoader as loader };
@@ -135,6 +141,10 @@ export default function Feedback() {
 export async function action(args: ActionFunctionArgs) {
   const reqBody = await args.request.formData();
   const { feedbackText, feedbackType } = Object.fromEntries(reqBody);
+
+  if (isMaliciousString(feedbackText as string)) {
+    return create400Json('Malicious input detected');
+  }
 
   const user = await authLoader(args);
   let userIp = null;

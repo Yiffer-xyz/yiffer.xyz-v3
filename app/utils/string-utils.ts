@@ -98,3 +98,38 @@ export function toTitleCase(input: string): string {
   // Join the words back into a single string
   return titleCasedWords.join('');
 }
+
+const maliciousStrings = [
+  'base64',
+  'decode',
+  'str_pad',
+  '";',
+  'strlen',
+  '$d',
+  'phpinfo',
+  '$(',
+  '==',
+  'eval',
+  'passthru',
+  'shell_exec',
+  'proc_open',
+  'proc_close',
+];
+const maliciousPatterns = [
+  /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TRUNCATE|EXEC|GRANT|REVOKE|MERGE|DECLARE|CAST|CONVERT)\b.*\b(FROM|INTO|WHERE|TABLE|DATABASE|SCHEMA|COLUMN)\b)/i, // SQL Injection
+  /(<script.*?>.*?<\/script>)/i, // XSS attack (script injection)
+  /((\bdocument\.cookie|onerror|onload|eval|javascript:|href=|src=)\b)/i, // XSS payloads
+  /(\b(?:http|https):\/\/[^\s]+(?:login|bank|verify|confirm|secure|account|password)\b)/i, // Phishing attempts
+];
+export function isMaliciousString(...inputs: string[]): boolean {
+  for (const input of inputs) {
+    const inputLower = input.toLowerCase();
+    if (maliciousStrings.some(str => inputLower.includes(str))) {
+      return true;
+    }
+    if (maliciousPatterns.some(pattern => pattern.test(input))) {
+      return true;
+    }
+  }
+  return false;
+}

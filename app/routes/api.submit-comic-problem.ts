@@ -8,6 +8,7 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { isMaliciousString } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -27,6 +28,10 @@ export async function action(args: ActionFunctionArgs) {
 
   if (!body.problemTitle || !body.problemDescription) {
     return create400Json('Missing problemTitle or problemDescription');
+  }
+
+  if (isMaliciousString(body.problemTitle, body.problemDescription)) {
+    return create400Json('Malicious input detected');
   }
 
   const err = await submitComicProblem(
