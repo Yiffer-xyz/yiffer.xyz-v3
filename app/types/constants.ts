@@ -45,7 +45,7 @@ export const COMIC_PROBLEM_CATEGORIES = [
   },
 ];
 
-export const MAX_UPLOAD_BODY_SIZE = 100 * 1024 * 1024; // 100MB
+export const MAX_UPLOAD_BODY_SIZE = 50 * 1024 * 1024; // 50MB
 
 export const ADVERTISEMENTS: AdvertisementInfo[] = [
   {
