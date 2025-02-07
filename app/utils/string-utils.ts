@@ -36,8 +36,8 @@ export function stringDistance(aCased: string, bCased: string): number {
   return matrix[b.length][a.length];
 }
 
-// List of words to exclude from capitalization, except when they are the first or last word
-const excludedWords = [
+// List of words to exclude from capitalization unless at start or after punctuation
+const excludedWords = new Set([
   'a',
   'an',
   'and',
@@ -46,18 +46,14 @@ const excludedWords = [
   'or',
   'nor',
   'for',
-  'so',
-  'yet',
   'at',
   'by',
   'in',
   'of',
   'on',
   'to',
-  'up',
-  'with',
   'as',
-];
+]);
 
 export function toTitleCase(input: string): string {
   // Helper function to capitalize the first letter of a word
@@ -68,25 +64,37 @@ export function toTitleCase(input: string): string {
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   };
 
-  // Split the string into words
+  // Split the string into words and punctuation
   const words = input.match(/\b\w+(?:'\w+)?\b|[\p{P}\p{S}]+|\s+/gu) || [];
 
   // Map over the words and apply capitalization rules
   const titleCasedWords = words.map((word, index, array) => {
     const lowerCaseWord = word.toLowerCase();
 
-    // Check if the word is in the excluded list
-    const isExcluded = excludedWords.includes(lowerCaseWord);
+    // Check if this word is in the excluded list
+    const isExcluded = excludedWords.has(lowerCaseWord);
+
+    // Check if the previous word was punctuation
+    let prevWordWasPunctuation = index > 0 && /[\p{P}\p{S}]/u.test(array[index - 1]);
+    if (!prevWordWasPunctuation && array[index - 1] === ' ' && index > 1) {
+      prevWordWasPunctuation = /[\p{P}\p{S}]/u.test(array[index - 2]);
+    }
+
+    console.log(word, isExcluded, prevWordWasPunctuation);
 
     // Check if the next word contains an apostrophe (e.g., "day's")
     const nextWordHasApostrophe = array[index + 1] && /'\w+/u.test(array[index + 1]);
 
-    // Always capitalize the first and last word, or if it's not in the excludedWords list,
-    // or if it's followed by punctuation/symbols, or if the next word has an apostrophe
+    // Capitalize if:
+    // 1. It's the first or last word
+    // 2. It's not in the excluded words list
+    // 3. The previous word was punctuation
+    // 4. The next word has an apostrophe
     if (
       index === 0 ||
       index === array.length - 1 ||
       !isExcluded ||
+      prevWordWasPunctuation ||
       nextWordHasApostrophe
     ) {
       return capitalize(word);
