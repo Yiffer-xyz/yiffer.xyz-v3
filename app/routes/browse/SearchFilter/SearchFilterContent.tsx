@@ -277,14 +277,8 @@ export default function SearchFilterContent({
             checked={_bookmarkedOnly}
             onChange={onBookmarkedOnlyChange}
             className="ml-4"
-            disabled
           />
         )}
-      </div>
-
-      <div className="text-xs -mt-4 -mb-3">
-        {isLoggedIn && <p>Bookmark filter is not working right now - fix coming soon!</p>}
-        <p>Sorting by score is not working right now - fix coming soon!</p>
       </div>
 
       <div
