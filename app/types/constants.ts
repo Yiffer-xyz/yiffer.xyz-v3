@@ -15,7 +15,7 @@ export const ADS_PER_PAGE = 6; // Will be either this (rare) or this-1 (usually)
 
 export const defaultTitle = { title: 'Yiffer.xyz' };
 
-export const DB_ANALYTICS_SAMPLE_RATE = 0.03;
+export const DB_ANALYTICS_SAMPLE_RATE = 0.01;
 
 export const COMIC_PROBLEM_CATEGORIES = [
   {

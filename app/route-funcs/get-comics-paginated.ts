@@ -82,6 +82,7 @@ export async function getComicsPaginated({
   if (artistName) queryExtraInfos.push(`artistName`);
   if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
   if (offset) queryExtraInfos.push(`offset`);
+  if (order) queryExtraInfos.push(`order`);
   const queryExtraInfo = queryExtraInfos.join(', ');
 
   const canUseEfficientQuery =
@@ -370,12 +371,13 @@ function makeEfficientInnerQuery({
 }: MakeEfficientInnerQueryArgs) {
   let whereString = `WHERE publishStatus = 'published'`;
   const params: any[] = [];
+  const categoriesParams: any[] = [];
 
   if (categories && categories.length > 0) {
     const categoryStrings: string[] = [];
     categories.forEach(category => {
       categoryStrings.push(`category = ?`);
-      params.push(category);
+      categoriesParams.push(category);
     });
     whereString += ` AND (${categoryStrings.join(' OR ')})`;
   }
@@ -387,8 +389,9 @@ function makeEfficientInnerQuery({
 
   const query = `
     WITH filtered_comics AS (
-      SELECT id, updated
+      SELECT id, updated, ${userId ? 'isBookmarkedQuery.isBookmarked AS isBookmarked' : '0 AS isBookmarked'}
       FROM comic
+      ${userId ? isBookmarkedQuery : ''}
       ${whereString}
       ${orderByString}
       ${limitString} ${offsetString}
@@ -402,9 +405,10 @@ function makeEfficientInnerQuery({
       comic.updated,
       comic.state,
       comic.published,
-      comic.numberOfPages
+      comic.numberOfPages,
+      isBookmarked
       ${userId ? ', userCR.rating AS yourStars' : ''}
-      ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
+      ${userId ? ', isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}
     FROM filtered_comics
     INNER JOIN comic ON comic.id = filtered_comics.id
@@ -412,13 +416,14 @@ function makeEfficientInnerQuery({
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
     ${userId ? yourStarsQuery : ''}
-    ${userId ? isBookmarkedQuery : ''}
     GROUP BY comic.id
   `;
 
+  if (userId) params.push(userId); // For bookmarked
+  params.push(...categoriesParams);
   if (limit) params.push(limit);
   if (offset) params.push(offset);
-  if (userId) params.push(userId, userId); // For bookmarked and yourStars
+  if (userId) params.push(userId); // For yourStars
 
   return { query: query, params: params };
 }
