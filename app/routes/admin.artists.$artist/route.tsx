@@ -329,6 +329,9 @@ export async function loader(args: LoaderFunctionArgs) {
   const artistParam = args.params.artist as string;
   const artistId = parseInt(artistParam);
 
+  if (isNaN(artistId)) {
+    throw new Response('Invalid artist ID', { status: 404 });
+  }
   const combinedRes = await getArtistAndComicsByField(db, 'id', artistId);
   if (combinedRes.err) {
     return processApiError('Error getting data for admin>artist', combinedRes.err);

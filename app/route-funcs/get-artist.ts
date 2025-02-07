@@ -27,38 +27,37 @@ export async function getArtistAndComicsByField(
 }> {
   const { query, params } = getArtistByFieldQuery(fieldName, fieldValue);
 
-  const dbResPromise = queryDb<DbArtist[]>(db, query, params, 'Artist');
+  const artistRes = await queryDb<DbArtist[]>(db, query, params, 'Artist');
+  if (artistRes.isError) {
+    return makeDbErrObj(artistRes, 'Error getting artist and comics by field', {
+      fieldName,
+      fieldValue,
+    });
+  }
+  if (artistRes.result.length === 0) {
+    return { notFound: true };
+  }
+  const artistId = artistRes.result[0].id;
 
-  const comicsPromise = getComicsPaginated({
+  const comicsRes = await getComicsPaginated({
     db,
-    artistId: fieldName === 'id' ? parseInt(fieldValue.toString()) : undefined,
-    artistName: fieldName === 'name' ? fieldValue.toString() : undefined,
+    artistId,
     includeAds: false,
     includeTags: true,
     order: 'updated',
     userId,
   });
 
-  const [dbRes, comicsRes] = await Promise.all([dbResPromise, comicsPromise]);
-
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting artist and comics by field', {
-      fieldName,
-      fieldValue,
-    });
-  }
-
-  if (dbRes.result.length === 0 || dbRes.result[0].id === null) {
-    return { notFound: true };
-  }
-
   if (comicsRes.err) {
     return processApiError('Error getting comics, get-artist', comicsRes.err);
+  }
+  if (comicsRes.result.comicsAndAds.length === 0) {
+    return { notFound: true };
   }
 
   return {
     result: {
-      artist: dbArtistToArtist(dbRes.result[0]),
+      artist: dbArtistToArtist(artistRes.result[0]),
       comics: comicsRes.result.comicsAndAds as ComicForBrowse[],
     },
   };
