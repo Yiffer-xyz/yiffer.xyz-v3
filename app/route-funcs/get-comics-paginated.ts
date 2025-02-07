@@ -53,7 +53,6 @@ export async function getComicsPaginated({
   search,
   order,
   artistId,
-  artistName,
   includeTags,
   includeAds,
   bookmarkedOnly,
@@ -69,7 +68,6 @@ export async function getComicsPaginated({
     search,
     order,
     artistId,
-    artistName,
   };
 
   const queryExtraInfos: string[] = [];
@@ -79,7 +77,6 @@ export async function getComicsPaginated({
   if (categories) queryExtraInfos.push(`categories`);
   if (search) queryExtraInfos.push(`search`);
   if (artistId) queryExtraInfos.push(`artistId`);
-  if (artistName) queryExtraInfos.push(`artistName`);
   if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
   if (offset) queryExtraInfos.push(`offset`);
   if (order) queryExtraInfos.push(`order`);
@@ -89,7 +86,6 @@ export async function getComicsPaginated({
     (!tagIDs || tagIDs.length === 0) &&
     (!search || search.trim() === '') &&
     !artistId &&
-    (!artistName || artistName.trim() === '') &&
     (order === 'updated' || order === 'random');
 
   const [
@@ -164,7 +160,6 @@ export async function getComicsPaginated({
     (!tagIDs || tagIDs.length === 0) &&
     !search &&
     !artistId &&
-    !artistName &&
     !bookmarkedOnly;
 
   const totalCountQuery = isUnfilteredQuery
@@ -186,12 +181,6 @@ export async function getComicsPaginated({
   if (bookmarkedOnly) totalCountQueryParams.push(userId);
   totalCountQueryParams.push(...filterQueryParams);
 
-  let artistNameFilterString = '';
-  if (artistName) {
-    artistNameFilterString = 'WHERE cc.artistName = ?';
-    queryParams.push(artistName);
-  }
-
   const query = `
     SELECT cc.id, cc.name, cc.category, cc.artistName,
     cc.updated, cc.state, cc.published, cc.numberOfPages, 
@@ -202,7 +191,6 @@ export async function getComicsPaginated({
       ${innerQuery}
     ) AS cc 
     LEFT JOIN comicrating ON (cc.id = comicrating.comicId) 
-    ${artistNameFilterString}
     GROUP BY id 
     ${orderQueryString} 
   `;
