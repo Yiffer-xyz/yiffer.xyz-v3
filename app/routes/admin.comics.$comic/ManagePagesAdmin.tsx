@@ -18,10 +18,10 @@ import {
 } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
-import RecalculateNumPages from './RecalculateNumPages';
 import useWindowSize from '~/utils/useWindowSize';
 import { mobileClosedBarW, sidebarWidth } from '../admin/AdminSidebar';
 import type { LogPagesChangeBody } from '../api.admin.log-pages-change';
+import AdvancedPageManagement from './AdvancedPageManagement';
 
 type FileChangeRange = {
   firstOriginal: number;
@@ -332,15 +332,10 @@ export default function ManagePagesAdmin({
 
   return (
     <>
-      <p className="font-semibold mt-1">Recalculate number of pages</p>
-      <p className="mb-1">
-        If there are pages not showing up, or seemingly broken pages at some spot in the
-        comic, try fixing it through the button below.
-      </p>
-      <RecalculateNumPages
+      <AdvancedPageManagement
         comic={comic}
         imagesServerUrl={IMAGES_SERVER_URL}
-        blockActions={blockActions}
+        blockActions={!!blockActions}
       />
 
       <p className="font-semibold mt-4 mb-1">Add pages</p>

@@ -188,3 +188,11 @@ export function debounce<F extends (...args: any[]) => any>(
     }, wait);
   };
 }
+
+export function chunk(array: string[], size: number) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}

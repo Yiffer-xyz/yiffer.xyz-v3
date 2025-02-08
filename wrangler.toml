@@ -12,3 +12,7 @@ database_id = "e9c3c06e-749e-4fe6-8934-67ce5377132e"
 binding = "DB_PROD"
 database_name = "yiffer-prod"
 database_id = "b76ac518-5ce3-48ec-80cb-72e1f6f60b98"
+
+[[r2_buckets]]
+binding = "COMICS_BUCKET"
+bucket_name = "yiffer-test-2"

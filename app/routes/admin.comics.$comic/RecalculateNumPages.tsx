@@ -77,6 +77,7 @@ export default function RecalculateNumPages({
     <>
       <LoadingButton
         text="Recalculate/fix pages"
+        className="mt-1"
         onClick={onSubmit}
         startIcon={LuRefreshCcw}
         isLoading={isLoading || updateComicFetcher.isLoading}

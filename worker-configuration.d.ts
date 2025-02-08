@@ -20,4 +20,5 @@ interface Env {
   PATREON_CLIENT_ID: string;
   PATREON_CLIENT_SECRET: string;
   PATREON_REDIRECT_URL: string;
+  COMICS_BUCKET: R2Bucket;
 }
