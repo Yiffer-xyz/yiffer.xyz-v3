@@ -13,6 +13,7 @@ import useWindowSize from '~/utils/useWindowSize';
 import ManagePagesAdmin from './ManagePagesAdmin';
 import { useUIPreferences } from '~/utils/theme-provider';
 import LiveComicThumbnailManager from './LiveComicThumbnailManager';
+import AdminTools from './AdminTools';
 
 type LiveComicProps = {
   comic: Comic;
@@ -35,12 +36,6 @@ export default function LiveComic({
   PAGES_PATH,
   IMAGES_SERVER_URL,
 }: LiveComicProps) {
-  const unlistFetcher = useGoodFetcher({
-    url: '/api/admin/unlist-comic',
-    method: 'post',
-    toastSuccessMessage: 'Comic unlisted',
-    onFinish: cancelUnlisting,
-  });
   const saveChangesFetcher = useGoodFetcher({
     url: '/api/admin/update-comic-data',
     method: 'post',
@@ -50,8 +45,6 @@ export default function LiveComic({
   const { isMobile } = useWindowSize();
   const { theme } = useUIPreferences();
 
-  const [isUnlisting, setIsUnlisting] = useState(false);
-  const [unlistComment, setUnlistComment] = useState('');
   const [updatedComicData, setUpdatedComicData] = useState<NewComicData>();
   const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
@@ -122,15 +115,6 @@ export default function LiveComic({
 
     await saveChangesFetcher.awaitSubmit({ body: JSON.stringify(body) });
     setIsUpdatingName(false);
-  }
-
-  function unlistComic() {
-    unlistFetcher.submit({ comicId: comic.id.toString(), unlistComment: unlistComment });
-  }
-
-  function cancelUnlisting() {
-    setIsUnlisting(false);
-    setUnlistComment('');
   }
 
   const isNameChangedAndInvalid =
@@ -260,42 +244,7 @@ export default function LiveComic({
         />
       </div>
 
-      {user.userType === 'admin' && comic.publishStatus !== 'unlisted' && (
-        <div className="mt-8 pb-16">
-          <h3>Admin tools</h3>
-
-          {!isUnlisting && (
-            <Button
-              text="Unlist comic"
-              className="mt-2"
-              onClick={() => setIsUnlisting(true)}
-              color="error"
-            />
-          )}
-
-          {isUnlisting && (
-            <div className="mt-2">
-              <h4>Unlist comic</h4>
-              <TextInput
-                label="Reason for unlisting"
-                value={unlistComment}
-                onChange={setUnlistComment}
-                className="mb-2 max-w-lg"
-                name="unlistComment"
-              />
-              <div className="flex flex-row gap-2 mt-2">
-                <Button text="Cancel" onClick={cancelUnlisting} variant="outlined" />
-                <LoadingButton
-                  text="Confirm unlisting"
-                  isLoading={unlistFetcher.isLoading}
-                  onClick={unlistComic}
-                  color="error"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {user.userType === 'admin' && <AdminTools comic={comic} />}
     </>
   );
 }
