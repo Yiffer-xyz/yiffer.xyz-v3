@@ -44,7 +44,7 @@ import { useAuthRedirect } from './utils/general';
 export const links: LinksFunction = () => [
   {
     rel: 'icon',
-    href: 'favicon.png',
+    href: '/favicon.png',
     type: 'image/png',
   },
   {
