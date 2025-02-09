@@ -4,7 +4,6 @@ import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
-import TextInput from '~/ui-components/TextInput/TextInput';
 import type { NewArtist, NewComicData } from '~/routes/contribute_.upload/route';
 import type { ArtistTiny, Comic, ComicTiny, Tag, UserSession } from '~/types/types';
 import type { FieldChange } from '~/utils/general';

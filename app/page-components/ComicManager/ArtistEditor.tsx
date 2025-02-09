@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MdDelete } from 'react-icons/md';
+import { MdDelete, MdOpenInNew } from 'react-icons/md';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import InfoBox from '~/ui-components/InfoBox';
 import TextInput from '~/ui-components/TextInput/TextInput';
@@ -9,6 +9,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { NewArtist } from '~/routes/contribute_.upload/route';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import e621Pic from '~/assets/misc/e621-instruction.png';
+import Link from '~/ui-components/Link';
 
 type ArtistEditorProps = {
   newArtistData: NewArtist;
@@ -149,6 +150,7 @@ export default function ArtistEditor({
         name="artistName"
         value={newArtistData.artistName}
         onChange={newVal => updateArtist({ ...newArtistData, artistName: newVal })}
+        className="max-w-full sm:max-w-[290px]"
       />
 
       {isExactMatch && (
@@ -208,16 +210,29 @@ export default function ArtistEditor({
       <h4 className="mt-10">E621 and Patreon</h4>
 
       {!newArtistData.hasConfirmedNoE621Name && (
-        <TextInput
-          label="E621 name"
-          name="e621Name"
-          value={newArtistData.e621Name}
-          onChange={newVal => updateArtist({ ...newArtistData, e621Name: newVal })}
-          className="mt-2 h-auto"
-          helperText="Only the name - not the full link"
-          placeholder='e.g. "meesh"'
-          disabled={newArtistData.hasConfirmedNoE621Name}
-        />
+        <div className="flex flex-row gap-3 items-end">
+          <TextInput
+            label="E621 name"
+            name="e621Name"
+            value={newArtistData.e621Name}
+            onChange={newVal => updateArtist({ ...newArtistData, e621Name: newVal })}
+            className="mt-2 h-auto"
+            helperText="Only the name - not the full link"
+            placeholder='e.g. "meesh"'
+            disabled={newArtistData.hasConfirmedNoE621Name}
+            style={{ maxWidth: 240 }}
+          />
+          {newArtistData.e621Name && (
+            <div className="mb-6">
+              <Link
+                href={`https://e621.net/posts?tags=${newArtistData.e621Name}`}
+                text="View"
+                newTab
+                IconRight={MdOpenInNew}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       <Checkbox
@@ -234,16 +249,28 @@ export default function ArtistEditor({
       />
 
       {!newArtistData.hasConfirmedNoPatreonName && (
-        <TextInput
-          label="Patreon name"
-          name="patreonName"
-          value={newArtistData.patreonName}
-          onChange={newVal => updateArtist({ ...newArtistData, patreonName: newVal })}
-          className="mt-6 h-auto"
-          helperText="Only the name - not the full link"
-          placeholder='e.g. "meesh"'
-          disabled={newArtistData.hasConfirmedNoPatreonName}
-        />
+        <div className="flex flex-row gap-3 items-end">
+          <TextInput
+            label="Patreon name"
+            name="patreonName"
+            value={newArtistData.patreonName}
+            onChange={newVal => updateArtist({ ...newArtistData, patreonName: newVal })}
+            className="mt-6 h-auto"
+            helperText="Only the name - not the full link"
+            placeholder='e.g. "meesh"'
+            disabled={newArtistData.hasConfirmedNoPatreonName}
+          />
+          {newArtistData.patreonName && (
+            <div className="mb-6">
+              <Link
+                href={`https://www.patreon.com/${newArtistData.patreonName}`}
+                text="View"
+                newTab
+                IconRight={MdOpenInNew}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       <Checkbox
@@ -259,7 +286,7 @@ export default function ArtistEditor({
         className="mt-2"
       />
 
-      <h4 className="mt-10">Other links</h4>
+      <h4 className="mt-10">Other links - important!</h4>
       {!hideBorderTitle && (
         <p className="mb-4">
           It's important to be on good terms with artists. Links to their profiles are
@@ -269,7 +296,7 @@ export default function ArtistEditor({
         </p>
       )}
 
-      <p>
+      <p className="text-sm">
         <b>Tips for finding good links</b>: Check FurAffinity, and check the e621 artist
         page, by clicking the “?” next to the artist's name in the top left of any post
         tagged by them, as illustrated in the picture below. If you cannot find any other

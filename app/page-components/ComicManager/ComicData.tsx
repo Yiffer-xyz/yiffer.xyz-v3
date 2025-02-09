@@ -225,20 +225,22 @@ function ViewArtistLink({
   if (isAdminPanel) {
     if (isAdminPanel && !artist.isPending && !artist.isBanned) {
       return (
-        <>
+        <div className="flex flex-row gap-x-4 gap-y-0 flex-wrap">
           <Link
             href={`/admin/artists/${artist.id}`}
             text="View admin"
             IconRight={MdArrowForward}
-            className="ml-2"
           />
-          <Link
-            href={`/artist/${artist.name}`}
-            text="View live"
-            showRightArrow
-            className="ml-4"
-          />
-        </>
+          <Link href={`/artist/${artist.name}`} text="View live" showRightArrow />
+          {artist.e621Name && (
+            <Link
+              href={`https://e621.net/posts?tags=${artist.e621Name}`}
+              text="e621"
+              newTab
+              IconRight={MdOpenInNew}
+            />
+          )}
+        </div>
       );
     }
   }

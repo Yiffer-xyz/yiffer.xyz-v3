@@ -26,6 +26,8 @@ export type Artist = {
 export type ArtistTiny = {
   id: number;
   name: string;
+  e621Name: string;
+  patreonName: string;
   isPending: boolean;
   isBanned: boolean;
 };

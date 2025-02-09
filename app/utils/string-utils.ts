@@ -80,8 +80,6 @@ export function toTitleCase(input: string): string {
       prevWordWasPunctuation = /[\p{P}\p{S}]/u.test(array[index - 2]);
     }
 
-    console.log(word, isExcluded, prevWordWasPunctuation);
-
     // Check if the next word contains an apostrophe (e.g., "day's")
     const nextWordHasApostrophe = array[index + 1] && /'\w+/u.test(array[index + 1]);
 
