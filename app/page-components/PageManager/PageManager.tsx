@@ -4,6 +4,9 @@ import type { ComicImage } from '~/utils/general';
 import { MdArrowBack, MdArrowForward, MdDelete } from 'react-icons/md';
 import { DraggableCore } from 'react-draggable';
 import { FaExpandAlt } from 'react-icons/fa';
+import { FaEllipsis } from 'react-icons/fa6';
+import TextInput from '~/ui-components/TextInput/TextInput';
+import Button from '~/ui-components/Buttons/Button';
 
 const RATIO = Math.round(400 / 564);
 const PAGE_NAME_HEIGHT = 40;
@@ -44,6 +47,11 @@ export default function PageManager({
   const [fullSizeImageIndex, setFullSizeImageIndex] = useState<number | undefined>(
     undefined
   );
+  const [isManuallyChangingPageOfIndex, setIsManuallyChangingPageOfIndex] = useState<
+    number | undefined
+  >(undefined);
+  const [manualPageChangeNewPosition, setManualPageChangeNewPosition] =
+    useState<string>('1');
 
   const pageImgHeight = isMobile ? MOBILE_PAGE_IMG_HEIGHT : 160;
   const pageContainerHeight = pageImgHeight + PAGE_NAME_HEIGHT;
@@ -125,6 +133,7 @@ export default function PageManager({
               showPageNames={showPageNames}
               onSetFullSize={() => setFullSizeImageIndex(index)}
               isLastPage={index === files.length - 1}
+              onEnterChangePageMode={() => setIsManuallyChangingPageOfIndex(index)}
             />
           );
         } else {
@@ -178,6 +187,28 @@ export default function PageManager({
     }
   }, [fullSizeImageIndex, handleKeyPress]);
 
+  const shouldDisableSetPageManuallyButton = useMemo(() => {
+    if (manualPageChangeNewPosition === '') return true;
+    if (Number.isNaN(parseInt(manualPageChangeNewPosition))) return true;
+    if (parseInt(manualPageChangeNewPosition) < 1) return true;
+    if (parseInt(manualPageChangeNewPosition) > numPages) return true;
+    return false;
+  }, [manualPageChangeNewPosition, numPages]);
+
+  function setPageManually() {
+    if (shouldDisableSetPageManuallyButton || isManuallyChangingPageOfIndex === undefined)
+      return;
+    if (isManuallyChangingPageOfIndex !== parseInt(manualPageChangeNewPosition) - 1) {
+      setNewPagePosition(
+        isManuallyChangingPageOfIndex,
+        parseInt(manualPageChangeNewPosition) - 1
+      );
+    }
+
+    setIsManuallyChangingPageOfIndex(undefined);
+    setManualPageChangeNewPosition('');
+  }
+
   return (
     <>
       <div
@@ -230,6 +261,50 @@ export default function PageManager({
           </div>
         </div>
       )}
+
+      {isManuallyChangingPageOfIndex !== undefined && (
+        <div
+          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50 cursor-pointer"
+          onClick={() => {
+            setIsManuallyChangingPageOfIndex(undefined);
+          }}
+        >
+          <div
+            className="relative bg-white dark:bg-gray-250 p-4 pt-3"
+            onClick={e => {
+              e.stopPropagation();
+            }}
+          >
+            <p className="font-bold">Set page position</p>
+            <p className="text-sm text-gray-600 dark:text-gray-800">
+              Current: {isManuallyChangingPageOfIndex + 1} - max: {numPages}
+            </p>
+            <TextInput
+              onChange={newVal => {
+                if (newVal === '') setManualPageChangeNewPosition('');
+                else if (Number.isNaN(parseInt(newVal))) return;
+                else setManualPageChangeNewPosition(newVal);
+              }}
+              value={manualPageChangeNewPosition}
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <Button
+                onClick={() => {
+                  setManualPageChangeNewPosition('');
+                  setIsManuallyChangingPageOfIndex(undefined);
+                }}
+                text="Cancel"
+                variant="outlined"
+              />
+              <Button
+                onClick={setPageManually}
+                text="Set page"
+                disabled={shouldDisableSetPageManuallyButton}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -261,6 +336,7 @@ type PageProps = {
   showPageNames: boolean;
   onSetFullSize: () => void;
   isLastPage: boolean;
+  onEnterChangePageMode: () => void;
 };
 
 function Page({
@@ -285,10 +361,10 @@ function Page({
   showPageNames,
   onSetFullSize,
   isLastPage,
+  onEnterChangePageMode,
 }: PageProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-
   const translateX = position.col * pageImgWidth;
   const translateY = position.row * pageContainerHeight;
 
@@ -519,6 +595,17 @@ function Page({
 
             {isMobile && (
               <>
+                <div
+                  className={`
+                    absolute left-1 top-1 z-10 deleteBtn rounded-full w-7 h-7 flex items-center justify-center
+                    cursor-pointer bg-gray-600 hover:bg-gray-750 opacity-90 hover:opacity-100
+                    transition-all duration-100
+                  `}
+                  role="button"
+                  onClick={onEnterChangePageMode}
+                >
+                  <FaEllipsis className="deleteBtn pointer-events-none text-white mt-[3px]" />
+                </div>
                 {index !== 0 && (
                   <div
                     className={`
