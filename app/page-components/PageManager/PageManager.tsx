@@ -1,5 +1,4 @@
-// import { GridContextProvider, GridDropZone, GridItem, swap } from 'react-grid-dnd';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import useWindowSize from '~/utils/useWindowSize';
 import type { ComicImage } from '~/utils/general';
 import { MdArrowBack, MdArrowForward, MdDelete } from 'react-icons/md';
@@ -41,7 +40,10 @@ export default function PageManager({
   source,
 }: PageManagerProps) {
   const { isMobile } = useWindowSize();
-  const [fullSizeImage, setFullSizeImage] = useState<ComicImage | undefined>(undefined);
+  // const [fullSizeImage, setFullSizeImage] = useState<ComicImage | undefined>(undefined);
+  const [fullSizeImageIndex, setFullSizeImageIndex] = useState<number | undefined>(
+    undefined
+  );
 
   const pageImgHeight = isMobile ? MOBILE_PAGE_IMG_HEIGHT : 160;
   const pageContainerHeight = pageImgHeight + PAGE_NAME_HEIGHT;
@@ -121,7 +123,7 @@ export default function PageManager({
               didJustDelete={didJustDelete}
               setDidJustDelete={setDidJustDelete}
               showPageNames={showPageNames}
-              setFullSizeImage={setFullSizeImage}
+              onSetFullSize={() => setFullSizeImageIndex(index)}
               isLastPage={index === files.length - 1}
             />
           );
@@ -152,6 +154,30 @@ export default function PageManager({
 
   const pageContainerRows = useMemo(() => getPageContainerRows(), [getPageContainerRows]);
 
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (fullSizeImageIndex === undefined) return;
+
+      if (e.key === 'ArrowLeft' && fullSizeImageIndex > 0) {
+        setFullSizeImageIndex(fullSizeImageIndex - 1);
+      } else if (e.key === 'ArrowRight' && fullSizeImageIndex < files.length - 1) {
+        setFullSizeImageIndex(fullSizeImageIndex + 1);
+      } else if (e.key === 'Escape' || e.key === ' ') {
+        setFullSizeImageIndex(undefined);
+        // Prevent page scrolling when using spacebar
+        e.preventDefault();
+      }
+    },
+    [fullSizeImageIndex, files]
+  );
+
+  useEffect(() => {
+    if (fullSizeImageIndex !== undefined) {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [fullSizeImageIndex, handleKeyPress]);
+
   return (
     <>
       <div
@@ -165,18 +191,43 @@ export default function PageManager({
         ))}
       </div>
 
-      {fullSizeImage && (
+      {fullSizeImageIndex !== undefined && (
         <div
-          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50"
+          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50 cursor-pointer"
           onClick={() => {
-            setFullSizeImage(undefined);
+            setFullSizeImageIndex(undefined);
           }}
         >
-          <img
-            src={fullSizeImage.url || fullSizeImage.base64}
-            style={{ maxHeight: '90%', maxWidth: '90%' }}
-            alt={fullSizeImage.file?.name || fullSizeImage.url}
-          />
+          <div className="relative" style={{ maxHeight: '90%', maxWidth: '90%' }}>
+            <img
+              src={files[fullSizeImageIndex].url || files[fullSizeImageIndex].base64}
+              style={{ maxHeight: '90vh', maxWidth: '90vw' }}
+              alt={files[fullSizeImageIndex].file?.name || files[fullSizeImageIndex].url}
+            />
+            {/* Left half click area */}
+            <div
+              className="absolute top-0 left-0 w-1/2 h-full cursor-w-resize"
+              onClick={e => {
+                e.stopPropagation();
+                if (fullSizeImageIndex > 0) {
+                  setFullSizeImageIndex(fullSizeImageIndex - 1);
+                }
+              }}
+            />
+            {/* Right half click area */}
+            <div
+              className="absolute top-0 right-0 w-1/2 h-full cursor-e-resize"
+              onClick={e => {
+                e.stopPropagation();
+                if (fullSizeImageIndex < files.length - 1) {
+                  setFullSizeImageIndex(fullSizeImageIndex + 1);
+                }
+              }}
+            />
+          </div>
+          <div className="absolute bottom-4 text-white text-sm opacity-75">
+            Use arrow keys or click sides to navigate between pages
+          </div>
         </div>
       )}
     </>
@@ -208,7 +259,7 @@ type PageProps = {
   didJustDelete: boolean;
   setDidJustDelete: (didJustDelete: boolean) => void;
   showPageNames: boolean;
-  setFullSizeImage: (file: ComicImage) => void;
+  onSetFullSize: () => void;
   isLastPage: boolean;
 };
 
@@ -232,7 +283,7 @@ function Page({
   didJustDelete,
   setDidJustDelete,
   showPageNames,
-  setFullSizeImage,
+  onSetFullSize,
   isLastPage,
 }: PageProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -321,7 +372,7 @@ function Page({
             setIsDragging(false);
             return;
           } else if (targetClassName.includes('expandBtn')) {
-            setFullSizeImage(file);
+            onSetFullSize();
             return;
           }
           // @ts-ignore
@@ -376,7 +427,7 @@ function Page({
               transition-all duration-100 ${isMobile ? 'left-1' : 'right-9'}
             `}
               role="button"
-              onClick={() => isMobile && setFullSizeImage(file)}
+              onClick={() => isMobile && onSetFullSize()}
             >
               <FaExpandAlt
                 className="expandBtn pointer-events-none text-white mt-[3px]"
@@ -447,7 +498,7 @@ function Page({
               alt={file.file?.name || file.url}
               onClick={() => {
                 if (isMobile) {
-                  setFullSizeImage(file);
+                  onSetFullSize();
                 }
               }}
             />
@@ -567,6 +618,6 @@ function Separator({
       onMouseLeave={() => {
         onHover(false);
       }}
-    ></div>
+    />
   );
 }
