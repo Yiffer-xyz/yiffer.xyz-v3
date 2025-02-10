@@ -378,55 +378,57 @@ export async function logIPAndVerifyNoSignupSpam(
   email: string,
   ip?: string | null
 ): ResultOrErrorPromise<{ isSpam: boolean }> {
-  if (!ip) {
-    return { result: { isSpam: false } };
-  }
-
-  const getRecentActionsQuery =
-    'SELECT * FROM spammableaction WHERE ip = ? AND actionType = ?';
-  const getRecentActionsQueryParams = [ip, 'signup'];
-  const getRecentActionsRes = await queryDb<SpammableAction[]>(
-    db,
-    getRecentActionsQuery,
-    getRecentActionsQueryParams,
-    'Get spammable actions'
-  );
-
-  if (getRecentActionsRes.isError) {
-    return makeDbErrObj(getRecentActionsRes, 'Error getting spammable actions');
-  }
-
-  if (getRecentActionsRes.result.length > 0) {
-    const vaguelySimilarEmails = [email];
-    for (const recentUser of getRecentActionsRes.result) {
-      if (!recentUser.email) continue;
-      const emailDistance = stringDistance(recentUser.email, email);
-      if (emailDistance < 8) {
-        vaguelySimilarEmails.push(recentUser.email);
-      }
-    }
-
-    const allSimilarEmails = getSimilarEmails(vaguelySimilarEmails);
-    if (allSimilarEmails.length >= 0) {
-      return { result: { isSpam: true } };
-    }
-  }
-
-  const insertQuery =
-    'INSERT INTO spammableaction (ip, email, actionType) VALUES (?, ?, ?)';
-  const insertQueryParams = [ip, email, 'signup'];
-  const insertQueryRes = await queryDbExec(
-    db,
-    insertQuery,
-    insertQueryParams,
-    'Log spammable action'
-  );
-
-  if (insertQueryRes.isError) {
-    return makeDbErrObj(insertQueryRes, 'Error logging spammable action');
-  }
-
   return { result: { isSpam: false } };
+
+  // if (!ip) {
+  //   return { result: { isSpam: false } };
+  // }
+
+  // const getRecentActionsQuery =
+  //   'SELECT * FROM spammableaction WHERE ip = ? AND actionType = ?';
+  // const getRecentActionsQueryParams = [ip, 'signup'];
+  // const getRecentActionsRes = await queryDb<SpammableAction[]>(
+  //   db,
+  //   getRecentActionsQuery,
+  //   getRecentActionsQueryParams,
+  //   'Get spammable actions'
+  // );
+
+  // if (getRecentActionsRes.isError) {
+  //   return makeDbErrObj(getRecentActionsRes, 'Error getting spammable actions');
+  // }
+
+  // if (getRecentActionsRes.result.length > 0) {
+  //   const vaguelySimilarEmails = [email];
+  //   for (const recentUser of getRecentActionsRes.result) {
+  //     if (!recentUser.email) continue;
+  //     const emailDistance = stringDistance(recentUser.email, email);
+  //     if (emailDistance < 8) {
+  //       vaguelySimilarEmails.push(recentUser.email);
+  //     }
+  //   }
+
+  //   const allSimilarEmails = getSimilarEmails(vaguelySimilarEmails);
+  //   if (allSimilarEmails.length >= 0) {
+  //     return { result: { isSpam: true } };
+  //   }
+  // }
+
+  // const insertQuery =
+  //   'INSERT INTO spammableaction (ip, email, actionType) VALUES (?, ?, ?)';
+  // const insertQueryParams = [ip, email, 'signup'];
+  // const insertQueryRes = await queryDbExec(
+  //   db,
+  //   insertQuery,
+  //   insertQueryParams,
+  //   'Log spammable action'
+  // );
+
+  // if (insertQueryRes.isError) {
+  //   return makeDbErrObj(insertQueryRes, 'Error logging spammable action');
+  // }
+
+  // return { result: { isSpam: false } };
 }
 
 function getSimilarEmails(emailList: string[]) {
