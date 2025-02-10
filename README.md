@@ -2,7 +2,7 @@
 
 This is a Remix app, running on Cloudflare Pages. It's serverless and server-side rendered. Additional components:
 
-- Cloudflare D1 SQL database
+- Cloudflare D1 SQL database (sqlite)
 - Cloudflare R2 storage
 - Posthog for analytics (also Google Analytics)
 - Postmark for emailss

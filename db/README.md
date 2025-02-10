@@ -13,23 +13,15 @@ This should be made more easily configurable in the future, of course. Ideas for
 wrangler d1 execute yiffer-dev-2 --file=db/schema.sql
 wrangler d1 execute yiffer-dev-2 --file=db/testdata.sql
 
-# For live testdata on new.testyiffer.xyz
-wrangler d1 execute yiffer-dev-2 --file=db/schema.sql --remote
-wrangler d1 execute yiffer-dev-2 --file=db/testdata.sql --remote
-
 # Making general sql queries
-wrangler d1 execute yiffer-dev-2 --command "SELECT * FROM user" [--remote]
+wrangler d1 execute yiffer-dev-2 --command "SELECT * FROM user" [--local or --remote]
 ```
 
-### Users
-<!-- All users have the password 'asdasd' (after de-hashing).
-Easy test users have the name `test`, `admin` (admin), `mod` (moderator), `normal`, `user` (normal user).
-The `test` user has the most data on it, like assigned mod tasks etc. Recommended test user. -->
-TODO: This.
+### Test files
+TODO: Upload all the comics to GDrive, and add sharing link here.
 
-### Test data
-<!-- There's some test data, but not enough yet. With time, more tables will get test data to play with. -->
-TODO: Write this.
+### Users
+The user `malann` with password `asdasd` is an admin, giving you full access to the mod panel. Mod stuff should also be tested with a normal mod user (not admin).
 
 ### Using the database functions
 Currently, use the methods found in `database-facade.ts`:
