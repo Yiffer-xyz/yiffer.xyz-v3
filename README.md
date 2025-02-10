@@ -1,22 +1,43 @@
+## Architecture
+
+This is a Remix app, running on Cloudflare Pages. It's serverless and server-side rendered. Additional components:
+
+- Cloudflare D1 SQL database
+- Cloudflare R2 storage
+- Posthog for analytics (also Google Analytics)
+- Postmark for emailss
+- Cloudflare CDN
+- A cloudflare worker for running crons (in the `workers` folder)
+
+There's also a small "normal" node+express server running on a VM in Vultr, which you'll need to run alongside this project when developing locally. The repo for this is [yiffer.xyz-v3-imageserver](https://github.com/Yiffer-xyz/yiffer.xyz-v3-imageserver). This is used for:
+- Processing images - Sharp is not available on the Cloudflare VMs. Comic pages, thumbnails, and advertisements.
+- Some page management, like renaming/reordering, though this should ideally be moved to this project, as has been started in for example `api.admin.rename-comic-files.ts`.
+- In local development, used to serve images.
+
 ## Development
 
-### Environment variables and such
+### Setup
 
-Unless you want to use the database "locally", you only need one file, `.dev.vars`. Place this in your project root. Ask Melon or find the up-to-date one in discord.
+All environment variables should be put in `.dev.vars`, in project root. Ask Melon for values. These are set in the Cloudflare dashboard for the main/dev sites. `wrangler.toml` also includes a few bindings that are available (R2, D1).
 
 ### Running
 
 See `db/README.md` for database setup instructions.
 
-After setting up the config file above, run `yarn dev`, and the site should be good to go at [http://127.0.0.1:8788](http://127.0.0.1:8788).
+After setting up the config file above, run `yarn dev`, and the site should be good to go at [http://localhost:5173](http://localhost:5173).
 
 ### Deploying
 
-All pushes will generate a preview build on Cloudflare. You can access these in the cloudflare dashboard (if you have permission), or, more easily, via Github by checking the commit's ✅checkmark after a minute or two. It'll show a "Cloudflare Pages — Deployed successfully" which you can expand to get the preview link. The master branch is continuously deployed to [new.testyiffer.xyz](https://new.testyiffer.xyz).
+All pushes will generate a preview build on Cloudflare. You can access these in the cloudflare dashboard (if you have permission). For PRs, you can also check on Github by checking the PR's ✅checkmark after a minute or two. It'll show a "Cloudflare Pages — Deployed successfully" which you can expand to get the preview link. The master branch is continuously deployed to [new.yiffer.xyz](https://new.yiffer.xyz). The `beta` branch is continuously deployed to [new.testyiffer.xyz](https://new.testyiffer.xyz).
 
 ## Coding
 
-Of course, prettier and eslint are used. I recommend a lint-on-save rule. Generally, if unsure of how to do things, take inspiration from other code already there.
+### Random tips/info
+- Of course, prettier and eslint are used. I recommend a lint-on-save rule.
+- Since everything is SSR'd, make sure to avoid hydration mismatches (will show up in the browser console). Prefer using tailwind classes to show/hide things rather than show/hiding them via js.
+- Console.logs from loaders and actions (aka server-side code) show up in the cli you're running the dev command from - not in the browser console.
+- Generally, if unsure of how to do things, take inspiration from other code already there.
+- If you don't have it already, get the `Tailwind CSS IntelliSense` extension for VSCode.
 
 ### Fetching
 
@@ -34,14 +55,16 @@ Every database date is stored as UTC. This used to be more convoluted, but with 
 
 ## Error handling
 
-To make logging and tracing(invaluable!) errors as easy as possible, and to force us to catch errors as they arise, there is a system in place. It might take a little getting used to, but it is extremely handy, also for ensuring correct typing. There are quite a few helper types and functions mentioned below, they are all exported from `request-helpers.ts`.
+To make logging and tracing errors as easy as possible, and to force us to catch errors as they arise, there is a system in place. It might take a little getting used to, but it is extremely handy, also for ensuring correct typing. There are quite a few helper types and functions mentioned below, they are all exported from `request-helpers.ts`. This is inspired by how Go forces error handling explicitly.
 
-When wrapping errors and adding messages, they'll appear in the final log in the format `outer message >> inner message >> (db message if the original error was a db one)` - with 0-any levels of inner messages. This makes tracing errors very pleasant.
+When wrapping errors and adding messages, they'll appear in the final log in the format `outer message >> inner message >> (db message if the original error was a db one)` - with zero to any number of inner messages/levels. This makes tracing errors very pleasant.
 
 ### Error boundaries, catching, logging
-There are no easy solutions for catching server logs in Cloudflare Pages. Therefore, we try to secure all routes by enforcing the return of error objects in all paths. These errors are processed in `utils/request-helpers.ts`. Here, they're shipped off to an error logging service - currently the multi-purpose images server. The sending of the error over there is awaited, because otherwise the edge instance shuts down before properly sending it. Additionally, we throw a limited version of the error to be caught by the error boundary in `app/utils/error.tsx`.
+There are no easy solutions for catching server logs in Cloudflare Pages. Therefore, we try to secure all routes by enforcing the return of error objects in all paths. These errors are processed in `utils/request-helpers.ts`. Here, they're shipped off to an error logging service - currently the multi-purpose images server (the non-edge VM). The sending of the error over there is awaited, because otherwise the edge instance shuts down before properly sending it. Additionally, we throw a limited version of the error to be caught by the error boundary in `app/utils/error.tsx`.
 
 We have one root error boundary in `root.tsx`. This is a last resort, as it will not have theming/session data. Ideally, put the same error boundary in all top level routes. The line `export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';` does exactly this.
+
+There are quite a few return types and functions below. It's a little messy... sorry! But it works, and makes tracing easy. Look at usage elsewhere in the code base if unsure.
 
 ### Returning errors: No return value
 
