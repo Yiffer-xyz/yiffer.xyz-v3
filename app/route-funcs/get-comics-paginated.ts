@@ -184,15 +184,14 @@ export async function getComicsPaginated({
   const query = `
     SELECT cc.id, cc.name, cc.category, cc.artistName,
     cc.updated, cc.state, cc.published, cc.numberOfPages, 
-    SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
+    cc.sumStars, cc.numTimesStarred
     ${userId ? ', cc.yourStars, cc.isBookmarked ' : ''}
     ${includeTags ? ', cc.tags' : ''}
     FROM (
       ${innerQuery}
     ) AS cc 
-    LEFT JOIN comicrating ON (cc.id = comicrating.comicId) 
     GROUP BY id 
-    ${orderQueryString} 
+    ${orderQueryString}
   `;
 
   const queries = [
@@ -304,12 +303,14 @@ function makeInefficientInnerQuery({
   const query = `
     SELECT
       comic.id AS id, comic.name, comic.category, comic.publishStatus,
-      artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages
+      artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages,
+      SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
       ${userId ? ', userCR.rating AS yourStars' : ''}
       ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
+    LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
     ${userId ? yourStarsQuery : ''}
@@ -317,7 +318,7 @@ function makeInefficientInnerQuery({
     ${filterQueryString}
     GROUP BY comic.id
     ${keywordCountString}
-    ${order === 'userRating' ? '' : orderQueryString}
+    ${orderQueryString}
     ${paginationQueryString}
   `;
 
@@ -377,10 +378,13 @@ function makeEfficientInnerQuery({
 
   const query = `
     WITH filtered_comics AS (
-      SELECT id, updated, ${userId ? 'isBookmarkedQuery.isBookmarked AS isBookmarked' : '0 AS isBookmarked'}
+      SELECT id, updated, ${userId ? 'isBookmarkedQuery.isBookmarked AS isBookmarked' : '0 AS isBookmarked'},
+      SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
       FROM comic
+      LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
       ${userId ? isBookmarkedQuery : ''}
       ${whereString}
+      GROUP BY id
       ${orderByString}
       ${limitString} ${offsetString}
     )
@@ -394,7 +398,9 @@ function makeEfficientInnerQuery({
       comic.state,
       comic.published,
       comic.numberOfPages,
-      isBookmarked
+      isBookmarked,
+      sumStars,
+      numTimesStarred
       ${userId ? ', userCR.rating AS yourStars' : ''}
       ${userId ? ', isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}

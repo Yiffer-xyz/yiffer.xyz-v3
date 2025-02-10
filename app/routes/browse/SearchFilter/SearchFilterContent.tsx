@@ -13,8 +13,8 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { RiCloseLine } from 'react-icons/ri';
 import useResizeObserver from 'use-resize-observer';
 import { areArraysEqual } from '~/utils/general';
-import SwitchToggleSmall from '~/ui-components/Buttons/SwitchToggleSmall';
 import posthog from 'posthog-js';
+import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -261,8 +261,8 @@ export default function SearchFilterContent({
       )}
 
       <div className="flex gap-2">
-        <SwitchToggleSmall
-          title={comicCardTags ? 'Tags shown' : 'Tags hidden'}
+        <SwitchToggle
+          label={comicCardTags ? 'Tags shown' : 'Tags hidden'}
           checked={comicCardTags}
           onChange={() => {
             setComicCardTags(!comicCardTags);
@@ -272,8 +272,8 @@ export default function SearchFilterContent({
         />
 
         {isLoggedIn && (
-          <SwitchToggleSmall
-            title="Bookmarked only"
+          <SwitchToggle
+            label="Bookmarked only"
             checked={_bookmarkedOnly}
             onChange={onBookmarkedOnlyChange}
             className="ml-4"
