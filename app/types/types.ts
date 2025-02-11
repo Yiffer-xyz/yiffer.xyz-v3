@@ -180,6 +180,7 @@ export type UserType = 'admin' | 'moderator' | 'normal';
 export type UserSession = {
   userId: number;
   username: string;
+  email: string | null;
   userType: UserType;
   patreonDollars?: number | null;
 };
@@ -188,7 +189,7 @@ export type UserSession = {
 export type SimpleUser = {
   id: number;
   username: string;
-  email: string;
+  email: string | null;
   userType: UserType;
   patreonDollars?: number | null;
 };

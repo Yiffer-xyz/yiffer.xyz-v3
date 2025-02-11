@@ -147,6 +147,32 @@ export async function changePassword(
   oldPassword: string,
   newPassword: string
 ): Promise<{ friendlyErrorMsg: string | undefined }> {
+  const { friendlyErrorMsg } = await validatePasswordForUserId(db, userId, oldPassword);
+  if (friendlyErrorMsg) {
+    return { friendlyErrorMsg };
+  }
+
+  const hashedPassword = await hash(newPassword, 8);
+  const updateQuery = 'UPDATE user SET password = ? WHERE id = ?';
+  const updateQueryRes = await queryDbExec(
+    db,
+    updateQuery,
+    [hashedPassword, userId],
+    'Change password'
+  );
+  if (updateQueryRes.isError) {
+    logApiError('Error updating password', makeDbErr(updateQueryRes), { userId });
+    return { friendlyErrorMsg: 'Error updating password' };
+  }
+
+  return { friendlyErrorMsg: undefined };
+}
+
+export async function validatePasswordForUserId(
+  db: D1Database,
+  userId: number,
+  password: string
+): Promise<{ friendlyErrorMsg: string | undefined }> {
   const userQuery = 'SELECT password FROM user WHERE id = ?';
   const userQueryRes = await queryDb<{ password: string }[]>(
     db,
@@ -163,22 +189,9 @@ export async function changePassword(
   }
 
   const userPassword = userQueryRes.result[0];
-  const isPasswordValid = await compare(oldPassword, userPassword.password);
+  const isPasswordValid = await compare(password, userPassword.password);
   if (!isPasswordValid) {
     return { friendlyErrorMsg: 'Old password is incorrect' };
-  }
-
-  const hashedPassword = await hash(newPassword, 8);
-  const updateQuery = 'UPDATE user SET password = ? WHERE id = ?';
-  const updateQueryRes = await queryDbExec(
-    db,
-    updateQuery,
-    [hashedPassword, userId],
-    'Change password'
-  );
-  if (updateQueryRes.isError) {
-    logApiError('Error updating password', makeDbErr(updateQueryRes), { userId });
-    return { friendlyErrorMsg: 'Error updating password' };
   }
 
   return { friendlyErrorMsg: undefined };
@@ -266,6 +279,7 @@ export async function getUserSession(
   return {
     userId: tokenContent.payload.id,
     username: tokenContent.payload.username,
+    email: tokenContent.payload.email ?? null,
     userType: tokenContent.payload.userType,
     patreonDollars: tokenContent.payload.patreonDollars ?? null,
   };

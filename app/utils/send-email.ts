@@ -79,6 +79,30 @@ export function createPasswordResetEmail(
   };
 }
 
+export function createEmailChangeEmail(
+  emailCode: string,
+  recipient: string,
+  frontEndUrlBase: string
+): PostmarkEmail {
+  const html = `
+    <p>
+      You have requested an email change for your account on Yiffer.xyz.
+    </p>
+    <p>
+      Click the following link to change your email:<br/>
+      <a href="${frontEndUrlBase}/change-email/${emailCode}">${frontEndUrlBase}/change-email/${emailCode}</a>
+    </p>
+    <p>Regards, Yiffer.xyz</p>
+  `;
+  return {
+    To: recipient,
+    From: `${EmailAccountSenders.account}@yiffer.xyz`,
+    Subject: 'Email change | Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}
+
 export function createModActiveAdChangedEmail({
   adName,
   adType,

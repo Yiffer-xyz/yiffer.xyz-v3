@@ -355,6 +355,21 @@ ON DELETE CASCADE
 ON UPDATE CASCADE);
 
 ------------------------------------------------------
+-- EMAIL CHANGE CODE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `emailchangecode` (
+`code` TEXT NOT NULL,
+`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+`isUsed` TINYINTEGER NOT NULL DEFAULT '0',
+`userId` INTEGER  NOT NULL,
+`newEmail` TEXT NOT NULL,
+PRIMARY KEY (`code`),
+FOREIGN KEY (`userId`)
+REFERENCES `user` (`id`)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+------------------------------------------------------
 -- SPAMMABLE ACTION
 ------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `spammableaction` (
