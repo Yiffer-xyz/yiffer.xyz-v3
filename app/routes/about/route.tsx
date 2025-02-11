@@ -30,6 +30,13 @@ export default function AboutPage() {
           includeRightArrow
         />
         <LinkCard
+          title="Changelog"
+          description="See what we're doing to improve the site."
+          href="/about/changelog"
+          className="h-full sm:max-w-[440px]"
+          includeRightArrow
+        />
+        <LinkCard
           title="Privacy Policy and Terms of Use"
           description="The boring yet necessary details."
           href="/about/privacy"
