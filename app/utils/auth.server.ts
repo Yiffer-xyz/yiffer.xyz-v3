@@ -46,8 +46,8 @@ export async function login({
     return { errorMessage };
   }
 
-  const redirect = await createUserSession(user as SimpleUser, jwtConfigStr, redirectTo);
-  return { redirect };
+  const headers = await createUserSessionHeaders(user as SimpleUser, jwtConfigStr);
+  return { redirect: redirect(redirectTo || '/', { headers }) };
 }
 
 type SignupArgs = {
@@ -136,9 +136,8 @@ export async function signup({
     logApiError('Error sending welcome email in signup', err, { username, email });
   }
 
-  const redirect = await createUserSession(user, jwtConfigStr, redirectTo);
-
-  return { redirect };
+  const headers = await createUserSessionHeaders(user, jwtConfigStr);
+  return { redirect: redirect(redirectTo || '/', { headers }) };
 }
 
 export async function changePassword(
@@ -298,11 +297,7 @@ export async function logout(jwtConfigStr: string) {
   return redirect('/', { headers });
 }
 
-export async function createUserSession(
-  user: SimpleUser,
-  jwtConfigStr: string,
-  redirectTo?: string
-) {
+export async function createUserSessionHeaders(user: SimpleUser, jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
   // This one is for auth - will be verified on the server(s)
@@ -311,6 +306,7 @@ export async function createUserSession(
     user.username,
     user.userType,
     user.patreonDollars ?? null,
+    user.email ?? null,
     jwtConfig
   );
 
@@ -323,9 +319,7 @@ export async function createUserSession(
   headers.append('Set-Cookie', sessionCookieHeader);
   headers.append('Set-Cookie', userDataCookieHeader);
 
-  return redirect(redirectTo || '/', {
-    headers,
-  });
+  return headers;
 }
 
 async function createJwtAuthCookieHeader(
@@ -333,10 +327,11 @@ async function createJwtAuthCookieHeader(
   username: string,
   userType: string,
   patreonDollars: number | null,
+  email: string | null,
   jwtConfig: JwtConfig
 ) {
   const token = await jwt.sign(
-    { id: userId, username, userType, patreonDollars },
+    { id: userId, username, userType, patreonDollars, email },
     jwtConfig.tokenSecret
   );
   // Creating it manually, because the Remix methods transform it for some reason??

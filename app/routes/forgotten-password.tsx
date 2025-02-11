@@ -72,6 +72,9 @@ export default function ForgottenPassword() {
                 fullWidth
                 isLoading={fetcher.isLoading}
                 isSubmit
+                onClick={() => {
+                  posthog.capture('Password reset');
+                }}
               />
             </div>
           </TopGradientBox>

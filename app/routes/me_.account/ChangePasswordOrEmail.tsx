@@ -6,6 +6,7 @@ import InfoBox from '~/ui-components/InfoBox';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import posthog from 'posthog-js';
 
 export default function ChangePasswordOrEmail() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -37,6 +38,8 @@ export default function ChangePasswordOrEmail() {
   async function submitPasswordChange() {
     if (submitPasswordFetcher.isLoading) return;
 
+    posthog.capture('Password changed');
+
     submitPasswordFetcher.submit({
       currentPassword,
       newPassword,
@@ -46,6 +49,8 @@ export default function ChangePasswordOrEmail() {
 
   async function submitEmailChange() {
     if (submitEmailFetcher.isLoading) return;
+
+    posthog.capture('Email changed');
 
     submitEmailFetcher.submit({
       currentPassword,
@@ -57,7 +62,6 @@ export default function ChangePasswordOrEmail() {
     return (
       <div className="flex flex-row flex-wrap gap-4 mt-4">
         <Button text="Change password" onClick={() => setIsChangingPassword(true)} />
-
         <Button text="Change email" onClick={() => setIsChangingEmail(true)} />
       </div>
     );

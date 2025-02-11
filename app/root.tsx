@@ -37,9 +37,10 @@ import { getUserSession } from './utils/auth.server';
 import { YifferErrorBoundary } from './utils/error';
 import { useEffect, useMemo } from 'react';
 import posthog from 'posthog-js';
-
 import * as gtag from './utils/gtag.client';
 import { useAuthRedirect } from './utils/general';
+import { getUserById } from './route-funcs/get-user';
+import { processApiError } from './utils/request-helpers';
 
 export const links: LinksFunction = () => [
   {
@@ -74,6 +75,17 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     context.cloudflare.env.JWT_CONFIG_STR
   );
 
+  let isMissingEmail = !!(userSession && !userSession.email);
+
+  // Double check by fetching from db, not just the cookie.
+  if (isMissingEmail && userSession?.userId) {
+    const userRes = await getUserById(context.cloudflare.env.DB, userSession?.userId);
+    if (userRes.err) return processApiError('Error in root', userRes.err);
+    if (userRes.result.email) {
+      isMissingEmail = false;
+    }
+  }
+
   const gaTrackingId = context.cloudflare.env.GA_TRACKING_ID;
 
   const data = {
@@ -82,6 +94,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     gaTrackingId,
     posthogApiKey: context.cloudflare.env.POSTHOG_API_KEY,
     posthogHost: context.cloudflare.env.POSTHOG_HOST,
+    isMissingEmail,
   };
 
   return data;
@@ -149,7 +162,11 @@ function App() {
             </>
           )}
 
-          <Layout user={data.user} gaTrackingId={data.gaTrackingId}>
+          <Layout
+            user={data.user}
+            gaTrackingId={data.gaTrackingId}
+            isMissingEmail={data.isMissingEmail}
+          >
             <Outlet />
           </Layout>
           <ScrollRestoration />
@@ -165,11 +182,13 @@ function Layout({
   user,
   excludeLogin = false,
   gaTrackingId,
+  isMissingEmail,
   children,
 }: {
   user: UserSession | null;
   excludeLogin?: boolean;
   gaTrackingId?: string;
+  isMissingEmail?: boolean;
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
@@ -197,6 +216,8 @@ function Layout({
 
   return (
     <>
+      {isMissingEmail && <ForceSetEmail />}
+
       <nav
         className={`flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:from-bgDark dark:to-bgDark
           px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20
@@ -279,6 +300,38 @@ function Layout({
 
       {children}
     </>
+  );
+}
+
+export function ForceSetEmail() {
+  const matches = useMatches();
+  const isOnAccountPage = useMemo(() => {
+    return matches.some(
+      match => match.pathname.includes('/me') || match.pathname.includes('change-email')
+    );
+  }, [matches]);
+
+  useEffect(() => {
+    posthog.capture('Force email page viewed');
+  }, []);
+
+  if (isOnAccountPage) return null;
+
+  return (
+    <div className="p-8 fixed top-0 left-0 w-full h-[100vh] flex items-center justify-center bg-white dark:bg-bgDark z-50">
+      <div className="flex flex-col gap-2">
+        <h2>Missing email</h2>
+        <p>Your account needs an associated email address.</p>
+        <p>Emails have been required for new accounts since 2021.</p>
+        <p>
+          We do not send any spam - all you need to do is add an email and click the sent
+          verification link.
+        </p>
+        <p>Follow the link below to set your email.</p>
+        <p>Accounts without an email will be disabled some time in 2025.</p>
+        <Link href="/me/account" text="Add email" showRightArrow />
+      </div>
+    </div>
   );
 }
 
