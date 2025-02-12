@@ -58,7 +58,10 @@ export async function action(args: ActionFunctionArgs) {
     'Email change code insert'
   );
   if (insertRes.isError) {
-    return makeDbErr(insertRes, 'Error inserting email change code', { emailCode, user });
+    return processApiError(
+      'Error in /api/change-email',
+      makeDbErr(insertRes, 'Error inserting email change code', { emailCode, user })
+    );
   }
 
   const err = await sendEmail(

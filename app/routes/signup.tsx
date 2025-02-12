@@ -5,7 +5,11 @@ import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { logIPAndVerifyNoSignupSpam, signup } from '~/utils/auth.server.js';
+import {
+  logIPAndVerifyNoSignupSpam,
+  signup,
+  validateUsername,
+} from '~/utils/auth.server.js';
 import { redirectIfLoggedIn } from '~/utils/loaders';
 import {
   create400Json,
@@ -147,7 +151,7 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const username = formUsername.toString().trim();
-  const email = formEmail.toString().trim();
+  const email = formEmail.toString().trim().toLowerCase();
   const password = formPassword.toString().trim();
   const password2 = formPassword2.toString().trim();
 
@@ -203,11 +207,9 @@ function getSignupValidationError(
   if (!username) {
     return 'Missing username';
   }
-  if (username.length < 2 || username.length > 25) {
-    return 'Username must be between 2 and 25 characters';
-  }
-  if (!username.match(/^[a-zA-Z0-9_-]+$/)) {
-    return 'Username can contain only letters, numbers, dashes, and underscores.';
+  const usernameErr = validateUsername(username);
+  if (usernameErr) {
+    return usernameErr;
   }
   if (!password || !password2) {
     return 'Missing password';

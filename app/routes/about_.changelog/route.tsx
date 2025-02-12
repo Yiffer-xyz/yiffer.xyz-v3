@@ -23,6 +23,12 @@ export default function PrivacyPage() {
 
       <div className="flex flex-col gap-6 mt-4">
         <ChangelogItem
+          date="2025-02-12"
+          texts={[
+            'Stopped being case sensitive when checking usernames/emails (login, signup, password resets, etc.)',
+          ]}
+        />
+        <ChangelogItem
           date="2025-02-11"
           texts={[
             'Fixed email changing not working.',

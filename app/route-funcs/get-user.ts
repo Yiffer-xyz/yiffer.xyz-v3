@@ -76,7 +76,7 @@ export async function getUserByEmail(
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion,
       patreonEmail, patreonDollars
     FROM user
-    WHERE email = ?
+    WHERE email = ? COLLATE NOCASE
     LIMIT 1
   `;
 

@@ -1,6 +1,6 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import type { JwtConfig, SimpleUser, SpammableAction, UserSession } from '~/types/types';
+import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';
 import { queryDb, queryDbExec, queryDbMultiple } from './database-facade';
 import type { ApiError, ResultOrErrorPromise } from './request-helpers';
@@ -8,7 +8,6 @@ import { logApiError, makeDbErr, makeDbErrObj, wrapApiError } from './request-he
 import { createWelcomeEmail, sendEmail } from './send-email';
 import bcrypt from 'bcryptjs';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
-import { stringDistance } from './string-utils';
 const { hash, compare } = bcrypt;
 
 type AuthResponse = {
@@ -69,8 +68,8 @@ export async function signup({
   postmarkToken,
   redirectTo,
 }: SignupArgs): Promise<AuthResponse> {
-  const usernameQuery = 'SELECT * FROM user WHERE username = ?';
-  const emailQuery = 'SELECT * FROM user WHERE email = ?';
+  const usernameQuery = 'SELECT * FROM user WHERE username = ? COLLATE NOCASE';
+  const emailQuery = 'SELECT * FROM user WHERE email = ? COLLATE NOCASE';
 
   const dbStatements: QueryWithParams[] = [
     {
@@ -110,7 +109,7 @@ export async function signup({
   }
   const newUserResult = await queryDb<{ id: number }[]>(
     db,
-    'SELECT id FROM user WHERE username = ? LIMIT 1',
+    'SELECT id FROM user WHERE username = ? COLLATE NOCASE LIMIT 1',
     [username],
     'New user ID'
   );
@@ -201,8 +200,8 @@ async function authenticate(
   usernameOrEmail: string,
   password: string
 ): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
-  const query =
-    'SELECT id, username, email, userType, password, isBanned, banReason, patreonDollars FROM user WHERE username = ? OR email = ?';
+  const query = `SELECT id, username, email, userType, password, isBanned, banReason, patreonDollars
+     FROM user WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE`;
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
   const fetchDbRes = await queryDb<UserWithPwAndBan[]>(
@@ -440,20 +439,30 @@ export async function logIPAndVerifyNoSignupSpam(
   // return { result: { isSpam: false } };
 }
 
-function getSimilarEmails(emailList: string[]) {
-  const similarEmails = new Set<string>();
+// function getSimilarEmails(emailList: string[]) {
+//   const similarEmails = new Set<string>();
 
-  for (let i = 0; i < emailList.length; i++) {
-    for (let j = 0; j < emailList.length; j++) {
-      if (i === j) {
-        continue;
-      }
-      if (stringDistance(emailList[i], emailList[j]) <= 3) {
-        similarEmails.add(emailList[i]);
-        similarEmails.add(emailList[j]);
-      }
-    }
+//   for (let i = 0; i < emailList.length; i++) {
+//     for (let j = 0; j < emailList.length; j++) {
+//       if (i === j) {
+//         continue;
+//       }
+//       if (stringDistance(emailList[i], emailList[j]) <= 3) {
+//         similarEmails.add(emailList[i]);
+//         similarEmails.add(emailList[j]);
+//       }
+//     }
+//   }
+
+//   return [...similarEmails];
+// }
+
+export function validateUsername(username: string): string | undefined {
+  if (username.length < 2 || username.length > 25) {
+    return 'Username must be between 2 and 25 characters';
   }
-
-  return [...similarEmails];
+  if (!username.match(/^[a-zA-Z0-9_-]+$/)) {
+    return 'Username can contain only letters, numbers, dashes, and underscores.';
+  }
+  return undefined;
 }

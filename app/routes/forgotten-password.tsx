@@ -107,7 +107,7 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('Missing fields');
   }
 
-  const email = formEmail.toString().trim();
+  const email = formEmail.toString().trim().toLowerCase();
 
   if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
     return create400Json('Invalid email');
