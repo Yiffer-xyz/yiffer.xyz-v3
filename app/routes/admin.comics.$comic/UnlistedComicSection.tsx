@@ -23,7 +23,7 @@ export default function UnlistedComicSection({
 
   return (
     <>
-      <p className="mb-2">
+      <p className="mb-2 text-sm">
         This comic is not live. It has been removed from the available comics on
         Yiffer.xyz for one reason or another. It can be re-listed by an admin.
       </p>

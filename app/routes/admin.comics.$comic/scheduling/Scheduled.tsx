@@ -1,10 +1,12 @@
-import { IoClose } from 'react-icons/io5';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import type { Comic } from '~/types/types';
 import 'react-calendar/dist/Calendar.css';
 import { format } from 'date-fns';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import type { GlobalAdminContext } from '~/routes/admin/route';
+import { isAdmin as isUserAdmin } from '~/types/types';
+import { useOutletContext } from '@remix-run/react';
 
 type ScheduledComicParams = {
   comicData: Comic;
@@ -17,6 +19,9 @@ export function ScheduledComic({
   onReschedule,
   onUnscheduleFinished,
 }: ScheduledComicParams) {
+  const globalContext: GlobalAdminContext = useOutletContext();
+  const isAdmin = isUserAdmin(globalContext.user);
+
   const fetcher = useGoodFetcher({
     url: '/api/admin/unschedule-comic',
     method: 'post',
@@ -28,6 +33,10 @@ export function ScheduledComic({
 
   return (
     <>
+      {comicData.metadata?.source && (
+        <p className="mb-4 -mt-2">Pages source: {comicData.metadata.source}</p>
+      )}
+
       {hasDate ? (
         <p className="mb-2 -mt-2">
           <b>Scheduled for {format(comicData.metadata?.publishDate || '', 'PPP')}</b>
@@ -46,16 +55,16 @@ export function ScheduledComic({
               text={
                 hasDate ? 'Unschedule (set pending)' : 'Remove from queue (set pending)'
               }
-              startIcon={IoClose}
               isLoading={fetcher.isLoading}
               color="error"
               isSubmit
             />
-            <Button
-              text={hasDate ? 'Re-schedule' : 'Schedule for specific date'}
-              onClick={onReschedule}
-              variant="outlined"
-            />
+            {isAdmin && (
+              <Button
+                text={hasDate ? 'Re-schedule' : 'Schedule for specific date'}
+                onClick={onReschedule}
+              />
+            )}
           </div>
         </div>
       </fetcher.Form>

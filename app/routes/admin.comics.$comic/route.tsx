@@ -92,10 +92,10 @@ export default function ManageComicInner() {
       {isPendingOrScheduled && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>Pending comic</h3>
-          <p>
+          <p className="text-sm">
             This comic is not live. It has been uploaded by a mod, or by a user and then
-            passed mod review. Once all data is correct, an admin can schedule or publish
-            the comic.
+            passed mod review. Once all data is correct, the comic should be added to the
+            publishing queue.
           </p>
           <p className="mb-4 mt-2">
             <Link

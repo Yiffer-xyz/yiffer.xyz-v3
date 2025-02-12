@@ -182,7 +182,9 @@ export default function ComicPage() {
           {!isPublished && (
             <div className="bg-theme1-primaryTrans p-4 pt-3 w-full md:w-[728px] mt-2 -mb-4">
               <h4>Comic preview</h4>
-              <p>This comic is not live, and is inaccessible to non-mod users.</p>
+              <p className="text-sm">
+                This comic is not live, and is inaccessible to non-mod users.
+              </p>
               <Link
                 href={`/admin/comics/${comic?.id}`}
                 text="Edit comic in mod panel"

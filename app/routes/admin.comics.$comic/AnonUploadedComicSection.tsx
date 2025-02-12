@@ -39,7 +39,7 @@ export default function AnonUploadSection({
 
   return (
     <>
-      <p className="mt-2">
+      <p className="mt-2 text-sm">
         This comic is not live. It has been uploaded by a user and is now up for mod
         review.
       </p>

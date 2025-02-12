@@ -27,7 +27,7 @@ export function Reject({ comicData, onCancel, onFinish }: RejectParams) {
 
         <InfoBox
           variant="info"
-          text="If you're unsure about rejecting, ask on Telegram."
+          text="This comic has already been approved by a mod. Be very sure about rejecting - asking on Telegram might be wise."
           small
           boldText={false}
           fitWidth
