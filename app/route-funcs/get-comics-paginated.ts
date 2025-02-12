@@ -304,13 +304,18 @@ function makeInefficientInnerQuery({
     SELECT
       comic.id AS id, comic.name, comic.category, comic.publishStatus,
       artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages,
-      SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
+      COALESCE(comicRatings.sumStars, 0) AS sumStars,
+      COALESCE(comicRatings.numTimesStarred, 0) AS numTimesStarred
       ${userId ? ', userCR.rating AS yourStars' : ''}
       ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
       ${includeTagsConcatString}
     FROM comic
     INNER JOIN artist ON (artist.id = comic.artist)
-    LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
+    LEFT JOIN (
+      SELECT comicId, SUM(rating) AS sumStars, COUNT(rating) AS numTimesStarred
+      FROM comicrating
+      GROUP BY comicId
+    ) AS comicRatings ON comic.id = comicRatings.comicId
     ${includeTagsJoinString}
     ${innerJoinKeywordString}
     ${userId ? yourStarsQuery : ''}

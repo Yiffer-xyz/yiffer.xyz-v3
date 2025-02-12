@@ -23,6 +23,13 @@ export default function PrivacyPage() {
 
       <div className="flex flex-col gap-6 mt-4">
         <ChangelogItem
+          date="2025-02-11"
+          texts={[
+            'Fixed email changing not working.',
+            'Fixed incorrect sum of user stars on comics viewed from an artist page.',
+          ]}
+        />
+        <ChangelogItem
           date="2025-02-10"
           texts={[
             'Added this changelog page!',
