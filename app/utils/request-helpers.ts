@@ -68,23 +68,6 @@ export async function logApiError(
   await logErrorExternally(logError);
 }
 
-export async function logErrorExternally(logError: ExternalLogError) {
-  try {
-    console.log('Logging error...');
-    await fetch('https://images-srv.testyiffer.xyz/error-log', {
-      // await fetch('http://localhost:8770/error-log', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logError),
-    });
-    console.log('Error logged');
-  } catch (e) {
-    console.log('Error logging error', e);
-  }
-}
-
 function errToExternalLogError(
   prependMessage: string | undefined,
   err: ApiError,
@@ -229,3 +212,36 @@ export function createSuccessJson(data?: any): ApiResponse {
 export async function noGetRoute() {
   return new Response('Cannot GET this route', { status: 405 });
 }
+
+export async function logErrorExternally(logError: ExternalLogError) {
+  if (
+    errMessagePatternsToIgnore.some(pattern =>
+      logError.error.logMessage.includes(pattern)
+    )
+  ) {
+    return;
+  }
+
+  try {
+    console.log('Logging error...');
+    await fetch('https://images-srv.yiffer.xyz/error-log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logError),
+    });
+    console.log('Error logged');
+  } catch (e) {
+    console.log('Error logging error', e);
+  }
+}
+
+const errMessagePatternsToIgnore = [
+  'NetworkError when attempting to fetch resource',
+  'Failed to fetch',
+  "Cannot read properties of null (reading 'useContext')",
+  '(intermediate value)() is null',
+  "(evaluating 'Be.current.useContext')",
+  'Load failed',
+];
