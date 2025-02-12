@@ -43,7 +43,6 @@ export default function PageManager({
   source,
 }: PageManagerProps) {
   const { isMobile } = useWindowSize();
-  // const [fullSizeImage, setFullSizeImage] = useState<ComicImage | undefined>(undefined);
   const [fullSizeImageIndex, setFullSizeImageIndex] = useState<number | undefined>(
     undefined
   );
@@ -52,6 +51,13 @@ export default function PageManager({
   >(undefined);
   const [manualPageChangeNewPosition, setManualPageChangeNewPosition] =
     useState<string>('1');
+
+  const fullSizeImageSource = useMemo(() => {
+    if (fullSizeImageIndex === undefined) return undefined;
+    if (files[fullSizeImageIndex].url)
+      return `${files[fullSizeImageIndex].url}?${randomString}`;
+    return files[fullSizeImageIndex].base64;
+  }, [files, fullSizeImageIndex, randomString]);
 
   const pageImgHeight = isMobile ? MOBILE_PAGE_IMG_HEIGHT : 160;
   const pageContainerHeight = pageImgHeight + PAGE_NAME_HEIGHT;
@@ -231,7 +237,7 @@ export default function PageManager({
         >
           <div className="relative" style={{ maxHeight: '90%', maxWidth: '90%' }}>
             <img
-              src={files[fullSizeImageIndex].url || files[fullSizeImageIndex].base64}
+              src={fullSizeImageSource}
               style={{ maxHeight: '90vh', maxWidth: '90vw' }}
               alt={files[fullSizeImageIndex].file?.name || files[fullSizeImageIndex].url}
             />
