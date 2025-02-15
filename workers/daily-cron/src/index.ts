@@ -5,6 +5,7 @@ export interface Env {
 
 export default {
   async scheduled(_: FetchEvent, env: Env, __: ExecutionContext): Promise<void> {
+    console.log('Cron triggering');
     await callCronScheduleEndpoint(env);
     await callCronUpdateExpiredAdsEndpoint(env);
     await callClearSpammableActionsEndpoint(env);
@@ -12,18 +13,20 @@ export default {
   },
 
   async fetch(_: FetchEvent, env: Env, __: ExecutionContext): Promise<Response> {
-    const scheduleResult = await callCronScheduleEndpoint(env);
-    const expiredResult = await callCronUpdateExpiredAdsEndpoint(env);
-    const clearSpammableResult = await callClearSpammableActionsEndpoint(env);
-    const syncPatreonResult = await syncPatreonTiers(env);
-    return new Response(
-      JSON.stringify({
-        scheduleResult,
-        expiredResult,
-        clearSpammableResult,
-        syncPatreonResult,
-      })
-    );
+    console.log('Fetched via URL');
+    return new Response('Service not callable via URL.');
+    // const scheduleResult = await callCronScheduleEndpoint(env);
+    // const expiredResult = await callCronUpdateExpiredAdsEndpoint(env);
+    // const clearSpammableResult = await callClearSpammableActionsEndpoint(env);
+    // const syncPatreonResult = await syncPatreonTiers(env);
+    // return new Response(
+    //   JSON.stringify({
+    //     scheduleResult,
+    //     expiredResult,
+    //     clearSpammableResult,
+    //     syncPatreonResult,
+    //   })
+    // );
   },
 };
 
