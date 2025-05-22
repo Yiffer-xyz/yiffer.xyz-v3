@@ -1,5 +1,6 @@
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { MetaFunction } from '@remix-run/cloudflare';
+import { format } from 'date-fns';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -22,6 +23,10 @@ export default function PrivacyPage() {
       </p>
 
       <div className="flex flex-col gap-6 mt-4">
+        <ChangelogItem
+          date="2025-05-21"
+          texts={['Implemented change username functionality.']}
+        />
         <ChangelogItem
           date="2025-02-12"
           texts={[
@@ -77,7 +82,7 @@ export default function PrivacyPage() {
 function ChangelogItem({ date, texts }: { date: string; texts: string[] }) {
   return (
     <div>
-      <p className="font-bold">{date}</p>
+      <p className="font-bold">{format(new Date(date), 'PPP')}</p>
       {texts.map(text => (
         <p key={text}>{text}</p>
       ))}

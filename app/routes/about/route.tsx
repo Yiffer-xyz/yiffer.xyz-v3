@@ -23,16 +23,16 @@ export default function AboutPage() {
           includeRightArrow
         />
         <LinkCard
-          title="Contact and takedowns"
-          description="Contact us or request a takedown of your content as an artist."
-          href="/about/contact"
+          title="Changelog"
+          description="See what we're doing to improve the site."
+          href="/about/changelog"
           className="h-full sm:max-w-[440px]"
           includeRightArrow
         />
         <LinkCard
-          title="Changelog"
-          description="See what we're doing to improve the site."
-          href="/about/changelog"
+          title="Contact and takedowns"
+          description="Contact us or request a takedown of your content as an artist."
+          href="/about/contact"
           className="h-full sm:max-w-[440px]"
           includeRightArrow
         />
