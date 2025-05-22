@@ -196,6 +196,11 @@ export function useGoodFetcher<T = void>({
     [fetcher, method, url]
   );
 
+  // There's no built-in way to reset a fetcher, but this works.
+  function reset() {
+    fetcher.submit({}, { method: 'post', action: '/api/reset-fetcher' });
+  }
+
   return {
     data: returnData,
     isError: !!fetcher.data?.error && fetcher.state === 'idle',
@@ -206,6 +211,7 @@ export function useGoodFetcher<T = void>({
     submit: submit,
     awaitSubmit: awaitSubmit,
     Form: form,
+    reset,
   };
 }
 
