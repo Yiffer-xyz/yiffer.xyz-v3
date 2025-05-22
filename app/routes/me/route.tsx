@@ -33,7 +33,7 @@ export default function AccountPage() {
           href="/me/account"
           title="Account settings"
           includeRightArrow
-          description="Change email, password"
+          description="Change username, email, or password"
           className="mt-4"
         />
 

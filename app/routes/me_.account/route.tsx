@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import { capitalizeString } from '~/utils/general';
 import { fullUserLoader } from '~/utils/loaders';
-import ChangePasswordOrEmail from './ChangePasswordOrEmail';
+import ChangeAccountData from './ChangeAccountData';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -28,7 +28,7 @@ export default function AccountPage() {
         currentRoute="Account settings"
       />
 
-      <p className="mt-6">
+      <p>
         <span className="font-bold">Username:</span> {user.username}
       </p>
 
@@ -45,7 +45,7 @@ export default function AccountPage() {
         {format(user.createdTime, 'PPPP')}
       </p>
 
-      <ChangePasswordOrEmail />
+      <ChangeAccountData />
     </div>
   );
 }

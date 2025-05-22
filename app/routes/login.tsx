@@ -123,7 +123,7 @@ export async function action(args: ActionFunctionArgs) {
     password,
     db: args.context.cloudflare.env.DB,
     jwtConfigStr: args.context.cloudflare.env.JWT_CONFIG_STR,
-    redirectTo,
+    redirectTo: redirectTo ?? '/',
   });
 
   if (err) {

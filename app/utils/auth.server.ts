@@ -30,6 +30,29 @@ type LoginArgs = {
   redirectTo?: string;
 };
 
+// Sometimes we need to update the session without redirecting - import and use this.
+export async function authenticateAndGetHeaders({
+  username,
+  password,
+  db,
+  jwtConfigStr,
+}: LoginArgs): Promise<{
+  err?: ApiError;
+  errorMessage?: string;
+  headers?: Headers;
+}> {
+  const { err, errorMessage, user } = await authenticate(db, username, password);
+  if (err) {
+    return { err };
+  }
+  if (errorMessage) {
+    return { errorMessage };
+  }
+
+  const headers = await createUserSessionHeaders(user as SimpleUser, jwtConfigStr);
+  return { headers };
+}
+
 export async function login({
   username,
   password,
@@ -37,15 +60,19 @@ export async function login({
   jwtConfigStr,
   redirectTo,
 }: LoginArgs): Promise<AuthResponse> {
-  const { err, errorMessage, user } = await authenticate(db, username, password);
+  const { err, errorMessage, headers } = await authenticateAndGetHeaders({
+    username,
+    password,
+    db,
+    jwtConfigStr,
+  });
+
   if (err) {
     return { err: wrapApiError(err, 'Error in login func', { username, password }) };
   }
   if (errorMessage) {
     return { errorMessage };
   }
-
-  const headers = await createUserSessionHeaders(user as SimpleUser, jwtConfigStr);
   return { redirect: redirect(redirectTo || '/', { headers }) };
 }
 
@@ -336,7 +363,7 @@ async function createJwtAuthCookieHeader(
   // Creating it manually, because the Remix methods transform it for some reason??
   return `${jwtConfig.cookie.name}=${token}; Max-Age=${jwtConfig.cookie.maxAge}; Domain=${
     jwtConfig.cookie.domain
-  };${jwtConfig.cookie.secure ? ' Secure;' : ''}${
+  }; Path=/;${jwtConfig.cookie.secure ? ' Secure;' : ''}${
     jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''
   }`;
 }
@@ -354,7 +381,7 @@ function createUserDataCookieHeader(userData: any, jwtConfig: JwtConfig) {
   // Creating it manually, because the Remix methods transform it for some reason??
   return `yiffer_userdata=${JSON.stringify(userData)}; Max-Age=${
     jwtConfig.cookie.maxAge
-  }; Domain=${jwtConfig.cookie.domain}; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
+  }; Domain=${jwtConfig.cookie.domain}; Path=/; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
 }
 
 function destroyUserDataCookieHeader(jwtConfig: JwtConfig) {
