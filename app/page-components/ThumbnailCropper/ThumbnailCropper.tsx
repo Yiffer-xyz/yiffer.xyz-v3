@@ -16,6 +16,8 @@ export interface ThumbnailCropperProps {
   onComplete: (croppedThumbnail: ComicImage) => void;
   onClose: () => void;
   isLoading?: boolean;
+  mode: 'modal' | 'inline';
+  title?: string;
 }
 
 export default function ThumbnailCropper({
@@ -26,6 +28,8 @@ export default function ThumbnailCropper({
   onComplete,
   image,
   isLoading,
+  mode,
+  title,
 }: ThumbnailCropperProps) {
   const cropperRef = useRef<ReactCropperElement | null>(null);
   const [currentCropEvent, setCurrentCropEvent] = useState<Cropper.CropEvent | null>(
@@ -39,6 +43,7 @@ export default function ThumbnailCropper({
   const [mobileStep, setMobileStep] = useState(1);
 
   const aspectRatio = minWidth / minHeight;
+  const isInline = mode === 'inline';
 
   const step1Width = useMemo(() => {
     if (isXlUp) return 500;
@@ -84,22 +89,34 @@ export default function ThumbnailCropper({
         }
       });
     });
-    setCropResult({ base64, file });
-    setMobileStep(2);
+
+    if (isInline) {
+      onComplete({ base64, file });
+    } else {
+      setCropResult({ base64, file });
+      setMobileStep(2);
+    }
   }
+
+  const wrapperClassName = !isInline
+    ? 'fixed inset-0 z-20 flex items-center justify-center mx-4'
+    : '';
+  const innerWrapperClassName = !isInline
+    ? 'bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 w-auto sm:w-full lg:max-w-4xl xl:max-w-5xl flex flex-col'
+    : '';
+  const colClass = isInline ? '' : 'sm:w-1/2';
 
   return (
     <>
-      <div className="fixed inset-0 z-10 bg-black bg-opacity-50 dark:bg-opacity-80" />
-      <div className="fixed inset-0 z-20 flex items-center justify-center mx-4">
-        <div className="bg-white dark:bg-gray-300 rounded-lg shadow-lg p-4 w-auto sm:w-full lg:max-w-4xl xl:max-w-5xl flex flex-col">
-          {!isMobile && <p className="text-xl mb-2 text-center">Crop thumbnail</p>}
+      {!isInline && (
+        <div className="fixed inset-0 z-10 bg-black bg-opacity-50 dark:bg-opacity-80" />
+      )}
+      <div className={wrapperClassName}>
+        <div className={innerWrapperClassName}>
+          {title && <p className="text-xl mb-2 text-center">{title}</p>}
           <div className="flex flex-col sm:flex-row">
             {(!isMobile || mobileStep === 1) && (
-              <div className="flex flex-col items-center w-full sm:w-1/2 gap-2">
-                <p>
-                  <b>Crop image</b>
-                </p>
+              <div className={`flex flex-col items-center w-full ${colClass} gap-2`}>
                 <Cropper
                   src={image.base64 ?? image.url}
                   style={{ height: step1Height, width: step1Width }}
@@ -126,13 +143,14 @@ export default function ThumbnailCropper({
                     )}
                   </InfoBox>
                 )}
-                <Button
+                <LoadingButton
                   variant="contained"
                   color="primary"
                   onClick={onCrop}
                   text="Crop"
                   className="mt-1 mb-0.5"
                   style={{ width: step1Width }}
+                  isLoading={isInline && !!isLoading}
                 />
                 <Button
                   variant={'outlined'}
@@ -144,11 +162,8 @@ export default function ThumbnailCropper({
               </div>
             )}
 
-            {(!isMobile || mobileStep === 2) && (
+            {!isInline && (!isMobile || mobileStep === 2) && (
               <div className="flex flex-col items-center gap-2 w-full sm:w-1/2">
-                <p>
-                  <b>Preview and confirm</b>
-                </p>
                 {cropResult && (
                   <>
                     <img

@@ -1,7 +1,7 @@
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
-import { getUserById } from './get-user';
+import { getUserByField } from './get-user';
 
 type RatingCount = {
   rating: number;
@@ -45,13 +45,13 @@ export async function getOldComicRatingSummary(
     return { result: [] as RatingCount[] };
   }
 
-  const userQuery = await getUserById(db, userId);
+  const userQuery = await getUserByField({ db, field: 'id', value: userId });
 
   if (userQuery.err) {
     return { err: wrapApiError(userQuery.err, 'Could not get user', { userId }) };
   }
 
-  if (userQuery.result.hasCompletedConversion) {
+  if (!userQuery.notFound && userQuery.result.hasCompletedConversion) {
     return { result: [] as RatingCount[] };
   }
 

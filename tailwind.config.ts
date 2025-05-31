@@ -104,6 +104,9 @@ export const colors = {
     100: '#1e2224',
     borderLight: '#aaaaaa44',
   },
+  patreon: {
+    primary: '#ff424d',
+  },
 };
 
 export default {

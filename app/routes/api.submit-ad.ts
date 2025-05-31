@@ -16,7 +16,7 @@ import {
 } from '~/utils/send-email';
 import { validateAdData } from '~/utils/general';
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { getUserById } from '~/route-funcs/get-user';
+import { getUserByField } from '~/route-funcs/get-user';
 
 export { noGetRoute as loader };
 
@@ -65,8 +65,9 @@ export async function submitAd(
   data: SubmitAdFormData,
   user: UserSession
 ): Promise<ApiError | undefined> {
-  const fullUser = await getUserById(db, user.userId);
+  const fullUser = await getUserByField({ db, field: 'id', value: user.userId });
   if (fullUser.err) return fullUser.err;
+  if (fullUser.notFound) return { logMessage: 'User not found' };
 
   const insertQuery = `INSERT INTO advertisement
     (id, adType, mediaType, adName, link, mainText, secondaryText, userId, isAnimated, advertiserNotes, freeTrialState, videoSpecificFileType)

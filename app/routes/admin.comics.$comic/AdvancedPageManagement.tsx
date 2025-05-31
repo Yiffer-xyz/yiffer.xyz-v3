@@ -53,7 +53,7 @@ export default function AdvancedPageManagement({
 
       <h4 className="mt-4">Comic files</h4>
       <p>Show the stored files in the comic's folder, and make changes to them.</p>
-      <ComicFileManager comic={comic} imagesServerUrl={imagesServerUrl} />
+      <ComicFileManager comic={comic} />
     </div>
   );
 }

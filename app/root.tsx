@@ -39,7 +39,7 @@ import { useEffect, useMemo } from 'react';
 import posthog from 'posthog-js';
 import * as gtag from './utils/gtag.client';
 import { useAuthRedirect } from './utils/general';
-import { getUserById } from './route-funcs/get-user';
+import { getUserByField } from './route-funcs/get-user';
 import { processApiError } from './utils/request-helpers';
 
 export const links: LinksFunction = () => [
@@ -79,9 +79,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   // Double check by fetching from db, not just the cookie.
   if (isMissingEmail && userSession?.userId) {
-    const userRes = await getUserById(context.cloudflare.env.DB, userSession?.userId);
+    const userRes = await getUserByField({
+      db: context.cloudflare.env.DB,
+      field: 'id',
+      value: userSession?.userId,
+    });
     if (userRes.err) return processApiError('Error in root', userRes.err);
-    if (userRes.result.email) {
+    if (!userRes.notFound && userRes.result.email) {
       isMissingEmail = false;
     }
   }

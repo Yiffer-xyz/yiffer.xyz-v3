@@ -89,10 +89,8 @@ export default function Button({
   }
 
   if (disabled && variant === 'outlined') {
-    variantClassname += ` bg-transparent border-2 border-gray-800 dark:border-gray-600
-    text-gray-800 dark:text-gray-700 cursor-not-allowed
-    hover:bg-transparent focus:bg-transparent dark:hover:bg-transparent dark:focus:bg-transparent
-    hover:text-gray-800 focus:text-gray-800 hover:border-gray-800 focus:border-gray-800`;
+    variantClassname += ` !bg-transparent border-2 !border-gray-700 dark:!border-gray-600
+    !text-gray-700 dark:!text-gray-700 cursor-not-allowed`;
   }
 
   if (disabled && variant === 'naked') {

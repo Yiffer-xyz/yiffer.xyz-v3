@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MdDelete, MdOpenInNew } from 'react-icons/md';
+import { MdOpenInNew } from 'react-icons/md';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import InfoBox from '~/ui-components/InfoBox';
 import TextInput from '~/ui-components/TextInput/TextInput';
@@ -7,9 +7,9 @@ import type { SimilarArtistResponse } from '~/routes/api.search-similar-artist';
 import type { Artist } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { NewArtist } from '~/routes/contribute_.upload/route';
-import IconButton from '~/ui-components/Buttons/IconButton';
 import e621Pic from '~/assets/misc/e621-instruction.png';
 import Link from '~/ui-components/Link';
+import LinksEditor from '~/ui-components/LinksEditor/LinksEditor';
 
 type ArtistEditorProps = {
   newArtistData: NewArtist;
@@ -37,7 +37,6 @@ export default function ArtistEditor({
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
-  const [isLinksError, setIsLinksError] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function updateArtist(newArtist: NewArtist) {
@@ -71,34 +70,11 @@ export default function ArtistEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newArtistData.artistName, existingArtist?.name]);
 
-  function onLinkChanged(linkIndex: number, newVal: string) {
-    const newLinks = [...newArtistData.links];
-    newLinks[linkIndex] = newVal;
-    onLinksChange(newLinks);
-  }
-
-  function onDeleteLink(linkIndex: number) {
-    const newLinks = [...newArtistData.links];
-    newLinks.splice(linkIndex, 1);
-    onLinksChange(newLinks);
-  }
-
   function onLinksChange(newLinks: string[]) {
-    // Add new empty link if all links are filled
-    if (newLinks.length > 0 && newLinks.every(l => l.length > 0)) {
-      newLinks.push('');
-    }
-
+    updateArtist({ ...newArtistData, links: newLinks });
     if (!newLinks.every(l => l.length === 0)) {
       setNoLinks(false);
     }
-
-    const isLinksError = newLinks.some(
-      l => l.length && !l.startsWith('http://') && !l.startsWith('https://')
-    );
-    setIsLinksError(isLinksError);
-
-    updateArtist({ ...newArtistData, links: newLinks, areLinksValid: !isLinksError });
   }
 
   // Update validity of name, as this data only exists here locally. All other validation is done in submit logic.
@@ -307,48 +283,14 @@ export default function ArtistEditor({
 
       <div className="flex flex-col gap-2 mt-4">
         {!noLinks && (
-          <>
-            {newArtistData.links.map((link, i) => {
-              const isLastLink = i === newArtistData.links.length - 1;
-              return (
-                <div
-                  className={`flex flex-row -mt-1 items-end ${isLastLink ? 'mr-10' : ''}`}
-                  key={i}
-                >
-                  <TextInput
-                    key={i}
-                    label={`Link:`}
-                    name={`otherLink${i}`}
-                    value={link}
-                    placeholder="e.g. https://twitter.com/meesh"
-                    onChange={newVal => onLinkChanged(i, newVal)}
-                    className="mt-2 grow"
-                    disabled={noLinks}
-                  />
-
-                  {!isLastLink && (
-                    <IconButton
-                      className="ml-2 mt-4"
-                      color="primary"
-                      variant="naked"
-                      icon={MdDelete}
-                      onClick={() => onDeleteLink(i)}
-                    />
-                  )}
-                </div>
-              );
-            })}
-
-            {isLinksError && (
-              <InfoBox
-                variant="error"
-                className="mt-2"
-                fitWidth
-                text='Links must include "http://" or "https://"'
-                showIcon
-              />
-            )}
-          </>
+          <LinksEditor
+            links={newArtistData.links}
+            onChange={onLinksChange}
+            disabled={noLinks}
+            placeholder="e.g. https://twitter.com/meesh"
+            variant="auto-adding"
+            inputLabel="Link"
+          />
         )}
 
         {newArtistData.links.every(l => l.length === 0) && (

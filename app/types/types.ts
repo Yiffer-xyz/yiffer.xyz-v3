@@ -2,6 +2,7 @@
 // other bindings such as R2, D1 sql, created locally through runtime
 // arguments (see package.json, --r2=<BUCKET> etc).
 export interface Env {
+  IS_LOCAL_DEV: string;
   FRONT_END_URL_BASE: string;
   IMAGES_SERVER_URL: string;
   PAGES_PATH: string;
@@ -183,15 +184,7 @@ export type UserSession = {
   email: string | null;
   userType: UserType;
   patreonDollars?: number | null;
-};
-
-// Used for auth, where we don't need all the fields
-export type SimpleUser = {
-  id: number;
-  username: string;
-  email: string | null;
-  userType: UserType;
-  patreonDollars?: number | null;
+  profilePictureToken?: string | null;
 };
 
 export function isModOrAdmin({ userType }: { userType: UserType | undefined }) {
@@ -216,7 +209,24 @@ export type User = {
   hasCompletedConversion: boolean;
   patreonEmail?: string;
   patreonDollars?: number;
+  bio?: string;
+  nationality?: string | null;
+  publicProfileLinks: string[];
+  contributionPoints: number;
+  profilePictureToken?: string | null;
 };
+
+export type PublicUser = Omit<
+  User,
+  | 'email'
+  | 'isBanned'
+  | 'banReason'
+  | 'banTime'
+  | 'lastActionTime'
+  | 'modNotes'
+  | 'hasCompletedConversion'
+  | 'patreonEmail'
+>;
 
 export type Patron = {
   userId: number;

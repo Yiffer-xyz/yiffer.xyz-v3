@@ -1,4 +1,4 @@
-import { getUserByEmail } from '~/route-funcs/get-user';
+import { getUserByField } from '~/route-funcs/get-user';
 import { type ApiError, wrapApiError, makeDbErr, makeDbErrObj } from './request-helpers';
 import { randomString } from './general';
 import { queryDb, queryDbExec } from './database-facade';
@@ -12,7 +12,7 @@ export async function resetPassword(
   frontEndUrlBase: string,
   email: string
 ): Promise<ApiError | undefined> {
-  const userRes = await getUserByEmail(db, email);
+  const userRes = await getUserByField({ db, field: 'email', value: email });
 
   if (userRes.err) {
     return wrapApiError(userRes.err, 'Error getting user in resetPassword', { email });

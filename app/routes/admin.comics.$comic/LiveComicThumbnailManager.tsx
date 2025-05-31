@@ -176,6 +176,8 @@ export default function LiveComicThumbnailManager({
 
           {(pageNumForCrop || fileToCrop) && (
             <ThumbnailCropper
+              title="Crop thumbnail"
+              mode="modal"
               minHeight={678}
               minWidth={480}
               image={

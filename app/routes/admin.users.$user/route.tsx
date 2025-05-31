@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
-import { getUserById } from '~/route-funcs/get-user';
+import { getUserByField } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
-import type { ResultOrError } from '~/utils/request-helpers';
+import type { ResultOrError, ResultOrNotFoundOrError } from '~/utils/request-helpers';
 import { processApiError } from '~/utils/request-helpers';
 import Select from '~/ui-components/Select/Select';
 import { useState } from 'react';
@@ -216,12 +216,16 @@ export async function loader(args: LoaderFunctionArgs) {
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
 
-  const userResPromise = getUserById(args.context.cloudflare.env.DB, userId);
+  const userResPromise = getUserByField({
+    db,
+    field: 'id',
+    value: userId,
+  });
   const contributionsResPromise = getContributions(db, userId);
   const feedbackResPromise = getFeedback({ db, userId });
 
   const responses: [
-    ResultOrError<User>,
+    ResultOrNotFoundOrError<User>,
     ResultOrError<Contribution[]>,
     ResultOrError<Feedback[]>,
   ] = await Promise.all([userResPromise, contributionsResPromise, feedbackResPromise]);

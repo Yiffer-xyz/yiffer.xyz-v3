@@ -113,6 +113,8 @@ export default function ImageAdMedia({
 
       {fileToCrop && (
         <ThumbnailCropper
+          title="Crop thumbnail"
+          mode="modal"
           minHeight={ad.minDimensions.height}
           minWidth={ad.minDimensions.width}
           idealWidth={ad.idealDimensions?.width}
