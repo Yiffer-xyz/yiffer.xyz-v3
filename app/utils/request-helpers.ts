@@ -10,6 +10,12 @@ export type ResultOrErrorPromise<T> = Promise<
 >;
 export type ResultOrError<T> = { result: T; err?: undefined } | { err: ApiError };
 
+export type ResultOrNotFoundOrError<T> =
+  | { err: ApiError }
+  | { notFound: true; err?: undefined }
+  | { result: T; notFound?: undefined; err?: undefined };
+
+// Could just be Promise<ResultOrNotFoundOrError<T>>, but this is nicer in vscode editing (hovers better)
 export type ResultOrNotFoundOrErrorPromise<T> = Promise<
   | { err: ApiError }
   | { notFound: true; err?: undefined }
@@ -245,3 +251,8 @@ const errMessagePatternsToIgnore = [
   "(evaluating 'Be.current.useContext')",
   'Load failed',
 ];
+
+export function getSourceFromRequest(request: Request): string | null {
+  const url = new URL(request.url);
+  return url.searchParams.get('source');
+}

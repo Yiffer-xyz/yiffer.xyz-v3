@@ -1,21 +1,28 @@
-import type { User } from '~/types/types';
+import { contributionPointEntryToPoints } from '~/types/contributions';
+import { isModOrAdmin, type ContributionPointsEntry, type User } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type {
   ResultOrErrorPromise,
   ResultOrNotFoundOrErrorPromise,
 } from '~/utils/request-helpers';
-import { makeDbErrObj } from '~/utils/request-helpers';
+import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 
 type DbUser = Omit<
   User,
-  'createdTime' | 'banTime' | 'lastActionTime' | 'isBanned' | 'hasCompletedConversion'
+  | 'createdTime'
+  | 'banTime'
+  | 'lastActionTime'
+  | 'isBanned'
+  | 'hasCompletedConversion'
+  | 'publicProfileLinks'
 > & {
   createdTime: string;
   banTime: string;
   lastActionTime: string;
   isBanned: 0 | 1;
   hasCompletedConversion: 0 | 1;
+  publicProfileLinks?: string;
 };
 
 export async function searchUsers(
@@ -44,64 +51,117 @@ export async function searchUsers(
   return { result: users };
 }
 
-export async function getUserById(
-  db: D1Database,
-  userId: number
-): ResultOrErrorPromise<User> {
-  const userQuery = `
-    SELECT id, username, email, userType, createdTime, isBanned, banReason, 
-      banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes, hasCompletedConversion,
-      patreonEmail, patreonDollars
-    FROM user
-    WHERE id = ?
-    LIMIT 1
-  `;
-
-  const dbRes = await queryDb<DbUser[]>(db, userQuery, [userId], 'User by ID');
-  if (dbRes.isError || !dbRes.result || dbRes.result.length === 0) {
-    return makeDbErrObj(dbRes, 'Error getting user', { userId });
+export async function getUserByField({
+  db,
+  field,
+  value,
+  includeContributionPoints = false,
+}: {
+  db: D1Database;
+  field: 'email' | 'username' | 'id';
+  value: string | number;
+  includeContributionPoints?: boolean;
+}): ResultOrNotFoundOrErrorPromise<User> {
+  let whereStr = `WHERE user.${field} = ?`;
+  if (field === 'email' || field === 'username') {
+    whereStr += ' COLLATE NOCASE';
   }
 
-  const user = dbUserToUser(dbRes.result[0]);
-
-  return { result: user };
-}
-
-export async function getUserByEmail(
-  db: D1Database,
-  email: string
-): ResultOrNotFoundOrErrorPromise<User> {
   const userQuery = `
-    SELECT id, username, email, userType, createdTime, isBanned, banReason, modNotes,
+    SELECT user.id, username, email, userType, createdTime, isBanned, banReason, modNotes,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion,
-      patreonEmail, patreonDollars
+      patreonEmail, patreonDollars, bio, nationality, publicProfileLinks, profilePictureToken
     FROM user
-    WHERE email = ? COLLATE NOCASE
+    ${whereStr}
     LIMIT 1
   `;
 
-  const dbRes = await queryDb<DbUser[]>(db, userQuery, [email], 'User by email');
+  const dbRes = await queryDb<DbUser[]>(db, userQuery, [value], `User by ${field}`);
   if (dbRes.isError || !dbRes.result) {
-    return makeDbErrObj(dbRes, 'Error getting user', { email });
+    return makeDbErrObj(dbRes, 'Error getting user', { field, value });
   }
-  if (dbRes.result.length === 0) {
+  if (dbRes.result.length === 0 || dbRes.result[0].id === null) {
     return { notFound: true };
   }
 
   const user = dbUserToUser(dbRes.result[0]);
 
+  if (includeContributionPoints) {
+    const contributionPointsRes = await getUserContributionPoints(db, user);
+    if (contributionPointsRes.err) {
+      return {
+        err: wrapApiError(
+          contributionPointsRes.err,
+          'Error getting contribution points for user by field',
+          { field, value }
+        ),
+      };
+    }
+    user.contributionPoints = contributionPointsRes.result;
+  }
+
   return { result: user };
 }
 
 function dbUserToUser(user: DbUser): User {
-  return {
+  const convertedUser: User = {
     ...user,
     isBanned: !!user.isBanned,
     createdTime: parseDbDateStr(user.createdTime),
     banTime: user.banTime ? parseDbDateStr(user.banTime) : undefined,
     lastActionTime: user.lastActionTime ? parseDbDateStr(user.lastActionTime) : undefined,
     hasCompletedConversion: !!user.hasCompletedConversion,
+    publicProfileLinks: user.publicProfileLinks ? user.publicProfileLinks.split(',') : [],
   };
+
+  return convertedUser;
+}
+
+async function getUserContributionPoints(
+  db: D1Database,
+  user: User
+): ResultOrErrorPromise<number> {
+  if (isModOrAdmin(user)) {
+    const modActionQuery = `SELECT SUM(points) AS points FROM modaction WHERE userId = ?`;
+
+    const modActionRes = await queryDb<{ points: number }[]>(
+      db,
+      modActionQuery,
+      [user.id],
+      `Mod action points for user`
+    );
+
+    if (modActionRes.isError) {
+      return makeDbErrObj(modActionRes, 'Error getting mod action points', {
+        userId: user.id,
+      });
+    }
+
+    return { result: modActionRes.result[0].points };
+  } else {
+    const contribPointsQuery =
+      "SELECT * FROM contributionpoints WHERE userId = ? AND yearMonth = 'all-time'";
+
+    const contribPointsRes = await queryDb<ContributionPointsEntry[]>(
+      db,
+      contribPointsQuery,
+      [user.id],
+      `Contribution points for user`
+    );
+
+    if (contribPointsRes.isError) {
+      return makeDbErrObj(contribPointsRes, 'Error getting contribution points', {
+        userId: user.id,
+      });
+    }
+
+    let contributionPoints = 0;
+    for (const contribPointEntry of contribPointsRes.result) {
+      contributionPoints += contributionPointEntryToPoints(contribPointEntry);
+    }
+
+    return { result: contributionPoints };
+  }
 }
 
 export async function getUsersByPatreonEmails(

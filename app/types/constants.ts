@@ -17,6 +17,13 @@ export const defaultTitle = { title: 'Yiffer.xyz' };
 
 export const DB_ANALYTICS_SAMPLE_RATE = 0.005;
 
+export const MAX_USER_BIO_LENGTH = 300;
+
+export const PROFILE_PIC_SIZE = 400;
+
+export const R2_PROFILE_PICTURES_FOLDER = 'profile-photos';
+export const R2_TEMP_PICTURES_FOLDER = 'temp';
+
 export const COMIC_PROBLEM_CATEGORIES = [
   {
     title: 'Update missing',

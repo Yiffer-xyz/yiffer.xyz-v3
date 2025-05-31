@@ -1,3 +1,17 @@
+export function generateToken() {
+  const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let token = '';
+  for (let i = 0; i < 24; i++) {
+    token += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return token;
+}
+
+export function isValidToken(token: string): boolean {
+  const regex = /^[a-zA-Z]{24}$/;
+  return regex.test(token);
+}
+
 // Calculates the "distance" between two strings. Written by copilot.
 export function stringDistance(aCased: string, bCased: string): number {
   const a = aCased.toLowerCase();

@@ -1,3 +1,5 @@
+import type { ContributionPointsEntry } from './types';
+
 export const CONTRIBUTION_POINTS = {
   tagSuggestion: {
     points: 5,
@@ -77,3 +79,22 @@ export const CONTRIBUTION_POINTS = {
     },
   },
 };
+
+export function contributionPointEntryToPoints(entry: ContributionPointsEntry) {
+  let points = 0;
+
+  points += CONTRIBUTION_POINTS.tagSuggestion.points * entry.tagSuggestion;
+  points += CONTRIBUTION_POINTS.comicProblem.points * entry.comicProblem;
+  points += CONTRIBUTION_POINTS.comicSuggestion.good.points * entry.comicSuggestiongood;
+  points += CONTRIBUTION_POINTS.comicSuggestion.bad.points * entry.comicSuggestionbad;
+  points += CONTRIBUTION_POINTS.comicUpload.excellent.points * entry.comicUploadexcellent;
+  points +=
+    CONTRIBUTION_POINTS.comicUpload['minor-issues'].points * entry.comicUploadminorissues;
+  points +=
+    CONTRIBUTION_POINTS.comicUpload['major-issues'].points * entry.comicUploadmajorissues;
+  points +=
+    CONTRIBUTION_POINTS.comicUpload['page-issues'].points * entry.comicUploadpageissues;
+  points += CONTRIBUTION_POINTS.comicUpload.terrible.points * entry.comicUploadterrible;
+
+  return points;
+}

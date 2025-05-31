@@ -141,6 +141,8 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
 
           {fileToCrop && (
             <ThumbnailCropper
+              title="Crop thumbnail"
+              mode="modal"
               minHeight={678}
               minWidth={480}
               image={fileToCrop}

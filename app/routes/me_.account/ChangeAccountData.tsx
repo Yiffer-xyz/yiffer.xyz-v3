@@ -158,17 +158,16 @@ export default function ChangeAccountData() {
         )}
 
         <form>
-          <TextInput
-            type="password"
-            label="Current password"
-            value={currentPassword}
-            onChange={setCurrentPassword}
-            name="current-password"
-            className="mt-2"
-          />
-
           {isChangingPassword && (
             <>
+              <TextInput
+                type="password"
+                label="Current password"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+                name="current-password"
+                className="mt-2"
+              />
               <TextInput
                 type="password"
                 label="New password"
@@ -194,7 +193,7 @@ export default function ChangeAccountData() {
               label="New email"
               value={newEmail}
               onChange={setNewEmail}
-              className="mt-8"
+              className="mt-2"
             />
           )}
 
@@ -203,6 +202,17 @@ export default function ChangeAccountData() {
               label="New username"
               value={newUsername}
               onChange={setNewUsername}
+              className="mt-2"
+            />
+          )}
+
+          {(isChangingEmail || isChangingUsername) && (
+            <TextInput
+              type="password"
+              label="Current password"
+              value={currentPassword}
+              onChange={setCurrentPassword}
+              name="current-password"
               className="mt-8"
             />
           )}

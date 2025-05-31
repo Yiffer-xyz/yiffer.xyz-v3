@@ -3,6 +3,7 @@ import { useLoaderData } from '@remix-run/react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import LinkCard from '~/ui-components/LinkCard/LinkCard';
 import { authLoader } from '~/utils/loaders';
+import { getSourceFromRequest } from '~/utils/request-helpers';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -10,18 +11,26 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
-  return await authLoader(args);
+  const source = getSourceFromRequest(args.request);
+  const user = await authLoader(args);
+
+  return {
+    user,
+    source,
+  };
 }
 
 export default function Index() {
-  const user = useLoaderData<typeof loader>();
+  const { user, source } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto pb-8">
       <h1>Contribute</h1>
 
-      <Breadcrumbs prevRoutes={[]} currentRoute="Contribute" />
-
+      <Breadcrumbs
+        prevRoutes={source === 'me' ? [{ href: '/me', text: 'Me' }] : []}
+        currentRoute="Contribute"
+      />
       <div className="mt grid gap-4 grid-cols-1 sm:grid-cols-2 mt-2 sm:mt-4 w-fit">
         <LinkCard
           title="Upload a comic yourself"

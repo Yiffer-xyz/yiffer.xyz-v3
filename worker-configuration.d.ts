@@ -2,6 +2,7 @@
 // by running `wrangler types`
 
 interface Env {
+  IS_LOCAL_DEV: string;
   FRONT_END_URL_BASE: string;
   JWT_CONFIG_STR: string;
   POSTMARK_TOKEN: string;

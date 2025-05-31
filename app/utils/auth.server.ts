@@ -1,6 +1,6 @@
 import { redirect } from '@remix-run/cloudflare';
 import jwt from '@tsndr/cloudflare-worker-jwt';
-import type { JwtConfig, SimpleUser, UserSession } from '~/types/types';
+import type { JwtConfig, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';
 import { queryDb, queryDbExec, queryDbMultiple } from './database-facade';
 import type { ApiError, ResultOrErrorPromise } from './request-helpers';
@@ -16,7 +16,7 @@ type AuthResponse = {
   errorMessage?: string;
 };
 
-type UserWithPwAndBan = SimpleUser & {
+type UserWithPwAndBan = UserSession & {
   password: string;
   isBanned: 0 | 1;
   banReason: string | null;
@@ -49,7 +49,7 @@ export async function authenticateAndGetHeaders({
     return { errorMessage };
   }
 
-  const headers = await createUserSessionHeaders(user as SimpleUser, jwtConfigStr);
+  const headers = await createUserSessionHeaders(user as UserSession, jwtConfigStr);
   return { headers };
 }
 
@@ -144,12 +144,13 @@ export async function signup({
     return makeDbErrObj(newUserResult, 'Error fetching new user after creation');
   }
 
-  const user: SimpleUser = {
-    id: newUserResult.result[0].id,
+  const user: UserSession = {
+    userId: newUserResult.result[0].id,
     username,
     email,
     userType: 'normal',
     patreonDollars: null,
+    profilePictureToken: null,
   };
 
   let err: any;
@@ -226,9 +227,11 @@ async function authenticate(
   db: D1Database,
   usernameOrEmail: string,
   password: string
-): Promise<{ err?: ApiError; errorMessage?: string; user?: SimpleUser }> {
-  const query = `SELECT id, username, email, userType, password, isBanned, banReason, patreonDollars
-     FROM user WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE`;
+): Promise<{ err?: ApiError; errorMessage?: string; user?: UserSession }> {
+  const query = `SELECT
+      id AS userId, username, email, userType, password, isBanned, banReason, patreonDollars,
+      profilePictureToken
+    FROM user WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE`;
   const queryParams = [usernameOrEmail, usernameOrEmail];
 
   const fetchDbRes = await queryDb<UserWithPwAndBan[]>(
@@ -256,20 +259,21 @@ async function authenticate(
     };
   }
 
-  updateUserLastActionTime({ db, userId: user.id });
+  updateUserLastActionTime({ db, userId: user.userId });
 
   return {
     user: {
-      id: user.id,
+      userId: user.userId,
       username: user.username,
       email: user.email,
       userType: user.userType,
       patreonDollars: user.patreonDollars ?? null,
+      profilePictureToken: user.profilePictureToken ?? null,
     },
   };
 }
 
-// To get the user data - {userId, username, userType, patreonDollars}
+// To get the user data - {userId, username, userType, patreonDollars, email, profilePictureToken}
 // Basically, use this from components/routes
 export async function getUserSession(
   request: Request,
@@ -292,58 +296,48 @@ export async function getUserSession(
   }
 
   const tokenContent = jwt.decode(sessionCookieContent);
-  if (
-    !tokenContent.payload ||
-    !tokenContent.payload.id ||
-    !tokenContent.payload.username ||
-    !tokenContent.payload.userType
-  ) {
+  const tokenPayload = tokenContent?.payload;
+  if (!tokenPayload || !isDecodedTokenValid(tokenPayload)) {
     return null;
   }
 
   return {
-    userId: tokenContent.payload.id,
-    username: tokenContent.payload.username,
-    email: tokenContent.payload.email ?? null,
-    userType: tokenContent.payload.userType,
-    patreonDollars: tokenContent.payload.patreonDollars ?? null,
+    userId: tokenPayload.userId,
+    username: tokenPayload.username,
+    email: tokenPayload.email ?? null,
+    userType: tokenPayload.userType,
+    patreonDollars: tokenPayload.patreonDollars ?? null,
+    profilePictureToken: tokenPayload.profilePictureToken ?? null,
   };
 }
 
 export async function logout(jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
-  const destroyUserDataHeader = destroyUserDataCookieHeader(jwtConfig);
   const destroySessionCookieHeader = destroyJwtAuthCookieHeader(jwtConfig);
 
   const headers = new Headers();
   headers.append('Set-Cookie', destroySessionCookieHeader);
-  headers.append('Set-Cookie', destroyUserDataHeader);
 
   return redirect('/', { headers });
 }
 
-export async function createUserSessionHeaders(user: SimpleUser, jwtConfigStr: string) {
+export async function createUserSessionHeaders(user: UserSession, jwtConfigStr: string) {
   const jwtConfig: JwtConfig = JSON.parse(jwtConfigStr);
 
   // This one is for auth - will be verified on the server(s)
   const sessionCookieHeader = await createJwtAuthCookieHeader(
-    user.id,
+    user.userId,
     user.username,
     user.userType,
     user.patreonDollars ?? null,
     user.email ?? null,
+    user.profilePictureToken ?? null,
     jwtConfig
   );
 
-  // This one is to ensure cross-subdomain auth, will not need when everything is Remix.
-  // This one is not serialized/anything like that, and not httpOnly, so it can be read by the
-  // Vue code in the browser - which ensures a smooth experience since that's not SSR.
-  const userDataCookieHeader = createUserDataCookieHeader(user, jwtConfig);
-
   const headers = new Headers();
   headers.append('Set-Cookie', sessionCookieHeader);
-  headers.append('Set-Cookie', userDataCookieHeader);
 
   return headers;
 }
@@ -354,10 +348,11 @@ async function createJwtAuthCookieHeader(
   userType: string,
   patreonDollars: number | null,
   email: string | null,
+  profilePictureToken: string | null,
   jwtConfig: JwtConfig
 ) {
   const token = await jwt.sign(
-    { id: userId, username, userType, patreonDollars, email },
+    { userId, username, userType, patreonDollars, email, profilePictureToken },
     jwtConfig.tokenSecret
   );
   // Creating it manually, because the Remix methods transform it for some reason??
@@ -375,20 +370,6 @@ function destroyJwtAuthCookieHeader(jwtConfig: JwtConfig): string {
   }${
     jwtConfig.cookie.httpOnly ? ' HttpOnly;' : ''
   } Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
-}
-
-function createUserDataCookieHeader(userData: any, jwtConfig: JwtConfig) {
-  // Creating it manually, because the Remix methods transform it for some reason??
-  return `yiffer_userdata=${JSON.stringify(userData)}; Max-Age=${
-    jwtConfig.cookie.maxAge
-  }; Domain=${jwtConfig.cookie.domain}; Path=/; ${jwtConfig.cookie.secure ? 'Secure' : ''};`;
-}
-
-function destroyUserDataCookieHeader(jwtConfig: JwtConfig) {
-  // Creating it manually, because the Remix methods transform it for some reason??
-  return `yiffer_userdata=; Max-Age=0; Domain=${jwtConfig.cookie.domain}; ${
-    jwtConfig.cookie.secure ? 'Secure' : ''
-  }; Expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
 }
 
 function cookiesStringToYifferSessionCookie(
@@ -492,4 +473,10 @@ export function validateUsername(username: string): string | undefined {
     return 'Username can contain only letters, numbers, dashes, and underscores.';
   }
   return undefined;
+}
+
+function isDecodedTokenValid(tokenPayload: any): tokenPayload is UserSession {
+  return (
+    tokenPayload && tokenPayload.userId && tokenPayload.username && tokenPayload.userType
+  );
 }

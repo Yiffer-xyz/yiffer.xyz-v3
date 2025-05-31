@@ -8,11 +8,9 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
 export default function ComicFileManager({
   comic,
-  imagesServerUrl,
   blockActions,
 }: {
   comic: Comic;
-  imagesServerUrl: string;
   blockActions?: boolean;
 }) {
   const [action, setAction] = useState<'filename-replace' | 'delete-files' | null>(null);

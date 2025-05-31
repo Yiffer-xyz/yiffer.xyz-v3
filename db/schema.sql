@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS `user` (
 `hasCompletedConversion` TINYINTEGER NOT NULL DEFAULT '1',
 `patreonDollars` INTEGER NULL DEFAULT NULL,
 `patreonEmail` TEXT NULL DEFAULT NULL,
+`bio` TEXT NULL DEFAULT NULL CHECK (LENGTH(bio) <= 300),
+`nationality` TEXT NULL DEFAULT NULL,
+`publicProfileLinks` TEXT NULL DEFAULT NULL,
+`profilePictureToken` TEXT NULL DEFAULT NULL,
 PRIMARY KEY (`id`)
 );
 
@@ -306,6 +310,8 @@ FOREIGN KEY (`userId`)
 REFERENCES `user` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_contributionpoints_userId ON contributionpoints(userId);
 
 ------------------------------------------------------
 -- FEEDBACK 👀

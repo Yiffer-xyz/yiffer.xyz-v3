@@ -11,7 +11,10 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
-import { CONTRIBUTION_POINTS } from '~/types/contributions';
+import {
+  CONTRIBUTION_POINTS,
+  contributionPointEntryToPoints,
+} from '~/types/contributions';
 import type { ContributionPointsEntry } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
@@ -104,7 +107,6 @@ export default function Scoreboard() {
       ? cachedPoints.find(cp => cp.isModScores)
       : cachedPoints.find(cp => cp.yearMonth === yearMonth);
 
-    console.log('foundCachedPoints', foundCachedPoints);
     if (foundCachedPoints) {
       setPoints(foundCachedPoints.points);
       return;
@@ -219,9 +221,6 @@ export async function action(args: ActionFunctionArgs) {
   const yearMonthStr = yearMonth.toString();
   const isModScoresBool = isModScores.toString() === 'true';
 
-  console.log('isModScoresBool', isModScoresBool);
-  console.log('yearMonthStr', yearMonthStr);
-
   let scores: TopContributionPointsRow[] = [];
   if (isModScoresBool) {
     const res = await getModScoreboard(args.context.cloudflare.env.DB);
@@ -296,20 +295,7 @@ function topScoreEntriesToPointList(
   entries: ContributionPointsEntry[]
 ): TopContributionPointsRow[] {
   const topScoreRows: TopContributionPointsRow[] = entries.map(userContrib => {
-    const points =
-      userContrib.tagSuggestion * CONTRIBUTION_POINTS.tagSuggestion.points +
-      userContrib.comicProblem * CONTRIBUTION_POINTS.comicProblem.points +
-      userContrib.comicSuggestiongood * CONTRIBUTION_POINTS.comicSuggestion.good.points +
-      userContrib.comicSuggestionbad * CONTRIBUTION_POINTS.comicSuggestion.bad.points +
-      userContrib.comicUploadexcellent *
-        CONTRIBUTION_POINTS.comicUpload.excellent.points +
-      userContrib.comicUploadminorissues *
-        CONTRIBUTION_POINTS.comicUpload['minor-issues'].points +
-      userContrib.comicUploadmajorissues *
-        CONTRIBUTION_POINTS.comicUpload['major-issues'].points +
-      userContrib.comicUploadpageissues *
-        CONTRIBUTION_POINTS.comicUpload['page-issues'].points +
-      userContrib.comicUploadterrible * CONTRIBUTION_POINTS.comicUpload.terrible.points;
+    const points = contributionPointEntryToPoints(userContrib);
 
     return {
       userId: userContrib.userId,

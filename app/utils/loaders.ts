@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { redirect } from '@remix-run/cloudflare';
 import { getUserSession } from './auth.server';
-import { getUserById } from '~/route-funcs/get-user';
+import { getUserByField } from '~/route-funcs/get-user';
 import { processApiError } from './request-helpers';
 
 // A way to get the user session. Can be awaited as a normal func,
@@ -19,9 +19,16 @@ export async function fullUserLoader(args: LoaderFunctionArgs) {
   const user = await authLoader(args);
   if (!user) throw redirect('/');
 
-  const fullUserRes = await getUserById(args.context.cloudflare.env.DB, user.userId);
+  const fullUserRes = await getUserByField({
+    db: args.context.cloudflare.env.DB,
+    field: 'id',
+    value: user.userId,
+  });
   if (fullUserRes.err) {
     return processApiError('Error getting user in userLoader', fullUserRes.err);
+  }
+  if (fullUserRes.notFound) {
+    return null;
   }
 
   return fullUserRes.result;

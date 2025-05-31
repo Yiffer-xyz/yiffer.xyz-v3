@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { redirectIfNotMod } from '~/utils/loaders';
+import { renameR2File } from '~/utils/r2Utils';
 import {
   create400Json,
   createSuccessJson,
@@ -50,11 +51,4 @@ export async function action(args: ActionFunctionArgs) {
   } catch (err: any) {
     return processApiError('Error in /rename-comic-files', err, { comicName });
   }
-}
-
-async function renameR2File(r2: R2Bucket, oldKey: string, newKey: string) {
-  const file = await r2.get(oldKey);
-  if (!file) return;
-  await r2.put(newKey, file.body);
-  await r2.delete(oldKey);
 }

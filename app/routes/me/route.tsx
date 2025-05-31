@@ -22,13 +22,21 @@ export default function AccountPage() {
     <div className="container mx-auto pb-8">
       <h1>Me</h1>
 
-      <Breadcrumbs prevRoutes={[]} currentRoute="Me" />
+      <Breadcrumbs prevRoutes={[]} currentRoute="Me" className="!mb-2" />
 
-      <p className="mt-2">
+      <p className="text-lg">
         <RiAccountCircleFill /> {user?.username}
       </p>
 
       <div className="w-fit">
+        <LinkCard
+          href={`/user/${user.username}?source=me`}
+          title="Profile"
+          includeRightArrow
+          description="See and edit your public profile"
+          className="mt-4"
+        />
+
         <LinkCard
           href="/me/account"
           title="Account settings"
@@ -38,7 +46,7 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="/contribute"
+          href="/contribute?source=me"
           title="Contributions"
           includeRightArrow
           description="See your contributions to Yiffer.xyz and make new ones"
@@ -59,14 +67,6 @@ export default function AccountPage() {
           includeRightArrow
           description="See and manage your Patreon subscription and rewards"
           className="mt-4"
-        />
-
-        <LinkCard
-          href="#"
-          title="Public profile"
-          description="Coming soon"
-          className="mt-4"
-          disabled
         />
 
         <LinkCard
