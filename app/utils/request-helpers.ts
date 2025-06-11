@@ -219,7 +219,10 @@ export async function noGetRoute() {
   return new Response('Cannot GET this route', { status: 405 });
 }
 
+const isDev = process.env.NODE_ENV === 'development';
+
 export async function logErrorExternally(logError: ExternalLogError) {
+  if (isDev) return;
   if (
     errMessagePatternsToIgnore.some(pattern =>
       logError.error.logMessage.includes(pattern)

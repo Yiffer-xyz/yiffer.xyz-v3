@@ -11,10 +11,7 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
-import {
-  CONTRIBUTION_POINTS,
-  contributionPointEntryToPoints,
-} from '~/types/contributions';
+import { contributionPointEntryToPoints } from '~/types/contributions';
 import type { ContributionPointsEntry } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';

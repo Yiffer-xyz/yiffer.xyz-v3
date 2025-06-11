@@ -2,15 +2,11 @@ import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { getUserByField } from '~/route-funcs/get-user';
-import Button from '~/ui-components/Buttons/Button';
 import PublicProfileEdit from '~/ui-components/PublicProfile/PublicProfileEdit';
 import PublicProfile from '~/ui-components/PublicProfile/PublicProfile';
 import { authLoader } from '~/utils/loaders';
 import { getSourceFromRequest, processApiError } from '~/utils/request-helpers';
 import { fullUserToPublicUser } from '~/utils/user-utils';
-import type { PublicUser } from '~/types/types';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { MdCameraAlt, MdEdit } from 'react-icons/md';
 import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
 import '~/utils/cropper.min.css';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
@@ -30,7 +26,7 @@ export async function loader(args: LoaderFunctionArgs) {
     db: args.context.cloudflare.env.DB,
     field: 'username',
     value: userParam,
-    includeContributionPoints: true,
+    includeExtraFields: true,
   });
 
   if (userRes.err) {
@@ -90,6 +86,7 @@ export default function UserProfilePage() {
             <PublicProfilePhotoEditor
               imagesServerUrl={imagesServerUrl}
               onFinish={() => setMode('view')}
+              hasExistingPhoto={!!user.profilePictureToken}
             />
           )}
         </>

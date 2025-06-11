@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS `user` (
 `patreonEmail` TEXT NULL DEFAULT NULL,
 `bio` TEXT NULL DEFAULT NULL CHECK (LENGTH(bio) <= 300),
 `nationality` TEXT NULL DEFAULT NULL,
-`publicProfileLinks` TEXT NULL DEFAULT NULL,
 `profilePictureToken` TEXT NULL DEFAULT NULL,
 PRIMARY KEY (`id`)
 );
@@ -580,3 +579,17 @@ ON DELETE CASCADE
 ON UPDATE CASCADE);
 
 CREATE INDEX IF NOT EXISTS idx_modaction_userId ON modaction(userId);
+
+------------------------------------------------------
+-- USER SOCIAL NAME
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usersocialaccount (
+id INTEGER NOT NULL,
+username TEXT NOT NULL,
+platform TEXT NOT NULL,
+userId INTEGER  NOT NULL,
+PRIMARY KEY (id),
+FOREIGN KEY (userId)
+REFERENCES user (id)
+ON DELETE CASCADE
+ON UPDATE CASCADE);

@@ -6,10 +6,10 @@ import { capitalizeFirstRestLower } from '~/utils/general';
 import ReactCountryFlag from 'react-country-flag';
 import { useEffect, useMemo, useState } from 'react';
 import countryList from 'react-select-country-list';
-import Link from '../Link';
-import { MdCameraAlt, MdEdit, MdOpenInNew } from 'react-icons/md';
-import { R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
+import { MdCameraAlt, MdEdit } from 'react-icons/md';
+import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import Button from '../Buttons/Button';
+import Link from '../Link';
 
 export default function PublicProfile({
   user,
@@ -17,12 +17,16 @@ export default function PublicProfile({
   canEdit,
   onEdit,
   onChangePhoto,
+  isAdminPanel,
+  className,
 }: {
   user: PublicUser;
   pagesPath: string;
   canEdit: boolean;
   onEdit: () => void;
   onChangePhoto: () => void;
+  isAdminPanel?: boolean;
+  className?: string;
 }) {
   const [isClient, setIsClient] = useState(false);
 
@@ -46,7 +50,7 @@ export default function PublicProfile({
   const Icon = isAdmin ? RiShieldStarFill : isMod ? RiShieldFill : null;
 
   return (
-    <>
+    <div className={className}>
       <div className="flex flex-row items-start gap-3">
         {user.profilePictureToken ? (
           <img
@@ -64,7 +68,7 @@ export default function PublicProfile({
         )}
 
         <div className="flex flex-col gap-1 flex-shrink">
-          <h1>{user.username}</h1>
+          {isAdminPanel ? <h2>{user.username}</h2> : <h1>{user.username}</h1>}
           <div className="flex flex-col gap-1 text-sm sm:text-base">
             {hasAnyBadges && (
               <div className="flex flex-row gap-y-1 gap-x-4 flex-wrap">
@@ -85,7 +89,7 @@ export default function PublicProfile({
                     {isClient ? (
                       <ReactCountryFlag countryCode={user.nationality} />
                     ) : (
-                      <div className="w-3.5" />
+                      <div className="w-3.5 sm:w-4" />
                     )}
                     <p>{countryName}</p>
                   </div>
@@ -107,11 +111,13 @@ export default function PublicProfile({
 
       {canEdit && (
         <div className="mt-4 mb-4 flex flex-row gap-2">
-          <Button
-            text={user.profilePictureToken ? 'Change photo' : 'Set photo'}
-            onClick={onChangePhoto}
-            startIcon={MdCameraAlt}
-          />
+          {(!isAdminPanel || !!user.profilePictureToken) && (
+            <Button
+              text={user.profilePictureToken ? 'Change photo' : 'Set photo'}
+              onClick={onChangePhoto}
+              startIcon={MdCameraAlt}
+            />
+          )}
           <Button text="Edit profile" onClick={onEdit} startIcon={MdEdit} />
         </div>
       )}
@@ -125,16 +131,33 @@ export default function PublicProfile({
         </>
       )}
 
-      {user.publicProfileLinks.length > 0 && (
+      {user.socialLinks.length > 0 && (
         <div className="mt-4">
-          <p className="font-semibold">Links</p>
-          <div className="flex flex-col text-sm">
-            {user.publicProfileLinks.map(link => (
-              <Link href={link} newTab key={link} text={link} IconRight={MdOpenInNew} />
-            ))}
+          <p className="font-semibold">Social links</p>
+          <div className="flex flex-col text-sm gap-y-1 mt-1">
+            {user.socialLinks.map(link => {
+              const fullUrl = getSocialUrl(link.platform, link.username);
+              return (
+                <div className="flex flex-row gap-1 items-center" key={link.platform}>
+                  <img
+                    src={`${pagesPath}/website-images/${link.platform.toLowerCase()}.png`}
+                    alt={link.platform}
+                    className="w-4 h-4"
+                  />
+                  <Link
+                    newTab
+                    href={fullUrl}
+                    text={fullUrl
+                      .replace('https://', '')
+                      .replace('http://', '')
+                      .replace('www.', '')}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

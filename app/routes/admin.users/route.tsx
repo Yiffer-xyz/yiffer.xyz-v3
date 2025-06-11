@@ -47,10 +47,10 @@ export default function UserManager() {
 
   return (
     <>
+      <h1>User manager</h1>
+
       {!outlet && (
         <>
-          <h1>User manager</h1>
-
           <TextInput
             value={userSearch}
             onChange={onUserSearchUpdate}

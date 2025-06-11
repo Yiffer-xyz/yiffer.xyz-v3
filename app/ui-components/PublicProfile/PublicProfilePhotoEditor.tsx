@@ -8,12 +8,17 @@ import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCroppe
 import { PROFILE_PIC_SIZE } from '~/types/constants';
 import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
+import { FaTrash } from 'react-icons/fa';
 
 export default function PublicProfilePhotoEditor({
   imagesServerUrl,
+  hasExistingPhoto,
+  adminOverrideUserId,
   onFinish,
 }: {
   imagesServerUrl: string;
+  hasExistingPhoto: boolean;
+  adminOverrideUserId?: number;
   onFinish: () => void;
 }) {
   const { theme } = useUIPreferences();
@@ -23,6 +28,16 @@ export default function PublicProfilePhotoEditor({
 
   const updateProfilePicFetcher = useGoodFetcher({
     url: '/api/update-profile-photo',
+    method: 'post',
+    toastError: true,
+    onFinish: () => {
+      setIsSubmitting(false);
+      onFinish();
+    },
+  });
+
+  const removeProfilePicFetcher = useGoodFetcher({
+    url: '/api/remove-profile-photo',
     method: 'post',
     toastError: true,
     onFinish: () => {
@@ -74,12 +89,39 @@ export default function PublicProfilePhotoEditor({
     updateProfilePicFetcher.submit({ tempToken });
   }
 
+  async function onRemoveProfilePhoto() {
+    setIsSubmitting(true);
+    removeProfilePicFetcher.submit({ userId: adminOverrideUserId });
+  }
+
   return (
     <div className="mt-2 mb-4 flex flex-col items-start">
       <h3 className="text-lg font-bold">Change profile photo</h3>
-      <div className="flex flex-row gap-2 mt-1 mb-2">
-        <FileInput onChange={onThumbnailFileUpload} ref={fileInputRef} accept="image/*" />
-        <Button variant="outlined" text="Cancel" startIcon={FaXmark} onClick={onFinish} />
+      <div className="flex flex-col gap-2 mt-1 mb-2">
+        {!adminOverrideUserId && (
+          <FileInput
+            onChange={onThumbnailFileUpload}
+            ref={fileInputRef}
+            accept="image/*"
+          />
+        )}
+        {hasExistingPhoto && (
+          <Button
+            text="Remove photo"
+            color="error"
+            startIcon={FaTrash}
+            className="!w-[180px]"
+            onClick={onRemoveProfilePhoto}
+            disabled={isSubmitting}
+          />
+        )}
+        <Button
+          variant="outlined"
+          text="Cancel"
+          startIcon={FaXmark}
+          onClick={onFinish}
+          className="!w-[180px]"
+        />
       </div>
 
       {fileToCrop && (
