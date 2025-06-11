@@ -164,3 +164,53 @@ export function getModActionPoints(actionType: ModActionType) {
 export function getModActionName(actionType: ModActionType) {
   return ModActions[actionType].name;
 }
+
+export const SOCIALS = [
+  {
+    platform: 'Twitter',
+    url: 'https://twitter.com/XXXX',
+  },
+  {
+    platform: 'Bluesky',
+    url: 'https://bsky.app/profile/XXXX',
+  },
+  {
+    platform: 'Telegram',
+    url: 'https://t.me/XXXX',
+  },
+  {
+    platform: 'TikTok',
+    url: 'https://www.tiktok.com/XXXX',
+  },
+  {
+    platform: 'Instagram',
+    url: 'https://www.instagram.com/XXXX',
+  },
+  {
+    platform: 'Furaffinity',
+    url: 'https://www.furaffinity.net/user/XXXX',
+  },
+  {
+    platform: 'DeviantArt',
+    url: 'https://www.deviantart.com/XXXX',
+  },
+  {
+    platform: 'Inkbunny',
+    url: 'https://www.inkbunny.net/XXXX',
+  },
+  {
+    platform: 'Facebook',
+    url: 'https://www.facebook.com/XXXX',
+  },
+  {
+    platform: 'Linktree',
+    url: 'https://linktr.ee/XXXX',
+  },
+];
+
+export function getSocialUrl(platform: string, username: string) {
+  return (
+    SOCIALS.find(social => social.platform === platform)?.url.replace('XXXX', username) ??
+    ''
+  );
+}

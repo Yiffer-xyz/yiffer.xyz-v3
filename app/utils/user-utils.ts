@@ -1,4 +1,4 @@
-import { MAX_USER_BIO_LENGTH } from '~/types/constants';
+import { MAX_USER_BIO_LENGTH, SOCIALS } from '~/types/constants';
 import type { PublicUser, User, UserSession } from '~/types/types';
 import countryList from 'react-select-country-list';
 
@@ -16,11 +16,13 @@ export function fullUserToPublicUser(user: User): PublicUser {
     patreonDollars: user.patreonDollars,
     bio: user.bio,
     nationality: user.nationality,
-    publicProfileLinks: user.publicProfileLinks,
+    socialLinks: user.socialLinks,
     contributionPoints: user.contributionPoints ?? 0,
     profilePictureToken: user.profilePictureToken,
   };
 }
+
+const socialPlatforms = SOCIALS.map(s => s.platform);
 
 export function validatePublicUser(user: PublicUser): { error: string | null } {
   if (user.bio && user.bio.length > MAX_USER_BIO_LENGTH) {
@@ -37,14 +39,14 @@ export function validatePublicUser(user: PublicUser): { error: string | null } {
     }
   }
 
-  if (user.publicProfileLinks.length > 4) {
-    return { error: `Too many links` };
-  }
-
-  for (const link of user.publicProfileLinks) {
-    if (!link) continue;
-    if (!link.startsWith('http://') && !link.startsWith('https://')) {
-      return { error: `Invalid link` };
+  if (user.socialLinks.length > 0) {
+    for (const social of user.socialLinks) {
+      if (!socialPlatforms.includes(social.platform)) {
+        return { error: `Invalid social platform: ${social.platform}` };
+      }
+      if (social.username.length === 0 || social.username.length > 60) {
+        return { error: `Username too long: ${social.username}` };
+      }
     }
   }
 

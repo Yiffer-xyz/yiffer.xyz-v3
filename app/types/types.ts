@@ -211,7 +211,7 @@ export type User = {
   patreonDollars?: number;
   bio?: string;
   nationality?: string | null;
-  publicProfileLinks: string[];
+  socialLinks: UserSocialAccount[];
   contributionPoints: number;
   profilePictureToken?: string | null;
 };
@@ -535,4 +535,10 @@ export type ModAction = {
   text?: string;
   points: number;
   timestamp: Date;
+};
+
+export type UserSocialAccount = {
+  id?: number;
+  username: string;
+  platform: string;
 };

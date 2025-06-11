@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { ADMIN_INSTRUCTIONS } from '~/types/constants';
 import InfoBox from '~/ui-components/InfoBox';
 import Link from '~/ui-components/Link';
+import '~/utils/cropper.min.css';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export type GlobalAdminContext = {

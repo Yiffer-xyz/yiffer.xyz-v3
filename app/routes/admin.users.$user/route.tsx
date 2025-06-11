@@ -14,8 +14,6 @@ import type { UpdateUserBody } from '~/routes/api.admin.update-user';
 import type { Contribution, User, UserType } from '~/types/types';
 import { format } from 'date-fns';
 import { Contributions } from '~/page-components/Contributions/Contributions';
-import Link from '~/ui-components/Link';
-import { MdArrowBack } from 'react-icons/md';
 import { getTimeAgo } from '~/utils/date-utils';
 import { capitalizeString } from '~/utils/general';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
@@ -23,6 +21,9 @@ import { getContributions } from '~/route-funcs/get-contributions';
 import type { Feedback } from '~/route-funcs/get-feedback';
 import { getFeedback } from '~/route-funcs/get-feedback';
 import FeedbackItem from '~/page-components/UserFeedback/FeedbackItem';
+import PublicProfile from '~/ui-components/PublicProfile/PublicProfile';
+import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
+import PublicProfileEdit from '~/ui-components/PublicProfile/PublicProfileEdit';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -31,11 +32,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ManageSingleUser() {
-  const { user, contributions, feedback } = useLoaderData<typeof loader>();
+  const { user, contributions, feedback, pagesPath, imagesServerUrl } =
+    useLoaderData<typeof loader>();
   const [userType, setUserType] = useState<UserType>(user.userType);
   const [modNotes, setModNotes] = useState(user.modNotes || '');
   const [banReason, setBanReason] = useState('');
   const [banFlowActive, setBanFlowActive] = useState(false);
+  const [mode, setMode] = useState<'edit' | 'change-photo' | 'view'>('view');
 
   const userTypeOptions = ['normal', 'admin', 'moderator'].map(c => ({
     value: c as UserType,
@@ -102,110 +105,131 @@ export default function ManageSingleUser() {
 
   return (
     <>
-      <h1>User: {user.username}</h1>
-      <Link href="/admin/users" text="Back" Icon={MdArrowBack} />
-
-      <h3 className="mt-4">General user info</h3>
-
-      {user.isBanned && (
-        <div className="bg-red-trans p-4 pt-3 mt-1 mb-3 w-fit min-w-[280px]">
-          <h3>Banned user</h3>
-          <p>User was banned: {user.banTime ? format(user.banTime, 'PPp') : 'N/A'}</p>
-          <p>Reason: {user.banReason}</p>
-          <Button className="mt-2" text="Unban" onClick={unbanUser} />
-        </div>
+      {mode === 'view' && (
+        <PublicProfile
+          user={user}
+          canEdit
+          onChangePhoto={() => setMode('change-photo')}
+          onEdit={() => setMode('edit')}
+          pagesPath={pagesPath}
+          isAdminPanel
+          className="mb-4"
+        />
       )}
-
-      <p>Member since: {format(user.createdTime, 'PPP')}</p>
-      <p>Email: {user.email}</p>
-      {user.lastActionTime && (
-        <p>
-          Last action: {getTimeAgo(user.lastActionTime)} (
-          {format(user.lastActionTime, 'PPp')})
-        </p>
+      {mode === 'edit' && (
+        <PublicProfileEdit user={user} onFinish={() => setMode('view')} />
       )}
-      {user.patreonEmail && user.patreonDollars && (
-        <p>
-          Patreon: ${user.patreonDollars} - patreon email: {user.patreonEmail}
-        </p>
-      )}
-
-      <Select
-        className="mt-4"
-        onChange={onUserTypeChanged}
-        options={userTypeOptions}
-        name="role"
-        title="Role"
-        value={userType}
-      />
-
-      <Textarea
-        className="mt-8 max-w-lg"
-        rows={2}
-        value={modNotes}
-        onChange={setModNotes}
-        label="Mod notes"
-        name="modNotes"
-      />
-      {modNotes !== user.modNotes && (
-        <LoadingButton
-          className="mt-1"
-          text="Update notes"
-          onClick={updateModNotes}
-          isLoading={updateUserFetcher.isLoading}
+      {mode === 'change-photo' && (
+        <PublicProfilePhotoEditor
+          imagesServerUrl={imagesServerUrl}
+          onFinish={() => setMode('view')}
+          adminOverrideUserId={user.id}
+          hasExistingPhoto={!!user.profilePictureToken}
         />
       )}
 
-      <h3 className="mt-6">Ban user</h3>
-      {banFlowActive ? (
+      {mode === 'view' && (
         <>
-          <TextInput
-            value={banReason}
-            onChange={setBanReason}
-            label="Ban reason"
-            name="banReason"
-            className="max-w-lg"
+          {user.isBanned && (
+            <div className="bg-red-trans p-4 pt-3 mt-1 mb-3 w-fit min-w-[280px]">
+              <h3>Banned user</h3>
+              <p>User was banned: {user.banTime ? format(user.banTime, 'PPp') : 'N/A'}</p>
+              <p>Reason: {user.banReason}</p>
+              <Button className="mt-2" text="Unban" onClick={unbanUser} />
+            </div>
+          )}
+
+          <p>Email: {user.email}</p>
+          {user.patreonEmail && <p>Patreon email: {user.patreonEmail}</p>}
+          {user.lastActionTime && (
+            <p>
+              Last action: {getTimeAgo(user.lastActionTime)} (
+              {format(user.lastActionTime, 'PPp')})
+            </p>
+          )}
+
+          <Select
+            className="mt-4"
+            onChange={onUserTypeChanged}
+            options={userTypeOptions}
+            name="role"
+            title="Role"
+            value={userType}
           />
-          <div className="flex flex-row mt-4">
-            <Button
-              text="Cancel"
-              onClick={() => setBanFlowActive(false)}
-              variant="outlined"
-              className="mr-2"
+
+          <Textarea
+            className="mt-8 max-w-lg"
+            rows={2}
+            value={modNotes}
+            onChange={setModNotes}
+            label="Mod notes"
+            name="modNotes"
+          />
+          {modNotes !== user.modNotes && (
+            <LoadingButton
+              className="mt-1"
+              text="Update notes"
+              onClick={updateModNotes}
+              isLoading={updateUserFetcher.isLoading}
             />
+          )}
+
+          <h3 className="mt-6">Ban user</h3>
+          {banFlowActive ? (
+            <>
+              <TextInput
+                value={banReason}
+                onChange={setBanReason}
+                label="Ban reason"
+                name="banReason"
+                className="max-w-lg"
+              />
+              <div className="flex flex-row mt-4">
+                <Button
+                  text="Cancel"
+                  onClick={() => setBanFlowActive(false)}
+                  variant="outlined"
+                  className="mr-2"
+                />
+                <Button
+                  text="Ban user"
+                  onClick={onBanUser}
+                  color="error"
+                  disabled={banReason.length === 0}
+                />
+              </div>
+            </>
+          ) : (
             <Button
               text="Ban user"
-              onClick={onBanUser}
+              onClick={() => setBanFlowActive(true)}
               color="error"
-              disabled={banReason.length === 0}
             />
+          )}
+
+          <div className="max-w-2xl mt-6">
+            <h3>Feedback/support</h3>
+            {feedback.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {feedback.map(fb => (
+                  <FeedbackItem feedback={fb} key={fb.id} />
+                ))}
+              </div>
+            ) : (
+              <p>User has not submitted any feedback/support.</p>
+            )}
+          </div>
+
+          <div className="max-w-4xl mt-6">
+            <h3>Contributions</h3>
+            {contributions.length > 0 ? (
+              <Contributions contributions={contributions} className="mt-2 md:mt-1" />
+            ) : (
+              <p>User has no contributions yet.</p>
+            )}
           </div>
         </>
-      ) : (
-        <Button text="Ban user" onClick={() => setBanFlowActive(true)} color="error" />
       )}
-
-      <div className="max-w-2xl mt-6">
-        <h3>Feedback/support</h3>
-        {feedback.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {feedback.map(fb => (
-              <FeedbackItem feedback={fb} key={fb.id} />
-            ))}
-          </div>
-        ) : (
-          <p>User has not submitted any feedback/support.</p>
-        )}
-      </div>
-
-      <div className="max-w-4xl mt-6">
-        <h3>Contributions</h3>
-        {contributions.length > 0 ? (
-          <Contributions contributions={contributions} className="mt-2 md:mt-1" />
-        ) : (
-          <p>User has no contributions yet.</p>
-        )}
-      </div>
     </>
   );
 }
@@ -220,6 +244,7 @@ export async function loader(args: LoaderFunctionArgs) {
     db,
     field: 'id',
     value: userId,
+    includeExtraFields: true,
   });
   const contributionsResPromise = getContributions(db, userId);
   const feedbackResPromise = getFeedback({ db, userId });
@@ -246,5 +271,7 @@ export async function loader(args: LoaderFunctionArgs) {
     user: userRes.result,
     contributions: contributionRes.result,
     feedback: feedbackRes.result,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
+    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
   };
 }
