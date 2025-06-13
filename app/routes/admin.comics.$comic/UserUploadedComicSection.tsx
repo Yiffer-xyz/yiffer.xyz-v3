@@ -9,6 +9,7 @@ import InfoBox from '~/ui-components/InfoBox';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Link from '~/ui-components/Link';
+import Username from '~/ui-components/Username';
 
 const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
   ([verdict, value]) => ({
@@ -20,11 +21,13 @@ const reviewOptions = Object.entries(CONTRIBUTION_POINTS.comicUpload).map(
 type UserUploadSectionProps = {
   comicData: Comic;
   updateComic: () => void;
+  pagesPath: string;
 };
 
 export default function UserUploadSection({
   comicData,
   updateComic,
+  pagesPath,
 }: UserUploadSectionProps) {
   const [verdict, setVerdict] = useState<string | null>();
   const [modComment, setModComment] = useState<string>('');
@@ -66,11 +69,11 @@ export default function UserUploadSection({
       </p>
       <p>
         Uploaded by{' '}
-        <Link
-          text={comicData.metadata?.uploadUsername || 'Unknown'}
-          href={`/admin/users/${comicData.metadata?.uploadUserId}`}
-          showRightArrow
-          isInsideParagraph
+        <Username
+          id={comicData.metadata?.uploadUserId ?? 1}
+          username={comicData.metadata?.uploadUsername ?? 'Unknown'}
+          pagesPath={pagesPath}
+          showRightArrow={false}
         />
         , {format(comicData.metadata?.timestamp || '', 'PPPPp')}
       </p>

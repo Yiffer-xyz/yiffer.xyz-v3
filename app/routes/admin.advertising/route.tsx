@@ -23,11 +23,14 @@ export const meta: MetaFunction<typeof loader> = () => {
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  return { adsPath: context.cloudflare.env.ADS_PATH };
+  return {
+    adsPath: context.cloudflare.env.ADS_PATH,
+    pagesPath: context.cloudflare.env.PAGES_PATH,
+  };
 }
 
 export default function Advertising() {
-  const { adsPath } = useLoaderData<typeof loader>();
+  const { adsPath, pagesPath } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const { ad: selectedAdParam } = useParams();
 
@@ -185,6 +188,7 @@ export default function Advertising() {
                 frontendAdsPath="/admin/advertising"
                 showFullAdminData
                 key={ad.id}
+                pagesPath={pagesPath}
               />
             ))}
           </div>

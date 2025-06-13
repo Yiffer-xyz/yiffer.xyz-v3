@@ -30,11 +30,12 @@ export async function loader(args: LoaderFunctionArgs) {
   return {
     ads: ads.result,
     adsPath: args.context.cloudflare.env.ADS_PATH,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
   };
 }
 
 export default function Advertising() {
-  const { ads, adsPath } = useLoaderData<typeof loader>();
+  const { ads, adsPath, pagesPath } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto">
@@ -56,6 +57,7 @@ export default function Advertising() {
               adMediaPath={adsPath}
               frontendAdsPath="/advertising/dashboard"
               key={ad.id}
+              pagesPath={pagesPath}
             />
           ))}
         </div>

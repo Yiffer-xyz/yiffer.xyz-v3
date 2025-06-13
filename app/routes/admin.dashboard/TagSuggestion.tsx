@@ -8,6 +8,7 @@ import type { TagSuggestionItem } from '~/types/types';
 import { useCallback, useState } from 'react';
 import { IoCaretDown, IoCaretUp } from 'react-icons/io5';
 import TagSuggestionProcessor from '~/page-components/TagSuggestionProcessor/TagSuggestionProcessor';
+import Username from '~/ui-components/Username';
 
 export type TagSuggestionAction = DashboardAction & {
   addTags: TagSuggestionItem[];
@@ -28,6 +29,7 @@ type TagSuggestionProps = {
   loadingAction?: string;
   innerContainerClassName: string;
   blockActions?: boolean;
+  pagesPath: string;
 };
 
 export function TagSuggestion({
@@ -41,6 +43,7 @@ export function TagSuggestion({
   loadingAction,
   innerContainerClassName,
   blockActions,
+  pagesPath,
 }: TagSuggestionProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
@@ -77,11 +80,24 @@ export function TagSuggestion({
         </div>
 
         <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
-          <p className="text-sm">
-            {action.user.username || action.user.ip}
-            {' - '}
-            {getTimeAgo(action.timestamp)}
-          </p>
+          <div className="flex flex-row gap-x-1">
+            {action.user.username && action.user.userId ? (
+              <Username
+                id={action.user.userId}
+                username={action.user.username}
+                pagesPath={pagesPath}
+                textClassName="text-sm"
+                className="mt-0 md:-mt-[3px]"
+                showRightArrow={false}
+              />
+            ) : (
+              <p className="text-sm">{action.user.ip}</p>
+            )}
+            <p className="text-sm">
+              {' - '}
+              {getTimeAgo(action.timestamp)}
+            </p>
+          </div>
 
           {action.isProcessed && (
             <p>

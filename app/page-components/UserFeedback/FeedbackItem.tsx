@@ -1,12 +1,12 @@
 import type { FeedbackType } from '~/types/types';
 import { format } from 'date-fns';
 import Chip from '~/ui-components/Chip';
-import Link from '~/ui-components/Link';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { ArchiveFeedbackBody } from '~/routes/api.admin.archive-feedback';
 import type { DeleteFeedbackBody } from '~/routes/api.admin.delete-feedback';
 import type { Feedback } from '~/route-funcs/get-feedback';
+import Username from '~/ui-components/Username';
 
 export default function FeedbackItem({ feedback }: { feedback: Feedback }) {
   const { id, isArchived, text, type, user, timestamp } = feedback;
@@ -38,16 +38,11 @@ export default function FeedbackItem({ feedback }: { feedback: Feedback }) {
         <div className="mt-1.5 mb-1">{text}</div>
 
         <p>
-          by
+          by{' '}
           {user.userId && user.username ? (
-            <Link
-              className="ml-1 text-blue-weak-200 dark:text-blue-strong-200"
-              href={`/admin/users/${user.userId}`}
-              text={user.username}
-              showRightArrow
-            />
+            <Username id={user.userId} username={user.username} pagesPath="/" />
           ) : (
-            ' ' + (user.ip ?? 'unknown user')
+            (user.ip ?? 'unknown user')
           )}
         </p>
 

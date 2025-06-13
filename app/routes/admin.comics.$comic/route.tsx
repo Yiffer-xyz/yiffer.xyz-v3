@@ -27,8 +27,8 @@ export default function ManageComicInner() {
   const {
     comic: maybeComic,
     user,
-    PAGES_PATH,
-    IMAGES_SERVER_URL,
+    pagesPath,
+    imagesServerUrl,
   } = useLoaderData<typeof loader>();
   if (!maybeComic) {
     return <div>Comic not found</div>;
@@ -85,7 +85,11 @@ export default function ManageComicInner() {
       {isUserUpload && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
           <h3>User-uploaded comic</h3>
-          <UserUploadSection comicData={comic} updateComic={updateComic} />
+          <UserUploadSection
+            comicData={comic}
+            updateComic={updateComic}
+            pagesPath={pagesPath}
+          />
         </div>
       )}
 
@@ -149,8 +153,8 @@ export default function ManageComicInner() {
         allArtists={globalContext.artists}
         allTags={globalContext.tags}
         blockActions={globalContext.numUnreadContent > 0}
-        PAGES_PATH={PAGES_PATH}
-        IMAGES_SERVER_URL={IMAGES_SERVER_URL}
+        PAGES_PATH={pagesPath}
+        IMAGES_SERVER_URL={imagesServerUrl}
       />
     </>
   );
@@ -160,12 +164,12 @@ export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const comicParam = args.params.comic as string;
 
-  const PAGES_PATH = args.context.cloudflare.env.PAGES_PATH;
-  const IMAGES_SERVER_URL = args.context.cloudflare.env.IMAGES_SERVER_URL;
+  const pagesPath = args.context.cloudflare.env.PAGES_PATH;
+  const imagesServerUrl = args.context.cloudflare.env.IMAGES_SERVER_URL;
 
   const comicId = parseInt(comicParam);
   if (isNaN(comicId)) {
-    return { comic: null, user, PAGES_PATH, IMAGES_SERVER_URL };
+    return { comic: null, user, pagesPath: pagesPath, imagesServerUrl: imagesServerUrl };
   }
 
   const comicsRes = await getComicByField({
@@ -178,13 +182,13 @@ export async function loader(args: LoaderFunctionArgs) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);
   }
   if (comicsRes.notFound) {
-    return { comic: null, user, PAGES_PATH, IMAGES_SERVER_URL };
+    return { comic: null, user, PAGES_PATH: pagesPath, imagesServerUrl: imagesServerUrl };
   }
 
   return {
     comic: comicsRes.result,
     user,
-    PAGES_PATH,
-    IMAGES_SERVER_URL,
+    pagesPath,
+    imagesServerUrl,
   };
 }

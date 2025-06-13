@@ -3,8 +3,7 @@ import ReactCountryFlag from 'react-country-flag';
 import { FaPatreon } from 'react-icons/fa';
 import { RiShieldFill, RiShieldStarFill } from 'react-icons/ri';
 import countryList from 'react-select-country-list';
-import type { PublicUser } from '~/types/types';
-import { capitalizeFirstRestLower } from '~/utils/general';
+import type { PublicUser, UserType } from '~/types/types';
 
 export default function PublicProfileBadges({ user }: { user: PublicUser }) {
   const [isClient, setIsClient] = useState(false);
@@ -30,13 +29,16 @@ export default function PublicProfileBadges({ user }: { user: PublicUser }) {
       {Icon && (
         <div className="flex flex-row gap-1 items-center">
           <Icon className="text-theme1-primary mt-0.5" />{' '}
-          <p>{capitalizeFirstRestLower(user.userType)}</p>
+          <p className="text-nowrap">{modTypeToText(user.userType)}</p>
         </div>
       )}
       {user.patreonDollars && (
         <div className="flex flex-row gap-1 items-center">
           <FaPatreon className="text-patreon-primary mt-0.5" />{' '}
-          <p>Patron (${user.patreonDollars})</p>
+          <p className="text-nowrap">
+            <span className="hidden sm:inline">Patron (</span>${user.patreonDollars}
+            <span className="hidden sm:inline">)</span>
+          </p>
         </div>
       )}
       {user.nationality && (
@@ -46,9 +48,15 @@ export default function PublicProfileBadges({ user }: { user: PublicUser }) {
           ) : (
             <div className="w-3.5 sm:w-4" />
           )}
-          <p>{countryName}</p>
+          <p className="text-nowrap">{countryName}</p>
         </div>
       )}
     </>
   );
+}
+
+function modTypeToText(type: UserType) {
+  if (type === 'admin') return 'Admin';
+  if (type === 'moderator') return 'Mod';
+  return '';
 }

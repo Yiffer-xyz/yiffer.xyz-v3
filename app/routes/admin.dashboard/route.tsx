@@ -1,4 +1,4 @@
-import { useOutletContext } from '@remix-run/react';
+import { useLoaderData, useOutletContext } from '@remix-run/react';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ProcessTagSuggestionBody } from '../api.admin.process-tag-suggestion';
 import { useMemo, useState } from 'react';
@@ -39,10 +39,11 @@ const actionTypeToLabel: Record<DashboardActionType, string> = {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
-  return { user };
+  return { user, pagesPath: args.context.cloudflare.env.PAGES_PATH };
 }
 
 export default function Dashboard() {
+  const { pagesPath } = useLoaderData<typeof loader>();
   const globalContext: GlobalAdminContext = useOutletContext();
   const blockActions = globalContext.numUnreadContent > 0;
   const [latestSubmittedId, setLatestSubmittedId] = useState<number>();
@@ -286,6 +287,7 @@ export default function Dashboard() {
                 }
                 innerContainerClassName={innerContainerClassName}
                 blockActions={blockActions}
+                pagesPath={pagesPath}
               />
             )}
 
@@ -303,6 +305,7 @@ export default function Dashboard() {
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
                 blockActions={blockActions}
+                pagesPath={pagesPath}
               />
             )}
 
@@ -323,6 +326,7 @@ export default function Dashboard() {
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
                 blockActions={blockActions}
+                pagesPath={pagesPath}
               />
             )}
 
@@ -343,6 +347,7 @@ export default function Dashboard() {
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
                 blockActions={blockActions}
+                pagesPath={pagesPath}
               />
             )}
 

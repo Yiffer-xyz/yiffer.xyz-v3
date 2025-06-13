@@ -26,6 +26,7 @@ import type {
   MetaFunction,
 } from '@remix-run/cloudflare';
 import { getModScoreboard } from '~/route-funcs/get-mod-scoreboard';
+import Username from '~/ui-components/Username';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -54,7 +55,7 @@ export default function Scoreboard() {
     },
   });
 
-  const allTimePoints = useLoaderData<typeof loader>();
+  const { topScores: allTimeTopScores, pagesPath } = useLoaderData<typeof loader>();
 
   const [activeCategory, setActiveCategory] = useState<'Monthly' | 'All time' | 'Mods'>(
     'Monthly'
@@ -62,13 +63,13 @@ export default function Scoreboard() {
   const [date, setDate] = useState(new Date());
 
   const [points, setPoints] = useState<TopContributionPointsRow[]>(
-    allTimePoints.topScores || []
+    allTimeTopScores || []
   );
 
   const [cachedPoints, setCachedPoints] = useState<CachedPoints[]>([
     {
       yearMonth: format(new Date(), 'yyyy-MM'),
-      points: allTimePoints.topScores || [],
+      points: allTimeTopScores || [],
     },
   ]);
 
@@ -188,7 +189,13 @@ export default function Scoreboard() {
             <TableBody>
               {points.map((point, i) => (
                 <TableRow key={i}>
-                  <TableCell>{point.username}</TableCell>
+                  <TableCell>
+                    <Username
+                      id={point.userId}
+                      username={point.username}
+                      pagesPath={pagesPath}
+                    />
+                  </TableCell>
                   <TableCell>{point.points}</TableCell>
                 </TableRow>
               ))}
@@ -209,7 +216,11 @@ export async function loader(args: LoaderFunctionArgs) {
   if (scoresRes.err) {
     return processApiError('Error in loader of contribution scoreboard', scoresRes.err);
   }
-  return { topScores: scoresRes.result };
+
+  return {
+    topScores: scoresRes.result,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
+  };
 }
 
 export async function action(args: ActionFunctionArgs) {
