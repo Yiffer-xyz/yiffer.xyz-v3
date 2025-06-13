@@ -10,6 +10,7 @@ import { MdCameraAlt, MdEdit } from 'react-icons/md';
 import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import Button from '../Buttons/Button';
 import Link from '../Link';
+import PublicProfileBadges from './PublicProfileBadges';
 
 export default function PublicProfile({
   user,
@@ -28,26 +29,8 @@ export default function PublicProfile({
   isAdminPanel?: boolean;
   className?: string;
 }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const countryName = useMemo(() => {
-    if (!user.nationality) return null;
-    return countryList()
-      .getData()
-      .find(c => c.value === user.nationality)?.label;
-  }, [user.nationality]);
-
   const hasAnyBadges =
     isModOrAdmin({ userType: user.userType }) || user.patreonDollars || user.nationality;
-
-  const isMod = user.userType === 'moderator';
-  const isAdmin = user.userType === 'admin';
-
-  const Icon = isAdmin ? RiShieldStarFill : isMod ? RiShieldFill : null;
 
   return (
     <div className={className}>
@@ -72,28 +55,7 @@ export default function PublicProfile({
           <div className="flex flex-col gap-1 text-sm sm:text-base">
             {hasAnyBadges && (
               <div className="flex flex-row gap-y-1 gap-x-4 flex-wrap">
-                {Icon && (
-                  <div className="flex flex-row gap-1 items-center">
-                    <Icon className="text-theme1-primary mt-0.5" />{' '}
-                    <p>{capitalizeFirstRestLower(user.userType)}</p>
-                  </div>
-                )}
-                {user.patreonDollars && (
-                  <div className="flex flex-row gap-1 items-center">
-                    <FaPatreon className="text-patreon-primary mt-0.5" />{' '}
-                    <p>Patron (${user.patreonDollars})</p>
-                  </div>
-                )}
-                {user.nationality && (
-                  <div className="flex flex-row gap-1 items-center">
-                    {isClient ? (
-                      <ReactCountryFlag countryCode={user.nationality} />
-                    ) : (
-                      <div className="w-3.5 sm:w-4" />
-                    )}
-                    <p>{countryName}</p>
-                  </div>
-                )}
+                <PublicProfileBadges user={user} />
               </div>
             )}
 

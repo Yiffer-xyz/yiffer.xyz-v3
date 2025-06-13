@@ -1,4 +1,4 @@
-import { Outlet, useOutlet, useOutletContext } from '@remix-run/react';
+import { Outlet, useLoaderData, useOutlet, useOutletContext } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import type { GlobalAdminContext } from '~/routes/admin/route';
 import type { User } from '~/types/types';
@@ -14,10 +14,14 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from '@remix-run/cloudflare';
 import { getTimeAgoShort } from '~/utils/date-utils';
 import { format } from 'date-fns';
-import Link from '~/ui-components/Link';
+import Username from '~/ui-components/Username';
 
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
@@ -25,9 +29,15 @@ export const meta: MetaFunction = () => {
   return [{ title: `Mod: Users | Yiffer.xyz` }];
 };
 
+export async function loader(args: LoaderFunctionArgs) {
+  const pagesPath = args.context.cloudflare.env.PAGES_PATH;
+  return { pagesPath };
+}
+
 export default function UserManager() {
   const globalContext: GlobalAdminContext = useOutletContext();
   const outlet = useOutlet();
+  const { pagesPath } = useLoaderData<typeof loader>();
 
   const [userSearch, setUserSearch] = useState('');
 
@@ -79,11 +89,11 @@ export default function UserManager() {
                     <TableRow key={user.id}>
                       <TableCell>
                         <p>
-                          <Link
-                            href={`/admin/users/${user.id}`}
-                            text={user.username}
-                            showRightArrow
-                            isInsideParagraph
+                          <Username
+                            id={user.id}
+                            username={user.username}
+                            overrideLink={`/admin/users/${user.id}`}
+                            pagesPath={pagesPath}
                           />
                         </p>
                       </TableCell>
