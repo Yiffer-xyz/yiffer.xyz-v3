@@ -118,8 +118,11 @@ export default function Button({
       onMouseLeave={onMouseLeave}
       onBlur={onBlur}
     >
-      {StartIcon ? <StartIcon style={text ? { marginRight: '4px' } : {}} /> : undefined}{' '}
-      {text} {EndIcon ? <EndIcon style={text ? { marginLeft: '4px' } : {}} /> : undefined}
+      {StartIcon ? <StartIcon style={text ? { marginRight: 4 } : {}} /> : undefined}{' '}
+      {text}{' '}
+      {EndIcon ? (
+        <EndIcon style={text ? { marginLeft: 4, marginBottom: -1 } : {}} />
+      ) : undefined}
     </button>
   );
 }

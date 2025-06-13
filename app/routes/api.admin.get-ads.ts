@@ -5,8 +5,11 @@ import { redirectIfNotMod } from '~/utils/loaders';
 import {
   create400Json,
   createSuccessJson,
+  noGetRoute,
   processApiError,
 } from '~/utils/request-helpers';
+
+export { noGetRoute as loader };
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);

@@ -31,6 +31,7 @@ export const colors = {
     primaryMoreTrans: '#9aebe71a',
     primaryTransDarker: '#7ce9e460',
     light: '#d8fefd',
+    lighter: '#edfffe',
     dark: '#49ded7',
     darker: '#08ccc2',
     darker2: '#02c1b7',
@@ -61,6 +62,7 @@ export const colors = {
       100: '#007ec7',
       200: '#0f9ff3',
       300: '#3fb9f3',
+      900: '#f1fafe',
     },
     // "weak" because saturation is low, meaning less color. To be used in LIGHT mode.
     weak: {
