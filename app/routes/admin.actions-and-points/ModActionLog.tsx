@@ -12,13 +12,16 @@ import { getModActionName } from '~/types/constants';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowBack, MdArrowForward } from 'react-icons/md';
 import type { ModAction } from '~/types/types';
+import Username from '~/ui-components/Username';
 
 export default function ModActionLog({
   pageNum,
   modActions,
+  pagesPath,
 }: {
   pageNum: number;
   modActions: ModAction[];
+  pagesPath: string;
 }) {
   const navigate = useNavigate();
 
@@ -64,7 +67,11 @@ export default function ModActionLog({
               {modActions.map(a => (
                 <TableRow key={a.id}>
                   <TableCell>
-                    <Link href={`/admin/users/${a.user.id}`} text={a.user.username} />
+                    <Username
+                      id={a.user.id}
+                      username={a.user.username}
+                      pagesPath={pagesPath}
+                    />
                   </TableCell>
                   <TableCell>{getModActionName(a.actionType)}</TableCell>
                   <TableCell>{a.points}</TableCell>

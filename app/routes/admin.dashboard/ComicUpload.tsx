@@ -6,6 +6,7 @@ import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { getTimeAgo } from '~/utils/date-utils';
+import Username from '~/ui-components/Username';
 
 type ComicUploadProps = {
   action: DashboardAction;
@@ -17,6 +18,7 @@ type ComicUploadProps = {
   isAssignedToMe?: boolean;
   innerContainerClassName: string;
   blockActions?: boolean;
+  pagesPath: string;
 };
 
 export function ComicUpload({
@@ -29,6 +31,7 @@ export function ComicUpload({
   isAssignedToMe,
   innerContainerClassName,
   blockActions,
+  pagesPath,
 }: ComicUploadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
@@ -56,11 +59,24 @@ export function ComicUpload({
         </div>
 
         <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
-          <p className="text-sm">
-            {action.user.username || action.user.ip}
-            {' - '}
-            {getTimeAgo(action.timestamp)}
-          </p>
+          <div className="flex flex-row gap-x-1">
+            {action.user.username && action.user.userId ? (
+              <Username
+                id={action.user.userId}
+                username={action.user.username}
+                pagesPath={pagesPath}
+                textClassName="text-sm"
+                className="mt-0 md:-mt-[3px]"
+                showRightArrow={false}
+              />
+            ) : (
+              <p className="text-sm">{action.user.ip}</p>
+            )}
+            <p className="text-sm">
+              {' - '}
+              {getTimeAgo(action.timestamp)}
+            </p>
+          </div>
 
           {action.isProcessed && (
             <p>

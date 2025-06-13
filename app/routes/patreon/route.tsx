@@ -30,11 +30,11 @@ export async function loader(args: LoaderFunctionArgs) {
     }
   }
 
-  return { patronTiers: tiers };
+  return { patronTiers: tiers, pagesPath: args.context.cloudflare.env.PAGES_PATH };
 }
 
 export default function Patreon() {
-  const { patronTiers } = useLoaderData<typeof loader>();
+  const { patronTiers, pagesPath } = useLoaderData<typeof loader>();
   const [showWhyPatreon, setShowWhyPatreon] = useState(false);
 
   return (
@@ -121,7 +121,7 @@ export default function Patreon() {
         className={`-ml-3 ${showWhyPatreon ? 'mt-2' : '-mt-1'}`}
         onClick={() => setShowWhyPatreon(!showWhyPatreon)}
       />
-      <PatronList patronTiers={patronTiers} />
+      <PatronList patronTiers={patronTiers} pagesPath={pagesPath} />
     </div>
   );
 }

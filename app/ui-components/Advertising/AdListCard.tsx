@@ -7,17 +7,20 @@ import AdComicCard from './AdComicCard';
 import { useMemo } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
 import { differenceInDays, format } from 'date-fns';
+import Username from '../Username';
 
 export default function AdListCard({
   ad,
   adMediaPath,
   frontendAdsPath,
   showFullAdminData,
+  pagesPath,
 }: {
   ad: Advertisement;
   adMediaPath: string;
   frontendAdsPath: string;
   showFullAdminData?: boolean;
+  pagesPath: string;
 }) {
   const activeDaysStr = useMemo(() => {
     if (!ad.numDaysActive) return '';
@@ -98,11 +101,12 @@ export default function AdListCard({
 
         {showFullAdminData && (
           <p className="text-sm break-all">
-            <Link
-              href={`/admin/users/${ad.user.id}`}
-              text={ad.user.username}
-              showRightArrow
-              isInsideParagraph
+            <Username
+              id={ad.user.id}
+              username={ad.user.username}
+              pagesPath={pagesPath}
+              showRightArrow={false}
+              textClassName="text-sm"
             />{' '}
             ・ {ad.user.email} ・ {ad.id}
           </p>

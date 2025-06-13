@@ -41,11 +41,13 @@ export async function loader(args: LoaderFunctionArgs) {
     modScoreboard: modScoreboardRes.result as ModScore[],
     modActions: modActionsRes.result as ModAction[],
     pageNum,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
   };
 }
 
 export default function ModActionsAndPoints() {
-  const { modActions, modScoreboard, pageNum } = useLoaderData<typeof loader>();
+  const { modActions, modScoreboard, pageNum, pagesPath } =
+    useLoaderData<typeof loader>();
 
   return (
     <>
@@ -53,7 +55,7 @@ export default function ModActionsAndPoints() {
 
       <ModScoreboard modScoreboard={modScoreboard} />
 
-      <ModActionLog pageNum={pageNum} modActions={modActions} />
+      <ModActionLog pageNum={pageNum} modActions={modActions} pagesPath={pagesPath} />
     </>
   );
 }

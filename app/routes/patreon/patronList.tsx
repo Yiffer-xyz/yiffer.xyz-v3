@@ -1,9 +1,12 @@
 import type { Patron } from '~/types/types';
+import Username from '~/ui-components/Username';
 
 export default function PatronList({
   patronTiers,
+  pagesPath,
 }: {
   patronTiers: { [key: number]: Patron[] };
+  pagesPath: string;
 }) {
   const sortedTiers = Object.keys(patronTiers)
     .sort((a, b) => Number(b) - Number(a))
@@ -24,7 +27,12 @@ export default function PatronList({
                 <h4>${tier} patrons</h4>
                 <div className="flex flex-col gap-y-1">
                   {patronTiers[tier].map(patron => (
-                    <p key={patron.username}>{getPatronText(patron)}</p>
+                    <Username
+                      id={patron.userId}
+                      username={patron.username}
+                      pagesPath={pagesPath}
+                      key={patron.username}
+                    />
                   ))}
                 </div>
               </div>
@@ -36,8 +44,4 @@ export default function PatronList({
       )}
     </>
   );
-}
-
-function getPatronText(patron: Patron) {
-  return `${patron.username}`;
 }

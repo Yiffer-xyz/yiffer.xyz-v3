@@ -17,6 +17,7 @@ import type {
   MetaFunction,
 } from '@remix-run/cloudflare';
 import { MdOpenInNew } from 'react-icons/md';
+import Username from '~/ui-components/Username';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const statusOptions: { key: ModApplication['status']; text: string }[] = [
@@ -43,11 +44,14 @@ export async function loader(args: LoaderFunctionArgs) {
     );
   }
 
-  return { applications: applicationsRes.result };
+  return {
+    applications: applicationsRes.result,
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
+  };
 }
 
 export default function AdminModApplications() {
-  const { applications } = useLoaderData<typeof loader>();
+  const { applications, pagesPath } = useLoaderData<typeof loader>();
 
   const [status, setStatus] = useState<ModApplication['status']>('pending');
   const [showAll, setShowAll] = useState(false);
@@ -103,6 +107,7 @@ export default function AdminModApplications() {
             application={appl}
             onChangeStatus={handleAction}
             isLoading={updateStatusFetcher.isLoading}
+            pagesPath={pagesPath}
           />
         ))}
 
@@ -116,10 +121,12 @@ export function ModApplicationCard({
   application,
   onChangeStatus,
   isLoading,
+  pagesPath,
 }: {
   application: ModApplication;
   onChangeStatus: (applicationId: number, status: ModApplication['status']) => void;
   isLoading: boolean;
+  pagesPath: string;
 }) {
   return (
     <div
@@ -128,10 +135,10 @@ export function ModApplicationCard({
         gap-6 justify-between bg-white dark:bg-gray-300`}
     >
       <div className="flex flex-row justify-between">
-        <Link
-          href={`/admin/users/${application.userId}`}
-          text={application.username}
-          showRightArrow
+        <Username
+          id={application.userId}
+          username={application.username}
+          pagesPath={pagesPath}
         />
 
         <p>{getTimeAgo(application.timestamp)}</p>
