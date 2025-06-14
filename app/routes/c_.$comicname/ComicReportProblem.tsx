@@ -63,7 +63,7 @@ export default function ComicReportProblem({
     return (
       <InfoBox
         variant="success"
-        className={`mt-4 w-fit md:w-[728px] ${infoBoxesExtraMarginClass}`}
+        className={`mt-4 mb-4 w-fit md:w-[728px] ${infoBoxesExtraMarginClass}`}
         closable
         overrideOnCloseFunc={onCancel}
       >
@@ -91,7 +91,7 @@ export default function ComicReportProblem({
 
   return (
     <TopGradientBox
-      containerClassName={`mt-4 max-w-2xl md:max-w-none md:w-[728px] ${infoBoxesExtraMarginClass}`}
+      containerClassName={`mt-4 mb-4 max-w-2xl md:max-w-none md:w-[728px] ${infoBoxesExtraMarginClass}`}
       innerClassName="p-4 flex flex-col"
     >
       <p className="font-semibold text-lg">Report problem</p>

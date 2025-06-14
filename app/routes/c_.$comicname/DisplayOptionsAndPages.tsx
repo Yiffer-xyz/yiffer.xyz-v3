@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MdClear, MdQuestionMark } from 'react-icons/md';
+import { MdClear } from 'react-icons/md';
 import type { Comic, PageDisplay } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import IconButton from '~/ui-components/Buttons/IconButton';
@@ -8,6 +8,9 @@ import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 import { padPageNumber } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import posthog from 'posthog-js';
+import DropdownButton from '~/ui-components/Buttons/DropdownButton';
+import ComicManageTags from './ComicManageTags';
+import ComicReportProblem from './ComicReportProblem';
 
 const pageDisplays: PageDisplay[] = [
   'Fit',
@@ -26,12 +29,16 @@ type PageStyle = {
 type ComicDisplayOptionsProps = {
   comic: Comic;
   pagesPath: string;
+  isLoggedIn: boolean;
+  isMod: boolean;
   children?: React.ReactNode;
 };
 
 export default function DisplayOptionsAndPages({
   comic,
   pagesPath,
+  isLoggedIn,
+  isMod,
   children, // Advertisement
 }: ComicDisplayOptionsProps) {
   const { comicDisplayOptions, setComicDisplayOptions } = useUIPreferences();
@@ -44,7 +51,9 @@ export default function DisplayOptionsAndPages({
   const labelUpdateTimeoutRef = useRef<{ timer: NodeJS.Timeout; pageNum: number } | null>(
     null
   );
-  const [isShowingExplanation, setIsShowingExplanation] = useState(false);
+
+  const [isManagingTags, setIsManagingTags] = useState(false);
+  const [isReportingProblem, setIsReportingProblem] = useState(false);
   const [isSetDefaultHidden, setIsSetDefaultHidden] = useState(false);
   const [isReverseOrderLocal, setIsReverseOrderLocal] = useState<boolean | null>(null);
   const [displayLocal, setDisplayLocal] = useState<PageDisplay | null>(null);
@@ -52,9 +61,17 @@ export default function DisplayOptionsAndPages({
     null
   );
 
+  const hasLinks = !!comic?.previousComic || !!comic?.nextComic;
   const currentIsReverseOrder = isReverseOrderLocal ?? reverseOrderSaved;
   const currentDisplay = displayLocal ?? displaySaved;
   const currentClickToToggleDisplay = clickPageToToggleLocal ?? clickToToggleDisplaySaved;
+
+  const infoBoxesExtraMarginClass = useMemo(() => {
+    if (hasLinks || !comic) return 'md:mt-6';
+    if (comic.tags.length > 12) return 'md:mt-12';
+    if (comic.tags.length > 0) return 'md:mt-14';
+    return 'md:mt-[88px]';
+  }, [comic, hasLinks]);
 
   const hasChanged = useMemo(() => {
     return (
@@ -160,82 +177,85 @@ export default function DisplayOptionsAndPages({
 
   return (
     <>
-      <div className="flex flex-col gap-1.5 mt-6 mb-7 md:mt-5 md:mb-4 md:w-[728px]">
-        <div className="flex flex-row items-center">
-          <p className="font-semibold">Display options</p>
-          <IconButton
-            icon={MdQuestionMark}
-            variant="naked"
-            className="-mt-0.5"
-            onClick={() => setIsShowingExplanation(!isShowingExplanation)}
-          />
-        </div>
+      {isManagingTags && (
+        <ComicManageTags
+          comic={comic}
+          setIsManagingTags={setIsManagingTags}
+          isLoggedIn={isLoggedIn}
+          isMod={isMod}
+          infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
+        />
+      )}
 
-        {isShowingExplanation && (
-          <div className="text-sm -mt-2 mb-2 flex flex-col gap-2">
-            <p>
-              The various page fit options can be used to adjust how the comic pages are
-              displayed relative to your screen size.
-            </p>
-            <p>
-              Depending on screen and page sizes, some of them might have the same
-              results.
-            </p>
-            <p>
-              With "tap pages to cycle display" enabled, you can tap or click each page to
-              cycle through the display options for that page only.
-            </p>
-            <p>
-              "Reverse page order" might be useful if you're returning to catch up on
-              ongoing comics you've been following, especially if your connection is slow,
-              as this will make the last pages load immediately.
-            </p>
-          </div>
-        )}
+      {isReportingProblem && (
+        <ComicReportProblem
+          comic={comic}
+          setIsReportingProblem={setIsReportingProblem}
+          isLoggedIn={isLoggedIn}
+          infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
+        />
+      )}
 
-        <div className="flex flex-row gap-2 flex-wrap items-center">
-          {pageDisplays.map(display => (
-            <Button
-              key={display}
-              onClick={() => onChangeDisplay(display)}
-              text={display}
-              className="!py-1 !px-2 font-normal"
+      {!isManagingTags && !isReportingProblem && (
+        <div className="flex flex-col gap-1.5 mt-3 mb-5 md:mt-5 md:mb-4 md:w-[728px]">
+          <div className="w-full flex flex-row gap-3">
+            <DropdownButton
+              text="Page fit"
+              options={pageDisplays.map(pageDisplay => ({
+                text: pageDisplay,
+                onClick: () => onChangeDisplay(pageDisplay),
+              }))}
             />
-          ))}
-        </div>
 
-        <div className="flex flex-row flex-wrap gap-x-8 gap-y-1">
-          <SwitchToggle
-            label="Tap pages to cycle display"
-            onChange={onChangeClickToToggleDisplay}
-            checked={currentClickToToggleDisplay}
-            className="mt-1"
-          />
-          <SwitchToggle
-            label="Reverse page order"
-            onChange={onChangeReverseOrder}
-            checked={currentIsReverseOrder}
-            className="mt-1"
-          />
-        </div>
-
-        {hasChanged && !isSetDefaultHidden && (
-          <div className="mt-1 flex flex-row items-center">
-            <Button
-              text="Set as default"
-              className="!py-1 !px-2 font-normal"
-              onClick={setDefault}
-              variant="outlined"
-            />
-            <IconButton
-              variant="naked"
-              icon={MdClear}
-              className="ml-0 text-gray-700 dark:text-gray-600"
-              onClick={() => setIsSetDefaultHidden(true)}
+            <DropdownButton
+              text="Contribute"
+              style={{ width: 154 }}
+              options={[
+                {
+                  text: 'Add or remove tags',
+                  onClick: () => setIsManagingTags(true),
+                },
+                {
+                  text: 'Report problem',
+                  onClick: () => setIsReportingProblem(true),
+                },
+              ]}
             />
           </div>
-        )}
-      </div>
+
+          <div className="flex flex-col gap-y-1">
+            <SwitchToggle
+              label="Tap pages to cycle display"
+              onChange={onChangeClickToToggleDisplay}
+              checked={currentClickToToggleDisplay}
+              className="mt-1"
+            />
+            <SwitchToggle
+              label="Reverse page order"
+              onChange={onChangeReverseOrder}
+              checked={currentIsReverseOrder}
+              className="mt-1"
+            />
+          </div>
+
+          {hasChanged && !isSetDefaultHidden && (
+            <div className="mt-1 flex flex-row items-center">
+              <Button
+                text="Set as default"
+                className="!py-1 !px-2 "
+                onClick={setDefault}
+                variant="outlined"
+              />
+              <IconButton
+                variant="naked"
+                icon={MdClear}
+                className="ml-0 text-gray-700 dark:text-gray-600"
+                onClick={() => setIsSetDefaultHidden(true)}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {children}
 

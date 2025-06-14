@@ -85,7 +85,7 @@ export default function ComicManageTags({
     return (
       <InfoBox
         variant="success"
-        className={`mt-4 w-fit md:w-[728px] ${infoBoxesExtraMarginClass}`}
+        className={`mt-4 mb-4 w-fit md:w-[728px] ${infoBoxesExtraMarginClass}`}
         closable
         fitWidth
         overrideOnCloseFunc={onCancel}
@@ -122,7 +122,7 @@ export default function ComicManageTags({
 
   return (
     <TopGradientBox
-      containerClassName={`mt-4 max-w-4xl md:w-[728px] ${infoBoxesExtraMarginClass}`}
+      containerClassName={`mt-4 mb-4 max-w-4xl md:w-[728px] ${infoBoxesExtraMarginClass}`}
       innerClassName="p-4 flex flex-col"
     >
       <p className="font-semibold text-lg">Manage tags</p>
