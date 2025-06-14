@@ -6,16 +6,13 @@ import { authLoader } from '~/utils/loaders';
 import TagElement from '~/ui-components/TagElement/TagElement';
 import Link from '~/ui-components/Link';
 import ComicStats from './ComicStats';
-import ComicManageTags from './ComicManageTags';
-import DropdownButton from '~/ui-components/Buttons/DropdownButton';
-import ComicReportProblem from './ComicReportProblem';
 import { getAdForViewing } from '~/route-funcs/get-ads-for-viewing';
 import Ad from '~/ui-components/Advertising/Ad';
 import { isModOrAdmin, type AdForViewing, type Comic } from '~/types/types';
 import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
@@ -46,20 +43,10 @@ export default function ComicPage() {
   } = useLoaderData<LoaderData>();
 
   const [showMobileTags, setShowMobileTags] = useState(false);
-  const [isManagingTags, setIsManagingTags] = useState(false);
-  const [isReportingProblem, setIsReportingProblem] = useState(false);
-
   const comicNotFound = notFound || !comic || comic.name === null;
-  const hasLinks = !!comic?.previousComic || !!comic?.nextComic;
-
-  const infoBoxesExtraMarginClass = useMemo(() => {
-    if (hasLinks || !comic) return 'md:mt-6';
-    if (comic.tags.length > 12) return 'md:mt-12';
-    if (comic.tags.length > 0) return 'md:mt-14';
-    return 'md:mt-[78px]';
-  }, [comic, hasLinks]);
 
   const isPublished = comic?.publishStatus === 'published';
+  const hasLinks = !!comic?.previousComic || !!comic?.nextComic;
 
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
@@ -138,13 +125,13 @@ export default function ComicPage() {
 
                   {/* Mobile: Button, tags hidden by default */}
                   {comic.tags.length > 0 && (
-                    <div className="flex-row flex-wrap gap-1.5 mt-4 md:pr-[144px] flex md:hidden">
+                    <div className="flex-row flex-wrap gap-1.5 mt-4 mb-2 md:pr-[144px] flex md:hidden">
                       {!showMobileTags && (
                         <Button
-                          text="Show tags"
+                          text={`Show ${comic.tags.length} tags`}
                           variant="naked"
                           onClick={() => setShowMobileTags(true)}
-                          className="-ml-3 -mt-4"
+                          className={`-ml-3 ${hasLinks ? '-mt-2' : '-mt-4'}`}
                         />
                       )}
                       {showMobileTags &&
@@ -157,25 +144,6 @@ export default function ComicPage() {
 
                 <ComicStats comic={comic} />
               </div>
-
-              {!isManagingTags && !isReportingProblem && (
-                <div className="mt-6 w-full">
-                  <DropdownButton
-                    text="Contribute"
-                    style={{ width: 154 }}
-                    options={[
-                      {
-                        text: 'Add or remove tags',
-                        onClick: () => setIsManagingTags(true),
-                      },
-                      {
-                        text: 'Report problem',
-                        onClick: () => setIsReportingProblem(true),
-                      },
-                    ]}
-                  />
-                </div>
-              )}
             </div>
           )}
 
@@ -193,26 +161,12 @@ export default function ComicPage() {
             </div>
           )}
 
-          {isManagingTags && (
-            <ComicManageTags
-              comic={comic}
-              setIsManagingTags={setIsManagingTags}
-              isLoggedIn={isLoggedIn}
-              isMod={isMod}
-              infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
-            />
-          )}
-
-          {isReportingProblem && (
-            <ComicReportProblem
-              comic={comic}
-              setIsReportingProblem={setIsReportingProblem}
-              isLoggedIn={isLoggedIn}
-              infoBoxesExtraMarginClass={infoBoxesExtraMarginClass}
-            />
-          )}
-
-          <DisplayOptionsAndPages comic={comic} pagesPath={pagesPath}>
+          <DisplayOptionsAndPages
+            comic={comic}
+            pagesPath={pagesPath}
+            isLoggedIn={isLoggedIn}
+            isMod={isMod}
+          >
             {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
           </DisplayOptionsAndPages>
 
@@ -317,8 +271,7 @@ function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: str
   if (!comic?.previousComic && !comic?.nextComic) return null;
 
   return (
-    <div className={className}>
-      <p>This comic is part of a series:</p>
+    <div className={`${className ?? ''}`}>
       {comic.previousComic && (
         <p>
           Prev:{' '}
@@ -326,6 +279,7 @@ function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: str
             href={`/c/${comic.previousComic.name}`}
             text={comic.previousComic.name}
             isInsideParagraph
+            showRightArrow
           />
         </p>
       )}
@@ -336,6 +290,7 @@ function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: str
             href={`/c/${comic.nextComic.name}`}
             text={comic.nextComic.name}
             isInsideParagraph
+            showRightArrow
           />
         </p>
       )}
