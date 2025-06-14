@@ -50,6 +50,15 @@ type DbTag = {
   tagName: string;
 };
 
+type DbComment = {
+  id: number;
+  userId: number;
+  comment: string;
+  timestamp: string;
+  username: string;
+  profilePictureToken?: string | null;
+};
+
 type GetComicByFieldParams = {
   db: D1Database;
   fieldName: 'id' | 'name';
@@ -72,9 +81,12 @@ export async function getComicByField({
     fieldName === 'id'
       ? getTagsByComicIdQuery(fieldValue as number)
       : getTagsByComicNameQuery(fieldValue as string),
+    fieldName === 'id'
+      ? getCommentsByComicIdQuery(fieldValue as number)
+      : getCommentsByComicNameQuery(fieldValue as string),
   ];
 
-  const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[]]>(
+  const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[], DbComment[]]>(
     db,
     dbStatements
   );
@@ -83,7 +95,7 @@ export async function getComicByField({
     return makeDbErrObj(dbRes, 'Error getting comic+links+tags', logCtx);
   }
 
-  const [comicRes, linksRes, tagsRes] = dbRes.result;
+  const [comicRes, linksRes, tagsRes, commentsRes] = dbRes.result;
   if (comicRes.length === 0 || comicRes[0].id === null) {
     return { notFound: true };
   }
@@ -92,6 +104,7 @@ export async function getComicByField({
     comicRes[0],
     linksRes,
     tagsRes,
+    commentsRes,
     includeMetadata,
     userId
   );
@@ -103,6 +116,7 @@ function mergeDbFieldsToComic(
   dbComic: DbComic,
   dbLinksRows: DbComicLink[],
   dbTagsRows: DbTag[],
+  dbCommentsRows: DbComment[],
   includeMetadata: boolean,
   userId?: number
 ): Comic {
@@ -132,6 +146,18 @@ function mergeDbFieldsToComic(
       id: tag.tagId,
       name: tag.tagName,
     })),
+    comments: dbCommentsRows
+      .map(comment => ({
+        id: comment.id,
+        comment: comment.comment,
+        timestamp: parseDbDateStr(comment.timestamp),
+        user: {
+          id: comment.userId,
+          username: comment.username,
+          profilePictureToken: comment.profilePictureToken,
+        },
+      }))
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
   };
 
   if (dbLinksRows.length > 0) {
@@ -300,5 +326,44 @@ function getTagsByComicNameQuery(comicName: string): QueryWithParams {
     query: tagsQuery,
     params: [comicName],
     queryName: 'Comic tags by comic name',
+  };
+}
+
+function getCommentsByComicIdQuery(comicId: number): QueryWithParams {
+  const commentsQuery = `SELECT
+      comiccomment.id AS id,
+      comiccomment.userId AS userId,
+      comiccomment.comment AS comment,
+      comiccomment.timestamp AS timestamp,
+      user.username AS username,
+      user.profilePictureToken AS profilePictureToken
+    FROM comiccomment
+    INNER JOIN user ON (user.id = comiccomment.userId)
+    WHERE comicId = ? AND comiccomment.isHidden = 0`;
+
+  return {
+    query: commentsQuery,
+    params: [comicId],
+    queryName: 'Comic comments by comic ID',
+  };
+}
+
+function getCommentsByComicNameQuery(comicName: string): QueryWithParams {
+  const commentsQuery = `SELECT
+      comiccomment.id AS id,
+      comiccomment.userId AS userId,
+      comiccomment.comment AS comment,
+      comiccomment.timestamp AS timestamp,
+      user.username AS username,
+      user.profilePictureToken AS profilePictureToken
+    FROM comiccomment
+    INNER JOIN user ON (user.id = comiccomment.userId)
+    INNER JOIN comic ON (comic.id = comiccomment.comicId)
+    WHERE comic.name = ? AND comiccomment.isHidden = 0`;
+
+  return {
+    query: commentsQuery,
+    params: [comicName],
+    queryName: 'Comic comments by comic name',
   };
 }

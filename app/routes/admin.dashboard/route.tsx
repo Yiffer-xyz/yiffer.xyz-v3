@@ -19,6 +19,8 @@ import { PendingComicProblem } from './PendingComicProblem';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import type { GlobalAdminContext } from '../admin/route';
+import { ComicCommentReport } from './ComicCommentReport';
+import type { ProcessComicCommentReportBody } from '../api.admin.process-comic-comment-report';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const allActionTypes: DashboardActionType[] = [
@@ -27,6 +29,7 @@ const allActionTypes: DashboardActionType[] = [
   'comicSuggestion',
   'comicProblem',
   'pendingComicProblem',
+  'comicCommentReport',
 ];
 
 const actionTypeToLabel: Record<DashboardActionType, string> = {
@@ -35,6 +38,7 @@ const actionTypeToLabel: Record<DashboardActionType, string> = {
   comicSuggestion: 'Comic suggestions',
   comicProblem: 'Comic problems',
   pendingComicProblem: 'Pending problems',
+  comicCommentReport: 'Comic comment reports',
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -82,6 +86,11 @@ export default function Dashboard() {
     url: '/api/admin/process-comic-suggestion',
     method: 'post',
     toastSuccessMessage: 'Comic suggestion processed',
+  });
+  const comicCommentReportFetcher = useGoodFetcher({
+    url: '/api/admin/process-comic-comment-report',
+    method: 'post',
+    toastSuccessMessage: 'Comment report processed',
   });
 
   const filteredDashboardItems = useMemo(() => {
@@ -165,6 +174,22 @@ export default function Dashboard() {
     problemFetcher.submit({ body: JSON.stringify(body) });
   }
 
+  function processComicCommentReport(
+    action: DashboardAction,
+    shouldHideComment: boolean
+  ) {
+    if (blockActions) return;
+    const body: ProcessComicCommentReportBody = {
+      actionId: action.id,
+      shouldHideComment,
+      comicId: action.comicId!,
+    };
+
+    setLatestSubmittedId(action.id);
+    setLatestSubmittedAction('process-comment-report');
+    comicCommentReportFetcher.submit({ body: JSON.stringify(body) });
+  }
+
   function processComicSuggestion(
     action: DashboardAction,
     isApproved: boolean,
@@ -191,7 +216,7 @@ export default function Dashboard() {
       <h1>Action dashboard</h1>
 
       <Button
-        className={`md:hidden mb-3`}
+        className={`md:hidden mb-3 mt-2`}
         onClick={() => setShowMobileFilters(!showMobileFilters)}
         text={showMobileFilters ? 'Hide filters' : 'Show filters'}
         variant="outlined"
@@ -365,6 +390,27 @@ export default function Dashboard() {
                 isAssignedToMe={isAssignedToMe}
                 innerContainerClassName={innerContainerClassName}
                 blockActions={blockActions}
+              />
+            )}
+
+            {action.type === 'comicCommentReport' && (
+              <ComicCommentReport
+                action={action}
+                onAssignMe={assignActionToMod}
+                onUnassignMe={unassignActionFromMod}
+                onProcessed={processComicCommentReport}
+                isLoading={
+                  latestSubmittedId === action.id &&
+                  (assignModFetcher.isLoading ||
+                    unassignModFetcher.isLoading ||
+                    problemFetcher.isLoading)
+                }
+                loadingAction={latestSubmittedAction}
+                isAssignedToOther={isAssignedToOther}
+                isAssignedToMe={isAssignedToMe}
+                innerContainerClassName={innerContainerClassName}
+                blockActions={blockActions}
+                pagesPath={pagesPath}
               />
             )}
           </div>

@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { type HTMLAttributes } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
-import { IoDocumentOutline, IoStar } from 'react-icons/io5';
+import { IoChatbubbleEllipsesOutline, IoDocumentsOutline, IoStar } from 'react-icons/io5';
 import { LuRefreshCcw } from 'react-icons/lu';
 import type { Comic } from '~/types/types';
 import { desktopStatsWidth } from './route';
@@ -18,6 +18,14 @@ export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
         md:pl-0 md:absolute md:right-0 text-sm md:text-base ${className}`}
       style={{ width: desktopStatsWidth }}
     >
+      <div className="flex flex-row items-center">
+        <IoDocumentsOutline className="mt-[1.5px] mr-0.5" size={13} />
+        <p>{comic.numberOfPages}</p>
+
+        <IoChatbubbleEllipsesOutline className="mt-[1.5px] mr-0.5 ml-2.5" size={13} />
+        <p>{comic.comments.length}</p>
+      </div>
+
       <div className="flex flex-row items-center gap-1.5">
         <IoStar className="text-gray-600 dark:text-gray-700 mt-[2px]" />
         <p>
@@ -42,11 +50,6 @@ export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
           <p>{format(comic.updated, 'PP')}</p>
         </div>
       )}
-
-      <div className="flex flex-row items-center gap-1.5">
-        <IoDocumentOutline className="mt-[1.5px]" size={13} />
-        <p>{comic.numberOfPages} pages</p>
-      </div>
     </div>
   );
 }

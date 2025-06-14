@@ -1,6 +1,11 @@
 import { contributionPointEntryToPoints } from '~/types/contributions';
 import { isModOrAdmin } from '~/types/types';
-import type { UserSocialAccount, User, ContributionPointsEntry } from '~/types/types';
+import type {
+  UserSocialAccount,
+  User,
+  ContributionPointsEntry,
+  AdminPanelUserComment,
+} from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type {
@@ -57,11 +62,13 @@ export async function getUserByField({
   field,
   value,
   includeExtraFields = false,
+  includeComments = false,
 }: {
   db: D1Database;
   field: 'email' | 'username' | 'id';
   value: string | number;
   includeExtraFields?: boolean;
+  includeComments?: boolean;
 }): ResultOrNotFoundOrErrorPromise<User> {
   let whereStr = `WHERE user.${field} = ?`;
   if (field === 'email' || field === 'username') {
@@ -88,7 +95,7 @@ export async function getUserByField({
   const user = dbUserToUser(dbRes.result[0]);
 
   if (includeExtraFields) {
-    const extraFieldsRes = await getUserExtraFields(db, user);
+    const extraFieldsRes = await getUserExtraFields(db, user, includeComments);
     if (extraFieldsRes.err) {
       return {
         err: wrapApiError(
@@ -100,6 +107,7 @@ export async function getUserByField({
     }
     user.contributionPoints = extraFieldsRes.result.contributionPoints;
     user.socialLinks = extraFieldsRes.result.socialLinks;
+    user.comments = extraFieldsRes.result.comments;
   }
 
   return { result: user };
@@ -120,12 +128,23 @@ function dbUserToUser(user: DbUser): User {
   return convertedUser;
 }
 
+type DbComment = {
+  id: number;
+  comment: string;
+  timestamp: string;
+  comicId: number;
+  comicName: string;
+  isHidden: 0 | 1;
+};
+
 async function getUserExtraFields(
   db: D1Database,
-  user: User
+  user: User,
+  includeComments: boolean
 ): ResultOrErrorPromise<{
   contributionPoints: number;
   socialLinks: UserSocialAccount[];
+  comments?: AdminPanelUserComment[];
 }> {
   const socialLinksQuery =
     'SELECT id, username, platform FROM usersocialaccount WHERE userId = ?';
@@ -135,6 +154,32 @@ async function getUserExtraFields(
     [user.id],
     'Social links'
   );
+
+  let comments: AdminPanelUserComment[] = [];
+  if (includeComments) {
+    const commentsQuery = `
+      SELECT
+        comiccomment.id AS id, comment, comiccomment.timestamp AS timestamp, comicId,
+        comic.name AS comicName, comiccomment.isHidden
+      FROM comiccomment 
+      INNER JOIN comic ON comiccomment.comicId = comic.id
+      WHERE userId = ?
+    `;
+    const commentsRes = await queryDb<DbComment[]>(
+      db,
+      commentsQuery,
+      [user.id],
+      'User comments'
+    );
+
+    if (commentsRes.isError) {
+      return makeDbErrObj(commentsRes, 'Error getting user comments', {
+        userId: user.id,
+      });
+    }
+
+    comments = commentsRes.result.map(dbComment => dbCommentToComment(dbComment));
+  }
 
   if (isModOrAdmin(user)) {
     const modActionQuery = `SELECT SUM(points) AS points FROM modaction WHERE userId = ?`;
@@ -164,6 +209,7 @@ async function getUserExtraFields(
       result: {
         contributionPoints: modActionRes.result[0].points ?? 0,
         socialLinks: socialLinksRes.result ?? [],
+        comments,
       },
     };
   } else {
@@ -201,6 +247,7 @@ async function getUserExtraFields(
       result: {
         contributionPoints,
         socialLinks: socialLinksRes.result,
+        comments,
       },
     };
   }
@@ -225,4 +272,12 @@ export async function getUsersByPatreonEmails(
   }
 
   return { result: dbRes.result };
+}
+
+function dbCommentToComment(dbComment: DbComment): AdminPanelUserComment {
+  return {
+    ...dbComment,
+    timestamp: parseDbDateStr(dbComment.timestamp),
+    isHidden: dbComment.isHidden === 1,
+  };
 }

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MdClear } from 'react-icons/md';
+import { MdArrowDownward, MdClear } from 'react-icons/md';
 import type { Comic, PageDisplay } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import IconButton from '~/ui-components/Buttons/IconButton';
@@ -197,7 +197,7 @@ export default function DisplayOptionsAndPages({
       )}
 
       {!isManagingTags && !isReportingProblem && (
-        <div className="flex flex-col gap-1.5 mt-3 mb-5 md:mt-5 md:mb-4 md:w-[728px]">
+        <div className="flex flex-col gap-1.5 mt-3 mb-5 md:mt-5 md:mb-0 md:w-[728px]">
           <div className="w-full flex flex-row gap-3">
             <DropdownButton
               text="Page fit"
@@ -254,6 +254,22 @@ export default function DisplayOptionsAndPages({
               />
             </div>
           )}
+
+          <Button
+            variant="naked"
+            text="Go to bottom & comments"
+            startIcon={MdArrowDownward}
+            className="mt-3 md:mt-2 self-start"
+            noPadding
+            onClick={() => {
+              const bottomButton = document.getElementById('to-top-button');
+              if (bottomButton) {
+                bottomButton.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              }
+            }}
+          />
         </div>
       )}
 

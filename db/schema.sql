@@ -593,3 +593,53 @@ FOREIGN KEY (userId)
 REFERENCES user (id)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+------------------------------------------------------
+-- COMIC COMMENT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comiccomment (
+id INTEGER NOT NULL,
+comicId INTEGER NOT NULL,
+userId INTEGER NOT NULL,
+comment TEXT NOT NULL,
+isHidden TINYINTEGER NOT NULL DEFAULT 0,
+timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (id),
+FOREIGN KEY (comicId)
+REFERENCES comic (id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+FOREIGN KEY (userId)
+REFERENCES user (id)
+ON DELETE CASCADE
+ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_comiccomment_comicId ON comiccomment(comicId);
+
+------------------------------------------------------
+-- COMIC COMMENT REPORT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comiccommentreport (
+  id INTEGER NOT NULL,
+  userId INTEGER NOT NULL,
+  commentId INTEGER NOT NULL,
+  modId INTEGER NULL DEFAULT NULL,
+  isProcessed TINYINTEGER NOT NULL DEFAULT 0,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (userId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
+  FOREIGN KEY (commentId)
+  REFERENCES comiccomment (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
+  FOREIGN KEY (modId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_comiccommentreport_commentId ON comiccommentreport(commentId);
+CREATE INDEX IF NOT EXISTS idx_comiccommentreport_userId ON comiccommentreport(userId);

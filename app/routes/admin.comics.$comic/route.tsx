@@ -13,7 +13,6 @@ import UnlistedComicSection from './UnlistedComicSection';
 import UserUploadSection from './UserUploadedComicSection';
 import { FaRegStar } from 'react-icons/fa';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
-import { MdArrowBack } from 'react-icons/md';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -49,10 +48,7 @@ export default function ManageComicInner() {
 
   return (
     <>
-      <h2 className="mt-1">{comic.name}</h2>
-      <div className="mb-2">
-        <Link href="/admin/comics" text="Back" Icon={MdArrowBack} />
-      </div>
+      <h2 className="mt-1 mb-2">{comic.name}</h2>
 
       {isRejected && (
         <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
@@ -139,7 +135,8 @@ export default function ManageComicInner() {
               <p>Last updated: {format(comic.updated, 'PPP')}</p>
               <p>
                 <FaRegStar size={16} className="mb-[5px]" /> {comic.sumStars} ·{' '}
-                {comic.avgStarsPercent}% · {comic.numTimesStarred} ratings
+                {comic.avgStarsPercent}% · {comic.numTimesStarred} ratings ·{' '}
+                {comic.comments.length} comments
               </p>
             </>
           )}

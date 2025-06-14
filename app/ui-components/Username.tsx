@@ -8,7 +8,6 @@ import { formatDistanceToNow } from 'date-fns';
 import PublicProfileBadges from './PublicProfile/PublicProfileBadges';
 import { FaUser } from 'react-icons/fa';
 import { MdArrowForward } from 'react-icons/md';
-import Button from './Buttons/Button';
 
 export default function Username({
   id,
@@ -53,17 +52,19 @@ export default function Username({
       user.nationality);
 
   return (
-    <div
+    <span
       onMouseEnter={onHover}
       onMouseLeave={() => setIsHovering(false)}
-      className={`w-fit relative inline ${className}`}
+      className={`w-fit relative  ${className}`}
     >
-      <Button
-        text={username}
-        variant="naked"
-        style={{ marginTop: 0, padding: 0 }}
-        className={'inline md:hidden ' + (textClassName ? `!${textClassName}` : '')}
-      />
+      <span
+        className={`md:hidden cursor-pointer w-fit
+                  text-blue-weak-200 dark:text-blue-strong-300 from-blue-weak-200 to-blue-weak-200
+                  dark:from-blue-strong-300 dark:to-blue-strong-300 font-bold ${textClassName}`}
+      >
+        {username}
+      </span>
+
       <Link
         href={overrideLink ?? `/user/${username}`}
         text={username}
@@ -78,17 +79,17 @@ export default function Username({
                       rounded-md py-2 px-2.5 bottom-[100%] left-0 dark:!text-white
                       shadow-md dark:shadow-lg flex-row gap-2 items-center cursor-pointer z-10`}
         >
-          <div className="rounded-full w-[64px] h-[64px]">
+          <div className="rounded w-[64px] h-[64px]">
             {user?.profilePictureToken ? (
               <img
                 src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${user.profilePictureToken}.jpg`}
                 alt="Avatar"
-                className="rounded-full h-[64px] w-[64px] bg-gray-875 dark:bg-gray-700"
+                className="rounded h-[64px] w-[64px] bg-gray-875 dark:bg-gray-700"
                 width={64}
                 height={64}
               />
             ) : (
-              <div className="rounded-full w-[64px] h-[64px] bg-gray-875 dark:bg-gray-700 flex items-center justify-center">
+              <div className="rounded w-[64px] h-[64px] bg-gray-875 dark:bg-gray-700 flex items-center justify-center">
                 {user ? (
                   <FaUser className="text-2xl sm:text-3xl text-gray-700 dark:text-gray-400" />
                 ) : (
@@ -122,7 +123,7 @@ export default function Username({
           )}
         </RemixLink>
       )}
-    </div>
+    </span>
   );
 }
 
