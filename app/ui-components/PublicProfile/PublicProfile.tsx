@@ -1,11 +1,6 @@
 import { format, formatDistanceToNow } from 'date-fns';
-import { FaPatreon, FaUser } from 'react-icons/fa';
-import { RiShieldFill, RiShieldStarFill } from 'react-icons/ri';
+import { FaUser } from 'react-icons/fa';
 import { isModOrAdmin, type PublicUser } from '~/types/types';
-import { capitalizeFirstRestLower } from '~/utils/general';
-import ReactCountryFlag from 'react-country-flag';
-import { useEffect, useMemo, useState } from 'react';
-import countryList from 'react-select-country-list';
 import { MdCameraAlt, MdEdit } from 'react-icons/md';
 import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import Button from '../Buttons/Button';

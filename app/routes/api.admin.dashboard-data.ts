@@ -27,7 +27,8 @@ export type DashboardActionType =
   | 'comicProblem'
   | 'comicSuggestion'
   | 'comicUpload'
-  | 'pendingComicProblem';
+  | 'pendingComicProblem'
+  | 'comicCommentReport';
 
 export type DashboardAction = {
   type: DashboardActionType;
@@ -158,6 +159,26 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
   LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
 `;
 
+const comicCommentReportsQuery = `
+  SELECT Q1.*, user.username as modName FROM (
+    SELECT
+      comiccommentreport.id AS id,
+      comiccommentreport.timestamp AS timestamp,
+      comiccommentreport.modId AS modId,
+      comiccommentreport.isProcessed AS isProcessed,
+      comiccomment.comment AS comment,
+      comic.name AS comicName,
+      comic.id AS comicId,
+      user.username AS username,
+      user.id AS userId
+    FROM comiccommentreport
+    INNER JOIN user ON (user.id = comiccommentreport.userId)
+    INNER JOIN comiccomment ON (comiccomment.id = comiccommentreport.commentId)
+    INNER JOIN comic ON (comic.id = comiccomment.comicId)
+  ) AS Q1
+  LEFT JOIN user ON (Q1.modId = user.id)
+`;
+
 export async function loader(args: LoaderFunctionArgs) {
   const dataFetchStatements: QueryWithParams[] = [
     { query: tagSuggestionsQuery, queryName: 'Tag suggestions, admin' },
@@ -165,6 +186,7 @@ export async function loader(args: LoaderFunctionArgs) {
     { query: comicUploadsQuery, queryName: 'Comic uploads, admin' },
     { query: comicSuggestionsQuery, queryName: 'Comic suggestions, admin' },
     { query: pendingComicsSimpleQuery, queryName: 'Pending comics, admin' },
+    { query: comicCommentReportsQuery, queryName: 'Comic comment reports, admin' },
   ];
 
   const dbResList = await queryDbMultiple<
@@ -174,6 +196,7 @@ export async function loader(args: LoaderFunctionArgs) {
       DbComicUpload[],
       DbComicSuggestion[],
       DbPendingComicSimple[],
+      DbComicCommentReport[],
     ]
   >(args.context.cloudflare.env.DB, dataFetchStatements);
 
@@ -190,6 +213,7 @@ export async function loader(args: LoaderFunctionArgs) {
     ...mapDbComicUploads(dbResList.result[2]),
     ...mapDbComicSuggestions(dbResList.result[3]),
     ...mapDbPendingComicProblems(dbResList.result[4]),
+    ...mapDbComicCommentReports(dbResList.result[5]),
   ];
 
   allSuggestions.sort((a, b) => {
@@ -516,6 +540,44 @@ function mapDbPendingComicProblems(input: DbPendingComicSimple[]): DashboardActi
           ? {
               userId: dbPending.pendingProblemModId,
               username: dbPending.pendingProblemModName,
+            }
+          : undefined,
+    };
+  });
+}
+
+type DbComicCommentReport = {
+  id: number;
+  timestamp: string;
+  modId?: number;
+  modName?: string;
+  isProcessed: number;
+  comment: string;
+  comicName: string;
+  comicId: number;
+  userId: number;
+  username: string;
+};
+
+function mapDbComicCommentReports(input: DbComicCommentReport[]): DashboardAction[] {
+  return input.map(dbComicCommentReport => {
+    return {
+      type: 'comicCommentReport',
+      id: dbComicCommentReport.id,
+      comicId: dbComicCommentReport.comicId,
+      primaryField: dbComicCommentReport.comicName,
+      description: dbComicCommentReport.comment,
+      isProcessed: dbComicCommentReport.isProcessed === 1,
+      timestamp: parseDbDateStr(dbComicCommentReport.timestamp),
+      user: {
+        userId: dbComicCommentReport.userId,
+        username: dbComicCommentReport.username,
+      },
+      assignedMod:
+        dbComicCommentReport.modId && dbComicCommentReport.modName
+          ? {
+              userId: dbComicCommentReport.modId,
+              username: dbComicCommentReport.modName,
             }
           : undefined,
     };

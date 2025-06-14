@@ -16,6 +16,7 @@ export type ButtonProps = {
   onMouseLeave?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
   disableElevation?: boolean;
+  id?: string;
 };
 
 export default function Button({
@@ -36,6 +37,7 @@ export default function Button({
   onMouseLeave,
   onBlur,
   disableElevation,
+  id,
   ...props
 }: ButtonProps) {
   let variantClassname = '';
@@ -117,6 +119,7 @@ export default function Button({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onBlur={onBlur}
+      id={id}
     >
       {StartIcon ? <StartIcon style={text ? { marginRight: 4 } : {}} /> : undefined}{' '}
       {text}{' '}

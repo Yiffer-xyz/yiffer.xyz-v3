@@ -54,6 +54,11 @@ async function unAssignActionToMod(
     identifyingColumn = 'comicId';
     modIdColumn = 'pendingProblemModId';
   }
+  if (actionType === 'comicCommentReport') {
+    table = 'comiccommentreport';
+    identifyingColumn = 'id';
+    modIdColumn = 'modId';
+  }
 
   const query = `UPDATE ${table} SET ${modIdColumn} = NULL WHERE ${identifyingColumn} = ?`;
   const queryParams = [actionId];

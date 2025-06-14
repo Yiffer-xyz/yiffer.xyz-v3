@@ -1,61 +1,49 @@
+import { useState } from 'react';
+import { IoCaretDown, IoCaretUp } from 'react-icons/io5';
+import DropdownButton from '~/ui-components/Buttons/DropdownButton';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Chip from '~/ui-components/Chip';
-import Link from '~/ui-components/Link';
 import type { DashboardAction } from '../api.admin.dashboard-data';
 import { useUIPreferences } from '~/utils/theme-provider';
+import Link from '~/ui-components/Link';
 import { getTimeAgo } from '~/utils/date-utils';
-import type { TagSuggestionItem } from '~/types/types';
-import { useCallback, useState } from 'react';
-import { IoCaretDown, IoCaretUp } from 'react-icons/io5';
-import TagSuggestionProcessor from '~/page-components/TagSuggestionProcessor/TagSuggestionProcessor';
 import Username from '~/ui-components/Username';
 
-export type TagSuggestionAction = DashboardAction & {
-  addTags: TagSuggestionItem[];
-  removeTags: TagSuggestionItem[];
-};
-
-type TagSuggestionProps = {
-  action: TagSuggestionAction;
-  onProcessSuggestion: (
-    action: TagSuggestionAction,
-    processedItems: TagSuggestionItem[]
-  ) => void;
+type ComicCommentReportProps = {
+  action: DashboardAction;
   isLoading: boolean;
   onAssignMe: (action: DashboardAction) => void;
   onUnassignMe: (action: DashboardAction) => void;
+  onProcessed: (action: DashboardAction, shouldHideComment: boolean) => void;
+  loadingAction?: string;
   isAssignedToOther?: boolean;
   isAssignedToMe?: boolean;
-  loadingAction?: string;
   innerContainerClassName: string;
   blockActions?: boolean;
   pagesPath: string;
 };
 
-export function TagSuggestion({
+export function ComicCommentReport({
   action,
-  onProcessSuggestion,
   isLoading,
   onAssignMe,
   onUnassignMe,
+  onProcessed,
+  loadingAction,
   isAssignedToOther,
   isAssignedToMe,
-  loadingAction,
   innerContainerClassName,
   blockActions,
   pagesPath,
-}: TagSuggestionProps) {
+}: ComicCommentReportProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useUIPreferences();
-  const themedColor = theme === 'light' ? '#51bac8' : '#2299a9';
+  const themedColor = theme === 'light' ? '#87d57a' : '#469b38';
 
-  const [readyForSubmit, setReadyForSubmit] = useState(false);
-  const [updatedItems, setUpdatedItems] = useState<TagSuggestionItem[]>([]);
-
-  const onUpdate = useCallback((verdicts: TagSuggestionItem[], completed: boolean) => {
-    setUpdatedItems(verdicts);
-    if (completed) setReadyForSubmit(true);
-  }, []);
+  const isChooseActionButtonLoading =
+    isLoading &&
+    !!loadingAction &&
+    ['unassign', 'process-problem'].includes(loadingAction);
 
   return (
     <div
@@ -64,7 +52,7 @@ export function TagSuggestion({
     >
       <div className={innerContainerClassName}>
         <div className="flex flex-col justify-between gap-2">
-          <Chip color={themedColor} text="Tag suggestion" />
+          <Chip color={themedColor} text="Comment report" />
           <div className="flex flex-col md:flex-row gap-x-12 gap-y-1">
             <div className="flex flex-row gap-x-3 flex-wrap">
               <b>{action.primaryField}</b>
@@ -75,7 +63,7 @@ export function TagSuggestion({
               />
               <Link href={`/c/${action.primaryField}`} text="Live" showRightArrow />
             </div>
-            <p>{action.description}</p>
+            <p>{action.secondaryField}</p>
           </div>
         </div>
 
@@ -111,15 +99,25 @@ export function TagSuggestion({
           )}
 
           <div className="flex flex-row gap-2 self-end">
-            {!action.isProcessed && isAssignedToMe && (
-              <LoadingButton
+            {isAssignedToMe && (
+              <DropdownButton
+                text="Choose action"
                 color="primary"
-                onClick={e => {
-                  e.stopPropagation();
-                  onUnassignMe(action);
-                }}
-                text="Unassign from me"
-                isLoading={isLoading && loadingAction === 'unassign'}
+                isLoading={isChooseActionButtonLoading}
+                options={[
+                  {
+                    text: 'Unassign from me',
+                    onClick: () => onUnassignMe(action),
+                  },
+                  {
+                    text: 'Remove comment',
+                    onClick: () => onProcessed(action, true),
+                  },
+                  {
+                    text: 'Keep comment',
+                    onClick: () => onProcessed(action, false),
+                  },
+                ]}
               />
             )}
             {!action.isProcessed && !action.assignedMod && (
@@ -128,7 +126,6 @@ export function TagSuggestion({
                 onClick={e => {
                   e.stopPropagation();
                   onAssignMe(action);
-                  setIsOpen(true);
                 }}
                 text="I'm on it"
                 isLoading={isLoading && loadingAction === 'assign'}
@@ -141,24 +138,13 @@ export function TagSuggestion({
 
       {isOpen ? (
         <>
-          <div onClick={e => e.stopPropagation()} className="hover:cursor-auto">
-            <TagSuggestionProcessor
-              tagSuggestionItem={action}
-              onUpdate={onUpdate}
-              disableActions={!isAssignedToMe}
-            />
-          </div>
-
-          {!action.isProcessed && (
-            <LoadingButton
-              color="primary"
-              onClick={() => onProcessSuggestion(action, updatedItems)}
-              text="Submit"
-              isLoading={isLoading && loadingAction === 'approve'}
-              disabled={!readyForSubmit}
-              disableElevation
-            />
-          )}
+          <p className="font-semibold -mb-2">Comment:</p>
+          <p
+            className="whitespace-pre-wrap cursor-auto text-sm"
+            onClick={e => e.stopPropagation()}
+          >
+            {action.description}
+          </p>
 
           <IoCaretUp className="mx-auto -mb-1 text-blue-weak-200 dark:text-text-dark" />
         </>

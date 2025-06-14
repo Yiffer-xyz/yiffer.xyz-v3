@@ -63,6 +63,11 @@ async function assignActionToMod(
     identifyingColumn = 'comicId';
     modIdColumn = 'pendingProblemModId';
   }
+  if (actionType === 'comicCommentReport') {
+    table = 'comiccommentreport';
+    identifyingColumn = 'id';
+    modIdColumn = 'modId';
+  }
 
   const getExistingModId = `SELECT ${modIdColumn} FROM ${table} WHERE ${identifyingColumn} = ?`;
   const existingModIdRes = await queryDb<{ modId: number }[]>(db, getExistingModId, [

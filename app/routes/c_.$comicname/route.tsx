@@ -12,13 +12,14 @@ import { isModOrAdmin, type AdForViewing, type Comic } from '~/types/types';
 import DisplayOptionsAndPages from './DisplayOptionsAndPages';
 import Button from '~/ui-components/Buttons/Button';
 import { MdArrowUpward } from 'react-icons/md';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { getSimilarlyNamedComics } from '../api.search-similarly-named-comic';
 import { RiShieldFill } from 'react-icons/ri';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
 import { shouldShowAdsForUser } from '~/utils/user-utils';
+import ComicComments from './ComicComments';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
@@ -41,6 +42,8 @@ export default function ComicPage() {
     isMod,
     notFoundSimilarComicNames,
   } = useLoaderData<LoaderData>();
+
+  const toTopButtonRef = useRef<HTMLButtonElement>(null);
 
   const [showMobileTags, setShowMobileTags] = useState(false);
   const comicNotFound = notFound || !comic || comic.name === null;
@@ -170,13 +173,26 @@ export default function ComicPage() {
             {ad && <Ad ad={ad} className="mt-4" adsPath={adsPath} />}
           </DisplayOptionsAndPages>
 
-          <ComicSeriesLinks comic={comic} className="mt-6 -mb-4" />
+          <div className="w-full md:w-[728px] mt-4 flex flex-col gap-2">
+            <Button
+              buttonRef={toTopButtonRef}
+              variant="naked"
+              noPadding
+              text="To top"
+              className="self-start"
+              startIcon={MdArrowUpward}
+              onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
+              id="to-top-button"
+            />
 
-          <Button
-            text="To top"
-            className="mt-6 mx-auto"
-            startIcon={MdArrowUpward}
-            onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
+            <ComicSeriesLinks comic={comic} className="text-sm" longerText />
+          </div>
+
+          <ComicComments
+            comic={comic}
+            pagesPath={pagesPath}
+            isLoggedIn={isLoggedIn}
+            className="mt-4 md:mt-2 mb-8"
           />
         </>
       )}
@@ -267,14 +283,22 @@ export async function loader(args: LoaderFunctionArgs) {
   return res;
 }
 
-function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: string }) {
+function ComicSeriesLinks({
+  comic,
+  longerText,
+  className,
+}: {
+  comic?: Comic;
+  longerText?: boolean;
+  className?: string;
+}) {
   if (!comic?.previousComic && !comic?.nextComic) return null;
 
   return (
     <div className={`${className ?? ''}`}>
       {comic.previousComic && (
         <p>
-          Prev:{' '}
+          {longerText ? 'Previous comic:' : 'Prev:'}{' '}
           <Link
             href={`/c/${comic.previousComic.name}`}
             text={comic.previousComic.name}
@@ -285,7 +309,7 @@ function ComicSeriesLinks({ comic, className }: { comic?: Comic; className?: str
       )}
       {comic.nextComic && (
         <p>
-          Next:{' '}
+          {longerText ? 'Next comic:' : 'Next:'}{' '}
           <Link
             href={`/c/${comic.nextComic.name}`}
             text={comic.nextComic.name}

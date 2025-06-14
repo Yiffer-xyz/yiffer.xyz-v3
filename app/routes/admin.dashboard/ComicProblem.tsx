@@ -75,7 +75,7 @@ export function ComicProblem({
                 username={action.user.username}
                 pagesPath={pagesPath}
                 textClassName="text-sm"
-                className="mt-0 md:-mt-[3px]"
+                className="-mt-[3px]"
                 showRightArrow={false}
               />
             ) : (

@@ -24,6 +24,7 @@ import FeedbackItem from '~/page-components/UserFeedback/FeedbackItem';
 import PublicProfile from '~/ui-components/PublicProfile/PublicProfile';
 import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
 import PublicProfileEdit from '~/ui-components/PublicProfile/PublicProfileEdit';
+import UserCommentsAdmin from './UserCommentsAdmin';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -39,6 +40,7 @@ export default function ManageSingleUser() {
   const [banReason, setBanReason] = useState('');
   const [banFlowActive, setBanFlowActive] = useState(false);
   const [mode, setMode] = useState<'edit' | 'change-photo' | 'view'>('view');
+  const [isShowingComments, setIsShowingComments] = useState(false);
 
   const userTypeOptions = ['normal', 'admin', 'moderator'].map(c => ({
     value: c as UserType,
@@ -174,6 +176,17 @@ export default function ManageSingleUser() {
             />
           )}
 
+          {user.comments && user.comments.length > 0 && (
+            <div className="mt-6">
+              <h3>{user.comments.length} comic comments</h3>
+              {isShowingComments ? (
+                <UserCommentsAdmin comments={user.comments} />
+              ) : (
+                <Button text="Show comments" onClick={() => setIsShowingComments(true)} />
+              )}
+            </div>
+          )}
+
           <h3 className="mt-6">Ban user</h3>
           {banFlowActive ? (
             <>
@@ -245,6 +258,7 @@ export async function loader(args: LoaderFunctionArgs) {
     field: 'id',
     value: userId,
     includeExtraFields: true,
+    includeComments: true,
   });
   const contributionsResPromise = getContributions(db, userId);
   const feedbackResPromise = getFeedback({ db, userId });

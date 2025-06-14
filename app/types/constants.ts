@@ -18,8 +18,9 @@ export const defaultTitle = { title: 'Yiffer.xyz' };
 export const DB_ANALYTICS_SAMPLE_RATE = 0.005;
 
 export const MAX_USER_BIO_LENGTH = 300;
-
 export const PROFILE_PIC_SIZE = 400;
+
+export const MAX_COMMENT_LENGTH = 500;
 
 export const R2_PROFILE_PICTURES_FOLDER = 'profile-photos';
 export const R2_TEMP_PICTURES_FOLDER = 'temp';
@@ -155,6 +156,7 @@ export const ModActions: { [key in ModActionType]: { points: number; name: strin
   'artist-updated': { points: 10, name: 'Artist updated' },
   'tag-updated': { points: 20, name: 'Tag updated' },
   'pending-published': { points: 10, name: 'Pending published' },
+  'comic-comment-report-processed': { points: 30, name: 'Comment report processed' },
 };
 
 export function getModActionPoints(actionType: ModActionType) {

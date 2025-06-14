@@ -70,6 +70,14 @@ export type Comic = {
   published?: Date;
   updated?: Date;
   metadata?: ComicMetadata;
+  comments: ComicComment[];
+};
+
+export type ComicComment = {
+  id: number;
+  user: MinimalUser;
+  comment: string;
+  timestamp: Date;
 };
 
 export type ComicForBrowse = {
@@ -213,6 +221,13 @@ export type User = {
   nationality?: string | null;
   socialLinks: UserSocialAccount[];
   contributionPoints: number;
+  profilePictureToken?: string | null;
+  comments?: AdminPanelUserComment[];
+};
+
+export type MinimalUser = {
+  id: number;
+  username: string;
   profilePictureToken?: string | null;
 };
 
@@ -514,7 +529,8 @@ export type ModActionType =
   | 'comic-pages-changed'
   | 'artist-updated'
   | 'tag-updated'
-  | 'pending-published';
+  | 'pending-published'
+  | 'comic-comment-report-processed';
 
 export type ModAction = {
   id: number;
@@ -541,4 +557,13 @@ export type UserSocialAccount = {
   id?: number;
   username: string;
   platform: string;
+};
+
+export type AdminPanelUserComment = {
+  id: number;
+  comicId: number;
+  comicName: string;
+  comment: string;
+  timestamp: Date;
+  isHidden: boolean;
 };

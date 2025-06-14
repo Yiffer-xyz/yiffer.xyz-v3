@@ -13,6 +13,7 @@ import ManagePagesAdmin from './ManagePagesAdmin';
 import { useUIPreferences } from '~/utils/theme-provider';
 import LiveComicThumbnailManager from './LiveComicThumbnailManager';
 import AdminTools from './AdminTools';
+import ComicComments from '../c_.$comicname/ComicComments';
 
 type LiveComicProps = {
   comic: Comic;
@@ -48,6 +49,7 @@ export default function LiveComic({
   const [comicDataChanges, setComicDataChanges] = useState<FieldChange[]>([]);
   const [needsUpdate, setNeedsUpdate] = useState(false);
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [isShowingComments, setIsShowingComments] = useState(false);
 
   useEffect(() => {
     setComicDataChanges(
@@ -146,6 +148,26 @@ export default function LiveComic({
               includeClearAll
               className="max-w-5xl"
             />
+
+            {comic.comments.length > 0 && (
+              <>
+                <h4 className="mt-10">{comic.comments.length} comments</h4>
+                {isShowingComments ? (
+                  <ComicComments
+                    comic={comic}
+                    pagesPath={PAGES_PATH}
+                    isLoggedIn
+                    isAdminPanel
+                  />
+                ) : (
+                  <Button
+                    text="Show comments"
+                    onClick={() => setIsShowingComments(true)}
+                    className="mt-1"
+                  />
+                )}
+              </>
+            )}
           </>
         )}
 
