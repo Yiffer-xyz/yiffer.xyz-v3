@@ -28,7 +28,6 @@ export default function ComicRateBookmark({
 
   const [overrideStars, setOverrideStars] = useState<number | null>(null);
   const [overrideBookmark, setOverrideBookmark] = useState<boolean | null>(null);
-  const [hoverStars, setHoverStars] = useState<number | null>(null);
 
   const shownStars = overrideStars ?? yourStars;
 
@@ -83,37 +82,19 @@ export default function ComicRateBookmark({
 
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
-  const hoverClass =
-    'group-hover:text-theme1-darker2 dark:group-hover:text-theme1-darker3';
-  const hoverOtherStarFilledClass = 'text-theme1-darker2 dark:text-theme1-darker3';
 
   const starClassnames = useMemo(() => {
-    if (hoverStars === null) {
-      return [1, 2, 3].map(star =>
-        shownStars >= star ? filledColorClass : unfilledColorClass
-      );
-    } else {
-      return [1, 2, 3].map(star => {
-        if (hoverStars === star) {
-          return hoverClass;
-        }
-        if (hoverStars > star) {
-          return hoverOtherStarFilledClass;
-        }
-        return unfilledColorClass;
-      });
-    }
-  }, [hoverClass, hoverStars, shownStars]);
+    return [1, 2, 3].map(star =>
+      shownStars >= star ? filledColorClass : unfilledColorClass
+    );
+  }, [shownStars]);
 
   return (
     <div className={`flex flex-row items-center ${className}`}>
       {/* Bookmark */}
       <button onClick={onToggleBookmark} className="p-2 -ml-2 group">
         {(overrideBookmark ?? comic.isBookmarked) ? (
-          <FaBookmark
-            size={small ? 16 : 20}
-            className={`text-theme1-dark mt-[3px] ${hoverClass}`}
-          />
+          <FaBookmark size={small ? 16 : 20} className={`text-theme1-dark mt-[3px]`} />
         ) : (
           <FaRegBookmark
             size={small ? 16 : 20}
@@ -127,34 +108,19 @@ export default function ComicRateBookmark({
 
       {/* Stars */}
       <div>
-        <button
-          onClick={() => onUpdateStars(1)}
-          className="p-1 group"
-          onMouseEnter={() => setHoverStars(1)}
-          onMouseLeave={() => setHoverStars(null)}
-        >
+        <button onClick={() => onUpdateStars(1)} className="p-1 group">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[0]} transition-all duration-75`}
           />
         </button>
-        <button
-          onClick={() => onUpdateStars(2)}
-          className="p-1 group"
-          onMouseEnter={() => setHoverStars(2)}
-          onMouseLeave={() => setHoverStars(null)}
-        >
+        <button onClick={() => onUpdateStars(2)} className="p-1 group">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[1]} transition-all duration-75`}
           />
         </button>
-        <button
-          onClick={() => onUpdateStars(3)}
-          className="p-1 group"
-          onMouseEnter={() => setHoverStars(3)}
-          onMouseLeave={() => setHoverStars(null)}
-        >
+        <button onClick={() => onUpdateStars(3)} className="p-1 group">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[2]} transition-all duration-75`}

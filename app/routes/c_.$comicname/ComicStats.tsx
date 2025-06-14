@@ -15,7 +15,7 @@ export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
   return (
     <div
       className={`flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 pl-3 
-        md:pl-0 md:absolute md:right-0 ${className}`}
+        md:pl-0 md:absolute md:right-0 text-sm md:text-base ${className}`}
       style={{ width: desktopStatsWidth }}
     >
       <div className="flex flex-row items-center gap-1.5">
