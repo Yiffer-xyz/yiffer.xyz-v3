@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { MdArrowForward } from 'react-icons/md';
 import type { AdminPanelUserComment } from '~/types/types';
 import Link from '~/ui-components/Link';
@@ -24,8 +25,11 @@ export default function UserCommentsAdmin({
             <Link href={`/c/${comment.comicName}`} text="Live" showRightArrow />
           </div>
           <p>{comment.comment}</p>
+          <p className="text-gray-600 dark:text-gray-750 text-xs">
+            {format(comment.timestamp, 'PPPp')}
+          </p>
           {comment.isHidden && (
-            <p className="text-red-strong-300 font-semibold">
+            <p className="text-red-strong-300 font-semibold text-xs">
               This comment has been removed
             </p>
           )}

@@ -216,3 +216,5 @@ export function getSocialUrl(platform: string, username: string) {
     ''
   );
 }
+
+export const ADMIN_COMMENTLIST_PAGE_SIZE = 50;
