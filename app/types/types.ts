@@ -78,6 +78,9 @@ export type ComicComment = {
   user: MinimalUser;
   comment: string;
   timestamp: Date;
+  comicId?: number;
+  comicName?: string;
+  isHidden?: boolean;
 };
 
 export type ComicForBrowse = {

@@ -67,16 +67,11 @@ export default function AdminSidebar({
         {!alwaysShow && <MobileExpander isOpen={isOpen} setIsOpen={setIsOpen} />}
 
         <div className="flex flex-col w-full">
-          <div
-            className="pt-4 pr-4 pb-4 pl-4 font-semibold border-b-1 
-            bg-theme1-primaryTrans dark:bg-transparent"
-          >
-            <p className="dark:text-blue-strong-300">Admin panel</p>
-          </div>
           <SidebarLink
             href="/admin/dashboard"
             text="Action dashboard"
             isSelected={isRoute('dashboard')}
+            className="pt-1"
           />
           <SidebarLink
             href="/admin/pending-comics"
@@ -146,6 +141,7 @@ export default function AdminSidebar({
             text="Instructions"
             isSelected={isRoute('instructions')}
           />
+          <SidebarLink href="/admin/more" text="More" isSelected={isRoute('more')} />
         </div>
       </div>
     </>
@@ -157,6 +153,7 @@ interface SidebarLinkProps {
   text: string;
   isSelected?: boolean;
   isIndented?: boolean;
+  className?: string;
 }
 
 const selectedClassname = 'bg-theme1-dark dark:bg-blue-strong-200 text-white';
@@ -165,14 +162,16 @@ function SidebarLink({
   text,
   isSelected = false,
   isIndented = false,
+  className = '',
 }: SidebarLinkProps) {
-  const className = isSelected ? selectedClassname : '';
   return (
-    <div className={className}>
+    <div
+      className={`${isSelected && selectedClassname} hover:bg-theme1-primaryTrans dark:hover:bg-blue-trans ${className}`}
+    >
       <Link to={href}>
         <div
           className={`
-            font-bold py-2 px-4 hover:bg-theme1-primaryTrans dark:hover:bg-blue-trans transition-background duration-100
+            font-bold py-2 px-4  transition-background duration-100
             ${isIndented ? 'pr-4 pl-10' : 'px-4'}
           `}
         >

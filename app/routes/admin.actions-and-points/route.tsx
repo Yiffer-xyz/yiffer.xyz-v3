@@ -53,7 +53,7 @@ export default function ModActionsAndPoints() {
     <>
       <h1>Mod Actions & Points</h1>
 
-      <ModScoreboard modScoreboard={modScoreboard} />
+      <ModScoreboard modScoreboard={modScoreboard} pagesPath={pagesPath} />
 
       <ModActionLog pageNum={pageNum} modActions={modActions} pagesPath={pagesPath} />
     </>

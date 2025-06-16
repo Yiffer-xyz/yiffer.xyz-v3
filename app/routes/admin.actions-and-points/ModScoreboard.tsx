@@ -1,5 +1,4 @@
 import type { ModScore } from '~/route-funcs/get-mod-scoreboard';
-import Link from '~/ui-components/Link';
 import ModContributionPointInfo from '~/ui-components/ModContributionPointInfo';
 import {
   Table,
@@ -8,8 +7,15 @@ import {
   TableHeadRow,
   TableRow,
 } from '~/ui-components/Table';
+import Username from '~/ui-components/Username';
 
-export default function ModScoreboard({ modScoreboard }: { modScoreboard: ModScore[] }) {
+export default function ModScoreboard({
+  modScoreboard,
+  pagesPath,
+}: {
+  modScoreboard: ModScore[];
+  pagesPath: string;
+}) {
   return (
     <>
       <h2>Mod Scoreboard</h2>
@@ -27,7 +33,12 @@ export default function ModScoreboard({ modScoreboard }: { modScoreboard: ModSco
           {modScoreboard.map(score => (
             <TableRow key={score.userId}>
               <TableCell>
-                <Link href={`/admin/users/${score.userId}`} text={score.username} />
+                <Username
+                  id={score.userId}
+                  username={score.username}
+                  pagesPath={pagesPath}
+                  showRightArrow={false}
+                />
               </TableCell>
 
               <TableCell>{score.points}</TableCell>

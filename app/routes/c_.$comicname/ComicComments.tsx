@@ -154,6 +154,16 @@ export function SingleComment({
           />
         </div>
 
+        {isAdminPanel && comment.comicId && comment.comicName && (
+          <div className="-mb-1 mt-1">
+            <Link
+              href={`/admin/comics/${comment.comicId}`}
+              text={comment.comicName}
+              showRightArrow
+            />
+          </div>
+        )}
+
         <p className="whitespace-pre-wrap mt-1 mb-1.5">{comment.comment}</p>
 
         <div className="flex flex-row gap-x-6 justify-between md:justify-start w-full">
@@ -191,7 +201,7 @@ export function SingleComment({
             </div>
           )}
 
-          {!isReporting && !isReported && (
+          {!isReporting && !isReported && !comment.isHidden && (
             <Button
               text={isAdminPanel ? 'Delete' : 'Report'}
               variant="naked"
@@ -203,12 +213,18 @@ export function SingleComment({
             />
           )}
 
-          {isReported && (
+          {isReported && !comment.isHidden && (
             <p className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}>
               Reported - mods will review this comment.
             </p>
           )}
         </div>
+
+        {isAdminPanel && comment.isHidden && (
+          <p className="text-red-strong-300 font-semibold text-xs mt-0.5">
+            This comment has been removed
+          </p>
+        )}
       </div>
     </div>
   );

@@ -71,6 +71,7 @@ export default function ModActionLog({
                       id={a.user.id}
                       username={a.user.username}
                       pagesPath={pagesPath}
+                      showRightArrow={false}
                     />
                   </TableCell>
                   <TableCell>{getModActionName(a.actionType)}</TableCell>
