@@ -40,6 +40,7 @@ type SiteStats = {
     loggedIn: ContributionData;
     guests: ContributionData;
   };
+  comicComments: number;
 };
 
 type ContributionData = {
@@ -130,6 +131,10 @@ export async function loader(args: LoaderFunctionArgs) {
         FROM advertisementpayment GROUP BY year ORDER BY year desc`,
       queryName: 'Ad payments, stats',
     },
+    {
+      query: 'SELECT COUNT(*) AS count FROM comiccomment',
+      queryName: 'Comic comments, stats',
+    },
   ];
 
   const dbRes = await queryDbMultiple<
@@ -163,6 +168,7 @@ export async function loader(args: LoaderFunctionArgs) {
         amount: number;
         year: number;
       }[],
+      [{ count: number }],
     ]
   >(args.context.cloudflare.env.DB, dbStatements);
 
@@ -181,6 +187,7 @@ export async function loader(args: LoaderFunctionArgs) {
     totalArtists: dbRes.result[2][0].count,
     totalPages: dbRes.result[3][0].count,
     adPayments: dbRes.result[6],
+    comicComments: dbRes.result[7][0].count,
     ads: {
       banner: {
         active:
@@ -279,6 +286,9 @@ export default function Stats() {
       </p>
       <p>
         <b>{stats.totalPages}</b> pages
+      </p>
+      <p>
+        <b>{stats.comicComments}</b> comic comments
       </p>
 
       <h2 className="mt-4">Contributions</h2>

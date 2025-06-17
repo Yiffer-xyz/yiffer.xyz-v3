@@ -24,6 +24,10 @@ export default function PrivacyPage() {
 
       <div className="flex flex-col gap-6 mt-4">
         <ChangelogItem
+          date="2025-06-16"
+          texts={['Implemented user profiles and comic comments.']}
+        />
+        <ChangelogItem
           date="2025-05-21"
           texts={['Implemented change username functionality.']}
         />
