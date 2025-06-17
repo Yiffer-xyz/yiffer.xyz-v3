@@ -32,7 +32,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ManageSingleUser() {
-  const { user, contributions, feedback, pagesPath, imagesServerUrl } =
+  const { user, contributions, feedback, pagesPath, imagesServerUrl, isAdmin } =
     useLoaderData<typeof loader>();
   const [userType, setUserType] = useState<UserType>(user.userType);
   const [modNotes, setModNotes] = useState(user.modNotes || '');
@@ -157,6 +157,7 @@ export default function ManageSingleUser() {
             name="role"
             title="Role"
             value={userType}
+            disabled={!isAdmin}
           />
 
           <Textarea
@@ -248,7 +249,7 @@ export default function ManageSingleUser() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  await redirectIfNotMod(args);
+  const { userType: loggedInUserType } = await redirectIfNotMod(args);
   const db = args.context.cloudflare.env.DB;
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
@@ -287,5 +288,6 @@ export async function loader(args: LoaderFunctionArgs) {
     feedback: feedbackRes.result,
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
+    isAdmin: loggedInUserType === 'admin',
   };
 }

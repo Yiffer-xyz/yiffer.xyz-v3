@@ -17,9 +17,12 @@ export type UpdateUserBody = {
 };
 
 export async function action(args: ActionFunctionArgs) {
-  const { fields, isUnauthorized } = await parseFormJson<UpdateUserBody>(args, 'mod');
+  const { fields, isUnauthorized, user } = await parseFormJson<UpdateUserBody>(
+    args,
+    'mod'
+  );
 
-  if (isUnauthorized) return new Response('Unauthorized', { status: 401 });
+  if (isUnauthorized || !user) return new Response('Unauthorized', { status: 401 });
 
   const { isBanned, banReason, userType } = fields;
 
@@ -28,6 +31,10 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const updatedUserType: UserType = userType?.toString() as UserType;
+
+  if (updatedUserType === 'admin' && user?.userType !== 'admin') {
+    return create400Json('You are not authorized to make this change');
+  }
 
   const err = await updateUser(args.context.cloudflare.env.DB, fields.userId, {
     userType: updatedUserType,
