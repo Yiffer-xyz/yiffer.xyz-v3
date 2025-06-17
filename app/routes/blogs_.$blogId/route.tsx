@@ -5,6 +5,7 @@ import { getBlogById } from '~/route-funcs/get-blogs';
 import { processApiError } from '~/utils/request-helpers';
 import { format, formatDistanceToNow } from 'date-fns';
 import type { Blog } from '~/types/types';
+import Username from '~/ui-components/Username';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = ({ data }) => {
@@ -19,6 +20,7 @@ type LoaderData = {
   notFound: boolean;
   blog: Blog | null;
   queryStr: string;
+  pagesPath: string;
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -28,6 +30,7 @@ export async function loader(args: LoaderFunctionArgs) {
     notFound: true,
     blog: null,
     queryStr: blogId ?? '',
+    pagesPath: args.context.cloudflare.env.PAGES_PATH,
   };
 
   if (!blogId) {
@@ -54,7 +57,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export default function BlogPage() {
-  const { blog, notFound, queryStr } = useLoaderData<typeof loader>();
+  const { blog, notFound, queryStr, pagesPath } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto pb-8">
@@ -68,12 +71,19 @@ export default function BlogPage() {
       {notFound && <p>Blog not found</p>}
 
       {notFound === false && blog && (
-        <div className="whitespace-pre-wrap -mt-2">
+        <div className="whitespace-pre-wrap">
           <p className="text-sm">
-            By {blog?.authorUser.username} - {format(blog?.timestamp, 'PPP')} (
-            {formatDistanceToNow(blog?.timestamp)} ago)
+            By{' '}
+            <Username
+              id={blog.authorUser.id}
+              username={blog.authorUser.username}
+              pagesPath={pagesPath}
+              showRightArrow={false}
+            />{' '}
+            - {format(blog?.timestamp, 'PPP')} ({formatDistanceToNow(blog?.timestamp)}{' '}
+            ago)
           </p>
-          <p className="mt-2">{blog?.content}</p>
+          <p className="mt-4">{blog?.content}</p>
         </div>
       )}
     </div>
