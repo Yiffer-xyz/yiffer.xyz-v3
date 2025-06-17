@@ -570,3 +570,19 @@ export type AdminPanelUserComment = {
   timestamp: Date;
   isHidden: boolean;
 };
+
+type UserDataOrIP = {
+  username?: string;
+  userId?: number;
+  userEmail?: string;
+  ip?: string;
+};
+
+export type Feedback = {
+  id: number;
+  text: string;
+  type: FeedbackType;
+  user: UserDataOrIP;
+  isArchived: boolean;
+  timestamp: Date;
+};

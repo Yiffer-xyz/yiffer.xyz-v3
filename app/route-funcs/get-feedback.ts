@@ -1,6 +1,6 @@
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
-import type { FeedbackType } from '~/types/types';
+import type { Feedback, FeedbackType } from '~/types/types';
 import { queryDb } from '~/utils/database-facade';
 
 type DbFeedback = {
@@ -13,22 +13,6 @@ type DbFeedback = {
   userIP?: string;
   isArchived: number;
   timestamp: string;
-};
-
-type UserDataOrIP = {
-  username?: string;
-  userId?: number;
-  userEmail?: string;
-  ip?: string;
-};
-
-export type Feedback = {
-  id: number;
-  text: string;
-  type: FeedbackType;
-  user: UserDataOrIP;
-  isArchived: boolean;
-  timestamp: Date;
 };
 
 export async function getFeedback({

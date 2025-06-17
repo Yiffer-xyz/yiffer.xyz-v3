@@ -1,6 +1,6 @@
 import { ADVERTISEMENTS, EMAIL_ENDPOINT } from '~/types/constants';
 import type { ApiError } from './request-helpers';
-import type { AdType } from '~/types/types';
+import type { AdType, FeedbackType } from '~/types/types';
 
 type PostmarkEmail = {
   To: string;
@@ -432,6 +432,39 @@ export function createNotifyUserAdExpiredEmail({
     To: recipientEmail,
     From: 'advertising@yiffer.xyz',
     Subject: 'Ad expired | Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}
+
+export function createFeedbackForwardEmail({
+  feedbackText,
+  feedbackType,
+  usernameOrIp,
+  frontEndUrlBase,
+}: {
+  feedbackText: string;
+  feedbackType: FeedbackType;
+  usernameOrIp: string;
+  frontEndUrlBase: string;
+}) {
+  const html = `
+    <p>Feedback of type <b>${feedbackType}</b> received.</p>
+    <p><a href="${frontEndUrlBase}/admin/feedback-support">View in admin panel</a></p>
+
+    <p style="margin-top: 1rem;">
+      From username/ip: <b>${usernameOrIp}</b>
+    </p>
+
+    <p style="margin-top: 1rem;">
+      Content: <b>${feedbackText}</b>
+    </p>
+  `;
+
+  return {
+    To: 'contact@yiffer.xyz',
+    From: 'contact@yiffer.xyz',
+    Subject: 'Feedback received | Yiffer.xyz',
     HtmlBody: html,
     MessageStream: 'outbound',
   };

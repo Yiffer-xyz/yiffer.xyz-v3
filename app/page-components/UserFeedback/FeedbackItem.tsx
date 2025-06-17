@@ -1,11 +1,10 @@
-import type { FeedbackType } from '~/types/types';
+import type { Feedback, FeedbackType } from '~/types/types';
 import { format } from 'date-fns';
 import Chip from '~/ui-components/Chip';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { ArchiveFeedbackBody } from '~/routes/api.admin.archive-feedback';
 import type { DeleteFeedbackBody } from '~/routes/api.admin.delete-feedback';
-import type { Feedback } from '~/route-funcs/get-feedback';
 import Username from '~/ui-components/Username';
 
 export default function FeedbackItem({ feedback }: { feedback: Feedback }) {

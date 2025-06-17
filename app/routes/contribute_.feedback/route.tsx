@@ -17,6 +17,7 @@ import type { FeedbackType } from '~/types/types';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type { ActionFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { isMaliciousString } from '~/utils/string-utils';
+import { createFeedbackForwardEmail, sendEmail } from '~/utils/send-email';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export { authLoader as loader };
@@ -173,5 +174,16 @@ export async function action(args: ActionFunctionArgs) {
     });
     return create500Json();
   }
+
+  await sendEmail(
+    createFeedbackForwardEmail({
+      feedbackText: feedbackText as string,
+      feedbackType: feedbackType as FeedbackType,
+      usernameOrIp: user?.username || userIp || 'unknown',
+      frontEndUrlBase: args.context.cloudflare.env.FRONT_END_URL_BASE,
+    }),
+    args.context.cloudflare.env.POSTMARK_TOKEN
+  );
+
   return createSuccessJson();
 }
