@@ -115,6 +115,7 @@ export default function ManageSingleUser() {
           pagesPath={pagesPath}
           isAdminPanel
           className="mb-4"
+          showModLinkType="public-profile"
         />
       )}
       {mode === 'edit' && (

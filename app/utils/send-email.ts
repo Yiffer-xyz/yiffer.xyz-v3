@@ -457,7 +457,7 @@ export function createFeedbackForwardEmail({
     </p>
 
     <p style="margin-top: 1rem;">
-      Content: <b>${feedbackText}</b>
+      Content: ${feedbackText}
     </p>
   `;
 

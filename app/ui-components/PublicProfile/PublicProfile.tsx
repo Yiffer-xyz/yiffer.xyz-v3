@@ -6,6 +6,7 @@ import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import Button from '../Buttons/Button';
 import Link from '../Link';
 import PublicProfileBadges from './PublicProfileBadges';
+import { RiShieldFill } from 'react-icons/ri';
 
 export default function PublicProfile({
   user,
@@ -14,6 +15,7 @@ export default function PublicProfile({
   onEdit,
   onChangePhoto,
   isAdminPanel,
+  showModLinkType,
   className,
 }: {
   user: PublicUser;
@@ -22,6 +24,7 @@ export default function PublicProfile({
   onEdit: () => void;
   onChangePhoto: () => void;
   isAdminPanel?: boolean;
+  showModLinkType?: 'admin-panel' | 'public-profile';
   className?: string;
 }) {
   const hasAnyBadges =
@@ -65,6 +68,27 @@ export default function PublicProfile({
           </div>
         </div>
       </div>
+
+      {showModLinkType && (
+        <div className="mt-2 -mb-2 flex-row items-center">
+          {showModLinkType === 'admin-panel' && (
+            <RiShieldFill className="text-blue-weak-200 dark:text-blue-strong-300 mr-1 mb-1" />
+          )}
+          <Link
+            href={
+              showModLinkType === 'admin-panel'
+                ? `/admin/users/${user.id}`
+                : `/user/${user.username}`
+            }
+            text={
+              showModLinkType === 'admin-panel'
+                ? 'View in admin panel'
+                : 'View public profile'
+            }
+            showRightArrow
+          />
+        </div>
+      )}
 
       {canEdit && (
         <div className="mt-4 mb-4 flex flex-row gap-2">

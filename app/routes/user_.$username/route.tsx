@@ -10,6 +10,7 @@ import { fullUserToPublicUser } from '~/utils/user-utils';
 import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
 import '~/utils/cropper.min.css';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
+import { isModOrAdmin } from '~/types/types';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = ({ params }) => {
@@ -44,12 +45,21 @@ export async function loader(args: LoaderFunctionArgs) {
     imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     showMeCrumbs: source === 'me',
+    isAdmin: isModOrAdmin({ userType: user?.userType }),
   };
 }
 
 export default function UserProfilePage() {
-  const { user, notFound, isOwner, imagesServerUrl, pagesPath, showMeCrumbs, userParam } =
-    useLoaderData<typeof loader>();
+  const {
+    user,
+    notFound,
+    isOwner,
+    imagesServerUrl,
+    pagesPath,
+    showMeCrumbs,
+    userParam,
+    isAdmin,
+  } = useLoaderData<typeof loader>();
 
   const [mode, setMode] = useState<'edit' | 'change-photo' | 'view'>('view');
 
@@ -77,6 +87,7 @@ export default function UserProfilePage() {
               canEdit={isOwner}
               onEdit={() => setMode('edit')}
               onChangePhoto={() => setMode('change-photo')}
+              showModLinkType={isAdmin ? 'admin-panel' : undefined}
             />
           )}
           {mode === 'edit' && (
