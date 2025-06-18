@@ -86,8 +86,16 @@ export default function ComicComments({
             helperText={
               newComment.length ? `${newComment.length} / ${MAX_COMMENT_LENGTH}` : ''
             }
-            placeholder="Harmful comments will be removed and might result in a ban."
+            placeholder={` Harmful comments will be removed and might result in a ban.`}
           />
+
+          <p className="text-xs text-gray-600 dark:text-gray-750 italic mt-2">
+            Please refrain from "first" style comments.
+          </p>
+          <p className="text-xs text-gray-600 dark:text-gray-750 italic mt-1 mb-1">
+            Want to report a problem with this comic? Use the "Contribute" button at the
+            top instead of commenting.
+          </p>
 
           <LoadingButton
             text="Submit comment"
