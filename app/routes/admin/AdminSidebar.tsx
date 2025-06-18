@@ -119,12 +119,6 @@ export default function AdminSidebar({
               isSelected={isRoute('mod-applications')}
             />
           )}
-          <SidebarLink
-            href="/admin/thumbnails"
-            text="Update thumbnails"
-            isSelected={isRoute('thumbnails')}
-          />
-
           {isAdmin && (
             <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
           )}

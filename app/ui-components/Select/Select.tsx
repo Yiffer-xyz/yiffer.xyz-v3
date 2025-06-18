@@ -10,6 +10,7 @@ export type BaseSelectProps<T> = {
   minWidth?: number;
   isFullWidth?: boolean;
   name: string;
+  disabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -29,6 +30,7 @@ export default function Select<T>({
   minWidth = 0,
   isFullWidth = false,
   name,
+  disabled = false,
   className = '',
   ...props
 }: FullSelectProps<T>) {
@@ -161,34 +163,52 @@ export default function Select<T>({
     }
   }
 
-  const borderStyle = error
-    ? ''
-    : {
-        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+  const borderStyle = useMemo(() => {
+    if (error) {
+      return {
+        borderImage: `linear-gradient(to right, ${colors.red.strong[200]}, ${colors.red.strong[300]}) 1`,
       };
+    }
+    if (disabled) {
+      return {
+        borderImage: `linear-gradient(to right, ${colors.gray[800]}, ${colors.gray[800]}) 1`,
+      };
+    }
+    return {
+      borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+    };
+  }, [error, disabled]);
 
   return (
     <div
       onKeyDown={onKeyDown}
-      className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
+      className={`hover:cursor-pointer ${disabled ? '' : 'focus:bg-theme1-primaryTrans'}
         relative w-fit outline-none h-9 leading-9 box-content ${className} ${title ? 'pt-3' : ''}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
       tabIndex={0}
       onBlur={() => setIsOpen(false)}
     >
-      {title && <label className="absolute text-sm top-0 left-2">{title}</label>}
+      {title && (
+        <label
+          className={`absolute text-sm top-0 left-2 
+            ${disabled ? 'text-gray-700' : ''} ${error ? '!text-red-strong-200' : ''}`}
+        >
+          {title}
+        </label>
+      )}
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`border-0 border-b-2 px-2 after:absolute
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
-          after:border-t-text-light dark:after:border-t-text-dark after:right-3 ${
+          ${disabled ? 'after:border-t-gray-700' : 'after:border-t-text-light'} dark:after:border-t-text-dark after:right-3 ${
             value ? '' : 'text-gray-750'
-          }`}
+          } ${disabled ? 'hover:cursor-default text-gray-700' : ''}`}
         style={{ ...borderStyle }}
       >
         {(value && options.find(x => x.value === value)?.text) || '—'}
       </div>
+
       <div
         className={`${
           isOpen ? '' : 'invisible'
