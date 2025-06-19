@@ -28,6 +28,7 @@ export default function ComicRateBookmark({
 
   const [overrideStars, setOverrideStars] = useState<number | null>(null);
   const [overrideBookmark, setOverrideBookmark] = useState<boolean | null>(null);
+  const [overrideSubscribed, setOverrideSubscribed] = useState<boolean | null>(null);
 
   const shownStars = overrideStars ?? yourStars;
 
@@ -80,6 +81,25 @@ export default function ComicRateBookmark({
     setOverrideBookmark(newBookmark);
   }
 
+  const toggleSubscribeFetcher = useGoodFetcher({
+    method: 'post',
+    url: '/api/subscribe-comic',
+  });
+
+  function onToggleSubscribe() {
+    if (!isLoggedIn) {
+      navigate(`/login${redirectSetOnLoginNavStr}`);
+      return;
+    }
+    posthog.capture('Comic subscribe toggled', { source });
+    toggleSubscribeFetcher.submit({
+      comicId: comic!.id,
+    });
+    const newSubscribed =
+      overrideSubscribed !== null ? !overrideSubscribed : !comic.isSubscribed;
+    setOverrideSubscribed(newSubscribed);
+  }
+
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
 
@@ -100,6 +120,15 @@ export default function ComicRateBookmark({
             size={small ? 16 : 20}
             className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark`}
           />
+        )}
+      </button>
+
+      {/* Subscribe */}
+      <button onClick={onToggleSubscribe} className="p-2 group">
+        {(overrideSubscribed ?? comic.isSubscribed) ? (
+          <span className="text-theme1-dark">Subscribed</span>
+        ) : (
+          <span className="text-gray-700 dark:text-gray-800 group-hover:text-theme1-dark">Subscribe</span>
         )}
       </button>
 

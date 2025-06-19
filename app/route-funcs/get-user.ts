@@ -281,3 +281,10 @@ function dbCommentToComment(dbComment: DbComment): AdminPanelUserComment {
     isHidden: dbComment.isHidden === 1,
   };
 }
+
+export async function getUserNotifications(db: D1Database, userId: number, limit = 20) {
+  const res = await db.prepare(
+    'SELECT * FROM usernotification WHERE userId = ? AND isRead = 0 ORDER BY createdAt DESC LIMIT ?'
+  ).bind(userId, limit).all();
+  return res.results as any[];
+}
