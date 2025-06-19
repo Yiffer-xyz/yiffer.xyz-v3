@@ -1,4 +1,4 @@
-import { FaBookmark, FaRegBookmark } from 'react-icons/fa';
+import { FaBookmark, FaRegBookmark, FaBell, FaRegBell } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
 import type { Comic, ComicForBrowse } from '~/types/types';
 import { useNavigate } from '@remix-run/react';
@@ -124,12 +124,19 @@ export default function ComicRateBookmark({
       </button>
 
       {/* Subscribe */}
-      <button onClick={onToggleSubscribe} className="p-2 group">
-        {(overrideSubscribed ?? comic.isSubscribed) ? (
-          <span className="text-theme1-dark">Subscribed</span>
-        ) : (
-          <span className="text-gray-700 dark:text-gray-800 group-hover:text-theme1-dark">Subscribe</span>
-        )}
+      <button
+        onClick={onToggleSubscribe}
+        className={`p-2 ml-1 rounded transition flex items-center gap-1 font-semibold text-xs
+          ${
+            (overrideSubscribed ?? comic.isSubscribed)
+              ? 'bg-theme1-primary text-white hover:bg-theme1-primary'
+              : 'bg-theme1-secondary text-theme1-whi hover:bg-theme1-primary hover:text-white'
+          }
+        `}
+        title={(overrideSubscribed ?? comic.isSubscribed) ? 'Unsubscribe from updates' : 'Subscribe to updates'}
+      >
+        {(overrideSubscribed ?? comic.isSubscribed) ? <FaBell size={14} /> : <FaRegBell size={14} />}
+        {(overrideSubscribed ?? comic.isSubscribed) ? 'Subscribed' : 'Subscribe'}
       </button>
 
       {/* Vertical divider div */}
