@@ -52,6 +52,7 @@ export type Comic = {
   category: Category;
   numberOfPages: number;
   isBookmarked?: boolean;
+  isSubscribed?: boolean;
   yourStars?: number;
   sumStars: number;
   avgStarsPercent: number;
@@ -99,6 +100,7 @@ export type ComicForBrowse = {
   state: 'wip' | 'cancelled' | 'finished';
   yourStars?: number;
   isBookmarked?: boolean;
+  isSubscribed?: boolean;
   sumStars: number;
   avgStarsPercent: number;
   numTimesStarred: number;

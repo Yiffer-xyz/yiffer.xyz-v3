@@ -41,6 +41,7 @@ import * as gtag from './utils/gtag.client';
 import { useAuthRedirect } from './utils/general';
 import { getUserByField } from './route-funcs/get-user';
 import { processApiError } from './utils/request-helpers';
+import UserNotifications from './page-components/UserNotifications';
 
 export const links: LinksFunction = () => [
   {
@@ -299,6 +300,8 @@ function Layout({
           >
             <MdLightbulbOutline className="mb-1" />
           </button>
+
+          <UserNotifications />
         </div>
       </nav>
 
