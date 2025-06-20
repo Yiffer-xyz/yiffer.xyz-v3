@@ -89,12 +89,18 @@ export default function ComicComments({
             placeholder={` Harmful comments will be removed and might result in a ban.`}
           />
 
-          <p className="text-xs text-gray-600 dark:text-gray-750 italic mt-2">
-            Please refrain from "first" style comments.
-          </p>
           <p className="text-xs text-gray-600 dark:text-gray-750 italic mt-1 mb-1">
             Want to report a problem with this comic? Use the "Contribute" button at the
             top instead of commenting.
+          </p>
+
+          <p className="text-sm text-red-strong-200 italic mt-1 mb-1 font-bold">
+            We're glad some users are enjoying commenting a lot, but please, keep them
+            somewhat meaningful. Comments last forever, and other future users are not
+            interested in seeing "firsts", single emoji comments, or chatting you can do
+            in DMs instead. If all you have to say is "X/10", refrain from commenting. We{' '}
+            <u>will</u> be removing low quality or pointless comments. Help keep the site
+            a fun place for everyone, and help not wasting mod time.
           </p>
 
           <LoadingButton
