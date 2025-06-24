@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AdvertisementInfo } from '~/types/types';
-import type { ComicImage } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
 import { getFilesWithBase64 } from '~/utils/general';
 import FileInput from '~/ui-components/FileInput';
 import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
@@ -9,9 +9,9 @@ import InfoBox from '~/ui-components/InfoBox';
 
 type Props = {
   ad: AdvertisementInfo;
-  selectedFile?: ComicImage | undefined;
-  setSelectedFile: (newFile: ComicImage | undefined) => void;
-  setCroppedFile: (newFile: ComicImage | undefined) => void;
+  selectedFile?: ImageFileOrUrl | undefined;
+  setSelectedFile: (newFile: ImageFileOrUrl | undefined) => void;
+  setCroppedFile: (newFile: ImageFileOrUrl | undefined) => void;
 };
 
 export default function ImageAdMedia({
@@ -21,7 +21,7 @@ export default function ImageAdMedia({
   setCroppedFile,
 }: Props) {
   const [isGif, setIsGif] = useState<boolean>(false);
-  const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>();
+  const [fileToCrop, setFileToCrop] = useState<ImageFileOrUrl | undefined>();
   const [isFileCorrectDimensions, setIsFileCorrectDimensions] = useState<boolean>(false);
 
   async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -63,7 +63,7 @@ export default function ImageAdMedia({
     setSelectedFile(file);
   }
 
-  function onCropFinished(croppedThumb: ComicImage) {
+  function onCropFinished(croppedThumb: ImageFileOrUrl) {
     setCroppedFile(croppedThumb);
     setFileToCrop(undefined);
   }

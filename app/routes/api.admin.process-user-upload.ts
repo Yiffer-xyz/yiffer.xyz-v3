@@ -1,6 +1,5 @@
 import type { ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
 import { queryDbExec } from '~/utils/database-facade';
-import { randomString } from '~/utils/general';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
@@ -144,14 +143,11 @@ export async function processAnyUpload({
   imagesServerUrl: string;
   userUploadId?: number;
 }): Promise<ApiError | undefined> {
-  let comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
-  let comicQueryParams: any[] = [publishStatus, comicId];
+  const comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
+  const comicQueryParams = [publishStatus, comicId];
   const isRejected = publishStatus === 'rejected' || publishStatus === 'rejected-list';
 
   if (frontendVerdict === 'rejected') {
-    const randomStr = randomString(6);
-    const newComicName = `${comicName}-REJECTED-${randomStr}`;
-
     const comicRes = await getComicByField({
       db,
       fieldName: 'id',
@@ -167,33 +163,6 @@ export async function processAnyUpload({
         context: { comicId },
       };
     }
-    const fullComic = comicRes.result;
-
-    try {
-      const response = await fetch(`${imagesServerUrl}/rename-comic`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prevComicName: comicName,
-          newComicName,
-          numPages: fullComic.numberOfPages,
-        }),
-      });
-      if (!response.ok) {
-        return {
-          logMessage: 'Error renaming comic pages',
-          context: { comicId },
-        };
-      }
-    } catch (err) {
-      return {
-        logMessage: 'Error renaming comic pages',
-        context: { comicId },
-      };
-    }
-
-    comicQuery = `UPDATE comic SET publishStatus = ?, name = ? WHERE id = ?`;
-    comicQueryParams = [publishStatus, newComicName, comicId];
   }
 
   const [artistRes, updateComicDbRes] = await Promise.all([

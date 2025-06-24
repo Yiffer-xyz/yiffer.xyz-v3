@@ -10,9 +10,8 @@ This is a Remix app, running on Cloudflare Pages. It's serverless and server-sid
 - A cloudflare worker for running crons (in the `workers` folder)
 
 There's also a small "normal" node+express server running on a VM in Vultr, which you'll need to run alongside this project when developing locally. The repo for this is [yiffer.xyz-v3-imageserver](https://github.com/Yiffer-xyz/yiffer.xyz-v3-imageserver). This is used for:
-- Processing images - Sharp is not available on the Cloudflare VMs. Comic pages, thumbnails, and advertisements.
-- Some page management, like renaming/reordering, though this should ideally be moved to this project, as has been started in for example `api.admin.rename-comic-files.ts`.
-- In local development, used to serve images.
+- Processing images - Sharp is not available on the Cloudflare VMs. Comic pages, thumbnails, profile pics, and ads.
+- In local development, used to store and serve images, from `data` folder. Uploads through the locally run UI will end up here. Local dev renames/deletes/etc will also target files in this folder, instead of in R2, which is the prod case.
 
 ## Development
 

@@ -23,7 +23,8 @@ export const PROFILE_PIC_SIZE = 400;
 export const MAX_COMMENT_LENGTH = 500;
 
 export const R2_PROFILE_PICTURES_FOLDER = 'profile-photos';
-export const R2_TEMP_PICTURES_FOLDER = 'temp';
+export const R2_TEMP_FOLDER = 'temp';
+export const R2_COMICS_FOLDER = 'comics';
 
 export const COMIC_PROBLEM_CATEGORIES = [
   {
@@ -218,3 +219,5 @@ export function getSocialUrl(platform: string, username: string) {
 }
 
 export const ADMIN_COMMENTLIST_PAGE_SIZE = 50;
+
+export const MAX_PAGE_WIDTH = 1800;

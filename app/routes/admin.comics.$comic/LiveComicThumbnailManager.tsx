@@ -4,13 +4,15 @@ import Button from '~/ui-components/Buttons/Button';
 import FileInput from '~/ui-components/FileInput';
 import Select from '~/ui-components/Select/Select';
 import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
-import type { ComicImage } from '~/utils/general';
-import { getFileWithBase64, padPageNumber, randomString } from '~/utils/general';
-import type { Comic } from '~/types/types';
+import type { ImageFileOrUrl } from '~/utils/general';
+import { getFileExtension, getFileWithBase64, randomString } from '~/utils/general';
+import type { Comic, ProcessFilesArgs } from '~/types/types';
 import '~/utils/cropper.min.css';
-import { showErrorToast, showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
+import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
 import Link from '~/ui-components/Link';
+import { generateToken } from '~/utils/string-utils';
+import { COMIC_CARD_BASE_HEIGHT, COMIC_CARD_BASE_WIDTH } from '~/types/constants';
 
 type Props = {
   comicData: Comic;
@@ -29,23 +31,37 @@ export default function LiveComicThumbnailManager({
   const [randomQueryStr, setRandomQueryStr] = useState(randomString(3));
 
   const [isChanging, setIsChanging] = useState(false);
-  const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>();
+  const [fileToCrop, setFileToCrop] = useState<ImageFileOrUrl | undefined>();
   const [isSelectingPageNum, setIsSelectingPageNum] = useState(false);
-  const [tempSelectedPageNum, setTempSelectedPageNum] = useState<number>(1);
-  const [pageNumForCrop, setPageNumForCrop] = useState<number | undefined>();
+  const [tempSelectedPage, setTempSelectedPage] = useState<{
+    token: string;
+    pageNumber: number;
+  }>(comicData.pages[0]);
+  const [pageForCrop, setPageForCrop] = useState<
+    | {
+        token: string;
+        pageNumber: number;
+      }
+    | undefined
+  >();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updateComicFetcher = useGoodFetcher({
-    url: '/api/update-thumbnail-status',
+  const updateThumbnailFetcher = useGoodFetcher({
+    url: '/api/update-thumbnail',
     method: 'post',
-    toastError: true,
+    toastSuccessMessage: 'Thumbnail updated',
+    onFinish: () => {
+      setIsSubmitting(false);
+      setRandomQueryStr(randomString(3));
+      cancelChanges();
+    },
   });
 
   function cancelChanges() {
-    setTempSelectedPageNum(1);
+    setTempSelectedPage(comicData.pages[0]);
     setIsSelectingPageNum(false);
-    setPageNumForCrop(undefined);
+    setPageForCrop(undefined);
     setIsChanging(false);
     setFileToCrop(undefined);
     if (fileInputRef.current) {
@@ -53,30 +69,53 @@ export default function LiveComicThumbnailManager({
     }
   }
 
-  async function submitNewThumbnail(croppedThumb: ComicImage) {
-    setIsSubmitting(true);
+  async function submitNewThumbnail(croppedThumb: ImageFileOrUrl) {
     if (!croppedThumb.file) return;
+    setIsSubmitting(true);
 
-    const formData = new FormData();
-    formData.append('thumbnail', croppedThumb.file);
-    formData.append('comicName', comicData.name);
+    const thumbnailFormData = new FormData();
+    const thumbnailTempToken = generateToken();
+    thumbnailFormData.append(
+      'files',
+      croppedThumb.file,
+      `${thumbnailTempToken}.${getFileExtension(croppedThumb.file.name)}`
+    );
+    const thumbnailProcessFilesArgs: ProcessFilesArgs = {
+      formats: ['jpg', 'webp'],
+      resizes: [
+        {
+          width: COMIC_CARD_BASE_WIDTH * 2,
+          height: COMIC_CARD_BASE_HEIGHT * 2,
+          suffix: '2x',
+        },
+        {
+          width: COMIC_CARD_BASE_WIDTH * 3,
+          height: COMIC_CARD_BASE_HEIGHT * 3,
+          suffix: '3x',
+        },
+      ],
+    };
+    thumbnailFormData.append('argsJson', JSON.stringify(thumbnailProcessFilesArgs));
 
-    const res = await fetch(`${IMAGES_SERVER_URL}/change-thumbnail`, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${IMAGES_SERVER_URL}/process-files`, {
+        method: 'POST',
+        body: thumbnailFormData,
+      });
 
-    setIsSubmitting(false);
-    if (res.ok) {
-      showSuccessToast('Changed thumbnail', false, theme);
-      setRandomQueryStr(randomString(3));
-      cancelChanges();
-
-      updateComicFetcher.submit({ comicId: comicData.id });
-    } else {
-      const resText = await res.text();
-      showErrorToast('Error changing thumbnail: ' + resText, theme);
+      if (!res.ok) {
+        const resText = await res.text();
+        showErrorToast('Error uploading file: ' + resText, theme);
+      }
+    } catch (e) {
+      console.error(e);
+      showErrorToast('Error changing thumbnail: ' + e?.toString(), theme);
     }
+
+    updateThumbnailFetcher.submit({
+      comicId: comicData.id,
+      tempToken: thumbnailTempToken,
+    });
   }
 
   async function onThumbnailFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -90,7 +129,7 @@ export default function LiveComicThumbnailManager({
   return (
     <>
       <img
-        src={`${PAGES_PATH}/${comicData.name}/thumbnail-2x.webp?${randomQueryStr}`}
+        src={`${PAGES_PATH}/comics/${comicData.id}/thumbnail-2x.webp?${randomQueryStr}`}
         width={140}
         alt="thumbnail"
         className={isChanging ? 'opacity-50' : ''}
@@ -120,14 +159,17 @@ export default function LiveComicThumbnailManager({
               <Button
                 text="Crop page 1"
                 onClick={() => {
-                  setPageNumForCrop(1);
+                  setPageForCrop({
+                    pageNumber: 1,
+                    token: comicData.pages[0].token,
+                  });
                 }}
               />
               <Button
                 text="Crop another page"
                 onClick={() => {
                   setIsSelectingPageNum(true);
-                  setTempSelectedPageNum(1);
+                  setTempSelectedPage(comicData.pages[0]);
                 }}
               />
               <FileInput
@@ -142,28 +184,28 @@ export default function LiveComicThumbnailManager({
           {isSelectingPageNum && (
             <>
               <Select
-                value={tempSelectedPageNum}
-                onChange={newNum => setTempSelectedPageNum(newNum)}
+                value={tempSelectedPage}
+                onChange={newNum => setTempSelectedPage(newNum)}
                 name="pageFileToCropNumber"
                 minWidth={150}
                 title="Page to crop from"
                 className="mt-3"
-                options={Array.from({ length: comicData.numberOfPages }).map((_, i) => ({
-                  text: `Page ${i + 1}`,
-                  value: i + 1,
+                options={comicData.pages.map(page => ({
+                  text: `Page ${page.pageNumber}`,
+                  value: page,
                 }))}
               />
 
-              {tempSelectedPageNum && (
+              {tempSelectedPage && (
                 <>
                   <img
-                    src={`${PAGES_PATH}/${comicData.name}/${padPageNumber(tempSelectedPageNum)}.jpg`}
+                    src={`${PAGES_PATH}/comics/${comicData.id}/${tempSelectedPage.token}.jpg`}
                     className="mt-2"
                     width={100}
                     alt=""
                   />
                   <Button
-                    onClick={() => setPageNumForCrop(tempSelectedPageNum)}
+                    onClick={() => setPageForCrop(tempSelectedPage)}
                     text="Crop"
                     className="mt-1"
                     style={{ width: 100 }}
@@ -174,7 +216,7 @@ export default function LiveComicThumbnailManager({
             </>
           )}
 
-          {(pageNumForCrop || fileToCrop) && (
+          {(pageForCrop || fileToCrop) && (
             <ThumbnailCropper
               title="Crop thumbnail"
               mode="modal"
@@ -182,7 +224,7 @@ export default function LiveComicThumbnailManager({
               minWidth={480}
               image={
                 fileToCrop || {
-                  url: `${PAGES_PATH}/${comicData.name}/${padPageNumber(pageNumForCrop!)}.jpg`,
+                  url: `${PAGES_PATH}/comics/${comicData.id}/${pageForCrop!.token}.jpg`,
                 }
               }
               onComplete={submitNewThumbnail}

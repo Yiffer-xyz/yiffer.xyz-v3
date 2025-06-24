@@ -2,7 +2,7 @@ import '~/utils/cropper.min.css';
 import { useState } from 'react';
 import type { AdMediaType, AdType, AdvertisementInfo } from '~/types/types';
 import TopGradientBox from '~/ui-components/TopGradientBox';
-import { getFileExtension, randomString, type ComicImage } from '~/utils/general';
+import { getFileExtension, randomString, type ImageFileOrUrl } from '~/utils/general';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Step3Details from './step3-details';
@@ -31,8 +31,8 @@ export default function AdvertisingApply() {
   const [isRequestingTrial, setIsRequestingTrial] = useState<boolean>(false);
   const [mediaType, setMediaType] = useState<AdMediaType | undefined>(undefined);
 
-  const [selectedFile, setSelectedFile] = useState<ComicImage | undefined>();
-  const [croppedFile, setCroppedFile] = useState<ComicImage | undefined>();
+  const [selectedFile, setSelectedFile] = useState<ImageFileOrUrl | undefined>();
+  const [croppedFile, setCroppedFile] = useState<ImageFileOrUrl | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fileSubmitErr, setFileSubmitErr] = useState<string | undefined>();
 

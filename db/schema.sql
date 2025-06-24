@@ -643,3 +643,21 @@ CREATE TABLE IF NOT EXISTS comiccommentreport (
 
 CREATE INDEX IF NOT EXISTS idx_comiccommentreport_commentId ON comiccommentreport(commentId);
 CREATE INDEX IF NOT EXISTS idx_comiccommentreport_userId ON comiccommentreport(userId);
+
+------------------------------------------------------
+-- COMIC PAGE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comicpage (
+  token TEXT NOT NULL,
+  comicId INTEGER NOT NULL,
+  pageNumber INTEGER NULL DEFAULT NULL,
+  isFullSize TINYINTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (token),
+  FOREIGN KEY (comicId)
+  REFERENCES comic (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comicpage_unique_token ON comicpage (token);
+CREATE INDEX IF NOT EXISTS idx_comicpage_comicId ON comicpage (comicId);

@@ -1,5 +1,4 @@
 import type { Comic } from '~/types/types';
-import RecalculateNumPages from './RecalculateNumPages';
 import { useState } from 'react';
 import Button from '~/ui-components/Buttons/Button';
 import PurgeComicCache from './PurgeComicCache';
@@ -35,17 +34,6 @@ export default function AdvancedPageManagement({
       </p>
 
       <PurgeComicCache
-        comic={comic}
-        imagesServerUrl={imagesServerUrl}
-        blockActions={blockActions}
-      />
-
-      <h4 className="mt-4">Recalculate number of pages</h4>
-      <p>
-        If there are pages not showing up, or seemingly broken pages at some spot in the
-        comic, this could fix it.
-      </p>
-      <RecalculateNumPages
         comic={comic}
         imagesServerUrl={imagesServerUrl}
         blockActions={blockActions}

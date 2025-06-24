@@ -2,18 +2,18 @@ import { useMemo, useRef, useState } from 'react';
 import type { ReactCropperElement } from 'react-cropper';
 import Cropper from 'react-cropper';
 import { MdArrowBack, MdCheck } from 'react-icons/md';
-import type { ComicImage } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
 import useWindowSize from '~/utils/useWindowSize';
 import Button from '~/ui-components/Buttons/Button';
 import InfoBox from '~/ui-components/InfoBox';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 
 export interface ThumbnailCropperProps {
-  image: ComicImage;
+  image: ImageFileOrUrl;
   minWidth: number;
   minHeight: number;
   idealWidth?: number;
-  onComplete: (croppedThumbnail: ComicImage) => void;
+  onComplete: (croppedThumbnail: ImageFileOrUrl) => void;
   onClose: () => void;
   isLoading?: boolean;
   mode: 'modal' | 'inline';
@@ -37,7 +37,7 @@ export default function ThumbnailCropper({
   );
   const [isTooSmall, setIsTooSmall] = useState(false);
   const [isSmallerThanIdeal, setIsSmallerThanIdeal] = useState(false);
-  const [cropResult, setCropResult] = useState<ComicImage>();
+  const [cropResult, setCropResult] = useState<ImageFileOrUrl>();
 
   const { isMobile, isLgUp, isXlUp, isMdUp } = useWindowSize();
   const [mobileStep, setMobileStep] = useState(1);

@@ -7,7 +7,8 @@ import { getAllArtistsQuery, mapArtistTiny } from '~/route-funcs/get-artists';
 import type { DbComicTiny } from '~/route-funcs/get-comics';
 import { getAllComicNamesAndIDsQuery, mapDBComicTiny } from '~/route-funcs/get-comics';
 import { getAllTagsQuery } from '~/route-funcs/get-tags';
-import { isModOrAdmin, type ArtistTiny, type ComicTiny, type Tag } from '~/types/types';
+import { isModOrAdmin } from '~/types/types';
+import type { ProcessFilesArgs, ArtistTiny, ComicTiny, Tag } from '~/types/types';
 import { authLoader } from '~/utils/loaders';
 import Step1 from './step1';
 import Step3Pagemanager from './step3-pagemanager';
@@ -23,18 +24,18 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { ComicImage } from '~/utils/general';
-import {
-  generateRandomId,
-  getFileExtension,
-  isUsernameUrl,
-  pageNumberToPageName,
-} from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
+import { generateRandomId, getFileExtension, isUsernameUrl } from '~/utils/general';
 import ComicDataEditor from '~/page-components/ComicManager/ComicData';
 import TagsEditor from '~/page-components/ComicManager/Tags';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
-import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
+import {
+  COMIC_CARD_BASE_HEIGHT,
+  COMIC_CARD_BASE_WIDTH,
+  MAX_PAGE_WIDTH,
+  MAX_UPLOAD_BODY_SIZE,
+} from '~/types/constants';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import type {
   ActionFunctionArgs,
@@ -42,6 +43,7 @@ import type {
   MetaFunction,
 } from '@remix-run/cloudflare';
 import useResizeObserver from '~/utils/useResizeObserver';
+import { generateToken } from '~/utils/string-utils';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -79,63 +81,90 @@ export default function Upload() {
   }, [step]);
 
   async function uploadFiles(
-    comicData: NewComicData,
-    uploadId: string
-  ): Promise<{ error?: string }> {
+    comicData: NewComicData
+  ): Promise<{ error?: string; pages: { pageNumber: number; tempToken: string }[] }> {
     const thumbnailFile = comicData.thumbnail?.file;
-    if (!thumbnailFile) return { error: 'No thumbnail file' };
+    if (!thumbnailFile) return { error: 'No thumbnail file', pages: [] };
 
+    const pagesWithTempTokens: { pageNumber: number; tempToken: string }[] = [];
     const filesFormDatas = Array<FormData>();
+
+    const processFilesArgs: ProcessFilesArgs = {
+      formats: ['jpg'],
+      maxWidth: MAX_PAGE_WIDTH,
+    };
+
     let currentFormData = new FormData();
-    currentFormData.append(
-      'thumbnail',
-      thumbnailFile,
-      `thumbnail.${getFileExtension(thumbnailFile.name)}`
-    );
-    currentFormData.append('comicName', comicData.name);
-    currentFormData.append('uploadId', uploadId);
+    currentFormData.append('argsJson', JSON.stringify(processFilesArgs));
     let currentFormDataSize = 0;
 
     for (let i = 0; i < comicData.files.length; i++) {
       const file = comicData.files[i];
-      if (!file.file) return { error: `File error for page ${i + 1}` };
+      if (!file.file) return { error: `File error for page ${i + 1}`, pages: [] };
+
+      const tempToken = generateToken();
+      pagesWithTempTokens.push({ pageNumber: i + 1, tempToken });
 
       // Split the request into multiple FormDatas/submissions if size is too big.
       if (currentFormDataSize + file.file.size > MAX_UPLOAD_BODY_SIZE) {
-        currentFormData.append('hasMore', 'true');
         filesFormDatas.push(currentFormData);
         currentFormData = new FormData();
-        currentFormData.append('comicName', comicData.name);
-        currentFormData.append('uploadId', uploadId);
         currentFormDataSize = 0;
+        currentFormData.append('argsJson', JSON.stringify(processFilesArgs));
       }
 
       currentFormData.append(
-        `pages`,
+        `files`,
         file.file,
-        pageNumberToPageName(i + 1, file.file.name)
+        `${tempToken}.${getFileExtension(file.file.name)}`
       );
       currentFormDataSize += file.file.size;
     }
     filesFormDatas.push(currentFormData);
 
+    const thumbnailFormData = new FormData();
+    const thumbnailTempToken = generateToken();
+    thumbnailFormData.append(
+      'files',
+      thumbnailFile,
+      `${thumbnailTempToken}.${getFileExtension(thumbnailFile.name)}`
+    );
+    const thumbnailProcessFilesArgs: ProcessFilesArgs = {
+      formats: ['jpg', 'webp'],
+      resizes: [
+        {
+          width: COMIC_CARD_BASE_WIDTH * 2,
+          height: COMIC_CARD_BASE_HEIGHT * 2,
+          suffix: '2x',
+        },
+        {
+          width: COMIC_CARD_BASE_WIDTH * 3,
+          height: COMIC_CARD_BASE_HEIGHT * 3,
+          suffix: '3x',
+        },
+      ],
+    };
+    pagesWithTempTokens.push({ pageNumber: 0, tempToken: thumbnailTempToken });
+    thumbnailFormData.append('argsJson', JSON.stringify(thumbnailProcessFilesArgs));
+    filesFormDatas.push(thumbnailFormData);
+
     for (const formData of filesFormDatas) {
       try {
-        const res = await fetch(`${IMAGES_SERVER_URL}/comic-upload`, {
+        const res = await fetch(`${IMAGES_SERVER_URL}/process-files`, {
           method: 'POST',
           body: formData,
         });
 
         if (!res.ok) {
-          return { error: 'Error uploading files to server' };
+          return { error: 'Error uploading files to server', pages: [] };
         }
       } catch (e) {
         console.error(e);
-        return { error: 'Error uploading files to server' };
+        return { error: 'Error uploading files to server', pages: [] };
       }
     }
 
-    return {};
+    return { pages: pagesWithTempTokens };
   }
 
   async function submit() {
@@ -196,9 +225,6 @@ export default function Upload() {
       source,
     };
 
-    const formData = new FormData();
-    formData.append('body', JSON.stringify(uploadBody));
-
     const { error } = validateUploadForm(uploadBody);
     if (error) {
       setError(error);
@@ -214,13 +240,17 @@ export default function Upload() {
     // because CF workers might have stricter limits than the old api
     // and there is no need to go through that for this - old API
     // deals with all validation and handling regardless.
-    const { error: uploadError } = await uploadFiles(comicData, uploadId);
+    const { error: uploadError, pages } = await uploadFiles(comicData);
 
     if (uploadError) {
       setError(uploadError);
       setIsSubmitting(false);
       return;
     }
+
+    uploadBody.pages = pages;
+    const formData = new FormData();
+    formData.append('body', JSON.stringify(uploadBody));
 
     submitFetcher.submit(formData);
   }
@@ -378,6 +408,9 @@ export async function action(args: ActionFunctionArgs) {
 
   const err = await processUpload(
     args.context.cloudflare.env.DB,
+    args.context.cloudflare.env.COMICS_BUCKET,
+    args.context.cloudflare.env.IS_LOCAL_DEV === 'true',
+    args.context.cloudflare.env.IMAGES_SERVER_URL,
     body,
     user,
     args.request.headers.get('CF-Connecting-IP') || 'unknown'
@@ -470,6 +503,7 @@ export type UploadBody = {
   tagIds: number[];
   numberOfPages: number;
   source: string;
+  pages?: { pageNumber: number; tempToken: string }[];
 };
 
 // For handling upload data internally in the front-end
@@ -486,6 +520,6 @@ export type NewComicData = {
   validation: {
     isLegalComicName: boolean;
   };
-  files: ComicImage[];
-  thumbnail?: ComicImage;
+  files: ImageFileOrUrl[];
+  thumbnail?: ImageFileOrUrl;
 };

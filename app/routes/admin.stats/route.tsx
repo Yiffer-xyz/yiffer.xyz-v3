@@ -282,10 +282,10 @@ export default function Stats() {
         <b>{stats.totalComics}</b> comics
       </p>
       <p>
-        <b>{stats.totalArtists}</b> artists
+        <b>{stats.totalPages}</b> pages
       </p>
       <p>
-        <b>{stats.totalPages}</b> pages
+        <b>{stats.totalArtists}</b> artists
       </p>
       <p>
         <b>{stats.comicComments}</b> comic comments

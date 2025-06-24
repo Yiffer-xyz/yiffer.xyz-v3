@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import useWindowSize from '~/utils/useWindowSize';
-import type { ComicImage } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
 import { MdArrowBack, MdArrowForward, MdDelete } from 'react-icons/md';
 import { DraggableCore } from 'react-draggable';
 import { FaExpandAlt } from 'react-icons/fa';
 import { FaEllipsis } from 'react-icons/fa6';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import Button from '~/ui-components/Buttons/Button';
+import type { ComicImageExtended } from '~/types/types';
 
 const RATIO = Math.round(400 / 564);
 const PAGE_NAME_HEIGHT = 40;
@@ -17,7 +18,7 @@ type HoveredPage = {
   side: 'left' | 'right';
 };
 
-function getImgSource(file: ComicImage, randomString?: string) {
+function getImgSource(file: ImageFileOrUrl, randomString?: string) {
   if (file.url) {
     if (randomString) {
       return `${file.url}?${randomString}`;
@@ -28,8 +29,8 @@ function getImgSource(file: ComicImage, randomString?: string) {
 }
 
 type PageManagerProps = {
-  files: ComicImage[];
-  onChange: (newFiles: ComicImage[]) => void;
+  files: ComicImageExtended[];
+  onChange: (newFiles: ComicImageExtended[]) => void;
   pageManagerWidth: number;
   randomString?: string;
   source: 'admin' | 'comic-upload';
@@ -37,7 +38,7 @@ type PageManagerProps = {
 
 export default function PageManager({
   files,
-  onChange,
+  onChange: onChangeProp,
   randomString,
   pageManagerWidth,
   source,
@@ -51,6 +52,16 @@ export default function PageManager({
   >(undefined);
   const [manualPageChangeNewPosition, setManualPageChangeNewPosition] =
     useState<string>('1');
+
+  function onChange(newFiles: ComicImageExtended[]) {
+    // Loop through and make sure all newPageNumbers are sequential
+    for (let i = 0; i < newFiles.length; i++) {
+      if (newFiles[i].newPageNumber !== i + 1) {
+        newFiles[i].newPageNumber = i + 1;
+      }
+    }
+    onChangeProp(newFiles);
+  }
 
   const fullSizeImageSource = useMemo(() => {
     if (fullSizeImageIndex === undefined) return undefined;
@@ -69,7 +80,8 @@ export default function PageManager({
       newFiles.splice(imageIndex, 1);
       onChange(newFiles);
     },
-    [files, onChange]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [files]
   );
 
   // insert page at index into new position
@@ -81,7 +93,8 @@ export default function PageManager({
       newFiles.splice(toIndex, 0, temp);
       onChange(newFiles);
     },
-    [files, onChange]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [files]
   );
 
   const numPages = files.length;
@@ -320,7 +333,7 @@ type PageProps = {
     row: number;
     col: number;
   };
-  file: ComicImage;
+  file: ImageFileOrUrl;
   index: number;
   deleteImage: (index: number) => void;
   isMobile: boolean;
@@ -592,7 +605,7 @@ function Page({
               <span className="mr-1">
                 <b>{index + 1}</b>
               </span>
-              {showPageNames && (
+              {showPageNames && file.file?.name && (
                 <span className="text-xs">
                   {formatPageSource(file.file?.name ?? file.url)}
                 </span>

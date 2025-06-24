@@ -41,18 +41,18 @@ export type FieldChange = {
   newDataValue?: any;
 };
 
-export type ComicImage = {
+export type ImageFileOrUrl = {
   base64?: string;
   url?: string;
   file?: File;
 };
 
-export async function getFilesWithBase64(files: FileList): Promise<ComicImage[]> {
+export async function getFilesWithBase64(files: FileList): Promise<ImageFileOrUrl[]> {
   const filePromises = Array.from(files).map(file => getFileWithBase64(file));
   return Promise.all(filePromises);
 }
 
-export async function getFileWithBase64(file: File): Promise<ComicImage> {
+export async function getFileWithBase64(file: File): Promise<ImageFileOrUrl> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -87,8 +87,7 @@ export function padPageNumber(pageNumber: number) {
 }
 
 export function pageNumberToPageName(pageNum: number, filename: string): string {
-  const pageNumberString = padPageNumber(pageNum);
-  return `${pageNumberString}.${getFileExtension(filename)}`;
+  return `${pageNum}.${getFileExtension(filename)}`;
 }
 
 export function getFileExtension(filename: string) {

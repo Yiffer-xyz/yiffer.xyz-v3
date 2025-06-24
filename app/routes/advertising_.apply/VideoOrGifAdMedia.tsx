@@ -3,13 +3,13 @@ import { MdCheckCircle } from 'react-icons/md';
 import type { AdMediaType, AdvertisementInfo } from '~/types/types';
 import FileInput from '~/ui-components/FileInput';
 import InfoBox from '~/ui-components/InfoBox';
-import type { ComicImage } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
 
 type Props = {
   ad: AdvertisementInfo;
   mediaType: AdMediaType;
-  selectedFile: ComicImage | undefined;
-  setSelectedFile: (newFile: ComicImage | undefined) => void;
+  selectedFile: ImageFileOrUrl | undefined;
+  setSelectedFile: (newFile: ImageFileOrUrl | undefined) => void;
 };
 
 export default function VideoOrGifAdMedia({

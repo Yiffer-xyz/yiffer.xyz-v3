@@ -59,12 +59,19 @@ type DbComment = {
   profilePictureToken?: string | null;
 };
 
+type DbPage = {
+  token: string;
+  pageNumber: number;
+  isFullSize: number;
+};
+
 type GetComicByFieldParams = {
   db: D1Database;
   fieldName: 'id' | 'name';
   fieldValue: string | number;
   userId?: number;
   includeMetadata?: boolean;
+  includePages?: boolean;
 };
 
 export async function getComicByField({
@@ -84,18 +91,20 @@ export async function getComicByField({
     fieldName === 'id'
       ? getCommentsByComicIdQuery(fieldValue as number)
       : getCommentsByComicNameQuery(fieldValue as string),
+    fieldName === 'id'
+      ? getPagesByComicIdQuery(fieldValue as number)
+      : getPagesByComicNameQuery(fieldValue as string),
   ];
 
-  const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[], DbComment[]]>(
-    db,
-    dbStatements
-  );
+  const dbRes = await queryDbMultiple<
+    [DbComic[], DbComicLink[], DbTag[], DbComment[], DbPage[]]
+  >(db, dbStatements);
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comic+links+tags', logCtx);
   }
 
-  const [comicRes, linksRes, tagsRes, commentsRes] = dbRes.result;
+  const [comicRes, linksRes, tagsRes, commentsRes, pagesRes] = dbRes.result;
   if (comicRes.length === 0 || comicRes[0].id === null) {
     return { notFound: true };
   }
@@ -105,6 +114,7 @@ export async function getComicByField({
     linksRes,
     tagsRes,
     commentsRes,
+    pagesRes,
     includeMetadata,
     userId
   );
@@ -117,6 +127,7 @@ function mergeDbFieldsToComic(
   dbLinksRows: DbComicLink[],
   dbTagsRows: DbTag[],
   dbCommentsRows: DbComment[],
+  dbPagesRows: DbPage[],
   includeMetadata: boolean,
   userId?: number
 ): Comic {
@@ -158,6 +169,10 @@ function mergeDbFieldsToComic(
         },
       }))
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
+    pages: dbPagesRows.map(page => ({
+      ...page,
+      isFullSize: page.isFullSize === 1,
+    })),
   };
 
   if (dbLinksRows.length > 0) {
@@ -365,5 +380,38 @@ function getCommentsByComicNameQuery(comicName: string): QueryWithParams {
     query: commentsQuery,
     params: [comicName],
     queryName: 'Comic comments by comic name',
+  };
+}
+
+function getPagesByComicIdQuery(comicId: number): QueryWithParams {
+  const pagesQuery = `SELECT
+      comicpage.token AS token,
+      comicpage.pageNumber AS pageNumber,
+      comicpage.isFullSize AS isFullSize
+    FROM comicpage
+    WHERE comicpage.comicId = ?
+    ORDER BY comicpage.pageNumber ASC`;
+
+  return {
+    query: pagesQuery,
+    params: [comicId],
+    queryName: 'Comic pages by comic ID',
+  };
+}
+
+function getPagesByComicNameQuery(comicName: string): QueryWithParams {
+  const pagesQuery = `SELECT
+      comicpage.token AS token,
+      comicpage.pageNumber AS pageNumber,
+      comicpage.isFullSize AS isFullSize
+    FROM comicpage
+    INNER JOIN comic ON (comic.id = comicpage.comicId)
+    WHERE comic.name = ?
+    ORDER BY comicpage.pageNumber ASC`;
+
+  return {
+    query: pagesQuery,
+    params: [comicName],
+    queryName: 'Comic pages by comic name',
   };
 }

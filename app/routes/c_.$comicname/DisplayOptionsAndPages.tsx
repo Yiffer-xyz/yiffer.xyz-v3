@@ -5,7 +5,6 @@ import type { Comic, PageDisplay } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
-import { padPageNumber } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import posthog from 'posthog-js';
 import DropdownButton from '~/ui-components/Buttons/DropdownButton';
@@ -276,19 +275,15 @@ export default function DisplayOptionsAndPages({
       {children}
 
       <div className="gap-4 mt-4 flex flex-col items-center w-full">
-        {Array.from({ length: comic.numberOfPages }, (_, i) => (
-          <div key={i} className="relative">
+        {comic.pages.map((page, i) => (
+          <div key={page.token} className="relative">
             <img
-              src={`${pagesPath}/${comic.name}/${padPageNumber(currentIsReverseOrder ? comic.numberOfPages - i : i + 1)}.jpg`}
-              alt={`Page ${i + 1}`}
+              src={`${pagesPath}/comics/${comic.id}/${page.token}.jpg`}
+              alt={`Page ${page.pageNumber}`}
               className="comicPage"
-              style={getPageStyle(i)}
-              onClick={() => onPageClick(i)}
+              style={getPageStyle(page.pageNumber)}
+              onClick={() => onPageClick(page.pageNumber)}
             />
-            {/* abc */}
-            {/* <div className="w-[400px] h-[600px] bg-gray-800 flex items-center justify-center">
-              <p>Page {i + 1}</p>
-            </div> */}
 
             {individualPageStylesShowLabels[i] !== undefined && (
               <div

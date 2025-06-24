@@ -1,5 +1,8 @@
 // This is a combination of env variables found in .dev.vars and the
 // other bindings such as R2, D1 sql, created locally through runtime
+
+import type { ImageFileOrUrl } from '~/utils/general';
+
 // arguments (see package.json, --r2=<BUCKET> etc).
 export interface Env {
   IS_LOCAL_DEV: string;
@@ -71,6 +74,7 @@ export type Comic = {
   updated?: Date;
   metadata?: ComicMetadata;
   comments: ComicComment[];
+  pages: ComicPage[];
 };
 
 export type ComicComment = {
@@ -585,4 +589,36 @@ export type Feedback = {
   user: UserDataOrIP;
   isArchived: boolean;
   timestamp: Date;
+};
+
+export type ComicPage = {
+  token: string;
+  pageNumber: number;
+  isFullSize: boolean;
+};
+
+export type ComicImageExtended = ImageFileOrUrl & {
+  existingPageData?: ComicPage;
+  newPageNumber?: number;
+};
+
+export type FileFormat = 'jpg' | 'webp';
+
+export type ProcessFilesArgs = {
+  formats: FileFormat[];
+  resizes?: {
+    width: number;
+    height: number;
+    suffix?: string;
+  }[];
+  quality?: number;
+  maxWidth?: number;
+};
+
+export type LocalDevManageFilesBody = {
+  deletes: { path: string }[];
+  renames: {
+    oldPath: string;
+    newPath: string;
+  }[];
 };

@@ -87,7 +87,7 @@ export default function ComicCard({
     >
       <RemixLink to={`/c/${comic.name}`}>
         <img
-          src={`${pagesPath}/${comic.name}/thumbnail-${multiplier}x.webp`}
+          src={`${pagesPath}/comics/${comic.id}/thumbnail-${multiplier}x.webp`}
           alt="comic thumbnail"
           style={{ height: 226 }}
           height={226}

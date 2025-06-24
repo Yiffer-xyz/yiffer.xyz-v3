@@ -1,27 +1,21 @@
-import { useRevalidator } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import { IoMdTrash } from 'react-icons/io';
 import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
 import PageManager from '~/page-components/PageManager/PageManager';
-import { MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
-import type { Comic } from '~/types/types';
+import { MAX_PAGE_WIDTH, MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
+import type { Comic, ComicImageExtended, ProcessFilesArgs } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FileInput from '~/ui-components/FileInput';
 import InfoBox from '~/ui-components/InfoBox';
-import type { ComicImage } from '~/utils/general';
-import {
-  generateRandomId,
-  getFilesWithBase64,
-  padPageNumber,
-  pageNumberToPageName,
-} from '~/utils/general';
+import { generateRandomId, getFileExtension, getFilesWithBase64 } from '~/utils/general';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { showSuccessToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import useWindowSize from '~/utils/useWindowSize';
 import { mobileClosedBarW, sidebarWidth } from '../admin/AdminSidebar';
-import type { LogPagesChangeBody } from '../api.admin.log-pages-change';
 import AdvancedPageManagement from './AdvancedPageManagement';
+import { generateToken } from '~/utils/string-utils';
+import type { ComicPageChangesBody } from '../api.admin.update-comic-pages';
 
 type FileChangeRange = {
   firstOriginal: number;
@@ -45,7 +39,6 @@ export default function ManagePagesAdmin({
   IMAGES_SERVER_URL,
 }: ManagePagesAdminProps) {
   const { theme } = useUIPreferences();
-  const revalidator = useRevalidator();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | undefined>();
   const [randomString, setRandomString] = useState<string>(generateRandomId());
@@ -56,21 +49,27 @@ export default function ManagePagesAdmin({
   const contentPadding = isMdUp ? 32 : 24;
   const pageManagerWidth = windowWidth - renderedSidebarWidth - 2 * contentPadding;
 
-  const [initialPages, setInitialPages] = useState<{ url: string }[]>(
-    Array.from({ length: comic.numberOfPages }, (_, i) => ({
-      url: pageNumToUrl(PAGES_PATH, comic.name, i + 1),
+  const [initialPages, setInitialPages] = useState<ComicImageExtended[]>(
+    comic.pages.map(p => ({
+      url: `${PAGES_PATH}/comics/${comic.id}/${p.token}.jpg`,
+      existingPageData: p,
+      newPageNumber: p.pageNumber,
     }))
   );
 
-  const [comicPages, setComicPages] = useState<ComicImage[]>(
-    Array.from({ length: comic.numberOfPages }, (_, i) => ({
-      url: pageNumToUrl(PAGES_PATH, comic.name, i + 1),
+  const [comicPages, setComicPages] = useState<ComicImageExtended[]>(
+    comic.pages.map(p => ({
+      url: `${PAGES_PATH}/comics/${comic.id}/${p.token}.jpg`,
+      existingPageData: p,
+      newPageNumber: p.pageNumber,
     }))
   );
 
   function resetComicPages() {
-    const newInitialPages = Array.from({ length: comic.numberOfPages }, (_, i) => ({
-      url: pageNumToUrl(PAGES_PATH, comic.name, i + 1),
+    const newInitialPages = comic.pages.map(p => ({
+      url: `${PAGES_PATH}/comics/${comic.id}/${p.token}.jpg`,
+      existingPageData: p,
+      newPageNumber: p.pageNumber,
     }));
     setComicPages(newInitialPages);
     setInitialPages(newInitialPages);
@@ -85,188 +84,89 @@ export default function ManagePagesAdmin({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [PAGES_PATH, comic]);
 
-  const { awaitSubmit: updateNumberOfPages } = useGoodFetcher({
-    url: '/api/admin/update-comic-data',
-    method: 'post',
-  });
-
-  const logFetcher = useGoodFetcher({
-    url: '/api/admin/log-pages-change',
+  const updateFetcher = useGoodFetcher({
+    url: '/api/admin/update-comic-pages',
     method: 'post',
   });
 
   async function submitPageChanges() {
     setIsSubmitting(true);
 
-    // If only making changes to later pages, we don't need to process earlier pages.
-    let skipProcessingPagesUntilIncl = 0;
-    for (let i = 0; i < unchangedFiles.length; i++) {
-      const page = unchangedFiles[i];
-      if (page.originalPos === i + 1) {
-        skipProcessingPagesUntilIncl++;
-      } else {
-        break;
-      }
-    }
+    const newPagesWithTempTokens: { pageNumber: number; tempToken: string }[] = [];
 
-    if (!isOnlyAddingPages) {
-      // STEP 1: Deletes and copy all pages
-      const deletedPagesNumbers: number[] = [];
-      for (const page of filesChanged) {
-        if (page.isDeleted && page.originalPos) {
-          deletedPagesNumbers.push(page.originalPos);
-        }
-      }
-
-      const deleteAndRenameRes = await fetch(
-        `${IMAGES_SERVER_URL}/delete-and-copy-step1`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            comicName: comic.name,
-            deletedPagesNumbers,
-            skipProcessingPagesUntilIncl,
-          }),
-        }
-      );
-
-      if (!deleteAndRenameRes.ok) {
-        setUploadError('An error occurred while deleting and renaming pages.');
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    // STEP 2: Upload new pages
-    let isUploadError = false;
+    // Upload new pages
     const newPages = filesChanged.filter(f => f.isNewPage);
     if (newPages.length > 0) {
-      const uploadFormDatas: FormData[] = [];
+      const filesFormDatas = Array<FormData>();
 
+      const processFilesArgs: ProcessFilesArgs = {
+        formats: ['jpg'],
+        maxWidth: MAX_PAGE_WIDTH,
+      };
       let currentFormData = new FormData();
-      currentFormData.append('comicName', comic.name);
+      currentFormData.append('argsJson', JSON.stringify(processFilesArgs));
       let currentFormDataSize = 0;
-      let currentFormDataPageNums: number[] = [];
-      for (let i = 0; i < comicPages.length; i++) {
-        const newPageNum = i + 1;
-        const file = comicPages[i].file;
-        if (!file) continue;
+
+      for (const newPage of comicPages.filter(p => !p.existingPageData && p.file)) {
+        const tempToken = generateToken();
+        newPagesWithTempTokens.push({ pageNumber: newPage.newPageNumber!, tempToken });
 
         // Split the request into multiple FormDatas/submissions if size is too big.
-        if (currentFormDataSize + file.size > MAX_UPLOAD_BODY_SIZE) {
-          currentFormData.append('hasMore', 'true');
-          currentFormData.append('pageNums', currentFormDataPageNums.join(','));
-          uploadFormDatas.push(currentFormData);
-
+        if (currentFormDataSize + newPage.file!.size > MAX_UPLOAD_BODY_SIZE) {
+          filesFormDatas.push(currentFormData);
           currentFormData = new FormData();
-          currentFormData.append('comicName', comic.name);
           currentFormDataSize = 0;
-          currentFormDataPageNums = [];
+          currentFormData.append('argsJson', JSON.stringify(processFilesArgs));
         }
 
-        currentFormData.append(`pages`, file, pageNumberToPageName(i + 1, file.name));
-        currentFormDataPageNums.push(newPageNum);
-        currentFormDataSize += file.size;
+        currentFormData.append(
+          `files`,
+          newPage.file!,
+          `${tempToken}.${getFileExtension(newPage.file!.name)}`
+        );
+        currentFormDataSize += newPage.file!.size;
       }
 
-      // Final one
-      currentFormData.append('pageNums', currentFormDataPageNums.join(','));
-      uploadFormDatas.push(currentFormData);
+      filesFormDatas.push(currentFormData);
 
-      for (const formData of uploadFormDatas) {
-        const res = await fetch(`${IMAGES_SERVER_URL}/add-pages`, {
-          method: 'POST',
-          body: formData,
-        });
-        if (!res.ok) {
-          isUploadError = true;
-          setUploadError('An error occurred while uploading files.');
-          setIsSubmitting(false);
-          break;
+      for (const formData of filesFormDatas) {
+        try {
+          const res = await fetch(`${IMAGES_SERVER_URL}/process-files`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!res.ok) {
+            return { error: 'Error uploading files to server', pages: [] };
+          }
+        } catch (e) {
+          console.error(e);
+          return { error: 'Error uploading files to server', pages: [] };
         }
       }
     }
 
-    if (!isOnlyAddingPages) {
-      // STEP 3: Process page changes.
-      const pageChanges: {
-        originalPos: number;
-        newPos: number;
-        isUnchanged: boolean;
-      }[] = [];
-      for (const pageChange of filesChanged) {
-        if (pageChange.isDeleted) continue;
-        if (pageChange.isNewPage) continue;
-
-        pageChanges.push({
-          originalPos: pageChange.originalPos!,
-          newPos: pageChange.newPos!,
-          isUnchanged: false,
-        });
-      }
-      for (const nonChange of unchangedFiles) {
-        pageChanges.push({
-          originalPos: nonChange.originalPos!,
-          newPos: nonChange.originalPos!,
-          isUnchanged: true,
-        });
-      }
-
-      const rearrangeRes = await fetch(`${IMAGES_SERVER_URL}/rearrange-step3`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          comicName: comic.name,
-          pageChanges,
-          skipProcessingPagesUntilIncl,
-        }),
-      });
-
-      if (!rearrangeRes.ok) {
-        setUploadError('An error occurred while rearranging pages.');
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    const needsUpdateNumPages = comicPages.length !== comic.numberOfPages;
-
-    if (needsUpdateNumPages || needsUpdateUpdatedTimestamp) {
-      await updateNumberOfPages({
-        body: JSON.stringify({
-          comicId: comic.id,
-          numberOfPages: comicPages.length,
-          updateUpdatedTime: needsUpdateUpdatedTimestamp,
-        }),
-      });
-    }
-
-    const numNewPages = filesChanged.filter(c => c.isNewPage).length;
-    const numDeletedPages = filesChanged.filter(c => c.isDeleted).length;
-    const logBody: LogPagesChangeBody = {
+    const body: ComicPageChangesBody = {
       comicId: comic.id,
-      numNewPages,
-      numDeletedPages,
+      deletedPageTokens: filesChanged.filter(c => c.isDeleted).map(c => c.token!),
+      changedPages: filesChanged
+        .filter(c => !c.isUnchanged && c.newPos && c.token)
+        .map(c => ({
+          token: c.token!,
+          pageNumber: c.newPos!,
+        })),
+      newPagesWithTempTokens,
+      newNumberOfPages: comicPages.length,
+      shouldUpdateLastUpdatedTimestamp: needsUpdateUpdatedTimestamp,
     };
-    await logFetcher.awaitSubmit({ body: JSON.stringify(logBody) });
+
+    await updateFetcher.awaitSubmit({ body: JSON.stringify(body) });
 
     setIsSubmitting(false);
-    if (isUploadError) {
-      resetComicPages();
-    } else {
-      setTimeout(() => revalidator.revalidate(), 50);
-      showSuccessToast('Pages changed', false, theme);
-    }
+    showSuccessToast('Pages changed', false, theme);
   }
 
-  const {
-    filesChanged,
-    unchangedFiles,
-    visualChanges,
-    needsUpdateUpdatedTimestamp,
-    isOnlyAddingPages,
-  } = useMemo(() => {
+  const { filesChanged, visualChanges, needsUpdateUpdatedTimestamp } = useMemo(() => {
     const {
       visualChanges,
       filesChanged: newFilesChanged,
@@ -301,10 +201,8 @@ export default function ManagePagesAdmin({
 
     return {
       filesChanged: newFilesChanged,
-      unchangedFiles: newUnchangedFiles,
       visualChanges,
       needsUpdateUpdatedTimestamp: newNeedsUpdateUpdatedTimestamp,
-      isOnlyAddingPages,
     };
   }, [comicPages, initialPages]);
 
@@ -325,7 +223,13 @@ export default function ManagePagesAdmin({
       setDuplicateFilenames(newDuplicateFilenames);
       if (newDuplicateFilenames.length > 0) return;
 
-      const newFiles = [...comicPages, ...filesWithString];
+      const newFiles = [
+        ...comicPages,
+        ...filesWithString.map((f, i) => ({
+          ...f,
+          newPageNumber: comicPages.length + i + 1,
+        })),
+      ];
       setComicPages(newFiles);
     }
   }
@@ -415,7 +319,7 @@ export default function ManagePagesAdmin({
               </p>
             )}
             <p className="text-xs">
-              Updated times should only be changed when adding <i>new pages</i> to the{' '}
+              Updated times are only changed when adding <i>new pages</i> to the{' '}
               <i>end</i> of a comic - updates, not fixes.
             </p>
           </div>
@@ -449,12 +353,13 @@ type FileChange = {
   isNewPage?: boolean;
   isDeleted?: boolean;
   isUnchanged?: boolean;
+  token?: string;
 };
 
 function calculateFilesChanged(
-  originalFiles: { url?: string | undefined }[],
-  newFiles: { url?: string | undefined }[],
-  files: { url?: string | undefined }[]
+  originalFiles: ComicImageExtended[],
+  newFiles: ComicImageExtended[],
+  files: ComicImageExtended[]
 ) {
   const filesThatHaveChanged: FileChange[] = [];
   const filesThatHaveNotChanged: FileChange[] = [];
@@ -467,7 +372,11 @@ function calculateFilesChanged(
 
     const newPos = newFiles.indexOf(newPage);
     if (newPos !== i) {
-      filesThatHaveChanged.push({ originalPos: i + 1, newPos: newPos + 1 });
+      filesThatHaveChanged.push({
+        originalPos: i + 1,
+        newPos: newPos + 1,
+        token: originalPage.existingPageData?.token,
+      });
     }
   }
 
@@ -481,7 +390,11 @@ function calculateFilesChanged(
   for (let i = 0; i < originalFiles.length; i++) {
     const originalPage = originalFiles[i];
     if (!newFiles.find(f => f.url === originalPage.url)) {
-      filesThatHaveChanged.push({ originalPos: i + 1, isDeleted: true });
+      filesThatHaveChanged.push({
+        originalPos: i + 1,
+        isDeleted: true,
+        token: originalPage.existingPageData?.token,
+      });
     } else {
       // If this page is already in filesThatHaveChanged, skip.
       // Otherwise, add it to filesThatHaveNotChanged.
@@ -489,7 +402,11 @@ function calculateFilesChanged(
         f => f.originalPos === i + 1
       );
       if (!isAlreadyInFilesThatHaveChanged) {
-        filesThatHaveNotChanged.push({ originalPos: i + 1, isUnchanged: true });
+        filesThatHaveNotChanged.push({
+          originalPos: i + 1,
+          isUnchanged: true,
+          token: originalPage.existingPageData?.token,
+        });
       }
     }
   }
@@ -499,10 +416,6 @@ function calculateFilesChanged(
     filesChanged: filesThatHaveChanged,
     unchangedFiles: filesThatHaveNotChanged,
   };
-}
-
-function pageNumToUrl(pagesPath: string, comicName: string, pageNum: number) {
-  return `${pagesPath}/${comicName}/${padPageNumber(pageNum)}.jpg`;
 }
 
 function combineSequentialFileChanges(

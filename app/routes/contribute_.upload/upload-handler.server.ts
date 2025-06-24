@@ -1,31 +1,131 @@
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
-import type { UserSession } from '~/types/types';
+import { type UserSession } from '~/types/types';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
+import { generateToken } from '~/utils/string-utils';
+import { renameR2File } from '~/utils/r2Utils';
+import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
+
+async function rollBackComicAndArtist(
+  db: D1Database,
+  comicId?: number,
+  artistId?: number
+) {
+  if (comicId) {
+    await queryDbExec(db, 'DELETE FROM comic WHERE id = ?', [comicId]);
+  }
+  if (artistId) {
+    await queryDbExec(db, 'DELETE FROM artist WHERE id = ?', [artistId]);
+  }
+}
 
 export async function processUpload(
   db: D1Database,
+  r2Bucket: R2Bucket,
+  isLocalDev: boolean,
+  imagesServerUrl: string,
   uploadBody: UploadBody,
   user: UserSession | null,
   userIP?: string
 ): Promise<ApiError | undefined> {
   const isMod = !!user && ['moderator', 'admin'].includes(user?.userType);
   const skipApproval = isMod;
+  let newArtistId: number | undefined;
 
   if (uploadBody.newArtist) {
     const createRes = await createArtist(db, uploadBody.newArtist, skipApproval);
     if (createRes.err)
       return wrapApiError(createRes.err, 'Error uploading', { uploadBody });
     uploadBody.artistId = createRes.result.artistId;
+    newArtistId = createRes.result.artistId;
   }
 
   const dbRes = await createComic(db, uploadBody, skipApproval);
-  if (dbRes.err) return wrapApiError(dbRes.err, 'Error uploading', { uploadBody });
-  // TODO-db: rollback artist if failure
+  if (dbRes.err) {
+    await rollBackComicAndArtist(db, undefined, newArtistId);
+    return wrapApiError(dbRes.err, 'Error uploading', { uploadBody });
+  }
   const comicId = dbRes.result;
+
+  if (!uploadBody.pages || uploadBody.pages.length === 0) {
+    await rollBackComicAndArtist(db, comicId, newArtistId);
+    return { logMessage: 'No pages' };
+  }
+
+  const updatedPages: { pageNumber: number; finalToken: string }[] = [];
+  const renamePromises: Promise<void>[] = [];
+
+  try {
+    for (const page of uploadBody.pages) {
+      if (page.pageNumber === 0) {
+        for (const fileType of ['jpg', 'webp']) {
+          for (const size of [2, 3]) {
+            const oldKey = `${R2_TEMP_FOLDER}/${page.tempToken}-${size}x.${fileType}`;
+            const newKey = `${R2_COMICS_FOLDER}/${comicId}/thumbnail-${size}x.${fileType}`;
+            renamePromises.push(
+              renameR2File({
+                r2: r2Bucket,
+                oldKey,
+                newKey,
+                isLocalDev,
+                imagesServerUrl,
+              })
+            );
+          }
+        }
+      } else {
+        const newToken = generateToken();
+        const oldKey = `${R2_TEMP_FOLDER}/${page.tempToken}.jpg`;
+        const newKey = `${R2_COMICS_FOLDER}/${comicId}/${newToken}.jpg`;
+
+        renamePromises.push(
+          renameR2File({
+            r2: r2Bucket,
+            oldKey,
+            newKey,
+            isLocalDev,
+            imagesServerUrl,
+          })
+        );
+        updatedPages.push({
+          pageNumber: page.pageNumber,
+          finalToken: newToken,
+        });
+      }
+    }
+
+    await Promise.all(renamePromises);
+  } catch (err) {
+    await rollBackComicAndArtist(db, comicId, newArtistId);
+    return { logMessage: 'Error renaming files' };
+  }
+
+  let insertPagesQuery = `INSERT INTO comicpage (token, comicId, pageNumber) VALUES `;
+  const insertPagesParams: any[] = [];
+
+  for (let i = 0; i < updatedPages.length; i++) {
+    if (updatedPages[i].pageNumber === 0) continue;
+    const page = updatedPages[i];
+    insertPagesQuery += `(?, ?, ?)`;
+    insertPagesParams.push(page.finalToken, comicId, page.pageNumber);
+    if (i < updatedPages.length - 1) {
+      insertPagesQuery += ', ';
+    }
+  }
+
+  const insertPagesDbRes = await queryDbExec(
+    db,
+    insertPagesQuery,
+    insertPagesParams,
+    'Comic page creation'
+  );
+  if (insertPagesDbRes.isError) {
+    await rollBackComicAndArtist(db, comicId, newArtistId);
+    return makeDbErr(insertPagesDbRes, 'Error creating comic pages');
+  }
 
   const err = await createComicMetadata(
     db,
@@ -35,19 +135,25 @@ export async function processUpload(
     user?.userId,
     userIP
   );
-  if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
-  // TODO-db: rollback artist and comic if failure
+  if (err) {
+    await rollBackComicAndArtist(db, comicId, newArtistId);
+    return wrapApiError(err, 'Error uploading', { uploadBody });
+  }
 
   if (uploadBody.previousComic || uploadBody.nextComic) {
     const err = await createComicLinks(db, uploadBody, comicId);
-    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
-    // TODO-db: rollback artist and comic and metadata if failure
+    if (err) {
+      await rollBackComicAndArtist(db, comicId, newArtistId);
+      return wrapApiError(err, 'Error uploading', { uploadBody });
+    }
   }
 
   if (uploadBody.tagIds && uploadBody.tagIds.length > 0) {
     const err = await createComicTags(db, uploadBody.tagIds, comicId);
-    if (err) return wrapApiError(err, 'Error uploading', { uploadBody });
-    // TODO-db: rollback artist and comic and metadata (and links) if failure
+    if (err) {
+      await rollBackComicAndArtist(db, comicId, newArtistId);
+      return wrapApiError(err, 'Error uploading', { uploadBody });
+    }
   }
 
   if (isMod) {

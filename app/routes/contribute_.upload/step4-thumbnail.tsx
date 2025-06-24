@@ -4,7 +4,7 @@ import Button from '~/ui-components/Buttons/Button';
 import FileInput from '~/ui-components/FileInput';
 import Select from '~/ui-components/Select/Select';
 import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
-import type { ComicImage } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
 import { getFileWithBase64 } from '~/utils/general';
 import type { NewComicData } from './route';
 import Link from '~/ui-components/Link';
@@ -15,7 +15,7 @@ type Step4Props = {
 };
 
 export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
-  const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>(undefined);
+  const [fileToCrop, setFileToCrop] = useState<ImageFileOrUrl | undefined>(undefined);
   const [isSelectingPageNum, setIsSelectingPageNum] = useState(false);
   const [tempSelectedPageNum, setTempSelectedPageNum] = useState<number>(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +28,7 @@ export default function Step4Thumbnail({ comicData, onUpdate }: Step4Props) {
     }
   }
 
-  function onCropFinished(croppedThumb: ComicImage) {
+  function onCropFinished(croppedThumb: ImageFileOrUrl) {
     setIsSelectingPageNum(false);
     setTempSelectedPageNum(1);
     onUpdate({

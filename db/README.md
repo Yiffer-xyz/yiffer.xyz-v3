@@ -1,5 +1,5 @@
 ### Set up the database
-If you haven't yet, log in to Cloudflare via `wrangler login`. Install wrangler or run via `npx wrangler <command>`.
+If you haven't yet, log in to Cloudflare (your own account, create one if needed) via `wrangler login`. Install wrangler or run via `npx wrangler <command>`.
 
 1. First, run `wrangler d1 create yiffer-dev-2`. Have a look at the resulting `database_id` uuid.
 2. You'll need to modify your `wrangler.toml`'s `database_id` to match the one above.

@@ -2,13 +2,15 @@ import Button from '../Buttons/Button';
 import { FaXmark } from 'react-icons/fa6';
 import { useRef, useState } from 'react';
 import FileInput from '../FileInput';
-import type { ComicImage } from '~/utils/general';
-import { getFileWithBase64 } from '~/utils/general';
+import type { ImageFileOrUrl } from '~/utils/general';
+import { getFileExtension, getFileWithBase64 } from '~/utils/general';
 import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
 import { PROFILE_PIC_SIZE } from '~/types/constants';
 import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { FaTrash } from 'react-icons/fa';
+import type { ProcessFilesArgs } from '~/types/types';
+import { generateToken } from '~/utils/string-utils';
 
 export default function PublicProfilePhotoEditor({
   imagesServerUrl,
@@ -23,7 +25,7 @@ export default function PublicProfilePhotoEditor({
 }) {
   const { theme } = useUIPreferences();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fileToCrop, setFileToCrop] = useState<ComicImage | undefined>(undefined);
+  const [fileToCrop, setFileToCrop] = useState<ImageFileOrUrl | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateProfilePicFetcher = useGoodFetcher({
@@ -61,14 +63,26 @@ export default function PublicProfilePhotoEditor({
     }
   }
 
-  async function onCropFinished(croppedImage: ComicImage) {
+  async function onCropFinished(croppedImage: ImageFileOrUrl) {
     setIsSubmitting(true);
     if (!croppedImage.file) return;
 
-    const formData = new FormData();
-    formData.append('file', croppedImage.file);
+    const processFilesArgs: ProcessFilesArgs = {
+      formats: ['jpg', 'webp'],
+      resizes: [{ width: PROFILE_PIC_SIZE, height: PROFILE_PIC_SIZE }],
+    };
 
-    const res = await fetch(`${imagesServerUrl}/upload-file`, {
+    const tempToken = generateToken();
+
+    const formData = new FormData();
+    formData.append(
+      'files',
+      croppedImage.file,
+      `${tempToken}.${getFileExtension(croppedImage.file.name)}`
+    );
+    formData.append('argsJson', JSON.stringify(processFilesArgs));
+
+    const res = await fetch(`${imagesServerUrl}/process-files`, {
       method: 'POST',
       body: formData,
     });
@@ -76,13 +90,6 @@ export default function PublicProfilePhotoEditor({
     if (!res.ok) {
       const resText = await res.text();
       showErrorToast('Error changing profile photo: ' + resText, theme);
-      return;
-    }
-
-    const resJson = (await res.json()) as { tempToken: string };
-    const tempToken = resJson.tempToken;
-    if (!tempToken) {
-      showErrorToast('Error: No token returned', theme);
       return;
     }
 

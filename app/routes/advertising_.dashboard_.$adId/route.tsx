@@ -15,7 +15,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { EditAdFormData } from '../api.edit-ad';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import FullAdDisplay from '~/page-components/FullAdDisplay/FullAdDisplay';
-import { getFileExtension, type ComicImage } from '~/utils/general';
+import { getFileExtension, type ImageFileOrUrl } from '~/utils/general';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import AdPaymentInstructions from './AdPaymentInstructions';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
@@ -121,8 +121,8 @@ function AdEditing({
 }) {
   const [newAd, setNewAd] = useState({ ...ad });
   const [error, setError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<ComicImage | undefined>();
-  const [croppedFile, setCroppedFile] = useState<ComicImage | undefined>();
+  const [selectedFile, setSelectedFile] = useState<ImageFileOrUrl | undefined>();
+  const [croppedFile, setCroppedFile] = useState<ImageFileOrUrl | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fileSubmitErr, setFileSubmitErr] = useState<string | undefined>();
   const fullAdType = ADVERTISEMENTS.find(a => a.name === newAd.adType);

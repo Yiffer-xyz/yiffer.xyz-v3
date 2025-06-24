@@ -12,6 +12,7 @@ interface Env {
   ADS_PATH: string;
   IMAGES_SERVER_URL: string;
   DB: D1Database;
+  COMICS_BUCKET: R2Bucket;
   CRON_KEY: string;
   GA_TRACKING_ID: string;
   POSTHOG_API_KEY: string;
@@ -21,5 +22,4 @@ interface Env {
   PATREON_CLIENT_ID: string;
   PATREON_CLIENT_SECRET: string;
   PATREON_REDIRECT_URL: string;
-  COMICS_BUCKET: R2Bucket;
 }

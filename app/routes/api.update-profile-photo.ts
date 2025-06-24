@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
-import { R2_PROFILE_PICTURES_FOLDER, R2_TEMP_PICTURES_FOLDER } from '~/types/constants';
+import { R2_PROFILE_PICTURES_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { renameR2File } from '~/utils/r2Utils';
@@ -18,7 +18,6 @@ export { noGetRoute as loader };
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   const formDataBody = await args.request.formData();
-  // tempToken is generated on upload to the images server
   const formDataToken = formDataBody.get('tempToken');
   if (!formDataToken) return create400Json('Missing tempToken');
   const tempToken = formDataToken.toString();
@@ -70,40 +69,34 @@ export async function updateProfilePhoto(
   const existingToken =
     userDbRes.result.length > 0 ? userDbRes.result[0].profilePictureToken : null;
 
-  if (isLocalDev) {
-    const err = await localDevManageProfilePhotoFiles({
-      imagesServerUrl,
-      deleteToken: existingToken,
-      tempToken,
-      newToken,
-    });
-    if (err) return err;
-  } else {
-    if (existingToken) {
-      try {
-        await r2.delete([
-          `${R2_PROFILE_PICTURES_FOLDER}/${existingToken}.webp`,
-          `${R2_PROFILE_PICTURES_FOLDER}/${existingToken}.jpg`,
-        ]);
-      } catch (err) {
-        return {
-          logMessage: 'Error deleting existing profile photo',
-          context: { r2Error: err },
-        };
-      }
+  if (existingToken) {
+    try {
+      await r2.delete([
+        `${R2_PROFILE_PICTURES_FOLDER}/${existingToken}.webp`,
+        `${R2_PROFILE_PICTURES_FOLDER}/${existingToken}.jpg`,
+      ]);
+    } catch (err) {
+      return {
+        logMessage: 'Error deleting existing profile photo',
+        context: { r2Error: err },
+      };
     }
 
     try {
-      await renameR2File(
+      await renameR2File({
         r2,
-        `${R2_TEMP_PICTURES_FOLDER}/${tempToken}.webp`,
-        `${R2_PROFILE_PICTURES_FOLDER}/${newToken}.webp`
-      );
-      await renameR2File(
+        imagesServerUrl,
+        isLocalDev,
+        oldKey: `${R2_TEMP_FOLDER}/${tempToken}.webp`,
+        newKey: `${R2_PROFILE_PICTURES_FOLDER}/${newToken}.webp`,
+      });
+      await renameR2File({
         r2,
-        `${R2_TEMP_PICTURES_FOLDER}/${tempToken}.jpg`,
-        `${R2_PROFILE_PICTURES_FOLDER}/${newToken}.jpg`
-      );
+        imagesServerUrl,
+        isLocalDev,
+        oldKey: `${R2_TEMP_FOLDER}/${tempToken}.jpg`,
+        newKey: `${R2_PROFILE_PICTURES_FOLDER}/${newToken}.jpg`,
+      });
     } catch (err) {
       return {
         logMessage: 'Error renaming profile photo',
@@ -123,33 +116,5 @@ export async function updateProfilePhoto(
   );
   if (updateUserDbRes.isError) {
     return makeDbErr(updateUserDbRes, 'Error setting user profile photo token');
-  }
-}
-
-async function localDevManageProfilePhotoFiles({
-  imagesServerUrl,
-  deleteToken,
-  tempToken,
-  newToken,
-}: {
-  imagesServerUrl: string;
-  deleteToken: string | null;
-  tempToken: string;
-  newToken: string;
-}): Promise<ApiError | undefined> {
-  const res = await fetch(`${imagesServerUrl}/local-dev-manage-files`, {
-    body: JSON.stringify({
-      deletes: deleteToken ? [{ fileKind: 'profile-picture', token: deleteToken }] : [],
-      renames: [{ fileKind: 'profile-picture', oldToken: tempToken, newToken }],
-    }),
-    method: 'post',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  if (!res.ok) {
-    return {
-      logMessage: 'Error managing profile photo files locally',
-      context: { fullResponse: JSON.stringify(res) },
-    };
   }
 }
