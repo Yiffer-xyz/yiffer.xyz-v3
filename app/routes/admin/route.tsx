@@ -64,6 +64,15 @@ export default function Admin() {
             className="pb-4 px-6 lg:px-8"
             style={{ marginLeft: isLgUp ? sidebarWidth : mobileClosedSidebarW }}
           >
+            <InfoBox
+              variant="error"
+              title="Upload freeze"
+              text="There is an upload freeze in effect for a few days while we rework our storage system. This includes comic updates."
+              boldText={false}
+              className="mt-1 mb-3"
+              fitWidth
+            />
+
             {globalContext.numUnreadContent > 0 && !hideInfoBox && (
               <InfoBox
                 variant="warning"

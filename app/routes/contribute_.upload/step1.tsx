@@ -18,6 +18,15 @@ export default function Step1({ onNext, isMod }: Step1Props) {
   return (
     <>
       <h2>Introduction</h2>
+
+      <InfoBox
+        variant="error"
+        title="Upload freeze"
+        text="There is an upload freeze in effect for a few days while we rework our storage system, which involves downloading, transforming, and re-uploading every single image on the site. Thanks for your patience!"
+        boldText={false}
+        className="mt-1 mb-3"
+      />
+
       <p>
         Thank you for helping out! We believe in the community, and allow anyone to
         contribute. If this feature is abused, we will have to restrict it. Please help us
@@ -104,9 +113,10 @@ export default function Step1({ onNext, isMod }: Step1Props) {
 
       <Button
         text="Continue"
-        disabled={
-          !hasCheckedPublic || !hasCheckedResolution || (source.length < 3 && !isMod)
-        }
+        // disabled={
+        //   !hasCheckedPublic || !hasCheckedResolution || (source.length < 3 && !isMod)
+        // }
+        disabled
         endIcon={RiArrowRightLine}
         variant="contained"
         color="primary"

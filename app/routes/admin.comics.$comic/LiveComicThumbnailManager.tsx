@@ -139,7 +139,7 @@ export default function LiveComicThumbnailManager({
           text="Change thumbnail"
           onClick={() => setIsChanging(true)}
           className="mt-2"
-          disabled={blockActions}
+          disabled
         />
       )}
 
@@ -176,6 +176,7 @@ export default function LiveComicThumbnailManager({
                 onChange={onThumbnailFileUpload}
                 ref={fileInputRef}
                 accept="image/*"
+                disabled
               />
             </div>
           )}
