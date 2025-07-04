@@ -242,11 +242,11 @@ export default function ManagePagesAdmin({
         blockActions={!!blockActions}
       />
 
-      {/* <p className="font-semibold mt-4 mb-1">Add pages</p>
+      <p className="font-semibold mt-4 mb-1">Add pages</p>
 
       <div className="flex flex-row flex-wrap gap-4 items-center mb-2">
         <FileInput onChange={onFileChange} multiple accept="image/*" disabled />
-      </div> */}
+      </div>
 
       {duplicateFilenames.length > 0 && (
         <InfoBox
@@ -338,7 +338,7 @@ export default function ManagePagesAdmin({
               text="Submit changes"
               onClick={submitPageChanges}
               isLoading={isSubmitting}
-              disabled
+              disabled={blockActions}
             />
           </div>
         </>
