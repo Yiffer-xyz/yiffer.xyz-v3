@@ -1,8 +1,9 @@
 import type { TypedResponse } from '@remix-run/cloudflare';
-import type {
-  DBResponse,
-  ExecDBResponse,
-  QueryWithParams,
+import {
+  queryDbExec,
+  type DBResponse,
+  type ExecDBResponse,
+  type QueryWithParams,
 } from '~/utils/database-facade';
 
 export type ResultOrErrorPromise<T> = Promise<
@@ -39,9 +40,10 @@ export type ApiError = {
 export async function processApiError(
   prependMessage: string | undefined,
   err: ApiError,
-  context?: { [key: string]: any }
+  context?: { [key: string]: any },
+  db?: D1Database
 ): Promise<never> {
-  await logApiError(prependMessage, err, context);
+  await logApiError(prependMessage, err, context, db);
 
   const logError = errToExternalLogError(prependMessage, err, context);
   delete logError.error.errorJSONStr;
@@ -65,13 +67,14 @@ export type ExternalLogError = {
 export async function logApiError(
   prependMessage: string | undefined,
   err: ApiError,
-  context?: { [key: string]: any }
+  context?: { [key: string]: any },
+  db?: D1Database
 ) {
   console.log('🆎 ERROR from logApiError');
   console.error(prependMessage, err, context);
   console.log(JSON.stringify(err, null, 2));
   const logError = errToExternalLogError(prependMessage, err, context);
-  await logErrorExternally(logError);
+  await logErrorExternally(logError, db);
 }
 
 function errToExternalLogError(
@@ -221,7 +224,7 @@ export async function noGetRoute() {
 
 const isDev = process.env.NODE_ENV === 'development';
 
-export async function logErrorExternally(logError: ExternalLogError) {
+export async function logErrorExternally(logError: ExternalLogError, db?: D1Database) {
   if (isDev) return;
   if (
     errMessagePatternsToIgnore.some(pattern =>
@@ -229,6 +232,12 @@ export async function logErrorExternally(logError: ExternalLogError) {
     )
   ) {
     return;
+  }
+
+  if (db) {
+    await queryDbExec(db, 'INSERT INTO basiclog (message) VALUES (?)', [
+      JSON.stringify(logError),
+    ]);
   }
 
   try {

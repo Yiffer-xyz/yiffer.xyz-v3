@@ -406,18 +406,33 @@ export async function action(args: ActionFunctionArgs) {
   const { error } = validateUploadForm(body);
   if (error) return create400Json(error);
 
-  const err = await processUpload(
-    args.context.cloudflare.env.DB,
-    args.context.cloudflare.env.COMICS_BUCKET,
-    args.context.cloudflare.env.IS_LOCAL_DEV === 'true',
-    args.context.cloudflare.env.IMAGES_SERVER_URL,
-    body,
-    user,
-    args.request.headers.get('CF-Connecting-IP') || 'unknown'
-  );
-  if (err) {
-    logApiError('Error in upload comic submit', err, body);
-    return create500Json();
+  try {
+    const err = await processUpload(
+      args.context.cloudflare.env.DB,
+      args.context.cloudflare.env.COMICS_BUCKET,
+      args.context.cloudflare.env.IS_LOCAL_DEV === 'true',
+      args.context.cloudflare.env.IMAGES_SERVER_URL,
+      body,
+      user,
+      args.request.headers.get('CF-Connecting-IP') || 'unknown'
+    );
+    if (err) {
+      logApiError(
+        'Error in upload comic submit',
+        err,
+        body,
+        args.context.cloudflare.env.DB
+      );
+      return create500Json(JSON.stringify(err));
+    }
+  } catch (e: any) {
+    logApiError(
+      'Error in upload comic submit',
+      e?.message,
+      body,
+      args.context.cloudflare.env.DB
+    );
+    return create500Json(JSON.stringify(e?.message));
   }
 
   return createSuccessJson();

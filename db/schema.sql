@@ -661,3 +661,14 @@ CREATE TABLE IF NOT EXISTS comicpage (
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_comicpage_unique_token ON comicpage (token);
 CREATE INDEX IF NOT EXISTS idx_comicpage_comicId ON comicpage (comicId);
+
+------------------------------------------------------
+-- BASIC LOGGING FOR SPECIAL CASES
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS basiclog (
+  id INTEGER NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  message TEXT NOT NULL,
+  PRIMARY KEY (id)
+);
+

@@ -245,7 +245,7 @@ export default function ManagePagesAdmin({
       <p className="font-semibold mt-4 mb-1">Add pages</p>
 
       <div className="flex flex-row flex-wrap gap-4 items-center mb-2">
-        <FileInput onChange={onFileChange} multiple accept="image/*" disabled />
+        <FileInput onChange={onFileChange} multiple accept="image/*" />
       </div>
 
       {duplicateFilenames.length > 0 && (

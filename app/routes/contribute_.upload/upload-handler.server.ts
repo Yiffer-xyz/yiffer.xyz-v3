@@ -6,7 +6,7 @@ import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { generateToken } from '~/utils/string-utils';
-import { renameR2File } from '~/utils/r2Utils';
+import { batchRenameR2Files, renameR2File } from '~/utils/r2Utils';
 import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 
 async function rollBackComicAndArtist(
@@ -56,7 +56,8 @@ export async function processUpload(
   }
 
   const updatedPages: { pageNumber: number; finalToken: string }[] = [];
-  const renamePromises: Promise<void>[] = [];
+  const oldKeys: string[] = [];
+  const newKeys: string[] = [];
 
   try {
     for (const page of uploadBody.pages) {
@@ -65,31 +66,17 @@ export async function processUpload(
           for (const size of [2, 3]) {
             const oldKey = `${R2_TEMP_FOLDER}/${page.tempToken}-${size}x.${fileType}`;
             const newKey = `${R2_COMICS_FOLDER}/${comicId}/thumbnail-${size}x.${fileType}`;
-            renamePromises.push(
-              renameR2File({
-                r2: r2Bucket,
-                oldKey,
-                newKey,
-                isLocalDev,
-                imagesServerUrl,
-              })
-            );
+            newKeys.push(newKey);
+            oldKeys.push(oldKey);
           }
         }
       } else {
         const newToken = generateToken();
         const oldKey = `${R2_TEMP_FOLDER}/${page.tempToken}.jpg`;
         const newKey = `${R2_COMICS_FOLDER}/${comicId}/${newToken}.jpg`;
+        newKeys.push(newKey);
+        oldKeys.push(oldKey);
 
-        renamePromises.push(
-          renameR2File({
-            r2: r2Bucket,
-            oldKey,
-            newKey,
-            isLocalDev,
-            imagesServerUrl,
-          })
-        );
         updatedPages.push({
           pageNumber: page.pageNumber,
           finalToken: newToken,
@@ -97,10 +84,18 @@ export async function processUpload(
       }
     }
 
-    await Promise.all(renamePromises);
-  } catch (err) {
+    await batchRenameR2Files({
+      r2: r2Bucket,
+      oldKeys,
+      newKeys,
+      isLocalDev,
+      imagesServerUrl,
+    });
+  } catch (err: any) {
     await rollBackComicAndArtist(db, comicId, newArtistId);
-    return { logMessage: 'Error renaming files' };
+    return {
+      logMessage: 'Error renaming files: ' + err.message,
+    };
   }
 
   let insertPagesQuery = `INSERT INTO comicpage (token, comicId, pageNumber) VALUES `;

@@ -176,7 +176,6 @@ export default function LiveComicThumbnailManager({
                 onChange={onThumbnailFileUpload}
                 ref={fileInputRef}
                 accept="image/*"
-                disabled
               />
             </div>
           )}

@@ -5,8 +5,8 @@ upload_source_maps = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "yiffer-dev"
-database_id = "af2f493f-0a6f-41b0-adcc-afd8bc4b1a7b"
+database_name = "yiffer-dev-2"
+database_id = "e9c3c06e-749e-4fe6-8934-67ce5377132e"
 
 [[d1_databases]]
 binding = "DB_PROD"

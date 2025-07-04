@@ -22,7 +22,7 @@ export async function action(args: ActionFunctionArgs) {
     },
   };
 
-  await logErrorExternally(errObj);
+  await logErrorExternally(errObj, args.context.cloudflare.env.DB);
 
   return createSuccessJson();
 }
