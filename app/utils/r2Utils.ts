@@ -1,3 +1,4 @@
+import { R2_CONNECTION_LIMIT } from '~/types/constants';
 import type { LocalDevManageFilesBody } from '~/types/types';
 
 export async function deleteR2File({
@@ -43,21 +44,20 @@ export async function batchRenameR2Files({
     for (let i = 0; i < oldKeys.length; i++) {
       const oldKey = oldKeys[i];
       const newKey = newKeys[i];
-      await renameR2File({ r2, oldKey, newKey, isLocalDev, imagesServerUrl });
+      await renameR2File({ r2, oldKey, newKey, isLocalDev: true, imagesServerUrl });
     }
   }
 
   // Batch these so there's only 4 connections at a time, because of limits
-  const batchSize = 4;
-  for (let i = 0; i < oldKeys.length; i += batchSize) {
-    const batchOldKeys = oldKeys.slice(i, i + batchSize);
-    const batchNewKeys = newKeys.slice(i, i + batchSize);
+  for (let i = 0; i < oldKeys.length; i += R2_CONNECTION_LIMIT) {
+    const batchOldKeys = oldKeys.slice(i, i + R2_CONNECTION_LIMIT);
+    const batchNewKeys = newKeys.slice(i, i + R2_CONNECTION_LIMIT);
     const batchPromises = batchOldKeys.map((oldKey, index) =>
       renameR2File({
         r2,
         oldKey,
         newKey: batchNewKeys[index],
-        isLocalDev,
+        isLocalDev: false,
         imagesServerUrl,
       })
     );

@@ -26,6 +26,8 @@ export const R2_PROFILE_PICTURES_FOLDER = 'profile-photos';
 export const R2_TEMP_FOLDER = 'temp';
 export const R2_COMICS_FOLDER = 'comics';
 
+export const R2_CONNECTION_LIMIT = 4;
+
 export const COMIC_PROBLEM_CATEGORIES = [
   {
     title: 'Update missing',

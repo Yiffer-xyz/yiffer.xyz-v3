@@ -13,7 +13,7 @@ import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { capitalizeString } from '~/utils/general';
-import { deleteR2File, renameR2File } from '~/utils/r2Utils';
+import { batchRenameR2Files, deleteR2File } from '~/utils/r2Utils';
 import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 import { generateToken } from '~/utils/string-utils';
 
@@ -95,22 +95,28 @@ export async function updateComicPages(
     });
   }
 
+  const oldKeys: string[] = [];
+  const newKeys: string[] = [];
+
   for (const newPage of changes.newPagesWithTempTokens) {
     const newToken = generateToken();
 
-    await renameR2File({
-      r2,
-      oldKey: `${R2_TEMP_FOLDER}/${newPage.tempToken}.jpg`,
-      newKey: `${R2_COMICS_FOLDER}/${changes.comicId}/${newToken}.jpg`,
-      isLocalDev,
-      imagesServerUrl,
-    });
+    oldKeys.push(`${R2_TEMP_FOLDER}/${newPage.tempToken}.jpg`);
+    newKeys.push(`${R2_COMICS_FOLDER}/${changes.comicId}/${newToken}.jpg`);
 
     dbStatements.push({
       query: `INSERT INTO comicpage (token, comicId, pageNumber) VALUES (?, ?, ?)`,
       params: [newToken, changes.comicId, newPage.pageNumber],
     });
   }
+
+  await batchRenameR2Files({
+    r2,
+    oldKeys,
+    newKeys,
+    isLocalDev,
+    imagesServerUrl,
+  });
 
   dbStatements.push({
     query: 'UPDATE comic SET numberOfPages = ? WHERE id = ?',

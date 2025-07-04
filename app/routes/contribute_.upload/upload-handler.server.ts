@@ -6,7 +6,7 @@ import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { generateToken } from '~/utils/string-utils';
-import { batchRenameR2Files, renameR2File } from '~/utils/r2Utils';
+import { batchRenameR2Files } from '~/utils/r2Utils';
 import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 
 async function rollBackComicAndArtist(
