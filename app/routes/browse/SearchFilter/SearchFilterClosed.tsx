@@ -6,7 +6,7 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { GoSearch, GoSortDesc } from 'react-icons/go';
 import { BsGenderTrans, BsTags } from 'react-icons/bs';
 import useResizeObserver from 'use-resize-observer';
-import { FaRegBookmark } from 'react-icons/fa';
+import { FaRegBell } from 'react-icons/fa';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
@@ -88,7 +88,7 @@ export default function SearchFilterClosed({
       )}
       {bookmarkedOnly && (
         <p className="font-semibold">
-          <FaRegBookmark size={13} /> Bookmarked only
+          <FaRegBell size={13} className="mb-0.5" /> Subscribed only
         </p>
       )}
       <div className="flex flex-row gap-6">

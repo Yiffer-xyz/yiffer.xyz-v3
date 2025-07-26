@@ -1,5 +1,5 @@
 import type { QueryWithParams } from '~/utils/database-facade';
-import { queryDbMultiple } from '~/utils/database-facade';
+import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
@@ -14,7 +14,11 @@ import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspa
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { capitalizeString } from '~/utils/general';
 import { batchRenameR2Files, deleteR2File } from '~/utils/r2Utils';
-import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
+import {
+  R2_COMICS_FOLDER,
+  R2_TEMP_FOLDER,
+  RESTRICT_NOTIFICATIONS_TO_PATRONS,
+} from '~/types/constants';
 import { generateToken } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
@@ -45,6 +49,21 @@ export async function action(args: ActionFunctionArgs) {
   if (err) {
     return processApiError(`Error in /update-comic-pages`, err, body);
   }
+
+  if (body.shouldUpdateLastUpdatedTimestamp) {
+    const err = await handleUpdatedComicBookmarkNotifications(
+      args.context.cloudflare.env.DB,
+      body.comicId
+    );
+    if (err) {
+      return processApiError(
+        `Error in /update-comic-pages, sending notifications`,
+        err,
+        body
+      );
+    }
+  }
+
   return createSuccessJson();
 }
 
@@ -150,4 +169,76 @@ export async function updateComicPages(
 
   const recalcRes = await recalculateComicsPaginated(db);
   if (recalcRes) return wrapApiError(recalcRes, 'Error in updateComicPages', changes);
+}
+
+async function handleUpdatedComicBookmarkNotifications(
+  db: D1Database,
+  comicId: number
+): Promise<ApiError | undefined> {
+  const bookmarkedQuery = `SELECT userId FROM comicbookmark WHERE comicId = ?`;
+  const bookmarkedRes = await queryDb<{ userId: number }[]>(db, bookmarkedQuery, [
+    comicId,
+  ]);
+
+  if (bookmarkedRes.isError) {
+    return makeDbErr(bookmarkedRes, 'Error getting bookmarked users for comic');
+  }
+
+  let subscribedUserIds = bookmarkedRes.result.map(r => r.userId);
+
+  if (RESTRICT_NOTIFICATIONS_TO_PATRONS) {
+    const eligibleUserIds = await queryDb<{ id: number }[]>(
+      db,
+      `SELECT id FROM user 
+       WHERE (patreonDollars > 10 OR userType = 'moderator' OR userType = 'admin')
+       AND id IN (${subscribedUserIds.map(() => '?').join(',')})`,
+      subscribedUserIds
+    );
+
+    if (eligibleUserIds.isError) {
+      return makeDbErr(eligibleUserIds, 'Error getting patron users');
+    }
+
+    subscribedUserIds = subscribedUserIds.filter(userId =>
+      eligibleUserIds.result.some(p => p.id === userId)
+    );
+  }
+
+  console.log('subscribedUserIds', subscribedUserIds);
+  if (subscribedUserIds.length === 0) {
+    return;
+  }
+
+  // Delete existing notifications (to replace with new ones), but only for users
+  // still subscribed - otherwise we won't be replacing it.
+  const deleteNotifsQuery = `DELETE FROM comicupdatenotification
+    WHERE comicId = ?
+    AND userId IN (SELECT userId FROM comicbookmark WHERE comicId = ?)`;
+
+  const deleteRes = await queryDbExec(db, deleteNotifsQuery, [comicId, comicId]);
+  if (deleteRes.isError) {
+    return makeDbErr(bookmarkedRes, 'Error deleting existing comic notifications');
+  }
+
+  let insertNotificationQuery = `INSERT INTO comicupdatenotification (userId, comicId) VALUES `;
+  const insertNotificationParams: number[] = [];
+
+  subscribedUserIds.forEach((userId, index) => {
+    insertNotificationQuery += '(?, ?)';
+    insertNotificationParams.push(userId, comicId);
+    if (index < subscribedUserIds.length - 1) {
+      insertNotificationQuery += ', ';
+    }
+  });
+
+  const insertRes = await queryDbExec(
+    db,
+    insertNotificationQuery,
+    insertNotificationParams
+  );
+  if (insertRes.isError) {
+    return makeDbErr(insertRes, 'Error inserting new comic notifications');
+  }
+
+  return;
 }

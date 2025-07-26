@@ -425,7 +425,10 @@ CREATE TABLE IF NOT EXISTS `comicbookmark` (
   ON UPDATE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicbookmark_unique_user_comic` ON `comicbookmark` (`userId`, `comicId`);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comicbookmark_unique_user_comic ON comicbookmark (userId, comicId);
+CREATE INDEX IF NOT EXISTS idx_comicbookmark_userId ON comicbookmark(userId);
+CREATE INDEX IF NOT EXISTS idx_comicbookmark_comicId ON comicbookmark(comicId);
+
 
 ------------------------------------------------------
 -- TAG SUGGESTION GROUP
@@ -645,37 +648,20 @@ CREATE INDEX IF NOT EXISTS idx_comiccommentreport_commentId ON comiccommentrepor
 CREATE INDEX IF NOT EXISTS idx_comiccommentreport_userId ON comiccommentreport(userId);
 
 ------------------------------------------------------
--- COMIC SUBSCRIPTION
-------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `comicsubscription` (
-  `userId` INTEGER NOT NULL,
-  `comicId` INTEGER NOT NULL,
-  `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`userId`, `comicId`),
-  FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (`comicId`) REFERENCES `comic` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_comicsubscription_userId ON comicsubscription(userId);
-CREATE INDEX IF NOT EXISTS idx_comicsubscription_comicId ON comicsubscription(comicId);
-
-------------------------------------------------------
 -- USER NOTIFICATION
 ------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `usernotification` (
-  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  `userId` INTEGER NOT NULL,
-  `comicId` INTEGER NOT NULL,
-  `type` TEXT NOT NULL, -- e.g., 'new_page'
-  `data` TEXT NULL, -- JSON for extra info (e.g., page numbers)
-  `isRead` TINYINTEGER NOT NULL DEFAULT 0,
-  `createdAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (`comicId`) REFERENCES `comic` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+CREATE TABLE IF NOT EXISTS comicupdatenotification (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  userId INTEGER NOT NULL,
+  comicId INTEGER NOT NULL,
+  isRead TINYINTEGER NOT NULL DEFAULT 0,
+  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (comicId) REFERENCES comic (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_usernotification_userId ON usernotification(userId);
-CREATE INDEX IF NOT EXISTS idx_usernotification_comicId ON usernotification(comicId);
+CREATE INDEX IF NOT EXISTS idx_comicupdatenotification_userId ON comicupdatenotification(userId, isRead);
+CREATE INDEX IF NOT EXISTS idx_comicupdatenotification_comicId ON comicupdatenotification(comicId);
 
 ------------------------------------------------------
 -- COMIC PAGE

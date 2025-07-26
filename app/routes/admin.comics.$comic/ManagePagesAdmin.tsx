@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IoMdTrash } from 'react-icons/io';
-import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
+import { MdArrowDownward, MdArrowUpward, MdCheck } from 'react-icons/md';
 import PageManager from '~/page-components/PageManager/PageManager';
 import { MAX_PAGE_WIDTH, MAX_UPLOAD_BODY_SIZE } from '~/types/constants';
 import type { Comic, ComicImageExtended, ProcessFilesArgs } from '~/types/types';
@@ -310,17 +310,14 @@ export default function ManagePagesAdmin({
             {needsUpdateUpdatedTimestamp ? (
               <p>
                 <MdCheck className="inline-block" />
-                Comic's last updated time will be updated
+                Update notifications will be sent
               </p>
             ) : (
-              <p>
-                <MdClose className="inline-block" />
-                Comic's last updated time will not change
-              </p>
+              <p>No notifications or "updated" change</p>
             )}
             <p className="text-xs">
-              Updated times are only changed when adding <i>new pages</i> to the{' '}
-              <i>end</i> of a comic - updates, not fixes.
+              Notifications for subscribers, and updating of "last updated" timestamps,
+              only happen when adding <i>new pages</i> to the <i>end</i> of a comic.
             </p>
           </div>
 

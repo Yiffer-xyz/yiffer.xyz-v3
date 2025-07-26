@@ -273,7 +273,7 @@ export default function SearchFilterContent({
 
         {isLoggedIn && (
           <SwitchToggle
-            label="Bookmarked only"
+            label="Subscribed only"
             checked={_bookmarkedOnly}
             onChange={onBookmarkedOnlyChange}
             className="ml-4"

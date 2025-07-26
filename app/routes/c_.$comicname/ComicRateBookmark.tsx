@@ -1,4 +1,4 @@
-import { FaBookmark, FaRegBookmark, FaBell, FaRegBell } from 'react-icons/fa';
+import { FaBell, FaRegBell } from 'react-icons/fa';
 import { IoStar } from 'react-icons/io5';
 import type { Comic, ComicForBrowse } from '~/types/types';
 import { useNavigate } from '@remix-run/react';
@@ -28,7 +28,6 @@ export default function ComicRateBookmark({
 
   const [overrideStars, setOverrideStars] = useState<number | null>(null);
   const [overrideBookmark, setOverrideBookmark] = useState<boolean | null>(null);
-  const [overrideSubscribed, setOverrideSubscribed] = useState<boolean | null>(null);
 
   const shownStars = overrideStars ?? yourStars;
 
@@ -81,25 +80,6 @@ export default function ComicRateBookmark({
     setOverrideBookmark(newBookmark);
   }
 
-  const toggleSubscribeFetcher = useGoodFetcher({
-    method: 'post',
-    url: '/api/subscribe-comic',
-  });
-
-  function onToggleSubscribe() {
-    if (!isLoggedIn) {
-      navigate(`/login${redirectSetOnLoginNavStr}`);
-      return;
-    }
-    posthog.capture('Comic subscribe toggled', { source });
-    toggleSubscribeFetcher.submit({
-      comicId: comic!.id,
-    });
-    const newSubscribed =
-      overrideSubscribed !== null ? !overrideSubscribed : !comic.isSubscribed;
-    setOverrideSubscribed(newSubscribed);
-  }
-
   const unfilledColorClass = 'text-gray-700 dark:text-gray-800';
   const filledColorClass = 'text-theme1-dark dark:text-theme1-dark';
 
@@ -112,31 +92,22 @@ export default function ComicRateBookmark({
   return (
     <div className={`flex flex-row items-center ${className}`}>
       {/* Bookmark */}
-      <button onClick={onToggleBookmark} className="p-2 -ml-2 group">
+      <button
+        onClick={onToggleBookmark}
+        className="p-2 -ml-2 group"
+        title="Subscribe to updates"
+      >
         {(overrideBookmark ?? comic.isBookmarked) ? (
-          <FaBookmark size={small ? 16 : 20} className={`text-theme1-dark mt-[3px]`} />
-        ) : (
-          <FaRegBookmark
+          <FaBell
             size={small ? 16 : 20}
-            className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark`}
+            className={`text-theme1-dark mt-[3px] ${small ? 'mb-0.5' : ''}`}
+          />
+        ) : (
+          <FaRegBell
+            size={small ? 16 : 20}
+            className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark ${small ? 'mb-[1px]' : ''}`}
           />
         )}
-      </button>
-
-      {/* Subscribe */}
-      <button
-        onClick={onToggleSubscribe}
-        className={`p-2 ml-1 rounded transition flex items-center gap-1 font-semibold text-xs
-          ${
-            (overrideSubscribed ?? comic.isSubscribed)
-              ? 'bg-theme1-primary text-white hover:bg-theme1-primary'
-              : 'bg-theme1-secondary text-theme1-whi hover:bg-theme1-primary hover:text-white'
-          }
-        `}
-        title={(overrideSubscribed ?? comic.isSubscribed) ? 'Unsubscribe from updates' : 'Subscribe to updates'}
-      >
-        {(overrideSubscribed ?? comic.isSubscribed) ? <FaBell size={14} /> : <FaRegBell size={14} />}
-        {(overrideSubscribed ?? comic.isSubscribed) ? 'Subscribed' : 'Subscribe'}
       </button>
 
       {/* Vertical divider div */}

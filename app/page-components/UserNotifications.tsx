@@ -1,34 +1,81 @@
+import { Link, useNavigation } from '@remix-run/react';
 import { useEffect, useState, useRef } from 'react';
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaRegBell } from 'react-icons/fa';
+import { GoDotFill } from 'react-icons/go';
+import { LiaCheckDoubleSolid } from 'react-icons/lia';
+import { MdArrowBack, MdArrowForward, MdCheck } from 'react-icons/md';
+import type { ComicUpdateNotification } from '~/types/types';
+import IconButton from '~/ui-components/Buttons/IconButton';
+import { getTimeAgo } from '~/utils/date-utils';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
-type NotificationData = {
-  numberOfPages?: number;
-};
-
-type Notification = {
-  id: number;
-  comicId: number;
-  type: string;
-  data?: string;
-};
-
-export default function UserNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function UserNotifications({
+  pagesPath,
+  isLoggedIn,
+}: {
+  pagesPath: string;
+  isLoggedIn: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const bellRef = useRef<HTMLButtonElement>(null);
+  const [page, setPage] = useState(1);
+  const [notifIdsOverrideRead, setNotifIdsOverrideRead] = useState<number[]>([]);
+  const [hasSetAllRead, setHasSetAllRead] = useState(false);
+  useNavigation();
 
-  useEffect(() => {
-    fetch('/api/get-notifications')
-      .then(res => res.json())
-      .then(data => setNotifications(data as Notification[]))
-      .finally(() => setLoading(false));
-  }, []);
+  const bellRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  const notificationsFetcher = useGoodFetcher<{
+    notifications: ComicUpdateNotification[];
+    hasNextPage: boolean;
+  }>({
+    url: `/api/get-notifications?page=${page}`,
+    method: 'get',
+    fetchGetOnLoad: isLoggedIn,
+  });
+
+  const markAllReadFetcher = useGoodFetcher({
+    url: '/api/mark-all-notifications-read',
+    method: 'post',
+  });
+
+  const markSingleNotifReadFetcher = useGoodFetcher({
+    url: '/api/mark-single-notification-read',
+    method: 'post',
+  });
+
+  function onMarkNotifRead(notifId: number) {
+    setNotifIdsOverrideRead(prev => [...prev, notifId]);
+    markSingleNotifReadFetcher.submit({ id: notifId });
+  }
+
+  function onMarkAllRead() {
+    setHasSetAllRead(true);
+    markAllReadFetcher.submit({});
+  }
+
+  function onPageChange(newPage: number) {
+    setPage(newPage);
+    notificationsFetcher.submit();
+  }
+
+  const notifFetcherData = notificationsFetcher.data;
+  const notifications = notifFetcherData?.notifications ?? [];
+  const hasNextPage = notifFetcherData?.hasNextPage ?? false;
+
+  const hasUnreads = notifications.some(n => {
+    const isOverrideRead = notifIdsOverrideRead.includes(n.id) || hasSetAllRead;
+    return !n.isRead && !isOverrideRead;
+  });
 
   // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+      const isInPopup = !(
+        popupRef.current && !popupRef.current.contains(e.target as Node)
+      );
+      const isBell = !(bellRef.current && !bellRef.current.contains(e.target as Node));
+      if (!isInPopup && !isBell) {
         setOpen(false);
       }
     }
@@ -36,66 +83,172 @@ export default function UserNotifications() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  const markAsRead = async (id: number) => {
-    await fetch('/api/mark-notification-read', {
-      method: 'POST',
-      body: (() => { const fd = new FormData(); fd.append('notificationId', id.toString()); return fd; })(),
-    });
-    setNotifications(notifications.filter(n => n.id !== id));
-  };
-
-  const unreadCount = notifications.length;
+  const bellClassName = hasUnreads ? 'bg-red-strong-300 dark:bg-red-strong-200' : '';
 
   return (
-    <div className="relative ml-2">
+    <div className="relative dark:bg-bgDark text-text-light dark:text-text-dark">
       <button
+        className={`text-gray-200 dark:text-blue-strong-300 cursor-pointerdark:text-blue-strong-300 
+          flex flex-row items-center justify-center p-1 mt-1 -mr-1 -ml-1
+          rounded-full ${bellClassName}`}
         ref={bellRef}
-        className="relative p-2 rounded-full hover:bg-theme1-primaryTrans focus:bg-theme1-primaryTrans transition"
-        onClick={() => setOpen(o => !o)}
+        onClick={() => setOpen(!open)}
         aria-label="Show notifications"
       >
-        <FaBell className="text-theme1-dark dark:text-theme1-primary" size={22} />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-strong-300 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-white dark:border-bgDark">
-            {unreadCount}
-          </span>
-        )}
+        {hasUnreads ? <FaBell size={14} color="white" /> : <FaRegBell size={14} />}
       </button>
+
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-xs bg-white dark:bg-bgDark shadow-lg rounded-lg z-40 border border-gray-200 dark:border-gray-700">
-          <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <span className="font-bold text-theme1-dark dark:text-theme1-primary text-base">Notifications</span>
-            <button className="text-xs text-gray-500 hover:text-theme1-dark dark:hover:text-theme1-primary" onClick={() => setOpen(false)}>Close</button>
+        <div
+          className="absolute right-0 mt-2 w-80 max-w-xs bg-white dark:bg-gray-100 shadow 
+            rounded-lg z-40 px-2 pt-3 pb-4"
+          ref={popupRef}
+        >
+          <div className="flex flex-row justify-between items-center px-2 mb-1">
+            <p className="font-bold mb-2">New page notifications</p>
+            {!notificationsFetcher.isLoading && (
+              <>
+                <div className="flex flex-row mb-1">
+                  {hasUnreads && (
+                    <IconButton
+                      icon={LiaCheckDoubleSolid}
+                      variant="naked"
+                      className="p-1 !w-6 !h-6"
+                      onClick={onMarkAllRead}
+                      disabled={notificationsFetcher.isLoading}
+                    />
+                  )}
+                  {page > 1 && (
+                    <IconButton
+                      icon={MdArrowBack}
+                      variant="naked"
+                      className="p-1 !w-6 !h-6"
+                      onClick={() => onPageChange(page - 1)}
+                      disabled={notificationsFetcher.isLoading}
+                    />
+                  )}
+                  {hasNextPage && (
+                    <IconButton
+                      icon={MdArrowForward}
+                      variant="naked"
+                      className="p-1 !w-6 !h-6"
+                      onClick={() => onPageChange(page + 1)}
+                      disabled={notificationsFetcher.isLoading}
+                    />
+                  )}
+                </div>
+              </>
+            )}
           </div>
-          <ul className="max-h-80 overflow-y-auto p-2">
-            {loading ? (
-              <li className="text-center py-4 text-gray-500">Loading...</li>
-            ) : notifications.length === 0 ? (
-              <li className="text-center py-4 text-gray-500">No new notifications.</li>
-            ) : notifications.map(n => {
-              let data: NotificationData = {};
-              try { data = n.data ? JSON.parse(n.data) : {}; } catch {}
-              return (
-                <li key={n.id} className="mb-2 flex items-center justify-between bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans rounded px-3 py-2">
-                  <span className="text-sm text-theme1-dark dark:text-theme1-primary">
-                    {n.type === 'new_page' ? (
-                      <>📖 <b>New pages</b> added to comic <b>#{n.comicId}</b>{typeof data.numberOfPages === 'number' ? ` (now ${data.numberOfPages} pages)` : ''}</>
-                    ) : (
-                      <>Notification: {n.type}</>
-                    )}
-                  </span>
-                  <button
-                    className="ml-4 text-xs bg-blue-weak-200 hover:bg-blue-weak-100 dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100 text-white rounded px-2 py-1 font-semibold transition"
-                    onClick={() => markAsRead(n.id)}
-                  >
-                    Mark as read
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <div>
+            {notifications.length === 0 ? (
+              <>
+                {!isLoggedIn && (
+                  <p className="text-gray-500 dark:text-gray-700 text-sm px-2 mb-4 -mt-2">
+                    Log in to enable subscribing to comics.
+                  </p>
+                )}
+
+                <p className="text-gray-500 dark:text-gray-700 text-sm px-2 -mt-2">
+                  When you subscribe to comics (<FaRegBell />
+                  ), notifications of new pages will show up here.
+                </p>
+                <p className="text-gray-500 dark:text-gray-700 text-sm px-2 mt-2">
+                  Initially, only $15+ patrons with linked accounts get this feature.
+                  It'll start working for everyone about a month later. Until then, the{' '}
+                  <FaRegBell /> works just like the old comic bookmark used to.
+                </p>
+              </>
+            ) : (
+              <div className="-mt-2 -mb-2">
+                {notifications.map(notif => {
+                  return (
+                    <NotificationItem
+                      key={notif.id}
+                      notif={notif}
+                      pagesPath={pagesPath}
+                      isOverrideRead={
+                        notifIdsOverrideRead.includes(notif.id) || hasSetAllRead
+                      }
+                      onMarkRead={() => onMarkNotifRead(notif.id)}
+                      onClick={() => {
+                        setOpen(false);
+                        setNotifIdsOverrideRead(prev => [...prev, notif.id]);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
-} 
+}
+
+function NotificationItem({
+  notif,
+  pagesPath,
+  isOverrideRead,
+  onClick,
+  onMarkRead,
+}: {
+  notif: ComicUpdateNotification;
+  pagesPath: string;
+  isOverrideRead: boolean;
+  onClick: () => void;
+  onMarkRead: () => void;
+}) {
+  const isRead = notif.isRead || isOverrideRead;
+
+  let url = `/c/${notif.comicName}`;
+  if (!isRead) {
+    url += `?markNotifRead=true`;
+  }
+
+  return (
+    <Link
+      to={url}
+      key={notif.id}
+      className={`
+      p-2 flex flex-row rounded overflow-hidden justify-between pr-2
+      group items-center hover:bg-blue-moreTrans
+    `}
+      onClick={onClick}
+    >
+      <div className="flex flex-row">
+        <img
+          src={`${pagesPath}/comics/${notif.comicId}/thumbnail-2x.webp`}
+          alt={notif.comicName}
+          className={`h-11 mr-2`}
+        />
+
+        <div className="flex flex-col justify-center">
+          <p className={`text-sm ${isRead ? '' : 'font-bold'}`}>
+            {!isRead && (
+              <GoDotFill className="text-theme1-dark dark:text-theme1-primary mr-0 -ml-0.5 mb-[3px]" />
+            )}
+            {notif.comicName}
+          </p>
+          <p
+            className={`text-xs dark:text-gray-800 text-gray-500 ${isRead ? '' : 'font-bold'}`}
+          >
+            {getTimeAgo(notif.timestamp)}
+          </p>
+        </div>
+      </div>
+
+      <button
+        className={`opacity-0 w-7 h-7 pb-1 group-hover:opacity-100 hidden sm:block rounded-full hover:bg-blue-trans ${isRead && 'sm:hidden'}`}
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          onMarkRead();
+        }}
+      >
+        <MdCheck className="dark:text-blue-strong-300 text-blue-weak-200 text-sm" />
+      </button>
+    </Link>
+  );
+}
