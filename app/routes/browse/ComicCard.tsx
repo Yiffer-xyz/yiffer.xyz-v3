@@ -3,10 +3,9 @@ import type { ComicForBrowse } from '~/types/types';
 import Link from '~/ui-components/Link';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { IoDocumentOutline } from 'react-icons/io5';
-import { FaRegStar } from 'react-icons/fa';
+import { FaBell, FaRegStar } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
 import { getTimeAgoShort } from '~/utils/date-utils';
-import { FaBookmark } from 'react-icons/fa6';
 import { useBrowseParams } from './SearchFilter/useBrowseParams';
 import { differenceInDays } from 'date-fns';
 import clsx from 'clsx';
@@ -144,10 +143,10 @@ export default function ComicCard({
         <div className="leading-5 pt-0.5 pb-1">
           {comic.isBookmarked && (
             <button className="pr-1.5 group" onClick={toggleBookmark}>
-              <FaBookmark
+              <FaBell
                 size={14}
                 className={`inline-block transition-all text-theme1-primary dark:text-theme1-darker 
-                group-hover:text-theme1-darker2 dark:group-hover:text-theme1-primary`}
+                group-hover:text-theme1-darker2 dark:group-hover:text-theme1-primary mb-0.5`}
               />
             </button>
           )}

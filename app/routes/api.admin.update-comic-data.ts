@@ -171,27 +171,6 @@ export async function updateComicData(
       return wrapApiError(modLogErr, 'Error in updateComicData', changes);
     }
   }
-
-  // After updating comic, check if numberOfPages increased and notify subscribers
-  if (changes.numberOfPages && changes.numberOfPages > existingComic.numberOfPages) {
-    // Get all subscribers
-    const subsRes = await queryDb<{ userId: number }[]>(
-      db,
-      'SELECT userId FROM comicsubscription WHERE comicId = ?',
-      [changes.comicId],
-      'Get comic subscribers for notification'
-    );
-    if (!subsRes.isError && subsRes.result.length > 0) {
-      for (const sub of subsRes.result) {
-        await queryDb(
-          db,
-          'INSERT INTO usernotification (userId, comicId, type, data) VALUES (?, ?, ?, ?)',
-          [sub.userId, changes.comicId, 'new_page', JSON.stringify({ numberOfPages: changes.numberOfPages })],
-          'Insert new page notification'
-        );
-      }
-    }
-  }
 }
 
 function getUpdateTagsQuery(

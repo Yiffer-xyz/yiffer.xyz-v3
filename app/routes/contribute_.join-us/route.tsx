@@ -63,12 +63,13 @@ const ApplyLink = () => {
         href="/contribute/join-us/apply"
         text="Apply as a mod here"
         IconRight={MdArrowForward}
+        isInsideParagraph
       />
     </p>
   ) : (
     <p className="mb-6">
       <b>To apply as a mod, </b>
-      <Link href="/login" text="Log in" Icon={MdLogin} />
+      <Link href="/login" text="Log in" Icon={MdLogin} isInsideParagraph />
     </p>
   );
 };

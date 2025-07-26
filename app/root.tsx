@@ -100,6 +100,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     posthogApiKey: context.cloudflare.env.POSTHOG_API_KEY,
     posthogHost: context.cloudflare.env.POSTHOG_HOST,
     isMissingEmail,
+    pagesPath: context.cloudflare.env.PAGES_PATH,
   };
 
   return data;
@@ -171,6 +172,7 @@ function App() {
             user={data.user}
             gaTrackingId={data.gaTrackingId}
             isMissingEmail={data.isMissingEmail}
+            pagesPath={data.pagesPath}
           >
             <Outlet />
           </Layout>
@@ -188,12 +190,14 @@ function Layout({
   excludeLogin = false,
   gaTrackingId,
   isMissingEmail,
+  pagesPath,
   children,
 }: {
   user: UserSession | null;
   excludeLogin?: boolean;
   gaTrackingId?: string;
   isMissingEmail?: boolean;
+  pagesPath: string;
   children: React.ReactNode;
 }) {
   const { theme, setTheme } = useUIPreferences();
@@ -290,18 +294,20 @@ function Layout({
             )}
           </div>
 
-          <button
-            onClick={() => {
-              const newTheme = theme === 'light' ? 'dark' : 'light';
-              setTheme(newTheme);
-              posthog.capture('Color theme changed', { theme: newTheme });
-            }}
-            className="text-gray-200 cursor-pointer dark:text-blue-strong-300"
-          >
-            <MdLightbulbOutline className="mb-1" />
-          </button>
+          <div className="flex flex-row gap-3 mb-1 justify-center items-center">
+            <button
+              onClick={() => {
+                const newTheme = theme === 'light' ? 'dark' : 'light';
+                setTheme(newTheme);
+                posthog.capture('Color theme changed', { theme: newTheme });
+              }}
+              className="text-gray-200 cursor-pointer dark:text-blue-strong-300"
+            >
+              <MdLightbulbOutline />
+            </button>
 
-          <UserNotifications />
+            <UserNotifications pagesPath={pagesPath} isLoggedIn={isLoggedIn} />
+          </div>
         </div>
       </nav>
 
@@ -354,7 +360,7 @@ export function ErrorBoundary() {
         <Links />
       </head>
       <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
-        <Layout user={null} excludeLogin>
+        <Layout user={null} excludeLogin pagesPath={''}>
           <YifferErrorBoundary />
         </Layout>
       </body>

@@ -96,19 +96,9 @@ export async function getComicByField({
       : getPagesByComicNameQuery(fieldValue as string),
   ];
 
-  let isSubscribed = false;
-  if (userId) {
-    const subRes = await db.prepare(
-      'SELECT 1 FROM comicsubscription WHERE userId = ? AND comicId = ? LIMIT 1'
-    ).bind(userId, fieldName === 'id' ? fieldValue : null).first();
-    isSubscribed = !!subRes;
-  }
-
-    db,
-    dbStatements
-  );
-  const dbRes = await queryDbMultiple<[DbComic[], DbComicLink[], DbTag[], DbComment[]]>(
+  const dbRes = await queryDbMultiple<
     [DbComic[], DbComicLink[], DbTag[], DbComment[], DbPage[]]
+  >(db, dbStatements);
 
   if (dbRes.isError) {
     return makeDbErrObj(dbRes, 'Error getting comic+links+tags', logCtx);
@@ -126,8 +116,7 @@ export async function getComicByField({
     commentsRes,
     pagesRes,
     includeMetadata,
-    userId,
-    isSubscribed
+    userId
   );
 
   return { result: finalComic };
@@ -140,11 +129,13 @@ function mergeDbFieldsToComic(
   dbCommentsRows: DbComment[],
   dbPagesRows: DbPage[],
   includeMetadata: boolean,
-  userId?: number,
-  isSubscribed?: boolean
+  userId?: number
 ): Comic {
   const userFields = userId
-    ? { isBookmarked: !!dbComic.isBookmarked, yourStars: dbComic.yourStars ?? 0, isSubscribed }
+    ? {
+        isBookmarked: !!dbComic.isBookmarked,
+        yourStars: dbComic.yourStars ?? 0,
+      }
     : {};
 
   const comic: Comic = {

@@ -20,6 +20,7 @@ import { RiShieldFill } from 'react-icons/ri';
 import updateUserLastActionTime from '~/route-funcs/update-user-last-action';
 import { shouldShowAdsForUser } from '~/utils/user-utils';
 import ComicComments from './ComicComments';
+import { markSingleNotificationReadByComicId } from '~/route-funcs/mark-single-notification-read';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const desktopStatsWidth = 144;
@@ -151,7 +152,7 @@ export default function ComicPage() {
           )}
 
           {!isPublished && (
-            <div className="bg-theme1-primaryTrans p-4 pt-3 w-full md:w-[728px] mt-2 -mb-4">
+            <div className="bg-theme1-primaryTrans p-4 pt-3 w-full md:w-[728px] mt-2 mb-4">
               <h4>Comic preview</h4>
               <p className="text-sm">
                 This comic is not live, and is inaccessible to non-mod users.
@@ -276,6 +277,19 @@ export async function loader(args: LoaderFunctionArgs) {
 
   if (comicRes.result.publishStatus !== 'published' && (!user || !isModOrAdmin(user))) {
     return Response.json(res, { status: 404 });
+  }
+
+  const url = new URL(args.request.url);
+  const markNotifRead = url.searchParams.get('markNotifRead');
+  if (markNotifRead && markNotifRead === 'true' && user) {
+    const err = await markSingleNotificationReadByComicId(
+      args.context.cloudflare.env.DB,
+      user?.userId,
+      comicRes.result.id
+    );
+    if (err) {
+      return processApiError('Error marking notification as read', err);
+    }
   }
 
   res.comic = comicRes.result;

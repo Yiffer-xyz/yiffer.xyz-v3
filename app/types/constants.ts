@@ -223,3 +223,7 @@ export function getSocialUrl(platform: string, username: string) {
 export const ADMIN_COMMENTLIST_PAGE_SIZE = 50;
 
 export const MAX_PAGE_WIDTH = 1800;
+
+export const NOTIFICATIONS_PAGINATION_SIZE = 6;
+
+export const RESTRICT_NOTIFICATIONS_TO_PATRONS = true;
