@@ -24,6 +24,13 @@ export default function PrivacyPage() {
 
       <div className="flex flex-col gap-6 mt-4">
         <ChangelogItem
+          date="2025-07-27"
+          texts={[
+            'Changed previous bookmark feature to mean comic subscription. When subscribed comics are updated, notifications are sent - initially only to $15+ patrons.',
+            'Added comment up/downvotes.',
+          ]}
+        />
+        <ChangelogItem
           date="2025-06-16"
           texts={['Implemented user profiles and comic comments.']}
         />

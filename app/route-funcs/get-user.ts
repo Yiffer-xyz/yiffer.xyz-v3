@@ -4,8 +4,10 @@ import type {
   UserSocialAccount,
   User,
   ContributionPointsEntry,
-  AdminPanelUserComment,
+  ComicComment,
 } from '~/types/types';
+import { mergeCommentsAndVotes } from '~/utils/comment-utils';
+import type { DbComment, DbCommentVote } from '~/utils/comment-utils';
 import { queryDb } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type {
@@ -63,12 +65,14 @@ export async function getUserByField({
   value,
   includeExtraFields = false,
   includeComments = false,
+  currentUserId,
 }: {
   db: D1Database;
   field: 'email' | 'username' | 'id';
   value: string | number;
   includeExtraFields?: boolean;
   includeComments?: boolean;
+  currentUserId?: number;
 }): ResultOrNotFoundOrErrorPromise<User> {
   let whereStr = `WHERE user.${field} = ?`;
   if (field === 'email' || field === 'username') {
@@ -95,7 +99,12 @@ export async function getUserByField({
   const user = dbUserToUser(dbRes.result[0]);
 
   if (includeExtraFields) {
-    const extraFieldsRes = await getUserExtraFields(db, user, includeComments);
+    const extraFieldsRes = await getUserExtraFields(
+      db,
+      user,
+      includeComments,
+      currentUserId
+    );
     if (extraFieldsRes.err) {
       return {
         err: wrapApiError(
@@ -128,23 +137,15 @@ function dbUserToUser(user: DbUser): User {
   return convertedUser;
 }
 
-type DbComment = {
-  id: number;
-  comment: string;
-  timestamp: string;
-  comicId: number;
-  comicName: string;
-  isHidden: 0 | 1;
-};
-
 async function getUserExtraFields(
   db: D1Database,
   user: User,
-  includeComments: boolean
+  includeComments: boolean,
+  currentUserId?: number
 ): ResultOrErrorPromise<{
   contributionPoints: number;
   socialLinks: UserSocialAccount[];
-  comments?: AdminPanelUserComment[];
+  comments?: ComicComment[];
 }> {
   const socialLinksQuery =
     'SELECT id, username, platform FROM usersocialaccount WHERE userId = ?';
@@ -155,12 +156,13 @@ async function getUserExtraFields(
     'Social links'
   );
 
-  let comments: AdminPanelUserComment[] = [];
+  const comments: ComicComment[] = [];
   if (includeComments) {
     const commentsQuery = `
       SELECT
         comiccomment.id AS id, comment, comiccomment.timestamp AS timestamp, comicId,
-        comic.name AS comicName, comiccomment.isHidden
+        comic.name AS comicName, comiccomment.isHidden, ${user.id} AS userId,
+        '${user.username}' AS username, '${user.profilePictureToken}' AS profilePictureToken
       FROM comiccomment 
       INNER JOIN comic ON comiccomment.comicId = comic.id
       WHERE userId = ?
@@ -178,7 +180,30 @@ async function getUserExtraFields(
       });
     }
 
-    comments = commentsRes.result.map(dbComment => dbCommentToComment(dbComment));
+    const commentVotesQuery = `
+      SELECT 
+        id, userId, commentId, isUpvote
+      FROM comiccommentvote 
+      WHERE userId = ?
+    `;
+    const commentVotesRes = await queryDb<DbCommentVote[]>(db, commentVotesQuery, [
+      user.id,
+    ]);
+
+    if (commentVotesRes.isError) {
+      return makeDbErrObj(commentVotesRes, 'Error getting user comment votes', {
+        userId: user.id,
+      });
+    }
+
+    const commentVotes = commentVotesRes.result;
+    const mappedComments = mergeCommentsAndVotes(
+      commentsRes.result,
+      commentVotes,
+      currentUserId
+    );
+
+    comments.push(...mappedComments);
   }
 
   if (isModOrAdmin(user)) {
@@ -272,12 +297,4 @@ export async function getUsersByPatreonEmails(
   }
 
   return { result: dbRes.result };
-}
-
-function dbCommentToComment(dbComment: DbComment): AdminPanelUserComment {
-  return {
-    ...dbComment,
-    timestamp: parseDbDateStr(dbComment.timestamp),
-    isHidden: dbComment.isHidden === 1,
-  };
 }

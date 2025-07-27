@@ -1,16 +1,12 @@
 import { useState } from 'react';
-import { type Comic, type ComicComment } from '~/types/types';
+import { type Comic } from '~/types/types';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import Textarea from '~/ui-components/Textarea/Textarea';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { MAX_COMMENT_LENGTH, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
-import Username from '~/ui-components/Username';
-import { format, formatDistanceToNow } from 'date-fns';
+import { COMMENT_HIDE_THRESHOLD, MAX_COMMENT_LENGTH } from '~/types/constants';
 import Button from '~/ui-components/Buttons/Button';
-import { FaUser } from 'react-icons/fa';
-import { useNavigate } from '@remix-run/react';
-import { MdCheck, MdClose } from 'react-icons/md';
 import Link from '~/ui-components/Link';
+import SingleComment from '~/ui-components/Comments/SingleComment';
 
 export default function ComicComments({
   comic,
@@ -25,8 +21,12 @@ export default function ComicComments({
   className?: string;
   isAdminPanel?: boolean;
 }) {
-  const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
+  const [showLowScoreComments, setShowLowScoreComments] = useState(false);
+
+  const hiddenComments = comic.comments.filter(
+    comment => comment.score && comment.score < COMMENT_HIDE_THRESHOLD
+  );
 
   const addCommentFetcher = useGoodFetcher({
     url: '/api/add-comment',
@@ -35,20 +35,6 @@ export default function ComicComments({
       setNewComment('');
     },
   });
-
-  const reportCommentFetcher = useGoodFetcher({
-    url: '/api/report-comment',
-    method: 'post',
-  });
-
-  function onReport(commentId: number) {
-    if (!isLoggedIn) {
-      navigate(`/login?redirect=${location.pathname}`);
-      return;
-    }
-
-    reportCommentFetcher.submit({ commentId });
-  }
 
   return (
     <div className={`w-full md:w-[728px]  flex flex-col ${className ?? ''}`}>
@@ -65,13 +51,27 @@ export default function ComicComments({
               key={comment.id}
               comment={comment}
               pagesPath={pagesPath}
-              onReport={onReport}
               isAdminPanel={isAdminPanel}
+              showLowScoreComments={showLowScoreComments}
+              isLoggedIn={isLoggedIn}
             />
           ))}
         </div>
       ) : (
         <p className="text-sm my-2">No comments yet.</p>
+      )}
+
+      {hiddenComments.length > 0 && !showLowScoreComments && (
+        <div className="flex flex-row gap-x-2 items-center mb-4 -mt-4 md:-mt-2">
+          <p className="text-sm">{hiddenComments.length} hidden due to low score.</p>
+          <Button
+            variant="naked"
+            text="Show"
+            noPadding
+            className="h-6"
+            onClick={() => setShowLowScoreComments(true)}
+          />
+        </div>
       )}
 
       {!isAdminPanel && isLoggedIn && (
@@ -123,123 +123,6 @@ export default function ComicComments({
           <Link href="/login" text="Log in" /> to comment.
         </p>
       )}
-    </div>
-  );
-}
-
-export function SingleComment({
-  comment,
-  pagesPath,
-  onReport,
-  isAdminPanel,
-}: {
-  comment: ComicComment;
-  pagesPath: string;
-  onReport: (commentId: number) => void;
-  isAdminPanel?: boolean;
-}) {
-  const [isReporting, setIsReporting] = useState(false);
-  const [isReported, setIsReported] = useState(false);
-
-  const bottomTextClass = 'text-gray-600 dark:text-gray-750';
-
-  return (
-    <div className="pb-[4px] flex flex-row gap-x-2 w-full">
-      {comment.user.profilePictureToken ? (
-        <img
-          src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${comment.user.profilePictureToken}.jpg`}
-          className="w-[68px] h-[68px] mt-[3px] rounded"
-          alt={comment.user.username}
-        />
-      ) : (
-        <div className="w-[68px] h-[68px] mt-[3px] rounded bg-gray-800 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <FaUser className="text-3xl" color="#666" />
-        </div>
-      )}
-
-      <div className="w-full">
-        <div className="flex flex-row gap-x-4 items-end">
-          <Username
-            username={comment.user.username}
-            id={comment.user.id}
-            pagesPath={pagesPath}
-            showRightArrow={false}
-            className="-mb-[3px]"
-          />
-        </div>
-
-        {isAdminPanel && comment.comicId && comment.comicName && (
-          <div className="-mb-1 mt-1">
-            <Link
-              href={`/admin/comics/${comment.comicId}`}
-              text={comment.comicName}
-              showRightArrow
-            />
-          </div>
-        )}
-
-        <p className="whitespace-pre-wrap mt-1 mb-1.5">{comment.comment}</p>
-
-        <div className="flex flex-row gap-x-6 justify-between md:justify-start w-full">
-          {!isReporting && !isReported && (
-            <p className={`text-xs ${bottomTextClass}`}>
-              {format(comment.timestamp, 'P')} (
-              {formatDistanceToNow(comment.timestamp, { addSuffix: true })})
-            </p>
-          )}
-
-          {isReporting && !isReported && (
-            <div className="flex flex-row gap-x-4">
-              <Button
-                text="Cancel"
-                variant="naked"
-                className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
-                noPadding
-                startIcon={MdClose}
-                onClick={() => {
-                  setIsReporting(false);
-                }}
-              />
-              <Button
-                text={isAdminPanel ? 'Delete' : 'Report'}
-                variant="naked"
-                className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
-                noPadding
-                startIcon={MdCheck}
-                onClick={() => {
-                  onReport(comment.id);
-                  setIsReported(true);
-                  setIsReporting(false);
-                }}
-              />
-            </div>
-          )}
-
-          {!isReporting && !isReported && !comment.isHidden && (
-            <Button
-              text={isAdminPanel ? 'Delete' : 'Report'}
-              variant="naked"
-              className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
-              noPadding
-              onClick={() => {
-                setIsReporting(true);
-              }}
-            />
-          )}
-
-          {isReported && !comment.isHidden && (
-            <p className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}>
-              Reported - mods will review this comment.
-            </p>
-          )}
-        </div>
-
-        {isAdminPanel && comment.isHidden && (
-          <p className="text-red-strong-300 font-semibold text-xs mt-0.5">
-            This comment has been removed
-          </p>
-        )}
-      </div>
     </div>
   );
 }

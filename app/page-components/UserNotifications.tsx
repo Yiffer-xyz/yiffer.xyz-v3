@@ -1,4 +1,4 @@
-import { Link, useNavigation } from '@remix-run/react';
+import { Link as RemixLink, useNavigation } from '@remix-run/react';
 import { useEffect, useState, useRef } from 'react';
 import { FaBell, FaRegBell } from 'react-icons/fa';
 import { GoDotFill } from 'react-icons/go';
@@ -6,6 +6,7 @@ import { LiaCheckDoubleSolid } from 'react-icons/lia';
 import { MdArrowBack, MdArrowForward, MdCheck } from 'react-icons/md';
 import type { ComicUpdateNotification } from '~/types/types';
 import IconButton from '~/ui-components/Buttons/IconButton';
+import Link from '~/ui-components/Link';
 import { getTimeAgo } from '~/utils/date-utils';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 
@@ -154,9 +155,11 @@ export default function UserNotifications({
                   ), notifications of new pages will show up here.
                 </p>
                 <p className="text-gray-500 dark:text-gray-700 text-sm px-2 mt-2">
-                  Initially, only $15+ patrons with linked accounts get this feature.
-                  It'll start working for everyone about a month later. Until then, the{' '}
-                  <FaRegBell /> works just like the old comic bookmark used to.
+                  Initially, only $15+{' '}
+                  <Link href="/patreon" text="patrons" isInsideParagraph /> with linked
+                  accounts get this feature. It'll start working for everyone a few weeks
+                  later. Until then, the <FaRegBell /> works just like the old comic
+                  bookmark used to.
                 </p>
               </>
             ) : (
@@ -208,7 +211,7 @@ function NotificationItem({
   }
 
   return (
-    <Link
+    <RemixLink
       to={url}
       key={notif.id}
       className={`
@@ -249,6 +252,6 @@ function NotificationItem({
       >
         <MdCheck className="dark:text-blue-strong-300 text-blue-weak-200 text-sm" />
       </button>
-    </Link>
+    </RemixLink>
   );
 }

@@ -12,7 +12,7 @@ import useWindowSize from '~/utils/useWindowSize';
 import ManagePagesAdmin from './ManagePagesAdmin';
 import LiveComicThumbnailManager from './LiveComicThumbnailManager';
 import AdminTools from './AdminTools';
-import ComicComments from '../c_.$comicname/ComicComments';
+import SingleComment from '~/ui-components/Comments/SingleComment';
 
 type LiveComicProps = {
   comic: Comic;
@@ -132,12 +132,16 @@ export default function LiveComic({
               <>
                 <h4 className="mt-10">{comic.comments.length} comments</h4>
                 {isShowingComments ? (
-                  <ComicComments
-                    comic={comic}
-                    pagesPath={PAGES_PATH}
-                    isLoggedIn
-                    isAdminPanel
-                  />
+                  comic.comments.map(comment => (
+                    <SingleComment
+                      key={comment.id}
+                      comment={comment}
+                      pagesPath={PAGES_PATH}
+                      isLoggedIn
+                      isAdminPanel
+                      showLowScoreComments
+                    />
+                  ))
                 ) : (
                   <Button
                     text="Show comments"

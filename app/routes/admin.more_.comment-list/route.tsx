@@ -4,9 +4,9 @@ import { MdArrowForward, MdArrowBack } from 'react-icons/md';
 import { getModCommentList } from '~/route-funcs/get-mod-comment-list';
 import { ADMIN_COMMENTLIST_PAGE_SIZE } from '~/types/constants';
 import Button from '~/ui-components/Buttons/Button';
-import { SingleComment } from '../c_.$comicname/ComicComments';
-import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import SingleComment from '~/ui-components/Comments/SingleComment';
 import { processApiError } from '~/utils/request-helpers';
+import { redirectIfNotMod } from '~/utils/loaders';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const PAGE_SIZE = ADMIN_COMMENTLIST_PAGE_SIZE;
@@ -16,11 +16,16 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
+  const user = await redirectIfNotMod(args);
   const url = new URL(args.request.url);
   const page = url.searchParams.get('page');
   const pageNum = page ? parseInt(page) : 1;
 
-  const comments = await getModCommentList(args.context.cloudflare.env.DB, pageNum);
+  const comments = await getModCommentList(
+    args.context.cloudflare.env.DB,
+    pageNum,
+    user.userId
+  );
 
   if (comments.err) {
     return processApiError('Error getting comment list', comments.err);
@@ -37,11 +42,6 @@ export default function More() {
   const { comments, pageNum, pagesPath } = useLoaderData<typeof loader>();
 
   const navigate = useNavigate();
-
-  const reportCommentFetcher = useGoodFetcher({
-    url: '/api/report-comment',
-    method: 'post',
-  });
 
   function onPaginate(forward: boolean) {
     navigate(`/admin/more/comment-list?page=${forward ? pageNum + 1 : pageNum - 1}`);
@@ -80,11 +80,10 @@ export default function More() {
             <SingleComment
               comment={c}
               pagesPath={pagesPath}
-              onReport={() => {
-                reportCommentFetcher.submit({ commentId: c.id });
-              }}
               isAdminPanel
               key={c.id}
+              showLowScoreComments
+              isLoggedIn
             />
           ))}
         </div>

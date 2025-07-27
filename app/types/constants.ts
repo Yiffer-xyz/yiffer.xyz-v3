@@ -227,3 +227,5 @@ export const MAX_PAGE_WIDTH = 1800;
 export const NOTIFICATIONS_PAGINATION_SIZE = 6;
 
 export const RESTRICT_NOTIFICATIONS_TO_PATRONS = true;
+
+export const COMMENT_HIDE_THRESHOLD = -3;

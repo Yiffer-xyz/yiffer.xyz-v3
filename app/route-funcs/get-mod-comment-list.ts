@@ -1,7 +1,7 @@
 import { ADMIN_COMMENTLIST_PAGE_SIZE } from '~/types/constants';
 import type { ComicComment } from '~/types/types';
+import { mergeCommentsAndVotes } from '~/utils/comment-utils';
 import { queryDb } from '~/utils/database-facade';
-import { parseDbDateStr } from '~/utils/date-utils';
 import { makeDbErrObj, type ResultOrErrorPromise } from '~/utils/request-helpers';
 
 type DbComment = {
@@ -16,14 +16,22 @@ type DbComment = {
   profilePictureToken: string;
 };
 
+type DbCommentVote = {
+  id: number;
+  userId: number;
+  commentId: number;
+  isUpvote: 0 | 1;
+};
+
 export async function getModCommentList(
   db: D1Database,
-  pageNum: number
+  pageNum: number,
+  currentUserId?: number
 ): ResultOrErrorPromise<ComicComment[]> {
   const offset = (pageNum - 1) * ADMIN_COMMENTLIST_PAGE_SIZE;
   const query = `SELECT
       comiccomment.id AS id, comment, comiccomment.timestamp AS timestamp, comicId,
-      comic.name AS comicName, comiccomment.isHidden,
+      comic.name AS comicName, comiccomment.isHidden, comic.id AS comicId,
       user.username, user.id AS userId, user.profilePictureToken
     FROM comiccomment 
     INNER JOIN user ON comiccomment.userId = user.id
@@ -35,16 +43,27 @@ export async function getModCommentList(
     return makeDbErrObj(result, 'Error getting mod comment list', { pageNum });
   }
 
-  const mappedComments: ComicComment[] = result.result.map(dbRow => ({
-    ...dbRow,
-    timestamp: parseDbDateStr(dbRow.timestamp),
-    isHidden: dbRow.isHidden === 1,
-    user: {
-      id: dbRow.userId,
-      username: dbRow.username,
-      profilePictureToken: dbRow.profilePictureToken,
-    },
-  }));
+  // Get relevant votes
+  const commentVotesQuery = `SELECT
+      comiccommentvote.id AS id,
+      comiccommentvote.userId AS userId,
+      comiccommentvote.commentId AS commentId,
+      comiccommentvote.isUpvote AS isUpvote
+    FROM comiccommentvote
+    WHERE comiccommentvote.commentId IN (${result.result.map(_ => '?').join(',')})`;
+
+  const votesParams = result.result.map(x => x.id);
+  const votesResult = await queryDb<DbCommentVote[]>(db, commentVotesQuery, votesParams);
+
+  if (votesResult.isError) {
+    return makeDbErrObj(votesResult, 'Error getting comment votes', { pageNum });
+  }
+
+  const mappedComments = mergeCommentsAndVotes(
+    result.result,
+    votesResult.result,
+    currentUserId
+  );
 
   return {
     result: mappedComments,

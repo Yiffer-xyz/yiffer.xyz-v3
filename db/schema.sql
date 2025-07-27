@@ -691,3 +691,20 @@ CREATE TABLE IF NOT EXISTS basiclog (
   PRIMARY KEY (id)
 );
 
+------------------------------------------------------
+-- COMIC COMMENT VOTE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comiccommentvote (
+  id INTEGER NOT NULL,
+  userId INTEGER NOT NULL,
+  commentId INTEGER NOT NULL,
+  comicId INTEGER NOT NULL, -- redundant, but helps query performance
+  isUpvote TINYINTEGER NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (commentId) REFERENCES comiccomment (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_comiccommentvote_comicId ON comiccommentvote(comicId);
+CREATE INDEX IF NOT EXISTS idx_comiccommentvote_commentId ON comiccommentvote(commentId);
+CREATE INDEX IF NOT EXISTS idx_comiccommentvote_userId ON comiccommentvote(userId);

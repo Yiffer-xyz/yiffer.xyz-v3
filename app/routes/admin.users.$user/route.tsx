@@ -23,7 +23,7 @@ import FeedbackItem from '~/page-components/UserFeedback/FeedbackItem';
 import PublicProfile from '~/ui-components/PublicProfile/PublicProfile';
 import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
 import PublicProfileEdit from '~/ui-components/PublicProfile/PublicProfileEdit';
-import UserCommentsAdmin from './UserCommentsAdmin';
+import SingleComment from '~/ui-components/Comments/SingleComment';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -181,7 +181,16 @@ export default function ManageSingleUser() {
             <div className="mt-6">
               <h3>{user.comments.length} comic comments</h3>
               {isShowingComments ? (
-                <UserCommentsAdmin comments={user.comments} />
+                user.comments.map(comment => (
+                  <SingleComment
+                    key={comment.id}
+                    comment={comment}
+                    pagesPath={pagesPath}
+                    showLowScoreComments
+                    isAdminPanel
+                    isLoggedIn
+                  />
+                ))
               ) : (
                 <Button text="Show comments" onClick={() => setIsShowingComments(true)} />
               )}
@@ -249,7 +258,8 @@ export default function ManageSingleUser() {
 }
 
 export async function loader(args: LoaderFunctionArgs) {
-  const { userType: loggedInUserType } = await redirectIfNotMod(args);
+  const { userType: loggedInUserType, userId: loggedInUserId } =
+    await redirectIfNotMod(args);
   const db = args.context.cloudflare.env.DB;
   const userIdParam = args.params.user as string;
   const userId = parseInt(userIdParam);
@@ -260,6 +270,7 @@ export async function loader(args: LoaderFunctionArgs) {
     value: userId,
     includeExtraFields: true,
     includeComments: true,
+    currentUserId: loggedInUserId,
   });
   const contributionsResPromise = getContributions(db, userId);
   const feedbackResPromise = getFeedback({ db, userId });

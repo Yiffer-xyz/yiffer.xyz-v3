@@ -1,6 +1,11 @@
 import type { Comic, ComicPublishStatus, ComicUploadVerdict } from '~/types/types';
+import {
+  mergeCommentsAndVotes,
+  type DbComment,
+  type DbCommentVote,
+} from '~/utils/comment-utils';
 import type { QueryWithParams } from '~/utils/database-facade';
-import { queryDbMultiple } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrNotFoundOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
@@ -50,15 +55,6 @@ type DbTag = {
   tagName: string;
 };
 
-type DbComment = {
-  id: number;
-  userId: number;
-  comment: string;
-  timestamp: string;
-  username: string;
-  profilePictureToken?: string | null;
-};
-
 type DbPage = {
   token: string;
   pageNumber: number;
@@ -72,6 +68,7 @@ type GetComicByFieldParams = {
   userId?: number;
   includeMetadata?: boolean;
   includePages?: boolean;
+  includeDeletedComments?: boolean;
 };
 
 export async function getComicByField({
@@ -80,40 +77,54 @@ export async function getComicByField({
   fieldValue,
   userId,
   includeMetadata = false,
+  includeDeletedComments = false,
 }: GetComicByFieldParams): ResultOrNotFoundOrErrorPromise<Comic> {
   const logCtx = { fieldName, fieldValue, includeMetadata };
-  const dbStatements: QueryWithParams[] = [
-    getDbComicByFieldQuery(fieldName, fieldValue, userId),
-    getLinksByComicFieldQuery(fieldName, fieldValue),
-    fieldName === 'id'
-      ? getTagsByComicIdQuery(fieldValue as number)
-      : getTagsByComicNameQuery(fieldValue as string),
-    fieldName === 'id'
-      ? getCommentsByComicIdQuery(fieldValue as number)
-      : getCommentsByComicNameQuery(fieldValue as string),
-    fieldName === 'id'
-      ? getPagesByComicIdQuery(fieldValue as number)
-      : getPagesByComicNameQuery(fieldValue as string),
-  ];
 
-  const dbRes = await queryDbMultiple<
-    [DbComic[], DbComicLink[], DbTag[], DbComment[], DbPage[]]
-  >(db, dbStatements);
+  const baseComicDataQuery = getDbComicByFieldQuery(fieldName, fieldValue, userId);
+  const baseComicDataRes = await queryDb<DbComic[]>(
+    db,
+    baseComicDataQuery.query,
+    baseComicDataQuery.params,
+    baseComicDataQuery.queryName
+  );
 
-  if (dbRes.isError) {
-    return makeDbErrObj(dbRes, 'Error getting comic+links+tags', logCtx);
-  }
-
-  const [comicRes, linksRes, tagsRes, commentsRes, pagesRes] = dbRes.result;
-  if (comicRes.length === 0 || comicRes[0].id === null) {
+  if (baseComicDataRes.isError) {
+    return makeDbErrObj(baseComicDataRes, 'Error getting comic data', logCtx);
+  } else if (
+    baseComicDataRes.result.length === 0 ||
+    baseComicDataRes.result[0].id === null
+  ) {
     return { notFound: true };
   }
 
+  const comicData = baseComicDataRes.result[0];
+  const comicId = comicData.id;
+
+  const dbStatements: QueryWithParams[] = [
+    getLinksByComicFieldQuery('id', comicId),
+    getTagsByComicIdQuery(comicId),
+    getCommentsByComicIdQuery(comicId, includeDeletedComments),
+    getPagesByComicIdQuery(comicId),
+    getCommentVotesByComicIdQuery(comicId),
+  ];
+
+  const dbRes = await queryDbMultiple<
+    [DbComicLink[], DbTag[], DbComment[], DbPage[], DbCommentVote[]]
+  >(db, dbStatements);
+
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, 'Error getting links+tags+comments+pages+votes', logCtx);
+  }
+
+  const [linksRes, tagsRes, commentsRes, pagesRes, commentVotesRes] = dbRes.result;
+
   const finalComic = mergeDbFieldsToComic(
-    comicRes[0],
+    comicData,
     linksRes,
     tagsRes,
     commentsRes,
+    commentVotesRes,
     pagesRes,
     includeMetadata,
     userId
@@ -127,6 +138,7 @@ function mergeDbFieldsToComic(
   dbLinksRows: DbComicLink[],
   dbTagsRows: DbTag[],
   dbCommentsRows: DbComment[],
+  dbCommentVotesRows: DbCommentVote[],
   dbPagesRows: DbPage[],
   includeMetadata: boolean,
   userId?: number
@@ -160,18 +172,7 @@ function mergeDbFieldsToComic(
       id: tag.tagId,
       name: tag.tagName,
     })),
-    comments: dbCommentsRows
-      .map(comment => ({
-        id: comment.id,
-        comment: comment.comment,
-        timestamp: parseDbDateStr(comment.timestamp),
-        user: {
-          id: comment.userId,
-          username: comment.username,
-          profilePictureToken: comment.profilePictureToken,
-        },
-      }))
-      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
+    comments: mergeCommentsAndVotes(dbCommentsRows, dbCommentVotesRows, userId),
     pages: dbPagesRows.map(page => ({
       ...page,
       isFullSize: page.isFullSize === 1,
@@ -331,33 +332,22 @@ function getTagsByComicIdQuery(comicId: number): QueryWithParams {
   };
 }
 
-function getTagsByComicNameQuery(comicName: string): QueryWithParams {
-  const tagsQuery = `SELECT
-      keyword.id AS tagId,
-      keyword.keywordName AS tagName
-      FROM comickeyword
-      INNER JOIN keyword ON (keyword.id = comickeyword.keywordId)
-      INNER JOIN comic ON (comic.id = comickeyword.comicId)
-    WHERE comic.name = ?`;
-
-  return {
-    query: tagsQuery,
-    params: [comicName],
-    queryName: 'Comic tags by comic name',
-  };
-}
-
-function getCommentsByComicIdQuery(comicId: number): QueryWithParams {
+function getCommentsByComicIdQuery(
+  comicId: number,
+  includeDeletedComments: boolean
+): QueryWithParams {
   const commentsQuery = `SELECT
       comiccomment.id AS id,
+      comiccomment.comicId AS comicId,
       comiccomment.userId AS userId,
       comiccomment.comment AS comment,
       comiccomment.timestamp AS timestamp,
+      comiccomment.isHidden AS isHidden,
       user.username AS username,
       user.profilePictureToken AS profilePictureToken
     FROM comiccomment
     INNER JOIN user ON (user.id = comiccomment.userId)
-    WHERE comicId = ? AND comiccomment.isHidden = 0`;
+    WHERE comicId = ? ${includeDeletedComments ? '' : 'AND comiccomment.isHidden = 0'}`;
 
   return {
     query: commentsQuery,
@@ -366,23 +356,19 @@ function getCommentsByComicIdQuery(comicId: number): QueryWithParams {
   };
 }
 
-function getCommentsByComicNameQuery(comicName: string): QueryWithParams {
-  const commentsQuery = `SELECT
-      comiccomment.id AS id,
-      comiccomment.userId AS userId,
-      comiccomment.comment AS comment,
-      comiccomment.timestamp AS timestamp,
-      user.username AS username,
-      user.profilePictureToken AS profilePictureToken
-    FROM comiccomment
-    INNER JOIN user ON (user.id = comiccomment.userId)
-    INNER JOIN comic ON (comic.id = comiccomment.comicId)
-    WHERE comic.name = ? AND comiccomment.isHidden = 0`;
+function getCommentVotesByComicIdQuery(comicId: number): QueryWithParams {
+  const commentVotesQuery = `SELECT
+      comiccommentvote.id AS id,
+      comiccommentvote.userId AS userId,
+      comiccommentvote.commentId AS commentId,
+      comiccommentvote.isUpvote AS isUpvote
+    FROM comiccommentvote
+    WHERE comiccommentvote.comicId = ?`;
 
   return {
-    query: commentsQuery,
-    params: [comicName],
-    queryName: 'Comic comments by comic name',
+    query: commentVotesQuery,
+    params: [comicId],
+    queryName: 'Comic comment votes by comic ID',
   };
 }
 
@@ -399,22 +385,5 @@ function getPagesByComicIdQuery(comicId: number): QueryWithParams {
     query: pagesQuery,
     params: [comicId],
     queryName: 'Comic pages by comic ID',
-  };
-}
-
-function getPagesByComicNameQuery(comicName: string): QueryWithParams {
-  const pagesQuery = `SELECT
-      comicpage.token AS token,
-      comicpage.pageNumber AS pageNumber,
-      comicpage.isFullSize AS isFullSize
-    FROM comicpage
-    INNER JOIN comic ON (comic.id = comicpage.comicId)
-    WHERE comic.name = ?
-    ORDER BY comicpage.pageNumber ASC`;
-
-  return {
-    query: pagesQuery,
-    params: [comicName],
-    queryName: 'Comic pages by comic name',
   };
 }

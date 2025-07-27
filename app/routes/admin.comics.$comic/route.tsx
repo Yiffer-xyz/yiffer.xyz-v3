@@ -174,6 +174,8 @@ export async function loader(args: LoaderFunctionArgs) {
     fieldName: 'id',
     fieldValue: comicId,
     includeMetadata: true,
+    includeDeletedComments: true,
+    userId: user.userId,
   });
   if (comicsRes.err) {
     return processApiError('Error getting comic in admin>comic', comicsRes.err);

@@ -85,6 +85,8 @@ export type ComicComment = {
   comicId?: number;
   comicName?: string;
   isHidden?: boolean;
+  score?: number;
+  yourVote?: boolean;
 };
 
 export type ComicForBrowse = {
@@ -229,7 +231,7 @@ export type User = {
   socialLinks: UserSocialAccount[];
   contributionPoints: number;
   profilePictureToken?: string | null;
-  comments?: AdminPanelUserComment[];
+  comments?: ComicComment[];
 };
 
 export type MinimalUser = {
@@ -564,15 +566,6 @@ export type UserSocialAccount = {
   id?: number;
   username: string;
   platform: string;
-};
-
-export type AdminPanelUserComment = {
-  id: number;
-  comicId: number;
-  comicName: string;
-  comment: string;
-  timestamp: Date;
-  isHidden: boolean;
 };
 
 type UserDataOrIP = {
