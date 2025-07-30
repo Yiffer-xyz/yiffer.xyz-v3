@@ -51,6 +51,17 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   if (body.shouldUpdateLastUpdatedTimestamp) {
+    const updateUpdatedQuery =
+      'UPDATE comic SET updated = CURRENT_TIMESTAMP WHERE id = ?';
+    const updateRes = await queryDbExec(
+      args.context.cloudflare.env.DB,
+      updateUpdatedQuery,
+      [body.comicId]
+    );
+    if (updateRes.isError) {
+      return makeDbErr(updateRes, 'Error updating comic updated timestamp');
+    }
+
     const err = await handleUpdatedComicBookmarkNotifications(
       args.context.cloudflare.env.DB,
       body.comicId
