@@ -42,7 +42,7 @@ export default function ResetPassword() {
         <>
           <fetcher.Form className="w-full my-8">
             <TopGradientBox innerClassName="px-8 py-6">
-              <h1 className="text-3xl">Reset password</h1>
+              <h1 className="text-3xl!">Reset password</h1>
               <div className="mt-4 flex flex-col gap-6">
                 <TextInputUncontrolled
                   name="password"

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { colors } from 'tailwind.config';
+import { THEME1, THEME2 } from '~/types/constants';
 import { waitMillisec } from '~/utils/general';
 
 export type BaseSelectProps<T> = {
@@ -166,24 +166,24 @@ export default function Select<T>({
   const borderStyle = useMemo(() => {
     if (error) {
       return {
-        borderImage: `linear-gradient(to right, ${colors.red.strong[200]}, ${colors.red.strong[300]}) 1`,
+        borderImage: `linear-gradient(to right, #d42a2a, #ff5757) 1`,
       };
     }
     if (disabled) {
       return {
-        borderImage: `linear-gradient(to right, ${colors.gray[800]}, ${colors.gray[800]}) 1`,
+        borderImage: `linear-gradient(to right, #cbcbcb, #cbcbcb) 1`,
       };
     }
     return {
-      borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+      borderImage: `linear-gradient(to right, ${THEME1}, ${THEME2}) 1`,
     };
   }, [error, disabled]);
 
   return (
     <div
       onKeyDown={onKeyDown}
-      className={`hover:cursor-pointer ${disabled ? '' : 'focus:bg-theme1-primaryTrans'}
-        relative w-fit outline-none h-9 leading-9 box-content ${className} ${title ? 'pt-3' : ''}`}
+      className={`hover:cursor-pointer ${disabled ? '' : 'focus:bg-theme1-primary-trans'}
+        relative w-fit outline-hidden h-9 leading-9 box-content ${className} ${title ? 'pt-3' : ''}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
       tabIndex={0}
@@ -192,7 +192,7 @@ export default function Select<T>({
       {title && (
         <label
           className={`absolute text-sm top-0 left-2 
-            ${disabled ? 'text-gray-700' : ''} ${error ? '!text-red-strong-200' : ''}`}
+            ${disabled ? 'text-gray-700' : ''} ${error ? 'text-red-strong-200!' : ''}`}
         >
           {title}
         </label>
@@ -223,7 +223,7 @@ export default function Select<T>({
             onClick={e => onSelected(optionValue)}
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
               currentlyHighlightedIndex === index
-                ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                ? 'bg-linear-to-r from-theme1-primary to-theme2-primary text-text-light '
                 : ''
             }}`}
           >

@@ -33,7 +33,7 @@ export default function SuccessMessage({
           <Link
             href="/contribute/your-contributions"
             text="your contributions page"
-            className="!text-white"
+            className="text-white!"
             isInsideParagraph
             showRightArrow
           />
@@ -45,7 +45,7 @@ export default function SuccessMessage({
           <Link
             href="/admin/pending-comics"
             text="View in mod pending comics list"
-            className="!text-white"
+            className="text-white!"
             showRightArrow
             isInsideParagraph
           />

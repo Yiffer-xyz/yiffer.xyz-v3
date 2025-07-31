@@ -87,9 +87,9 @@ export default function UserNotifications({
   const bellClassName = hasUnreads ? 'bg-red-strong-300 dark:bg-red-strong-200' : '';
 
   return (
-    <div className="relative dark:bg-bgDark text-text-light dark:text-text-dark">
+    <div className="relative dark:bg-bg-dark text-text-light dark:text-text-dark">
       <button
-        className={`text-gray-200 dark:text-blue-strong-300 cursor-pointerdark:text-blue-strong-300 
+        className={`text-gray-200 dark:text-blue-strong-300 cursor-pointer  
           flex flex-row items-center justify-center p-1 mt-1 -mr-1 -ml-1
           rounded-full ${bellClassName}`}
         ref={bellRef}
@@ -114,7 +114,7 @@ export default function UserNotifications({
                     <IconButton
                       icon={LiaCheckDoubleSolid}
                       variant="naked"
-                      className="p-1 !w-6 !h-6"
+                      className="p-1 w-6! h-6!"
                       onClick={onMarkAllRead}
                       disabled={notificationsFetcher.isLoading}
                     />
@@ -123,7 +123,7 @@ export default function UserNotifications({
                     <IconButton
                       icon={MdArrowBack}
                       variant="naked"
-                      className="p-1 !w-6 !h-6"
+                      className="p-1 w-6! h-6!"
                       onClick={() => onPageChange(page - 1)}
                       disabled={notificationsFetcher.isLoading}
                     />
@@ -132,7 +132,7 @@ export default function UserNotifications({
                     <IconButton
                       icon={MdArrowForward}
                       variant="naked"
-                      className="p-1 !w-6 !h-6"
+                      className="p-1 w-6! h-6!"
                       onClick={() => onPageChange(page + 1)}
                       disabled={notificationsFetcher.isLoading}
                     />
@@ -216,7 +216,7 @@ function NotificationItem({
       key={notif.id}
       className={`
       p-2 flex flex-row rounded overflow-hidden justify-between pr-2
-      group items-center hover:bg-blue-moreTrans
+      group items-center hover:bg-blue-more-trans
     `}
       onClick={onClick}
     >

@@ -33,7 +33,7 @@ export default function Login() {
     <div className="mx-auto w-full sm:w-[400px] px-8">
       <fetcher.Form className="w-full my-8">
         <TopGradientBox innerClassName="px-8 py-6">
-          <h1 className="text-3xl">Log in</h1>
+          <h1 className="text-3xl!">Log in</h1>
 
           <div className="mt-4 flex flex-col gap-6">
             <TextInput

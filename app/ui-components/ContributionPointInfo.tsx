@@ -17,14 +17,14 @@ export default function ContributionPointInfo() {
               <p className="text-sm">
                 <b>{points}</b>
               </p>
-              <p className="text-sm text-text-weakLight dark:text-text-weakDark">
+              <p className="text-sm text-text-weak-light dark:text-text-weak-dark">
                 {text}
               </p>
             </Fragment>
           ))}
         </div>
 
-        <p className="text-sm mt-0.5 italic text-text-weakLight dark:text-text-weakDark">
+        <p className="text-sm mt-0.5 italic text-text-weak-light dark:text-text-weak-dark">
           Note that even if your comic upload has the status Approved it might still not
           be available on the site. We queue comics to spread their distribution evenly
           over time.
@@ -41,7 +41,7 @@ export default function ContributionPointInfo() {
               <p className="text-sm">
                 <b>{points}</b>
               </p>
-              <p className="text-sm text-text-weakLight dark:text-text-weakDark">
+              <p className="text-sm text-text-weak-light dark:text-text-weak-dark">
                 {text}
               </p>
             </Fragment>
@@ -57,7 +57,7 @@ export default function ContributionPointInfo() {
           <p className="text-sm">
             <b>{CONTRIBUTION_POINTS.comicProblem.points}</b>
           </p>
-          <p className="text-sm text-text-weakLight dark:text-text-weakDark">
+          <p className="text-sm text-text-weak-light dark:text-text-weak-dark">
             {CONTRIBUTION_POINTS.comicProblem.description}
           </p>
         </div>
@@ -71,17 +71,17 @@ export default function ContributionPointInfo() {
           <p className="text-sm">
             <b>{CONTRIBUTION_POINTS.tagSuggestion.points}</b>
           </p>
-          <p className="text-sm text-text-weakLight dark:text-text-weakDark">
+          <p className="text-sm text-text-weak-light dark:text-text-weak-dark">
             {CONTRIBUTION_POINTS.tagSuggestion.description}
           </p>
         </div>
 
-        <p className="text-sm mt-0.5 italic text-text-weakLight dark:text-text-weakDark">
+        <p className="text-sm mt-0.5 italic text-text-weak-light dark:text-text-weak-dark">
           Sometimes good suggestions might show up as rejected, if someone else suggested
           the same before you.
         </p>
 
-        <p className="text-sm mt-4 italic text-text-weakLight dark:text-text-weakDark">
+        <p className="text-sm mt-4 italic text-text-weak-light dark:text-text-weak-dark">
           Mods have different scoring criteria and actions.
         </p>
       </>

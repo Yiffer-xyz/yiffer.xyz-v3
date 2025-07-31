@@ -216,7 +216,7 @@ export default function MultiSelect<T>({
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent  px-2 after:absolute
     after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
     after:border-t-text-light dark:after:border-t-text-dark after:right-3
-    placeholder-gray-800 dark:placeholder-gray-700 w-fit min-w-8 flex-grow outline-none`;
+    placeholder-gray-800 dark:placeholder-gray-700 w-fit min-w-8 grow outline-hidden`;
 
   const borderClassname = `border border-0 border-theme1-primary border-b-2
     disabled:border-gray-800 dark:disabled:border-gray-600`;
@@ -224,8 +224,8 @@ export default function MultiSelect<T>({
   return (
     <div
       onKeyDown={onKeyDown}
-      className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
-        relative w-fit h-fit min-h-9 outline-none leading-9 box-content
+      className={`hover:cursor-pointer focus:bg-theme1-primary-trans
+        relative w-fit h-fit min-h-9 outline-hidden leading-9 box-content
         ${title ? 'pt-5' : ''} ${className} ${borderClassname}`}
       style={{
         ...minWidthStyle,
@@ -240,7 +240,7 @@ export default function MultiSelect<T>({
           <>
             {value.map(singleVal => (
               <div
-                className={`px-2 bg-theme1-primaryTrans rounded hover:bg-red-trans focus:bg-red-trans
+                className={`px-2 bg-theme1-primary-trans rounded hover:bg-red-trans focus:bg-red-trans
                   flex flex-row items-center h-8 md:h-fit`}
                 onClick={() => onDeselected(singleVal)}
                 key={JSON.stringify(singleVal)}
@@ -249,7 +249,7 @@ export default function MultiSelect<T>({
 
                 {isMobile && (
                   <span className="">
-                    <IoCloseOutline size={13} className="mt-[1px] -mr-1 ml-0.5" />
+                    <IoCloseOutline size={13} className="mt-px -mr-1 ml-0.5" />
                   </span>
                 )}
               </div>
@@ -274,7 +274,7 @@ export default function MultiSelect<T>({
       {/* CLEAR CROSS ICON */}
       {value && value.length > 0 && includeClearAll && (
         <span
-          className="absolute right-2 -top-[1px] hover:cursor-pointer"
+          className="absolute right-2 -top-px hover:cursor-pointer"
           onClick={removeAllSelected}
         >
           <RiCloseLine />
@@ -298,7 +298,7 @@ export default function MultiSelect<T>({
               ${areOptionsFullWidth ? 'w-full' : 'w-fit'}
               ${
                 currentlyHighlightedIndex === index
-                  ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                  ? 'bg-linear-to-r from-theme1-primary to-theme2-primary text-text-light '
                   : ''
               }}
             `}

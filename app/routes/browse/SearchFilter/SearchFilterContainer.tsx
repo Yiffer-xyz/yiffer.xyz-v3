@@ -71,8 +71,8 @@ export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilt
 
   const openClassNames = isOpen ? '' : 'cursor-pointer';
   const bgClassName = isAnySearchSortActive
-    ? 'bg-theme2-primary dark:bg-theme1-primaryTrans dark:border-theme2-dark dark:border-4'
-    : 'bg-theme1-primaryTrans';
+    ? 'bg-theme2-primary dark:bg-theme1-primary-trans dark:border-theme2-dark dark:border-4'
+    : 'bg-theme1-primary-trans';
 
   const removePadding = isAnySearchSortActive && theme === 'dark' ? 4 : 0;
   const paddingHoriz = SEARCHFILTER_PADDING_HORIZ - removePadding;

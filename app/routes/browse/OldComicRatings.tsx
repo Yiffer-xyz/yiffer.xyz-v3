@@ -10,7 +10,7 @@ export default function OldComicRatingsInfo() {
       style={{ width: CLOSED_SEARCHFILTER_WIDTH }}
     >
       <p className="font-bold">
-        <MdError className="mr-1 -mt-[1px]" />
+        <MdError className="mr-1 -mt-px" />
         Rating conversion from old Yiffer
       </p>
 

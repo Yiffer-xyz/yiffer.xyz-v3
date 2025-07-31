@@ -59,11 +59,11 @@ export default function AdStatusText({
     [status]
   );
 
-  const paddingClass = small ? 'py-[1px] px-[2px]' : 'py-[2px] px-1';
+  const paddingClass = small ? 'py-px px-[2px]' : 'py-[2px] px-1';
 
   return (
     <span
-      className={`border-2 border-solid ${paddingClass} rounded ${small ? 'text-xs' : 'text-sm'} h-fit`}
+      className={`border-2 border-solid ${paddingClass} rounded-sm ${small ? 'text-xs' : 'text-sm'} h-fit`}
       style={{ color: 'black', borderColor: textColor, backgroundColor }}
     >
       {text.toUpperCase()}

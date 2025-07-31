@@ -179,7 +179,7 @@ export default function Upload() {
                 isInsideParagraph
                 href="/contribute/your-contributions"
                 text="Your contributions page"
-                className="!text-white"
+                className="text-white!"
                 IconRight={MdArrowForward}
               />
               .

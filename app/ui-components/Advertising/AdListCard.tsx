@@ -32,10 +32,10 @@ export default function AdListCard({
   }, [ad.numDaysActive, ad.currentDaysActive]);
 
   const bgColor = useMemo(() => {
-    if (ad.videoSpecificFileType && showFullAdminData) return 'bg-red-moreTrans';
+    if (ad.videoSpecificFileType && showFullAdminData) return 'bg-red-more-trans';
 
     return showFullAdminData && ad.isChangedWhileActive
-      ? 'bg-theme1-primaryTrans'
+      ? 'bg-theme1-primary-trans'
       : 'bg-white dark:bg-gray-300';
   }, [ad.videoSpecificFileType, showFullAdminData, ad.isChangedWhileActive]);
 
@@ -43,11 +43,11 @@ export default function AdListCard({
 
   return (
     <div
-      className={`flex flex-col md:flex-row flex-nowrap shadow rounded-sm gap-y-1 px-3 py-3
+      className={`flex flex-col md:flex-row flex-nowrap shadow rounded-xs gap-y-1 px-3 py-3
         gap-6 justify-between ${bgColor}`}
       key={ad.id}
     >
-      <div className="flex flex-col gap-y-1 justify-between flex-grow md:flex-grow-0">
+      <div className="flex flex-col gap-y-1 justify-between grow md:grow-0">
         <div className="w-full flex flex-row justify-between items-center gap-6">
           <Link
             href={`${frontendAdsPath}/${ad.id}`}

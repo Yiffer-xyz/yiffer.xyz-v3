@@ -1,11 +1,149 @@
-@tailwind base;
-@tailwind components;
-
-* {
-  --toastify-toast-min-height: 40px;
-  --toastify-toast-width: fit-content;
-}
-
-@tailwind utilities;
+@import 'tailwindcss';
 
 @plugin 'tailwind-scrollbar';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-*: initial;
+  --font-sans: Mulish, sans-serif;
+
+  --color-text-light: #292929;
+  --color-text-weak-light: #595959;
+  --color-text-dark: #eee;
+  --color-text-weak-dark: #c0c0c0;
+  --color-text-white: #fff;
+
+  --color-status-info1: #36aaf8;
+  --color-status-info2: #1f90db;
+  --color-status-error2: #e2557f;
+  --color-status-warn1: #ec9e3f;
+  --color-status-warn2: #fbc164;
+
+  --color-bg: #fafafa;
+  --color-bg-dark: #262c30;
+
+  --color-theme1-primary: #9aebe7;
+  --color-theme1-primary-even-less-trans: #9aebe7aa;
+  --color-theme1-primary-less-trans: #9aebe770;
+  --color-theme1-primary-trans: #9aebe740;
+  --color-theme1-primary-more-trans: #9aebe71a;
+  --color-theme1-primary-trans-darker: #7ce9e460;
+  --color-theme1-light: #d8fefd;
+  --color-theme1-lighter: #edfffe;
+  --color-theme1-dark: #49ded7;
+  --color-theme1-darker: #08ccc2;
+  --color-theme1-darker2: #02c1b7;
+  --color-theme1-darker3: #00b8ad;
+  --color-theme1-verydark: #007a74;
+  --color-theme1-verydarker: #005450;
+  --color-theme1-dark-faded: #007a7440;
+  --color-theme1-primary-more-trans-solid: #eff8f8;
+
+  --color-theme2-primary: #adfee0;
+  --color-theme2-primary-even-less-trans: #adfee0aa;
+  --color-theme2-primary-less-trans: #adfee070;
+  --color-theme2-primary-trans: #adfee740;
+  --color-theme2-dark: #5df1ba;
+  --color-theme2-darker: #1cda94;
+  --color-theme2-darker2: #00c37a;
+  --color-theme2-darker3: #00b56d;
+  --color-theme2-dark-faded: #1cda9440;
+
+  --color-theme-middle-primary: #9aebe7;
+  --color-theme-middle-dark: #08ccc2;
+
+  --color-blue-strong-100: #007ec7;
+  --color-blue-strong-200: #0f9ff3;
+  --color-blue-strong-300: #3fb9f3;
+  --color-blue-strong-900: #f1fafe;
+
+  --color-blue-weak-100: #2a6386;
+  --color-blue-weak-200: #3a7fab;
+
+  --color-blue-trans: #3fb9f340;
+  --color-blue-more-trans: #3fb9f31a;
+
+  --color-red-strong-100: #b12525;
+  --color-red-strong-200: #d42a2a;
+  --color-red-strong-300: #ff5757;
+
+  --color-red-weak-100: #9d3f3f;
+  --color-red-weak-200: #c24747;
+
+  --color-red-trans: #ff575740;
+  --color-red-more-trans: #ff57571a;
+
+  --color-gray-100: #1e2224;
+  --color-gray-150: #202528;
+  --color-gray-200: #272d2f;
+  --color-gray-250: #2f353b;
+  --color-gray-300: #383f45;
+  --color-gray-400: #4d4f52;
+  --color-gray-450: #4f5255;
+  --color-gray-500: #5d6164;
+  --color-gray-600: #717579;
+  --color-gray-700: #9a9a9a;
+  --color-gray-750: #a6a6a6;
+  --color-gray-800: #cbcbcb;
+  --color-gray-850: #c1c8cc;
+  --color-gray-875: #e0e0e0;
+  --color-gray-900: #ececec;
+  --color-gray-925: #f0f0f0;
+  --color-gray-950: #fafafa;
+  --color-gray-border-light: #aaaaaa44;
+
+  --color-patreon-primary: #ff424d;
+
+  --width-w-fit: fit-content;
+
+  --border-width-3: 3px;
+  --border-width-5: 5px;
+
+  --container-80p: 80%;
+  --container-90p: 90%;
+  --container-95p: 95%;
+
+  --leading-0: 0;
+}
+
+@utility container {
+  padding-inline: 1rem;
+  @media (width >= theme(--breakpoint-sm)) {
+    padding-inline: 2rem;
+  }
+  @media (width >= theme(--breakpoint-lg)) {
+    padding-inline: 8rem;
+  }
+  @media (width >= theme(--breakpoint-xl)) {
+    padding-inline: 12rem;
+  }
+  @media (width >= theme(--breakpoint-2xl)) {
+    padding-inline: 16rem;
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@layer components {
+  * {
+    --toastify-toast-min-height: 40px;
+    --toastify-toast-width: fit-content;
+  }
+}

@@ -9,7 +9,6 @@ import { makeDbErr, processApiError } from '~/utils/request-helpers';
 import { useLoaderData } from '@remix-run/react';
 import type { ComicsPaginatedResult } from '~/route-funcs/get-comics-paginated';
 import { addAdsToComics, getComicsPaginated } from '~/route-funcs/get-comics-paginated';
-import { colors } from 'tailwind.config';
 import type { BrowseParams } from './SearchFilter/useBrowseParams';
 import {
   parseBrowseParams,
@@ -18,7 +17,12 @@ import {
 } from './SearchFilter/useBrowseParams';
 import { getUIPrefSession } from '~/utils/theme.server';
 import { authLoader } from '~/utils/loaders';
-import { ADS_PER_PAGE, COMICS_PER_PAGE } from '~/types/constants';
+import {
+  ADS_PER_PAGE,
+  COMICS_PER_PAGE,
+  THEME1_DARK,
+  THEME2_DARK,
+} from '~/types/constants';
 import { isComic } from '~/utils/general';
 import AdComicCard from '../../ui-components/Advertising/AdComicCard';
 import { getAdForViewing, getCardAdForViewing } from '~/route-funcs/get-ads-for-viewing';
@@ -224,7 +228,7 @@ export default function BrowsePage() {
   return (
     <div>
       <h1
-        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px] md:text-[72px]"
+        className="text-center mt-6 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px]! md:text-[72px]!"
         style={{
           fontFamily: 'Shrikhand,cursive',
           ...(theme === 'dark' ? darkHeaderStyle : lightHeaderStyle),
@@ -303,7 +307,7 @@ export default function BrowsePage() {
   );
 }
 const darkHeaderStyle = {
-  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${colors.theme1.dark}),color-stop(.8,${colors.theme2.dark}))`,
+  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${THEME1_DARK}),color-stop(.8,${THEME2_DARK}))`,
   backgroundClip: 'text',
 };
 const lightHeaderStyle = {

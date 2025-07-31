@@ -28,8 +28,8 @@ export default function ShowHideBox({
   const [showInfo, setShowInfo] = useState(false);
 
   const underlineClass = underline
-    ? `bg-[length:0%_1px] transition-[background-size] duration-200 bg-[center_bottom] 
-      hover:bg-[length:100%_1px] bg-gradient-to-r from-blue-weak-200 to-blue-weak-200
+    ? `bg-size-[0%_1px] transition-[background-size] duration-200 bg-position-[center_bottom] 
+      hover:bg-size-[100%_1px] bg-linear-to-r from-blue-weak-200 to-blue-weak-200
       dark:from-blue-strong-300 dark:to-blue-strong-300 bg-no-repeat
       focus:no-underline`
     : '';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { colors } from 'tailwind.config';
+import { THEME1, THEME2 } from '~/types/constants';
 import { waitMillisec } from '~/utils/general';
 
 export type MultiSelectProps<T> = {
@@ -215,7 +215,7 @@ export default function MultiSelectDropdown<T>({
   const borderStyle = error
     ? ''
     : {
-        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+        borderImage: `linear-gradient(to right, ${THEME1}, ${THEME2}) 1`,
       };
 
   function isValueSelected(value: T) {
@@ -225,8 +225,8 @@ export default function MultiSelectDropdown<T>({
   return (
     <div
       onKeyDown={onKeyDown}
-      className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
-        relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
+      className={`hover:cursor-pointer focus:bg-theme1-primary-trans
+        relative w-fit outline-hidden h-9 leading-9 pt-3 box-content ${className}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
       tabIndex={0}
@@ -259,8 +259,8 @@ export default function MultiSelectDropdown<T>({
             onClick={e => onSelected(optionValue)}
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
               currentlyHighlightedIndex === index
-                ? `bg-gradient-to-r from-theme1-primaryLessTrans to-theme2-primaryLessTrans  
-                   dark:from-theme1-primaryTrans dark:to-theme2-primaryTrans `
+                ? `bg-linear-to-r from-theme1-primary-less-trans to-theme2-primary-less-trans  
+                   dark:from-theme1-primary-trans dark:to-theme2-primary-trans `
                 : ''
             }}`}
           >

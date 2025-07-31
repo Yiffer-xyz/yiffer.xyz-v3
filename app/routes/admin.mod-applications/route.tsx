@@ -131,7 +131,7 @@ export function ModApplicationCard({
   return (
     <div
       key={application.id}
-      className={`flex flex-col shadow rounded-sm gap-y-1 px-3 py-3
+      className={`flex flex-col shadow rounded-xs gap-y-1 px-3 py-3
         gap-6 justify-between bg-white dark:bg-gray-300`}
     >
       <div className="flex flex-row justify-between">

@@ -55,7 +55,7 @@ export default function PublicProfileEdit({
 
   return (
     <div className="mt-2 mb-4 flex flex-col">
-      <h3 className="text-lg font-bold">Edit profile</h3>
+      <h3 className="font-bold">Edit profile</h3>
       <div className="flex flex-row gap-4 mt-2 mb-2">
         <Button variant="outlined" text="Cancel" startIcon={FaXmark} onClick={onFinish} />
         <LoadingButton

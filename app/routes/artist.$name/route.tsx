@@ -26,7 +26,7 @@ export default function ArtistPage() {
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
       <div className="md:w-[728px]">
-        <h1 className="text-3xl md:text-4xl">
+        <h1 className="text-3xl! md:text-4xl!">
           Artist: {artist?.name ?? queriedArtistName}
         </h1>
 

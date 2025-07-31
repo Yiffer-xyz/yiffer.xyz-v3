@@ -15,7 +15,7 @@ export default function TopGradientBox({
 }: TopGradientBoxProps) {
   return (
     <div
-      className={`pt-2.5 bg-gradient-to-r from-theme1-primary to-theme2-primary shadow-lg
+      className={`pt-2.5 bg-linear-to-r from-theme1-primary to-theme2-primary shadow-lg
         dark:from-theme1-dark dark:to-theme2-dark
         ${containerClassName}`}
       style={style}

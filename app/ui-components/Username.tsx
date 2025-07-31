@@ -77,7 +77,7 @@ export default function Username({
         <RemixLink
           to={`/user/${username}`}
           className={`flex absolute bg-white hover:bg-blue-strong-900 dark:bg-gray-100 dark:hover:bg-[#1a1b20]
-                      rounded-md py-2 px-2.5 bottom-[100%] left-0 dark:!text-white
+                      rounded-md py-2 px-2.5 bottom-full left-0 dark:text-white!
                       shadow-md dark:shadow-lg flex-row gap-2 items-center cursor-pointer z-10`}
         >
           <ProfilePicture user={user} pagesPath={pagesPath} className="w-16 h-16" />

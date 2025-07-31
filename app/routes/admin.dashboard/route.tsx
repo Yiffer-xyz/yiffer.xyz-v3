@@ -260,7 +260,7 @@ export default function Dashboard() {
             .fill(0)
             .map((_, i) => (
               <div
-                className="w-full max-w-3xl h-20 mb-4 bg-gray-900 dark:bg-gray-300 rounded"
+                className="w-full max-w-3xl h-20 mb-4 bg-gray-900 dark:bg-gray-300 rounded-sm"
                 key={i}
               />
             ))}
@@ -284,7 +284,7 @@ export default function Dashboard() {
         }
         if (isAssignedToMe) {
           assignationBgClass =
-            'bg-theme1-primaryLessTrans dark:bg-theme1-primaryTrans shadow-md';
+            'bg-theme1-primary-less-trans dark:bg-theme1-primary-trans shadow-md';
         }
         const innerContainerClassName = `flex flex-col gap-2 md:flex-row justify-between`;
 
