@@ -29,11 +29,16 @@ export async function loader(args: LoaderFunctionArgs) {
     ORDER BY id DESC
     LIMIT ? OFFSET ?`;
 
-  const dbRes = await queryDb<DbNotification[]>(args.context.cloudflare.env.DB, query, [
-    user.userId,
-    NOTIFICATIONS_PAGINATION_SIZE + 1,
-    (page - 1) * NOTIFICATIONS_PAGINATION_SIZE,
-  ]);
+  const dbRes = await queryDb<DbNotification[]>(
+    args.context.cloudflare.env.DB,
+    query,
+    [
+      user.userId,
+      NOTIFICATIONS_PAGINATION_SIZE + 1,
+      (page - 1) * NOTIFICATIONS_PAGINATION_SIZE,
+    ],
+    'Get notifications'
+  );
 
   if (dbRes.isError) {
     return processApiError('Error in /api/get-notifications', makeDbErr(dbRes), {

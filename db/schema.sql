@@ -708,3 +708,62 @@ CREATE TABLE IF NOT EXISTS comiccommentvote (
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_comicId ON comiccommentvote(comicId);
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_commentId ON comiccommentvote(commentId);
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_userId ON comiccommentvote(userId);
+
+------------------------------------------------------
+-- MESSAGE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chatmessage (
+  id INTEGER NOT NULL,
+  chatId INTEGER NOT NULL,
+  senderId INTEGER NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  isSystemMessage TINYINTEGER NOT NULL DEFAULT 0,
+  messageText TEXT NOT NULL CHECK (LENGTH(messageText) <= 1500),
+  PRIMARY KEY (id),
+  FOREIGN KEY (chatId) REFERENCES chat (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (senderId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatmessage_chatId ON chatmessage(chatId);
+
+------------------------------------------------------
+-- CHAT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat (
+  id INTEGER NOT NULL,
+  isRead TINYINTEGER NOT NULL DEFAULT 0,
+  isSystemChat TINYINTEGER NOT NULL DEFAULT 0,
+  lastMessageId INTEGER NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+);
+
+------------------------------------------------------
+-- CHAT MEMBER
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chatmember (
+  chatId INTEGER NOT NULL,
+  userId INTEGER NOT NULL,
+  PRIMARY KEY (chatId, userId),
+  FOREIGN KEY (chatId) REFERENCES chat (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatmember_userId ON chatmember(userId);
+CREATE INDEX IF NOT EXISTS idx_chatmember_chatId ON chatmember(chatId);
+
+
+
+
+
+
+
+
+
+-- wrangler d1 execute yiffer-dev-2 --local --command "INSERT INTO usermessage (id, toUserId, fromUserId, isSystemMessage, messageText, isRead, isReported) VALUES (1, 1, 1, 0, 'Test message', 0, 0)"
+
+CREATE INDEX IF NOT EXISTS idx_usermessage_toUserId ON usermessage(toUserId);
+CREATE INDEX IF NOT EXISTS idx_usermessage_fromUserId ON usermessage(fromUserId);
+
+wrangler d1 execute yiffer-dev-2 --local --command "CREATE INDEX IF NOT EXISTS idx_usermessage_toUserId ON usermessage(toUserId)"
+
+-- wrangler d1 execute yiffer-dev-2 --local --command "CREATE TABLE IF NOT EXISTS usermessage ( id INTEGER NOT NULL, toUserId INTEGER NOT NULL, fromUserId INTEGER NULL, isSystemMessage TINYINTEGER NOT NULL DEFAULT 0, messageText TEXT NOT NULL CHECK (LENGTH(messageText) <= 1500), isRead TINYINTEGER NOT NULL DEFAULT 0, isReported TINYINTEGER NOT NULL DEFAULT 0, PRIMARY KEY (id), FOREIGN KEY (toUserId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (fromUserId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE )"

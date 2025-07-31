@@ -70,11 +70,11 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="#"
-          title="Activity center"
-          description="Coming soon"
+          href="/me/messages"
+          title="Messages"
+          includeRightArrow
+          description="See and manage your messages"
           className="mt-4"
-          disabled
         />
 
         <LinkCard href="/logout" title="Log out" className="mt-4" />

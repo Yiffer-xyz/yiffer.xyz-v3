@@ -42,6 +42,7 @@ import { useAuthRedirect } from './utils/general';
 import { getUserByField } from './route-funcs/get-user';
 import { processApiError } from './utils/request-helpers';
 import UserNotifications from './page-components/UserNotifications';
+import UserMessagesIndicator from './page-components/UserMessagesIndicator';
 
 export const links: LinksFunction = () => [
   {
@@ -295,6 +296,10 @@ function Layout({
           </div>
 
           <div className="flex flex-row gap-3 mb-1 justify-center items-center">
+            {isLoggedIn && <UserMessagesIndicator />}
+
+            <UserNotifications pagesPath={pagesPath} isLoggedIn={isLoggedIn} />
+
             <button
               onClick={() => {
                 const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -305,8 +310,6 @@ function Layout({
             >
               <MdLightbulbOutline />
             </button>
-
-            <UserNotifications pagesPath={pagesPath} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </nav>

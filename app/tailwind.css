@@ -7,3 +7,5 @@
 }
 
 @tailwind utilities;
+
+@plugin 'tailwind-scrollbar';
