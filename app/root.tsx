@@ -141,7 +141,7 @@ function App() {
           <Links />
         </head>
         <body
-          className={`dark:bg-bgDark text-text-light dark:text-text-dark ${
+          className={`bg-bg dark:bg-bg-dark text-text-light dark:text-text-dark ${
             isLoading ? 'opacity-70 dark:opacity-80' : ''
           }`}
         >
@@ -229,11 +229,11 @@ function Layout({
       {isMissingEmail && <ForceSetEmail />}
 
       <nav
-        className={`flex bg-gradient-to-r from-theme1-primary to-theme2-primary dark:from-bgDark dark:to-bgDark
+        className={`flex bg-linear-to-r from-theme1-primary to-theme2-primary dark:from-bg-dark dark:to-bg-dark
           px-4 py-1.5 nav-shadowing justify-between mb-4 text-gray-200 w-full z-20
           ${isInAdminDashboard ? 'fixed lg:dark:border-b-3 lg:dark:border-b-gray-400' : ''}`}
       >
-        <div className="flex items-center justify-between mx-auto flex-grow max-w-full lg:max-w-80p">
+        <div className="flex items-center justify-between mx-auto grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">
             <RemixLink
               to="/"
@@ -334,7 +334,7 @@ export function ForceSetEmail() {
   if (isOnAccountPage) return null;
 
   return (
-    <div className="p-8 fixed top-0 left-0 w-full h-[100vh] flex items-center justify-center bg-white dark:bg-bgDark z-50">
+    <div className="p-8 fixed top-0 left-0 w-full h-screen flex items-center justify-center bg-white dark:bg-bg-dark z-50">
       <div className="flex flex-col gap-2">
         <h2>Missing email</h2>
         <p>Your account needs an associated email address.</p>
@@ -362,7 +362,7 @@ export function ErrorBoundary() {
         <Meta />
         <Links />
       </head>
-      <body className="dark:bg-bgDark text-text-light dark:text-text-dark">
+      <body className="bg-bg dark:bg-bg-dark text-text-light dark:text-text-dark">
         <Layout user={null} excludeLogin pagesPath={''}>
           <YifferErrorBoundary />
         </Layout>

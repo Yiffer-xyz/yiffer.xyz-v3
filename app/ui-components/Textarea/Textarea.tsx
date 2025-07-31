@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { colors } from 'tailwind.config';
+import { THEME1, THEME2 } from '~/types/constants';
 
 export type BaseTextareaProps = {
   label?: string;
@@ -47,7 +47,7 @@ export default function Textarea({
   const borderStyle = borderClass
     ? ''
     : {
-        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+        borderImage: `linear-gradient(to right, ${THEME1}, ${THEME2}) 1`,
       };
 
   return (
@@ -63,7 +63,7 @@ export default function Textarea({
           rows={rows}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full bg-transparent p-1.5 outline-none border-0 border-b-2 
+          className={`w-full bg-transparent p-1.5 outline-hidden border-0 border-b-2 
             placeholder-gray-800 dark:placeholder-gray-700 ${borderClass}`}
           style={{
             appearance: 'textfield',

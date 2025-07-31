@@ -157,7 +157,7 @@ export default function LiveComic({
         {comicDataChanges.length > 0 && (
           <>
             <div
-              className={`py-2 px-4 bg-theme1-primaryTrans flex flex-col gap-1 mt-6 ${
+              className={`py-2 px-4 bg-theme1-primary-trans flex flex-col gap-1 mt-6 ${
                 isMobile ? '' : 'w-fit'
               }`}
             >

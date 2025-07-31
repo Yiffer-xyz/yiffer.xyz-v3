@@ -94,7 +94,7 @@ export default function ComicRateBookmark({
       {/* Bookmark */}
       <button
         onClick={onToggleBookmark}
-        className="p-2 -ml-2 group"
+        className="p-2 -ml-2 group cursor-pointer"
         title="Subscribe to updates"
       >
         {(overrideBookmark ?? comic.isBookmarked) ? (
@@ -105,7 +105,7 @@ export default function ComicRateBookmark({
         ) : (
           <FaRegBell
             size={small ? 16 : 20}
-            className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark ${small ? 'mb-[1px]' : ''}`}
+            className={`${unfilledColorClass} mt-[3px] group-hover:text-theme1-dark ${small ? 'mb-px' : ''}`}
           />
         )}
       </button>
@@ -115,19 +115,19 @@ export default function ComicRateBookmark({
 
       {/* Stars */}
       <div>
-        <button onClick={() => onUpdateStars(1)} className="p-1 group">
+        <button onClick={() => onUpdateStars(1)} className="p-1 group cursor-pointer">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[0]} transition-all duration-75`}
           />
         </button>
-        <button onClick={() => onUpdateStars(2)} className="p-1 group">
+        <button onClick={() => onUpdateStars(2)} className="p-1 group cursor-pointer">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[1]} transition-all duration-75`}
           />
         </button>
-        <button onClick={() => onUpdateStars(3)} className="p-1 group">
+        <button onClick={() => onUpdateStars(3)} className="p-1 group cursor-pointer">
           <IoStar
             size={small ? 20 : 24}
             className={`${starClassnames[2]} transition-all duration-75`}

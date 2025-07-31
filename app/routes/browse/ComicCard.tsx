@@ -65,7 +65,7 @@ export default function ComicCard({
   return (
     <div
       className={`w-[160px] rounded shadow 
-                  bg-white hover:bg-theme1-primaryMoreTrans dark:bg-gray-300 dark:hover:bg-gray-400
+                  bg-white hover:bg-theme1-primary-more-trans dark:bg-gray-300 dark:hover:bg-gray-400
                   flex flex-col relative transition-all duration-100
                   ${showTags ? 'h-fit' : ''}
                   ${isHovering ? 'shadow-lg' : ''}`}
@@ -97,7 +97,7 @@ export default function ComicCard({
       {isHovering && (
         <div
           className="absolute -bottom-[30px] left-0 w-full h-[34px] 
-                   bg-theme1-primaryMoreTransSolid dark:bg-gray-400
+                   bg-theme1-primary-more-trans-solid dark:bg-gray-400
                      rounded-b shadow px-2 flex flex-row items-center justify-between pb-1"
           style={{ zIndex: 2 }}
           onMouseEnter={() => {
@@ -125,9 +125,9 @@ export default function ComicCard({
       )}
 
       <div
-        className={`-mt-5 mx-auto px-2 pt-[1px] rounded-sm text-sm rounded-b-none
+        className={`-mt-5 mx-auto px-2 pt-px rounded-xs text-sm rounded-b-none
                     dark:font-bold transition-all duration-100
-                    ${isHovering ? 'bg-theme1-primaryMoreTransSolid' : 'bg-white'}
+                    ${isHovering ? 'bg-theme1-primary-more-trans-solid' : 'bg-white'}
                     dark:bg-gray-${isHovering ? '400' : '300'}`}
       >
         <label>{comic.category}</label>
@@ -142,7 +142,7 @@ export default function ComicCard({
       <div className="text-center py-1 px-1 flex flex-col items-center justify-evenly h-full">
         <div className="leading-5 pt-0.5 pb-1">
           {comic.isBookmarked && (
-            <button className="pr-1.5 group" onClick={toggleBookmark}>
+            <button className="pr-1.5 group cursor-pointer" onClick={toggleBookmark}>
               <FaBell
                 size={14}
                 className={`inline-block transition-all text-theme1-primary dark:text-theme1-darker 
@@ -228,7 +228,7 @@ export default function ComicCard({
 }
 
 export function SkeletonComicCard() {
-  return <div className="w-[100px] h-[300px] rounded bg-gray-500" />;
+  return <div className="w-[100px] h-[300px] rounded-sm bg-gray-500" />;
 }
 
 function StateCorner({
@@ -239,14 +239,14 @@ function StateCorner({
   isHovered: boolean;
 }) {
   const borderClassName = isHovered
-    ? 'border-t-theme1-primaryMoreTransSolid dark:border-t-gray-400'
+    ? 'border-t-theme1-primary-more-trans-solid dark:border-t-gray-400'
     : 'border-t-white dark:border-t-gray-300';
 
   return (
     <div className="absolute top-0 left-0 rounded-tl">
       <div
         className={`border-solid rounded-tl 
-              border-t-[60px] border-r-[60px] border-b-0 border-l-0
+              border-t-60 border-r-60 border-b-0 border-l-0
               ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
               flex items-center justify-center`}
@@ -267,14 +267,14 @@ function StateCorner({
 
 function NewCorner({ isHovered }: { isHovered: boolean }) {
   const borderClassName = isHovered
-    ? 'border-t-theme1-primaryMoreTransSolid dark:border-t-gray-400'
+    ? 'border-t-theme1-primary-more-trans-solid dark:border-t-gray-400'
     : 'border-t-white dark:border-t-gray-300';
 
   return (
     <div className="absolute top-0 right-0 rounded-tr overflow-hidden">
       <div
         className={`border-solid rounded-tr
-              border-t-[60px] border-l-[60px] border-b-0 border-r-0
+              border-t-60 border-l-60 border-b-0 border-r-0
               ${borderClassName} transition-all duration-100
               border-r-transparent border-b-transparent border-l-transparent
               flex items-center justify-center`}

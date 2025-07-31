@@ -132,7 +132,7 @@ export default function Messages() {
               return (
                 <RemixLink
                   key={chat.id}
-                  className={`cursor-pointer py-3 px-3 ${chatId === chat.id ? 'bg-theme1-primaryTrans' : ''}`}
+                  className={`cursor-pointer py-3 px-3 ${chatId === chat.id ? 'bg-theme1-primary-trans' : ''}`}
                   to={`/me/messages/${chat.id}`}
                 >
                   <div className="flex flex-row gap-2 w-full">
@@ -141,7 +141,7 @@ export default function Messages() {
                       pagesPath={pagesPath}
                       className="w-12 h-12"
                     />
-                    <div className="overflow-hidden flex-grow">
+                    <div className="overflow-hidden grow">
                       <div className="flex flex-row gap-1 items-end justify-between w-full">
                         <p className="font-semibold">
                           {maybeOtherMember?.username ?? 'SYSTEM'}
@@ -160,7 +160,7 @@ export default function Messages() {
 
           <div
             className={`${chatId ? 'hidden md:block' : ''} overflow-y-scroll
-          scrollbar scrollbar-thumb-theme1-primary scrollbar-track-theme1-primaryTrans
+          scrollbar scrollbar-thumb-theme1-primary scrollbar-track-theme1-primary-trans
           `}
           >
             <Outlet />

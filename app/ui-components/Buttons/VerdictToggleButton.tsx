@@ -26,7 +26,7 @@ export default function VerdictToggleButton({
     dark:bg-red-strong-200 dark:hover:bg-red-strong-100 dark:focus:bg-red-strong-100
   `;
 
-  const smallClassName = small ? '!w-7 !h-7' : '';
+  const smallClassName = small ? 'w-7! h-7!' : '';
 
   return (
     <div className={`flex ${className}`}>

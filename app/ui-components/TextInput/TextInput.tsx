@@ -1,7 +1,7 @@
 import { MdClear } from 'react-icons/md';
 import type { HTMLAttributes } from 'react';
 import { useMemo } from 'react';
-import { colors } from 'tailwind.config';
+import { THEME1, THEME2 } from '~/types/constants';
 
 export type BaseTextInputProps = {
   label?: string;
@@ -57,7 +57,7 @@ export default function TextInput({
   const borderStyle = borderClass
     ? ''
     : {
-        borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+        borderImage: `linear-gradient(to right, ${THEME1}, ${THEME2}) 1`,
       };
 
   return (
@@ -87,7 +87,7 @@ export default function TextInput({
           disabled:border-gray-800 dark:disabled:border-gray-600 pt-1
           after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
           after:border-t-text-light dark:after:border-t-text-dark after:right-3
-          placeholder-gray-800 dark:placeholder-gray-700 w-full outline-none ${borderClass}`}
+          placeholder-gray-800 dark:placeholder-gray-700 w-full outline-hidden ${borderClass}`}
           style={{
             appearance: 'textfield',
             ...borderStyle,

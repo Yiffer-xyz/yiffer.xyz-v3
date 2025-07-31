@@ -76,7 +76,7 @@ export default function UserProfilePage() {
             <Breadcrumbs
               prevRoutes={[{ href: '/me', text: 'Me' }]}
               currentRoute="Profile"
-              className="!mb-2"
+              className="mb-2!"
             />
           )}
 

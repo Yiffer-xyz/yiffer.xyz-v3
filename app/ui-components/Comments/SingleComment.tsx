@@ -1,6 +1,5 @@
 import { useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { FaUser } from 'react-icons/fa';
 import { COMMENT_HIDE_THRESHOLD, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import type { ComicComment } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
@@ -108,7 +107,7 @@ export default function SingleComment({
                 <IconButton
                   variant="naked"
                   className={`
-                    text-xs font-normal !w-6 !h-6 -mt-1 -mb-1 ${bottomTextClass}
+                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
                     ${comment.yourVote === true ? 'text-theme1-dark' : ''}
                   `}
                   noPadding
@@ -117,14 +116,14 @@ export default function SingleComment({
                   disabled={commentVoteFetcher.isLoading}
                 />
                 {comment.score !== 0 && (
-                  <p className={`text-xs font-normal mt-[1px] ${bottomTextClass}`}>
+                  <p className={`text-xs font-normal mt-px ${bottomTextClass}`}>
                     {comment.score}
                   </p>
                 )}
                 <IconButton
                   variant="naked"
                   className={`
-                    text-xs font-normal !w-6 !h-6 -mt-1 -mb-1 ${bottomTextClass}
+                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
                     ${comment.yourVote === false ? 'text-theme1-dark' : ''}
                   `}
                   noPadding

@@ -98,7 +98,7 @@ export default function ComicManageTags({
               isInsideParagraph
               href="/contribute/your-contributions"
               text="Your contributions page"
-              className="!text-white"
+              className="text-white!"
               IconRight={MdArrowForward}
             />
           </p>
@@ -143,7 +143,7 @@ export default function ComicManageTags({
 
       {areChanges && (
         <>
-          <div className="bg-theme1-primaryTrans p-2 mt-4 w-full">
+          <div className="bg-theme1-primary-trans p-2 mt-4 w-full">
             {newTags.length > 0 && (
               <p>
                 <span className="font-bold">

@@ -125,7 +125,7 @@ export default function ManageArtist() {
       </div>
 
       {artist.isBanned && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit mb-6">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit mb-6">
           <h3>Banned artist</h3>
           <p>
             This artist cannot be chosen for new/existing comics, and cannot be suggested.
@@ -154,7 +154,7 @@ export default function ManageArtist() {
       )}
 
       {artist.isPending && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit mb-6">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit mb-6">
           <h3>Pending artist</h3>
           <p>
             This artist is pending. This means that a user has uploaded a comic and in the
@@ -204,7 +204,7 @@ export default function ManageArtist() {
       {artistChanges.length > 0 && (
         <>
           <div
-            className={`py-2 px-4 bg-theme1-primaryTrans flex flex-col gap-1 mt-6 ${
+            className={`py-2 px-4 bg-theme1-primary-trans flex flex-col gap-1 mt-6 ${
               isMobile ? '' : 'w-fit'
             }`}
           >

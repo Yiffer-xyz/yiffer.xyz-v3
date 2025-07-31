@@ -61,18 +61,18 @@ export default function RadioButtonGroup<T>({
           {options.map((option, index) => (
             <div
               key={index}
-              className="flex flex-row items-center cursor-pointer outline-none"
+              className="flex flex-row items-center cursor-pointer outline-hidden"
               onClick={() => !disabled && onChange(option.value)}
               onKeyDown={e => onKeyDown(e, index)}
               tabIndex={0}
               onFocus={() => setCurrentlyHighlightedIndex(index)}
             >
               <div
-                className={`flex flex-shrink-0 items-center justify-center w-5 h-5 rounded-full border-[1.5px]
+                className={`flex shrink-0 items-center justify-center w-5 h-5 rounded-full border-[1.5px]
                 border-gray-800 dark:border-gray-600 
               ${
                 currentlyHighlightedIndex === index && !disabled
-                  ? ' bg-theme1-primaryTrans '
+                  ? ' bg-theme1-primary-trans '
                   : ''
               } ${disabled ? 'bg-gray-900 dark:bg-gray-300' : ''}`}
               >

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
-import { colors } from 'tailwind.config';
+import { THEME1, THEME2 } from '~/types/constants';
 import useWindowSize from '~/utils/useWindowSize';
 
 type keyValOptions<T> = { text: string; value: T };
@@ -224,20 +224,20 @@ export default function SearchableSelect<T>({
     error || disabled
       ? ''
       : {
-          borderImage: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary}) 1`,
+          borderImage: `linear-gradient(to right, ${THEME1}, ${THEME2}) 1`,
         };
 
   const inputClassname = `text-text-light dark:text-text-dark bg-transparent border border-0 border-b-2 px-2 after:absolute
     disabled:border-gray-800 dark:disabled:border-gray-600
     after:content-[''] after:bottom-2.5 after:w-0 after:h-0 after:border-5 after:border-transparent
     after:border-t-text-light dark:after:border-t-text-dark after:right-3
-    placeholder-gray-800 dark:placeholder-gray-700 w-full outline-none`;
+    placeholder-gray-800 dark:placeholder-gray-700 w-full outline-hidden`;
 
   return (
     <div
       onKeyDown={onKeyDown}
-      className={`hover:cursor-pointer focus:bg-theme1-primaryTrans
-        relative w-fit outline-none h-9 leading-9 pt-3 box-content ${className}`}
+      className={`hover:cursor-pointer focus:bg-theme1-primary-trans
+        relative w-fit outline-hidden h-9 leading-9 pt-3 box-content ${className}`}
       style={{ ...minWidthStyle, ...widthStyle }}
       {...props}
     >
@@ -299,9 +299,9 @@ export default function SearchableSelect<T>({
             onClick={() => onSelected(text, optionValue)}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
-            className={`z-40 hover:cursor-pointer px-3 py-[9px] whitespace-nowrap text-wrap md:text-nowrap leading-[1rem] ${
+            className={`z-40 hover:cursor-pointer px-3 py-[9px] whitespace-nowrap text-wrap md:text-nowrap leading-4 ${
               currentlyHighlightedIndex === index
-                ? 'bg-gradient-to-r from-theme1-primary to-theme2-primary text-text-light '
+                ? 'bg-linear-to-r from-theme1-primary to-theme2-primary text-text-light '
                 : ''
             }`}
           >

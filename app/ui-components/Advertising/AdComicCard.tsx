@@ -44,7 +44,7 @@ export default function AdComicCard({
   return (
     <div
       className={`${widthClassName} rounded overflow-hidden bg-white dark:bg-gray-300
-                  flex flex-col relative ${minimal ? '' : 'shadow'}
+                  flex flex-col relative ${minimal ? '' : 'shadow-sm'}
                   ${comicCardTags || minimal ? 'h-fit' : ''} ${className}`}
       style={{ minHeight: height }}
       key={ad.id}
@@ -140,7 +140,7 @@ export default function AdComicCard({
 }
 
 export function SkeletonComicCard() {
-  return <div className="w-[100px] h-[300px] rounded bg-gray-500" />;
+  return <div className="w-[100px] h-[300px] rounded-sm bg-gray-500" />;
 }
 
 function AdCorner() {
@@ -148,7 +148,7 @@ function AdCorner() {
     <div className="absolute top-0 right-0">
       <div
         className={`border-solid 
-              border-t-[60px] border-l-[60px] border-b-0 border-r-0
+              border-t-60 border-l-60 border-b-0 border-r-0
               border-t-white dark:border-t-gray-300 
               border-r-transparent border-b-transparent border-l-transparent
               flex items-center justify-center`}

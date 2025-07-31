@@ -81,7 +81,7 @@ export default function Step3Pagemanager({
           </p>
           <Button
             variant="naked"
-            className="!text-white -ml-3 -mb-2"
+            className="text-white! -ml-3 -mb-2"
             text="Dismiss"
             onClick={() => {
               setDuplicateFilenames([]);

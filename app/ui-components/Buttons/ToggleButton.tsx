@@ -24,11 +24,11 @@ export default function ToggleButton<T>({
   className = '',
   disabled = false,
 }: Props<T>) {
-  const disabledActiveClass = `from-theme1-darkFaded to-theme2-darkFaded
-    dark:from-theme1-darkFaded dark:to-theme2-darkFaded`;
+  const disabledActiveClass = `from-theme1-dark-faded to-theme2-dark-faded
+    dark:from-theme1-dark-faded dark:to-theme2-dark-faded`;
 
   const enabledClass = `
-    dark:text-gray-100 text-gray-100 bg-gradient-to-r from-theme1-dark to-theme2-dark
+    dark:text-gray-100 text-gray-100 bg-linear-to-r from-theme1-dark to-theme2-dark
     dark:from-theme1-darker dark:to-theme2-darker ${disabled ? disabledActiveClass : ''}
   `;
   const disabledClass = `

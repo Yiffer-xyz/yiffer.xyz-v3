@@ -48,7 +48,7 @@ export default function PublicProfile({
           </div>
         )}
 
-        <div className="flex flex-col gap-1 flex-shrink">
+        <div className="flex flex-col gap-1 shrink">
           {isAdminPanel ? <h2>{user.username}</h2> : <h1>{user.username}</h1>}
           <div className="flex flex-col gap-1 text-sm sm:text-base">
             {hasAnyBadges && (

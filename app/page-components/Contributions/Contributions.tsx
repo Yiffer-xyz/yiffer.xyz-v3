@@ -80,7 +80,7 @@ export function Contributions({
         {contributions.map((contribution, index) => (
           <div
             key={index}
-            className="p-3 w-full mb-4 max-w-3xl rounded bg-white dark:bg-gray-300 shadow-md"
+            className="p-3 w-full mb-4 max-w-3xl rounded-sm bg-white dark:bg-gray-300 shadow-md"
           >
             <div className="flex flex-row justify-between gap-2">
               <p className="font-semibold">{getContributionName(contribution)}</p>

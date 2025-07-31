@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { RiArrowLeftLine, RiArrowRightLine } from 'react-icons/ri';
-import { colors } from 'tailwind.config';
 import { useUIPreferences } from '~/utils/theme-provider';
 import posthog from 'posthog-js';
+import { THEME1, THEME1_DARK, THEME2, THEME2_DARK } from '~/types/constants';
 
 type PaginatorProps = {
   currentPage: number;
@@ -26,17 +26,17 @@ export default function Paginator({
   const selectedButtonClass = 'border-0 border-hidden pt-[5px]';
 
   const selectedBorderImageStyle = `linear-gradient(to right, ${
-    theme === 'light' ? colors.theme1.primary : colors.theme1.dark
+    theme === 'light' ? THEME1 : THEME1_DARK
   }, 
-    ${theme === 'light' ? colors.theme2.primary : colors.theme2.dark}) 1`;
+    ${theme === 'light' ? THEME2 : THEME2_DARK}) 1`;
 
   return (
     <div
       className={`mx-auto w-[332px] sm:w-[300px] flex flex-row h-8 text-xs shadow max-w-95p
-        dark:bg-gray-300 rounded-sm overflow-hidden ${className}`}
+        dark:bg-gray-300 rounded-xs overflow-hidden ${className}`}
     >
       <button
-        className="flex-grow bg-theme1-primary dark:bg-theme1-dark flex items-center justify-center h-full w-2"
+        className="grow bg-theme1-primary dark:bg-theme1-dark flex items-center justify-center h-full w-2 cursor-pointer"
         onClick={() => {
           if (currentPage >= 2) {
             onPageChange(currentPage - 1);
@@ -56,8 +56,8 @@ export default function Paginator({
         return (
           <button
             key={currentPage + '-' + i}
-            className={`flex-grow flex items-center justify-center h-full 
-              ${typeof btnTxt === 'number' && 'hover:bg-theme1-primaryTrans'}
+            className={`grow flex items-center justify-center h-full cursor-pointer
+              ${typeof btnTxt === 'number' && 'hover:bg-theme1-primary-trans'}
               ${isSelected && selectedButtonClass}`}
             style={
               isSelected
@@ -78,7 +78,7 @@ export default function Paginator({
         );
       })}
       <button
-        className="flex-grow bg-theme2-primary dark:bg-theme2-dark flex items-center justify-center h-full w-2"
+        className="grow bg-theme2-primary dark:bg-theme2-dark flex items-center justify-center h-full w-2"
         onClick={() => {
           if (currentPage < numPages) {
             onPageChange(currentPage + 1);

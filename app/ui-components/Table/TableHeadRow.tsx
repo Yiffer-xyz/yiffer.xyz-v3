@@ -12,7 +12,7 @@ export default function TableHeadRow({
   className = '',
 }: TableHeadProps) {
   const theadRowClass = `bg-gray-900 dark:bg-gray-300 text-left border-b
-    border-gray-borderLight font-bold`;
+    border-gray-border-light font-bold`;
   return (
     <thead>
       <tr

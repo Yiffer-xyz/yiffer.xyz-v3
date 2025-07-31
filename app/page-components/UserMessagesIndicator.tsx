@@ -22,7 +22,7 @@ export default function UserMessagesIndicator() {
   return (
     <RemixLink to="/me/messages" className="px-2 ">
       <div
-        className={`relative dark:bg-bgDark text-text-light dark:text-text-dark 
+        className={`relative dark:bg-bg-dark text-text-light dark:text-text-dark 
           -mx-2.5 w-[22px] mt-1 pt-1 h-[22px] flex items-center justify-center rounded-full ${containerClassName}`}
       >
         {hasUnreads ? (

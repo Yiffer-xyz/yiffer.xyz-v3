@@ -481,7 +481,7 @@ function FileChangesDisplay({ changes }: { changes: (FileChange | FileChangeRang
     if (isFileChangeRange(changeOrRange)) {
       const isUp = changeOrRange.firstNew > changeOrRange.firstOriginal;
       return (
-        <span className="bg-theme1-primaryTrans p-1 rounded" key={i}>
+        <span className="bg-theme1-primary-trans p-1 rounded-sm" key={i}>
           {changeOrRange.firstOriginal}..{changeOrRange.lastOriginal}{' '}
           {isUp ? <MdArrowUpward /> : <MdArrowDownward />} {changeOrRange.firstNew}..
           {changeOrRange.lastNew}
@@ -494,7 +494,7 @@ function FileChangesDisplay({ changes }: { changes: (FileChange | FileChangeRang
         ? changeOrRange.newPos > changeOrRange.originalPos
         : false;
     return (
-      <span className="bg-theme1-primaryTrans p-1 rounded" key={i}>
+      <span className="bg-theme1-primary-trans p-1 rounded-sm" key={i}>
         {changeOrRange.isNewPage ? (
           <>New {changeOrRange.newPos}</>
         ) : changeOrRange.isDeleted ? (

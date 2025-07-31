@@ -22,7 +22,7 @@ export default function AccountPage() {
     <div className="container mx-auto pb-8">
       <h1>Me</h1>
 
-      <Breadcrumbs prevRoutes={[]} currentRoute="Me" className="!mb-2" />
+      <Breadcrumbs prevRoutes={[]} currentRoute="Me" className="mb-2!" />
 
       <p className="text-lg">
         <RiAccountCircleFill /> {user?.username}
