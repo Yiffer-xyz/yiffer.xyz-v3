@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import PublicProfileBadges from './PublicProfile/PublicProfileBadges';
 import { FaUser } from 'react-icons/fa';
 import { MdArrowForward } from 'react-icons/md';
+import ProfilePicture from './ProfilePicture/ProfilePicture';
 
 export default function Username({
   id,
@@ -79,25 +80,7 @@ export default function Username({
                       rounded-md py-2 px-2.5 bottom-[100%] left-0 dark:!text-white
                       shadow-md dark:shadow-lg flex-row gap-2 items-center cursor-pointer z-10`}
         >
-          <div className="rounded w-[64px] h-[64px]">
-            {user?.profilePictureToken ? (
-              <img
-                src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${user.profilePictureToken}.jpg`}
-                alt="Avatar"
-                className="rounded h-[64px] w-[64px] bg-gray-875 dark:bg-gray-700"
-                width={64}
-                height={64}
-              />
-            ) : (
-              <div className="rounded w-[64px] h-[64px] bg-gray-875 dark:bg-gray-700 flex items-center justify-center">
-                {user ? (
-                  <FaUser className="text-2xl sm:text-3xl text-gray-700 dark:text-gray-400" />
-                ) : (
-                  <Spinner />
-                )}
-              </div>
-            )}
-          </div>
+          <ProfilePicture user={user} pagesPath={pagesPath} className="w-16 h-16" />
 
           <div className="flex flex-col justify-evenly h-[64px]">
             <p className="font-semibold">{username}</p>

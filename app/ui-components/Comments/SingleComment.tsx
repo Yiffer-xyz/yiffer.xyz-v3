@@ -10,6 +10,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import IconButton from '../Buttons/IconButton';
 import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
 import Button from '../Buttons/Button';
+import ProfilePicture from '../ProfilePicture/ProfilePicture';
 
 export default function SingleComment({
   comment,
@@ -66,17 +67,11 @@ export default function SingleComment({
 
   return (
     <div className="pb-[4px] flex flex-row gap-x-2 w-full">
-      {comment.user.profilePictureToken ? (
-        <img
-          src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${comment.user.profilePictureToken}.jpg`}
-          className="w-[68px] h-[68px] mt-[3px] rounded"
-          alt={comment.user.username}
-        />
-      ) : (
-        <div className="w-[68px] h-[68px] mt-[3px] rounded bg-gray-800 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <FaUser className="text-3xl" color="#666" />
-        </div>
-      )}
+      <ProfilePicture
+        user={comment.user}
+        pagesPath={pagesPath}
+        className="w-[70px] h-[70px]"
+      />
 
       <div className="w-full">
         <div className="flex flex-row gap-x-4 items-end">

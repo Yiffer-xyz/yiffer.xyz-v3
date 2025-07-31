@@ -623,3 +623,25 @@ export type ComicUpdateNotification = {
   timestamp: Date;
   isRead: boolean;
 };
+
+export type Chat = {
+  id: number;
+  isSystemChat: boolean;
+  members: MinimalUser[];
+  isRead: boolean;
+  latestMessage: {
+    id: number;
+    senderId: number;
+    timestamp: Date;
+    content: string;
+  };
+};
+
+export type ChatMessage = {
+  id: number;
+  fromUser: MinimalUser | null;
+  timestamp: Date;
+  isSystemMessage: boolean;
+  messageText: string;
+  isRead: boolean;
+};

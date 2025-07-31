@@ -3105,6 +3105,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prismjs@npm:^1.26.0":
+  version: 1.26.5
+  resolution: "@types/prismjs@npm:1.26.5"
+  checksum: 10c0/5619cb449e0d8df098c8759d6f47bf8fdd510abf5dbdfa999e55c6a2545efbd1e209cc85a33d8d9f4ff2898089a1a6d9a70737c9baffaae635c46852c40d384a
+  languageName: node
+  linkType: hard
+
 "@types/prop-types@npm:*":
   version: 15.7.12
   resolution: "@types/prop-types@npm:15.7.12"
@@ -9546,6 +9553,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prism-react-renderer@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "prism-react-renderer@npm:2.4.1"
+  dependencies:
+    "@types/prismjs": "npm:^1.26.0"
+    clsx: "npm:^2.0.0"
+  peerDependencies:
+    react: ">=16.0.0"
+  checksum: 10c0/ebbe8feb975224344bbdd046b3a937d121592dbe4b8f22ba0be31f5af37b9a8219f441138ef6cab1c5b96f2aa6b529015200959f7e5e85b60ca69c81d35edcd4
+  languageName: node
+  linkType: hard
+
 "proc-log@npm:^3.0.0":
   version: 3.0.0
   resolution: "proc-log@npm:3.0.0"
@@ -10963,6 +10982,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwind-scrollbar@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "tailwind-scrollbar@npm:4.0.2"
+  dependencies:
+    prism-react-renderer: "npm:^2.4.1"
+  peerDependencies:
+    tailwindcss: 4.x
+  checksum: 10c0/942dd9ec381e09f65220fb9370f6ec1de137e88b9c7a043ee1eafd0397da1d0c4a9780e833ed159892106da820611867d358c73e05509746329cd0414102c587
+  languageName: node
+  linkType: hard
+
 "tailwindcss@npm:^3.4.4":
   version: 3.4.10
   resolution: "tailwindcss@npm:3.4.10"
@@ -12228,6 +12258,7 @@ __metadata:
     react-select-country-list: "npm:^2.2.3"
     react-toastify: "npm:^10.0.5"
     recharts: "npm:^2.12.7"
+    tailwind-scrollbar: "npm:^4.0.2"
     tailwindcss: "npm:^3.4.4"
     typescript: "npm:^5.1.6"
     upgrade-remix: "npm:^0.6.2"
