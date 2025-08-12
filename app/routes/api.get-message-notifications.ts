@@ -6,22 +6,20 @@ import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-h
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
-  const query = `SELECT COUNT(*) AS count FROM usermessage WHERE toUserId = ? AND isRead = 0`;
+  const query = `SELECT * FROM chatnotification WHERE userId = ?`;
 
-  const dbRes = await queryDb<{ count: number }[]>(
+  const dbRes = await queryDb<any[]>(
     args.context.cloudflare.env.DB,
     query,
     [user.userId],
-    'Unread message count'
+    'Get chat notification count'
   );
 
   if (dbRes.isError) {
-    return processApiError('Error in /api/get-messages', makeDbErr(dbRes), {
+    return processApiError('Error in /api/get-message-notifications', makeDbErr(dbRes), {
       userId: user.userId,
     });
   }
 
-  return createSuccessJson({
-    unreadCount: dbRes.result[0].count,
-  });
+  return createSuccessJson({ hasUnreads: dbRes.result.length > 0 });
 }

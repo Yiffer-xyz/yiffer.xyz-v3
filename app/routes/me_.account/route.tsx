@@ -8,6 +8,7 @@ import ChangeAccountData from './ChangeAccountData';
 import { FaChevronRight, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import { FaMessage } from 'react-icons/fa6';
 import { useState } from 'react';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -29,6 +30,11 @@ export default function AccountPage() {
   const [isChangingUsername, setIsChangingUsername] = useState(false);
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const isChangingSomething = isChangingPassword || isChangingUsername || isChangingEmail;
+
+  const updateAllowMessagesFetcher = useGoodFetcher({
+    url: '/api/set-allow-messages',
+    method: 'post',
+  });
 
   const borderClass =
     'flex flex-row justify-between items-center border-b border-gray-850 dark:border-gray-500 px-3.5 h-14 gap-8';
@@ -92,12 +98,23 @@ export default function AccountPage() {
               </div>
               <FaChevronRight className={chevronClass} />
             </div>
-            <div className={`${borderClass} ${clickableClass} border-b-0!`} tabIndex={0}>
+            <div
+              className={`${borderClass} ${clickableClass} border-b-0!`}
+              tabIndex={0}
+              onClick={() =>
+                !updateAllowMessagesFetcher.isLoading &&
+                updateAllowMessagesFetcher.submit({ allowMessages: !user.allowMessages })
+              }
+            >
               <div className={rowClass}>
                 <FaMessage className={iconClass} />
                 <div>
                   <p className={rowTitleClass}>Messages</p>
-                  <p className="-mt-0.5">Allow messages</p>
+                  <p className="-mt-0.5">
+                    {user.allowMessages
+                      ? 'Allow new messages'
+                      : "Don't allow new messages"}
+                  </p>
                 </div>
               </div>
               <FaChevronRight className={chevronClass} />
