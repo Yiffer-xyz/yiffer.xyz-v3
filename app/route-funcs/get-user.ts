@@ -25,12 +25,14 @@ type DbUser = Omit<
   | 'hasCompletedConversion'
   | 'socialLinks'
   | 'contributionPoints'
+  | 'allowMessages'
 > & {
   createdTime: string;
   banTime: string;
   lastActionTime: string;
   isBanned: 0 | 1;
   hasCompletedConversion: 0 | 1;
+  allowMessages: 0 | 1;
 };
 
 export async function searchUsers(
@@ -43,7 +45,7 @@ export async function searchUsers(
   const searchQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes,
-      hasCompletedConversion, patreonEmail, patreonDollars
+      hasCompletedConversion, patreonEmail, patreonDollars, allowMessages
     FROM user
     ${whereQuery}
     ORDER BY lastActionTimestamp DESC, createdTime DESC
@@ -82,7 +84,7 @@ export async function getUserByField({
   const userQuery = `
     SELECT user.id, username, email, userType, createdTime, isBanned, banReason, modNotes,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion,
-      patreonEmail, patreonDollars, bio, nationality, profilePictureToken
+      patreonEmail, patreonDollars, bio, nationality, profilePictureToken, allowMessages
     FROM user
     ${whereStr}
     LIMIT 1
@@ -132,6 +134,7 @@ function dbUserToUser(user: DbUser): User {
     hasCompletedConversion: !!user.hasCompletedConversion,
     socialLinks: [],
     contributionPoints: 0,
+    allowMessages: !!user.allowMessages,
   };
 
   return convertedUser;

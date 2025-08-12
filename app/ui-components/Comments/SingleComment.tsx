@@ -1,6 +1,6 @@
 import { useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { COMMENT_HIDE_THRESHOLD, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
+import { COMMENT_HIDE_THRESHOLD } from '~/types/constants';
 import type { ComicComment } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Username from '../Username';

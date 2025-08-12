@@ -8,7 +8,6 @@ import { formatDistanceToNow } from 'date-fns';
 import PublicProfileBadges from './PublicProfile/PublicProfileBadges';
 import { FaUser } from 'react-icons/fa';
 import { MdArrowForward } from 'react-icons/md';
-import ProfilePicture from './ProfilePicture/ProfilePicture';
 
 export default function Username({
   id,
@@ -17,6 +16,8 @@ export default function Username({
   fullUser,
   pagesPath,
   showRightArrow = true,
+  positionVertical = 'top',
+  positionHorizontal = 'right',
   textClassName = 'text-base',
   className = '',
 }: {
@@ -26,6 +27,8 @@ export default function Username({
   fullUser?: PublicUser;
   pagesPath: string;
   showRightArrow?: boolean;
+  positionVertical?: 'top' | 'bottom';
+  positionHorizontal?: 'left' | 'right' | 'center';
   textClassName?: string;
   className?: string;
 }) {
@@ -77,10 +80,29 @@ export default function Username({
         <RemixLink
           to={`/user/${username}`}
           className={`flex absolute bg-white hover:bg-blue-strong-900 dark:bg-gray-100 dark:hover:bg-[#1a1b20]
-                      rounded-md py-2 px-2.5 bottom-full left-0 dark:text-white!
+                      rounded-md py-2 px-2.5 ${positionVertical === 'top' ? 'bottom-full' : 'top-full'} 
+                      ${positionHorizontal === 'right' ? 'left-0' : positionHorizontal === 'left' ? 'right-0' : 'left-1/2 -translate-x-1/2'} dark:text-white!
                       shadow-md dark:shadow-lg flex-row gap-2 items-center cursor-pointer z-10`}
         >
-          <ProfilePicture user={user} pagesPath={pagesPath} className="w-16 h-16" />
+          <div className="rounded w-[64px] h-[64px]">
+            {user?.profilePictureToken ? (
+              <img
+                src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${user.profilePictureToken}.jpg`}
+                alt="Avatar"
+                className="rounded h-[64px] w-[64px] bg-gray-875 dark:bg-gray-700"
+                width={64}
+                height={64}
+              />
+            ) : (
+              <div className="rounded w-[64px] h-[64px] bg-gray-875 dark:bg-gray-700 flex items-center justify-center">
+                {user ? (
+                  <FaUser className="text-2xl sm:text-3xl text-gray-700 dark:text-gray-400" />
+                ) : (
+                  <Spinner />
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col justify-evenly h-[64px]">
             <p className="font-semibold">{username}</p>

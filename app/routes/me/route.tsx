@@ -73,7 +73,7 @@ export default function AccountPage() {
           href="/me/messages"
           title="Messages"
           includeRightArrow
-          description="See and manage your messages"
+          description="Send and receive messages"
           className="mt-4"
         />
 

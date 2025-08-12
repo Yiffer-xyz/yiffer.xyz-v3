@@ -232,6 +232,7 @@ export type User = {
   contributionPoints: number;
   profilePictureToken?: string | null;
   comments?: ComicComment[];
+  allowMessages?: boolean;
 };
 
 export type MinimalUser = {
@@ -625,13 +626,13 @@ export type ComicUpdateNotification = {
 };
 
 export type Chat = {
-  id: number;
+  token: string;
   isSystemChat: boolean;
   members: MinimalUser[];
   isRead: boolean;
-  latestMessage: {
+  latestMessage?: {
     id: number;
-    senderId: number;
+    senderId: number | null;
     timestamp: Date;
     content: string;
   };
@@ -639,9 +640,7 @@ export type Chat = {
 
 export type ChatMessage = {
   id: number;
-  fromUser: MinimalUser | null;
+  fromUserId: number | null;
   timestamp: Date;
-  isSystemMessage: boolean;
   messageText: string;
-  isRead: boolean;
 };

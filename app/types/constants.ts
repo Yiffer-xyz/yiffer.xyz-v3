@@ -236,3 +236,5 @@ export const THEME1 = '#9aebe7';
 export const THEME1_DARK = '#49ded7';
 export const THEME2 = '#adfee0';
 export const THEME2_DARK = '#5df1ba';
+
+export const MAX_MESSAGE_LENGTH = 1500;
