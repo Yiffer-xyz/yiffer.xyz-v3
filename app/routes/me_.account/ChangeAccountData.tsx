@@ -8,13 +8,20 @@ import TopGradientBox from '~/ui-components/TopGradientBox';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import posthog from 'posthog-js';
 
-export default function ChangeAccountData() {
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isChangingUsername, setIsChangingUsername] = useState(false);
+export default function ChangeAccountData({
+  isChangingPassword,
+  isChangingEmail,
+  isChangingUsername,
+  onDone,
+}: {
+  isChangingPassword: boolean;
+  isChangingEmail: boolean;
+  isChangingUsername: boolean;
+  onDone: () => void;
+}) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
-  const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newUsername, setNewUsername] = useState('');
 
@@ -22,33 +29,25 @@ export default function ChangeAccountData() {
     url: '/api/change-password',
     method: 'post',
     toastError: false,
+    toastSuccessMessage: 'Password changed',
+    onFinish: onDone,
   });
 
   const submitEmailFetcher = useGoodFetcher({
     url: '/api/change-email',
     method: 'post',
     toastError: false,
+    toastSuccessMessage: 'Email changed',
+    onFinish: onDone,
   });
 
   const submitUsernameFetcher = useGoodFetcher({
     url: '/api/change-username',
     method: 'post',
     toastError: false,
+    toastSuccessMessage: 'Username changed',
+    onFinish: onDone,
   });
-
-  function cancel() {
-    setIsChangingPassword(false);
-    setIsChangingEmail(false);
-    setIsChangingUsername(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setNewPassword2('');
-    setNewEmail('');
-    setNewUsername('');
-    submitPasswordFetcher.reset();
-    submitEmailFetcher.reset();
-    submitUsernameFetcher.reset();
-  }
 
   async function submitPasswordChange() {
     if (submitPasswordFetcher.isLoading) return;
@@ -84,6 +83,13 @@ export default function ChangeAccountData() {
     });
   }
 
+  function onSubmit(e?: React.FormEvent<HTMLFormElement>) {
+    e?.preventDefault();
+    if (isChangingPassword) submitPasswordChange();
+    else if (isChangingEmail) submitEmailChange();
+    else if (isChangingUsername) submitUsernameChange();
+  }
+
   const isChangingSomething = isChangingPassword || isChangingEmail || isChangingUsername;
   const isError =
     submitPasswordFetcher.isError ||
@@ -98,49 +104,7 @@ export default function ChangeAccountData() {
     : '';
 
   if (!isChangingSomething) {
-    return (
-      <div className="flex flex-col sm:flex-row flex-wrap gap-x-4 gap-y-2 mt-4">
-        <Button text="Change username" onClick={() => setIsChangingUsername(true)} />
-        <Button text="Change password" onClick={() => setIsChangingPassword(true)} />
-        <Button text="Change email" onClick={() => setIsChangingEmail(true)} />
-      </div>
-    );
-  }
-
-  if (submitPasswordFetcher.success) {
-    return (
-      <InfoBox
-        variant="success"
-        text="Password changed successfully"
-        className="mt-4 w-full sm:w-fit"
-        closable
-        overrideOnCloseFunc={() => cancel()}
-      />
-    );
-  }
-
-  if (submitUsernameFetcher.success) {
-    return (
-      <InfoBox
-        variant="success"
-        text="Username changed successfully"
-        className="mt-4 w-full sm:w-fit"
-        closable
-        overrideOnCloseFunc={() => cancel()}
-      />
-    );
-  }
-
-  if (submitEmailFetcher.success) {
-    return (
-      <InfoBox
-        variant="success"
-        text={`A verification link has been sent to ${newEmail.trim().toLowerCase()}.`}
-        className="mt-4 w-full sm:w-fit"
-        closable
-        overrideOnCloseFunc={() => cancel()}
-      />
-    );
+    return null;
   }
 
   return (
@@ -157,7 +121,7 @@ export default function ChangeAccountData() {
           </p>
         )}
 
-        <form>
+        <form onSubmit={onSubmit} onSubmitCapture={onSubmit}>
           {isChangingPassword && (
             <>
               <TextInput
@@ -234,18 +198,15 @@ export default function ChangeAccountData() {
             <Button
               text="Cancel"
               variant="outlined"
-              onClick={cancel}
+              onClick={onDone}
               startIcon={MdClose}
             />
 
             <LoadingButton
               text="Submit"
               startIcon={MdCheck}
-              onClick={() => {
-                if (isChangingPassword) submitPasswordChange();
-                else if (isChangingEmail) submitEmailChange();
-                else if (isChangingUsername) submitUsernameChange();
-              }}
+              onClick={() => onSubmit()}
+              isSubmit
               isLoading={
                 isChangingPassword
                   ? submitPasswordFetcher.isLoading

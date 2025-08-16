@@ -70,10 +70,10 @@ export default function Patreon() {
       <div className="w-fit">
         <a href="https://www.patreon.com/bePatron?u=61346131" className="w-fit">
           <button
-            className="shadow-sm bg-[#FF424D] text-white font-semibold 
+            className="shadow-xs bg-[#FF424D] text-white font-semibold 
             py-3 px-8 rounded-full w-fit border-none text-lg flex flex-row 
-            mt-4 transition-all duration-100 hover:cursor-pointer 
-            hover:bg-[#E63B44] focus:outline-none"
+            mt-4 transition-all duration-100 cursor-pointer 
+            hover:bg-[#E63B44] focus:outline-hidden"
           >
             <svg
               width="25px"

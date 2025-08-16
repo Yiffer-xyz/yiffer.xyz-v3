@@ -41,7 +41,7 @@ export default function ManageAd() {
 
       {adData.ad.isChangedWhileActive && (
         <div
-          className={`py-2 px-4 bg-theme1-primaryTrans flex flex-col gap-1 mt-2 ${
+          className={`py-2 px-4 bg-theme1-primary-trans flex flex-col gap-1 mt-2 ${
             isMobile ? '' : 'w-fit'
           }`}
         >

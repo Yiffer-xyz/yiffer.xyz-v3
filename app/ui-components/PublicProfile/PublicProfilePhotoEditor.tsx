@@ -103,7 +103,7 @@ export default function PublicProfilePhotoEditor({
 
   return (
     <div className="mt-2 mb-4 flex flex-col items-start">
-      <h3 className="text-lg font-bold">Change profile photo</h3>
+      <h3 className="font-bold">Change profile photo</h3>
       <div className="flex flex-col gap-2 mt-1 mb-2">
         {!adminOverrideUserId && (
           <FileInput
@@ -117,7 +117,7 @@ export default function PublicProfilePhotoEditor({
             text="Remove photo"
             color="error"
             startIcon={FaTrash}
-            className="!w-[180px]"
+            className="w-[180px]!"
             onClick={onRemoveProfilePhoto}
             disabled={isSubmitting}
           />
@@ -127,7 +127,7 @@ export default function PublicProfilePhotoEditor({
           text="Cancel"
           startIcon={FaXmark}
           onClick={onFinish}
-          className="!w-[180px]"
+          className="w-[180px]!"
         />
       </div>
 

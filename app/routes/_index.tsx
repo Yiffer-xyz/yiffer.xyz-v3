@@ -5,9 +5,9 @@ import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { Blog } from '~/types/types';
 import { useUIPreferences } from '~/utils/theme-provider';
 import { authLoader } from '~/utils/loaders';
-import { colors } from 'tailwind.config';
 import { useEffect } from 'react';
 import posthog from 'posthog-js';
+import { THEME1_DARK, THEME2_DARK } from '~/types/constants';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export { authLoader as loader };
@@ -35,7 +35,7 @@ export default function Index() {
   return (
     <div className="pb-8">
       <h1
-        className="text-center mt-12 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px] md:text-[72px]"
+        className="text-center mt-12 dark:text-transparent dark:bg-clip-text w-fit mx-auto text-[57px]! md:text-[72px]!"
         style={{
           fontFamily: 'Shrikhand,cursive',
           ...(theme === 'dark' ? darkHeaderStyle : lightHeaderStyle),
@@ -50,7 +50,7 @@ export default function Index() {
       </p>
 
       <div className="max-w-xs flex flex-col mx-auto mt-4 gap-4">
-        <div className="bg-theme1-primaryTrans rounded h-[90px] flex flex-col items-center justify-center">
+        <div className="bg-theme1-primary-trans rounded-sm h-[90px] flex flex-col items-center justify-center">
           <p className="text-center">
             We are struggling financially.
             <br />
@@ -61,7 +61,7 @@ export default function Index() {
 
         <RemixLink to="/browse" className={`w-full`}>
           <div
-            className={`h-12 bg-gradient-to-r from-theme1-darker to-theme2-darker text-text-light
+            className={`h-12 bg-linear-to-r from-theme1-darker to-theme2-darker text-text-light
             hover:from-theme1-darker2 hover:to-theme2-darker2
             dark:from-theme1-darker2 dark:to-theme2-darker2
             dark:hover:from-theme1-darker3 dark:hover:to-theme2-darker3
@@ -74,7 +74,7 @@ export default function Index() {
 
         <RemixLink to={userSession ? '/me' : 'login'} className="w-full mb-2">
           <div
-            className={`h-12 bg-theme1-primaryTrans hover:bg-theme1-primaryTransDarker
+            className={`h-12 bg-theme1-primary-trans hover:bg-theme1-primary-trans-darker
             rounded flex flex-row justify-center items-center gap-1 shadow-md`}
           >
             {userSession ? <p>My account and profile</p> : <p>Log in or sign up</p>}
@@ -113,7 +113,7 @@ export default function Index() {
 }
 
 const darkHeaderStyle = {
-  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${colors.theme1.dark}),color-stop(.8,${colors.theme2.dark}))`,
+  backgroundImage: `-webkit-gradient(linear,left top,right top,color-stop(.2,${THEME1_DARK}),color-stop(.8,${THEME2_DARK}))`,
   backgroundClip: 'text',
 };
 const lightHeaderStyle = {

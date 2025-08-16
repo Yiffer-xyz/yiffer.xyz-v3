@@ -1,30 +1,31 @@
 ------------------------------------------------------
 -- USER
 ------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `user` (
-`id` INTEGER  NOT NULL ,
-`username` TEXT NOT NULL,
-`password` TEXT NULL DEFAULT NULL,
-`email` TEXT NULL DEFAULT NULL,
-`userType` TEXT CHECK( `userType` IN ('normal', 'moderator', 'admin') ) NOT NULL DEFAULT 'normal',
-`donator` TINYINTEGER NOT NULL DEFAULT '0',
-`createdTime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-`isBanned` TINYINTEGER  NOT NULL DEFAULT '0',
-`banReason` TEXT NULL DEFAULT NULL,
-`banTimestamp` TIMESTAMP NULL DEFAULT NULL,
-`lastActionTimestamp` TIMESTAMP NULL DEFAULT NULL,
-`modNotes` TEXT NULL DEFAULT NULL,
-`hasCompletedConversion` TINYINTEGER NOT NULL DEFAULT '1',
-`patreonDollars` INTEGER NULL DEFAULT NULL,
-`patreonEmail` TEXT NULL DEFAULT NULL,
-`bio` TEXT NULL DEFAULT NULL CHECK (LENGTH(bio) <= 300),
-`nationality` TEXT NULL DEFAULT NULL,
-`profilePictureToken` TEXT NULL DEFAULT NULL,
-PRIMARY KEY (`id`)
+CREATE TABLE IF NOT EXISTS user (
+  id INTEGER  NOT NULL ,
+  profilePictureToken TEXT NULL DEFAULT NULL,
+  username TEXT NOT NULL,
+  password TEXT NULL DEFAULT NULL,
+  email TEXT NULL DEFAULT NULL,
+  userType TEXT CHECK( userType IN ('normal', 'moderator', 'admin') ) NOT NULL DEFAULT 'normal',
+  donator TINYINTEGER NOT NULL DEFAULT '0',
+  createdTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  isBanned TINYINTEGER  NOT NULL DEFAULT '0',
+  banReason TEXT NULL DEFAULT NULL,
+  banTimestamp TIMESTAMP NULL DEFAULT NULL,
+  lastActionTimestamp TIMESTAMP NULL DEFAULT NULL,
+  modNotes TEXT NULL DEFAULT NULL,
+  hasCompletedConversion TINYINTEGER NOT NULL DEFAULT '1',
+  patreonDollars INTEGER NULL DEFAULT NULL,
+  patreonEmail TEXT NULL DEFAULT NULL,
+  bio TEXT NULL DEFAULT NULL CHECK (LENGTH(bio) <= 300),
+  nationality TEXT NULL DEFAULT NULL,
+  allowMessages TINYINTEGER NOT NULL DEFAULT '1',
+  PRIMARY KEY (id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS `idx_user_unique_username` ON `user` (`Username`);
-CREATE INDEX IF NOT EXISTS `idx_user_patreonDollars` ON `user` (`patreonDollars`) WHERE `patreonDollars` IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_unique_username ON user (Username);
+CREATE INDEX IF NOT EXISTS idx_user_patreonDollars ON user (patreonDollars) WHERE patreonDollars IS NOT NULL;
 
 ------------------------------------------------------
 -- ADVERTISEMENT
@@ -708,3 +709,75 @@ CREATE TABLE IF NOT EXISTS comiccommentvote (
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_comicId ON comiccommentvote(comicId);
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_commentId ON comiccommentvote(commentId);
 CREATE INDEX IF NOT EXISTS idx_comiccommentvote_userId ON comiccommentvote(userId);
+
+------------------------------------------------------
+-- MESSAGE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chatmessage (
+  id INTEGER NOT NULL,
+  chatToken TEXT NOT NULL,
+  senderId INTEGER NULL DEFAULT NULL,
+  messageText TEXT NOT NULL CHECK (LENGTH(messageText) <= 1500),
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (chatToken) REFERENCES chat (token) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (senderId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatmessage_chatToken ON chatmessage(chatToken);
+
+------------------------------------------------------
+-- CHAT
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat (
+  token TEXT NOT NULL,
+  isSystemChat TINYINTEGER NOT NULL DEFAULT 0,
+  lastMessageId INTEGER NULL DEFAULT NULL,
+  isRead TINYINTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (token)
+);
+
+------------------------------------------------------
+-- CHAT MEMBER
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chatmember (
+  chatToken TEXT NOT NULL,
+  userId INTEGER NOT NULL,
+  PRIMARY KEY (chatToken, userId),
+  FOREIGN KEY (chatToken) REFERENCES chat (token) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatmember_userId ON chatmember(userId);
+CREATE INDEX IF NOT EXISTS idx_chatmember_chatToken ON chatmember(chatToken);
+
+------------------------------------------------------
+-- CHAT NOTIFICATION
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chatnotification (
+  userId INTEGER NOT NULL,
+  PRIMARY KEY (userId)
+);
+
+------------------------------------------------------
+-- USER BLOCK
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS userblock (
+  id INTEGER NOT NULL,
+  blockerId INTEGER NOT NULL,
+  blockedUserId INTEGER NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (blockerId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
+  FOREIGN KEY (blockedUserId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_userblock_unique_blocker_blocked ON userblock (blockerId, blockedUserId);
+CREATE INDEX IF NOT EXISTS idx_userblock_blockerId ON userblock (blockerId);
+CREATE INDEX IF NOT EXISTS idx_userblock_blockedUserId ON userblock (blockedUserId);

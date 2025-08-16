@@ -75,7 +75,7 @@ export default function ComicReportProblem({
               isInsideParagraph
               href="/contribute/your-contributions"
               text="Your contributions page"
-              className="!text-white"
+              className="text-white!"
               IconRight={MdArrowForward}
             />
           </p>
@@ -116,7 +116,7 @@ export default function ComicReportProblem({
         <>
           <InfoBox
             variant="info"
-            className="mt-3 !px-3 !py-2"
+            className="mt-3 px-3! py-2!"
             boldText={false}
             disableElevation
             fitWidth

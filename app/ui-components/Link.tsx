@@ -43,7 +43,7 @@ export default function Link({
   }
 
   const linkClass = `
-    w-fit h-fit ${bold ? 'font-semibold' : ''} bg-gradient-to-r
+    w-fit h-fit ${bold ? 'font-semibold' : ''} bg-linear-to-r
     ${colorClass} 
     bg-no-repeat focus:no-underline cursor-pointer
     ${className}

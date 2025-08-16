@@ -16,6 +16,8 @@ export default function Username({
   fullUser,
   pagesPath,
   showRightArrow = true,
+  positionVertical = 'top',
+  positionHorizontal = 'right',
   textClassName = 'text-base',
   className = '',
 }: {
@@ -25,6 +27,8 @@ export default function Username({
   fullUser?: PublicUser;
   pagesPath: string;
   showRightArrow?: boolean;
+  positionVertical?: 'top' | 'bottom';
+  positionHorizontal?: 'left' | 'right' | 'center';
   textClassName?: string;
   className?: string;
 }) {
@@ -76,7 +80,8 @@ export default function Username({
         <RemixLink
           to={`/user/${username}`}
           className={`flex absolute bg-white hover:bg-blue-strong-900 dark:bg-gray-100 dark:hover:bg-[#1a1b20]
-                      rounded-md py-2 px-2.5 bottom-[100%] left-0 dark:!text-white
+                      rounded-md py-2 px-2.5 ${positionVertical === 'top' ? 'bottom-full' : 'top-full'} 
+                      ${positionHorizontal === 'right' ? 'left-0' : positionHorizontal === 'left' ? 'right-0' : 'left-1/2 -translate-x-1/2'} dark:text-white!
                       shadow-md dark:shadow-lg flex-row gap-2 items-center cursor-pointer z-10`}
         >
           <div className="rounded w-[64px] h-[64px]">

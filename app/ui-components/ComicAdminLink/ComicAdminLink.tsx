@@ -5,7 +5,7 @@ import { MdArrowForward, MdOpenInNew } from 'react-icons/md';
 export default function ComicAdminLink({ comic }: { comic: ComicTiny }) {
   return (
     <div
-      className="px-2 py-1 bg-theme1-primaryTrans dark:bg-theme1-primaryMoreTrans flex flex-row flex-wrap gap-x-3"
+      className="px-2 py-1 bg-theme1-primary-trans dark:bg-theme1-primary-more-trans flex flex-row flex-wrap gap-x-3"
       key={comic.id}
     >
       <p>{comic.name}</p>

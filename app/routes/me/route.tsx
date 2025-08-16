@@ -22,7 +22,7 @@ export default function AccountPage() {
     <div className="container mx-auto pb-8">
       <h1>Me</h1>
 
-      <Breadcrumbs prevRoutes={[]} currentRoute="Me" className="!mb-2" />
+      <Breadcrumbs prevRoutes={[]} currentRoute="Me" className="mb-2!" />
 
       <p className="text-lg">
         <RiAccountCircleFill /> {user?.username}
@@ -70,11 +70,11 @@ export default function AccountPage() {
         />
 
         <LinkCard
-          href="#"
-          title="Activity center"
-          description="Coming soon"
+          href="/me/messages"
+          title="Messages"
+          includeRightArrow
+          description="Send and receive messages"
           className="mt-4"
-          disabled
         />
 
         <LinkCard href="/logout" title="Log out" className="mt-4" />

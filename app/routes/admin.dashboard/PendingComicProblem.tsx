@@ -54,7 +54,7 @@ export function PendingComicProblem({
           </div>
         </div>
 
-        <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
+        <div className="flex flex-col md:items-end justify-between gap-2 shrink-0">
           <p className="text-sm"></p>
 
           {isAssignedToOther && (

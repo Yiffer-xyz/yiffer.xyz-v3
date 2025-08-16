@@ -1,7 +1,6 @@
 import { useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { FaUser } from 'react-icons/fa';
-import { COMMENT_HIDE_THRESHOLD, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
+import { COMMENT_HIDE_THRESHOLD } from '~/types/constants';
 import type { ComicComment } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Username from '../Username';
@@ -10,6 +9,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import IconButton from '../Buttons/IconButton';
 import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
 import Button from '../Buttons/Button';
+import ProfilePicture from '../ProfilePicture/ProfilePicture';
 
 export default function SingleComment({
   comment,
@@ -66,17 +66,11 @@ export default function SingleComment({
 
   return (
     <div className="pb-[4px] flex flex-row gap-x-2 w-full">
-      {comment.user.profilePictureToken ? (
-        <img
-          src={`${pagesPath}/${R2_PROFILE_PICTURES_FOLDER}/${comment.user.profilePictureToken}.jpg`}
-          className="w-[68px] h-[68px] mt-[3px] rounded"
-          alt={comment.user.username}
-        />
-      ) : (
-        <div className="w-[68px] h-[68px] mt-[3px] rounded bg-gray-800 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-          <FaUser className="text-3xl" color="#666" />
-        </div>
-      )}
+      <ProfilePicture
+        user={comment.user}
+        pagesPath={pagesPath}
+        className="w-[70px] h-[70px]"
+      />
 
       <div className="w-full">
         <div className="flex flex-row gap-x-4 items-end">
@@ -113,7 +107,7 @@ export default function SingleComment({
                 <IconButton
                   variant="naked"
                   className={`
-                    text-xs font-normal !w-6 !h-6 -mt-1 -mb-1 ${bottomTextClass}
+                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
                     ${comment.yourVote === true ? 'text-theme1-dark' : ''}
                   `}
                   noPadding
@@ -122,14 +116,14 @@ export default function SingleComment({
                   disabled={commentVoteFetcher.isLoading}
                 />
                 {comment.score !== 0 && (
-                  <p className={`text-xs font-normal mt-[1px] ${bottomTextClass}`}>
+                  <p className={`text-xs font-normal mt-px ${bottomTextClass}`}>
                     {comment.score}
                   </p>
                 )}
                 <IconButton
                   variant="naked"
                   className={`
-                    text-xs font-normal !w-6 !h-6 -mt-1 -mb-1 ${bottomTextClass}
+                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
                     ${comment.yourVote === false ? 'text-theme1-dark' : ''}
                   `}
                   noPadding

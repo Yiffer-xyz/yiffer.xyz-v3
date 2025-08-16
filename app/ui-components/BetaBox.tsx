@@ -5,7 +5,7 @@ export default function BetaBox() {
   return (
     <div
       className={`fixed bottom-4 right-4 border-theme1-primary dark:border-4 p-3 md:p-4 
-    bg-gray-100 rounded max-w-90p md:max-w-[400px] shadow-lg z-[1000] text-white`}
+    bg-gray-100 rounded max-w-90p md:max-w-[400px] shadow-lg z-1000 text-white`}
     >
       <p className="text-sm md:text-lg font-semibold">Yiffer.xyz v3 beta 👀</p>
       <p className="text-sm md:text-base hidden md:block">
@@ -19,7 +19,7 @@ export default function BetaBox() {
         hideButtonText="Hide"
         className="md:mt-2"
         showHideClassName="text-sm md:text-base"
-        showHideColorClassName="!text-blue-strong-300"
+        showHideColorClassName="text-blue-strong-300!"
       >
         <div className="text-sm md:text-base">
           <p className="md:hidden mt-2">
@@ -33,7 +33,7 @@ export default function BetaBox() {
               text="HERE"
               isInsideParagraph
               showRightArrow
-              className="!text-blue-strong-300"
+              className="text-blue-strong-300!"
             />{' '}
             (we'll read everything). <i>Suggestions</i> can wait, we're mainly looking for
             bugs at the moment. Include your device and browser when reporting bugs.

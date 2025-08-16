@@ -245,7 +245,7 @@ export default function SearchFilterContent({
           {_tags.map(tag => (
             <div
               key={tag.id}
-              className={`bg-blue-weak-200 rounded-full pl-2 pr-1 py-[1px] flex flex-row shadow-sm 
+              className={`bg-blue-weak-200 rounded-full pl-2 pr-1 py-px flex flex-row shadow-xs 
                 items-center gap-1 hover:bg-blue-weak-100 hover:cursor-pointer
                 dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100`}
               onClick={() => onTagDeselected(tag)}

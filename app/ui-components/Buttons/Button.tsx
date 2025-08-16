@@ -51,7 +51,7 @@ export default function Button({
   if (variant === 'contained' && color === 'primary') {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
       dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100 dark:focus:bg-blue-strong-100
-      ${disableElevation ? '' : 'shadow hover:shadow-md focus:shadow-md'}
+      ${disableElevation ? '' : 'shadow-sm hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 
@@ -70,7 +70,7 @@ export default function Button({
   if (variant === 'contained' && color === 'error') {
     variantClassname += ` bg-red-weak-200 hover:bg-red-weak-100 focus:bg-red-weak-100
       dark:bg-red-strong-200 dark:hover:bg-red-strong-100 dark:focus:bg-red-strong-100
-      ${disableElevation ? '' : 'shadow hover:shadow-md focus:shadow-md'}
+      ${disableElevation ? '' : 'shadow-sm hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 
@@ -91,8 +91,8 @@ export default function Button({
   }
 
   if (disabled && variant === 'outlined') {
-    variantClassname += ` !bg-transparent border-2 !border-gray-700 dark:!border-gray-600
-    !text-gray-700 dark:!text-gray-700 cursor-not-allowed`;
+    variantClassname += ` bg-transparent! border-2 border-gray-700! dark:border-gray-600!
+    text-gray-700! dark:text-gray-700! cursor-not-allowed`;
   }
 
   if (disabled && variant === 'naked') {
@@ -102,7 +102,7 @@ export default function Button({
   const widthClass = noPadding ? '' : fullWidth ? 'w-full' : 'w-fit';
 
   const fullClassName =
-    `rounded ${paddingString} font-bold flex flex-nowrap justify-center ` +
+    `cursor-pointer rounded-sm ${paddingString} font-bold flex flex-nowrap justify-center ` +
     `items-center transition-all duration-100 break-all text-sm` +
     ` ${widthClass}` +
     ` ${variantClassname} ${className} `;

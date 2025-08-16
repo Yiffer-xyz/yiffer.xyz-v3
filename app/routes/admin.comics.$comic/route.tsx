@@ -51,7 +51,7 @@ export default function ManageComicInner() {
       <h2 className="mt-1 mb-2">{comic.name}</h2>
 
       {isRejected && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <h3>Rejected comic</h3>
           <p className="mb-2">This comic has been rejected.</p>
           {comic.publishStatus === 'rejected' && (
@@ -72,14 +72,14 @@ export default function ManageComicInner() {
       )}
 
       {isAnonUpload && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <h3>User-uploaded comic, anonymous</h3>
           <AnonUploadSection comicData={comic} updateComic={updateComic} />
         </div>
       )}
 
       {isUserUpload && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <h3>User-uploaded comic</h3>
           <UserUploadSection
             comicData={comic}
@@ -90,7 +90,7 @@ export default function ManageComicInner() {
       )}
 
       {isPendingOrScheduled && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <h3>Pending comic</h3>
           <p className="text-sm">
             This comic is not live. It has been uploaded by a mod, or by a user and then
@@ -111,14 +111,14 @@ export default function ManageComicInner() {
       )}
 
       {comic.publishStatus === 'unlisted' && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <h3>Unlisted comic</h3>
           <UnlistedComicSection comicData={comic} updateComic={updateComic} user={user} />
         </div>
       )}
 
       {comic.publishStatus === 'published' && (
-        <div className="bg-theme1-primaryTrans p-4 pt-3 w-fit">
+        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit">
           <p className="text-theme1-darker font-bold">
             This comic is live!
             <Link

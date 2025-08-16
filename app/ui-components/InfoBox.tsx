@@ -61,7 +61,7 @@ export default function InfoBox({
   const paddingClassName = small ? 'px-4 py-2' : 'px-6 py-4';
 
   let fullClassname = `${paddingClassName} flex flex-row justify-between items-center gap-2
-    rounded ${disableElevation ? '' : 'shadow-md'} bg-gradient-to-r 
+    rounded ${disableElevation ? '' : 'shadow-md'} bg-linear-to-r 
     text-white ${variantClassname} ${className}`;
 
   if (boldText) {
@@ -82,10 +82,10 @@ export default function InfoBox({
       {showIcon && (
         <Icon
           size={small ? 20 : 36}
-          className={`${small ? '-ml-1 mt-[1px]' : '-ml-2'} flex-shrink-0 w-8 md:w-auto`}
+          className={`${small ? '-ml-1 mt-px' : '-ml-2'} shrink-0 w-8 md:w-auto`}
         />
       )}
-      <div className={`${textClassName} flex flex-col flex-grow`}>
+      <div className={`${textClassName} flex flex-col grow`}>
         {title ? <p className="text-xl">{title}</p> : undefined}
         {text ? <p className={small ? 'text-sm' : ''}>{text}</p> : undefined}
         {children}
@@ -97,7 +97,7 @@ export default function InfoBox({
         >
           <MdCancel
             size={18}
-            className="cursor-pointer flex-shrink-0 w-5 md:w-auto mt-1"
+            className="cursor-pointer shrink-0 w-5 md:w-auto mt-1"
           />
         </div>
       )}

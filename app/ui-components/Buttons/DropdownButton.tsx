@@ -139,7 +139,7 @@ export default function DropdownButton({
       />
       <div
         className={`
-          origin-top-right absolute left-0 shadow-lg bg-white dark:bg-gray-400 focus:outline-none rounded
+          origin-top-right absolute left-0 shadow-lg bg-white dark:bg-gray-400 focus:outline-hidden rounded
           overflow-hidden z-10
           ${isOpen ? '' : 'invisible'}`}
         onMouseLeave={closeSoonIfOpen}

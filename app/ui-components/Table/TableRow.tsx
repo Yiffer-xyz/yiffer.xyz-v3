@@ -11,7 +11,7 @@ export default function TableRow({
 }: TableRowProps) {
   return (
     <tr
-      className={`border-b border-gray-borderLight ${includeBorderTop ? 'border-t' : ''} ${className}`}
+      className={`border-b border-gray-border-light ${includeBorderTop ? 'border-t' : ''} ${className}`}
     >
       {children}
     </tr>

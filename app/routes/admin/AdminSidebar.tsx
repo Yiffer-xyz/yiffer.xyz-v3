@@ -56,7 +56,7 @@ export default function AdminSidebar({
 
       <div
         className={`flex flex-row h-screen w-fit fixed -mt-[22px] lg:dark:-mt-[20px]
-          shadow-lg dark:shadow-none bg-white dark:bg-gray-200 lg:dark:bg-bgDark 
+          shadow-lg dark:shadow-none bg-white dark:bg-gray-200 lg:dark:bg-bg-dark 
           transition-width duration-150 z-10
           border-r-0 lg:dark:border-r-3 dark:border-r-gray-400`}
         style={{
@@ -160,7 +160,7 @@ function SidebarLink({
 }: SidebarLinkProps) {
   return (
     <div
-      className={`${isSelected && selectedClassname} hover:bg-theme1-primaryTrans dark:hover:bg-blue-trans ${className}`}
+      className={`${isSelected && selectedClassname} hover:bg-theme1-primary-trans dark:hover:bg-blue-trans ${className}`}
     >
       <Link to={href}>
         <div
@@ -188,7 +188,7 @@ function MobileExpander({
       className={`bg-theme1-primary dark:bg-gray-150 h-full w-${
         mobileClosedBarTailwindUnits + 2
       } 
-        -right-[1px] top-0 hover:cursor-pointer hover:bg-theme1-dark transition-opacity
+        -right-px top-0 cursor-pointer hover:bg-theme1-dark transition-opacity
         flex items-center justify-center absolute ${
           !isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}

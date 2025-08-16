@@ -15,6 +15,7 @@ import type {
   ResultOrNotFoundOrErrorPromise,
 } from '~/utils/request-helpers';
 import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
+import { getUserBlockStatus } from './get-user-block-status';
 
 type DbUser = Omit<
   User,
@@ -25,12 +26,14 @@ type DbUser = Omit<
   | 'hasCompletedConversion'
   | 'socialLinks'
   | 'contributionPoints'
+  | 'allowMessages'
 > & {
   createdTime: string;
   banTime: string;
   lastActionTime: string;
   isBanned: 0 | 1;
   hasCompletedConversion: 0 | 1;
+  allowMessages: 0 | 1;
 };
 
 export async function searchUsers(
@@ -43,7 +46,7 @@ export async function searchUsers(
   const searchQuery = `
     SELECT id, username, email, userType, createdTime, isBanned, banReason,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, modNotes,
-      hasCompletedConversion, patreonEmail, patreonDollars
+      hasCompletedConversion, patreonEmail, patreonDollars, allowMessages
     FROM user
     ${whereQuery}
     ORDER BY lastActionTimestamp DESC, createdTime DESC
@@ -65,6 +68,7 @@ export async function getUserByField({
   value,
   includeExtraFields = false,
   includeComments = false,
+  includeCurrentUserFields = false,
   currentUserId,
 }: {
   db: D1Database;
@@ -72,6 +76,7 @@ export async function getUserByField({
   value: string | number;
   includeExtraFields?: boolean;
   includeComments?: boolean;
+  includeCurrentUserFields?: boolean;
   currentUserId?: number;
 }): ResultOrNotFoundOrErrorPromise<User> {
   let whereStr = `WHERE user.${field} = ?`;
@@ -82,7 +87,7 @@ export async function getUserByField({
   const userQuery = `
     SELECT user.id, username, email, userType, createdTime, isBanned, banReason, modNotes,
       banTimestamp AS banTime, lastActionTimestamp AS lastActionTime, hasCompletedConversion,
-      patreonEmail, patreonDollars, bio, nationality, profilePictureToken
+      patreonEmail, patreonDollars, bio, nationality, profilePictureToken, allowMessages
     FROM user
     ${whereStr}
     LIMIT 1
@@ -119,6 +124,32 @@ export async function getUserByField({
     user.comments = extraFieldsRes.result.comments;
   }
 
+  if (includeCurrentUserFields && currentUserId) {
+    const chatStatusRes = await getChatsWithCurrentUser(db, user.id, currentUserId);
+    if (chatStatusRes.err) {
+      return {
+        err: wrapApiError(
+          chatStatusRes.err,
+          'Error getting chat status with current user',
+          { userId: user.id, currentUserId }
+        ),
+      };
+    }
+    user.chatTokenWithCurrentUser = chatStatusRes.result;
+
+    const blockStatus = await getUserBlockStatus(db, currentUserId, user.id);
+    if (blockStatus.err) {
+      return {
+        err: wrapApiError(
+          blockStatus.err,
+          'Error getting block status with current user',
+          { userId: user.id, currentUserId }
+        ),
+      };
+    }
+    user.currentUserBlockStatus = blockStatus.result;
+  }
+
   return { result: user };
 }
 
@@ -132,9 +163,38 @@ function dbUserToUser(user: DbUser): User {
     hasCompletedConversion: !!user.hasCompletedConversion,
     socialLinks: [],
     contributionPoints: 0,
+    allowMessages: !!user.allowMessages,
   };
 
   return convertedUser;
+}
+
+async function getChatsWithCurrentUser(
+  db: D1Database,
+  userId: number,
+  currentUserId: number
+): ResultOrErrorPromise<string | null> {
+  const chatQuery = `
+    SELECT chat.token FROM chat
+    INNER JOIN chatmember cm1 ON chat.token = cm1.chatToken
+    INNER JOIN chatmember cm2 ON chat.token = cm2.chatToken
+    WHERE cm1.userId = ? AND cm2.userId = ? AND chat.isSystemChat = 0
+    LIMIT 1`;
+
+  const chatRes = await queryDb<{ token: string }[]>(db, chatQuery, [
+    userId,
+    currentUserId,
+  ]);
+
+  if (chatRes.isError) {
+    return makeDbErrObj(chatRes, 'Error getting chat with current user', {
+      userId,
+      currentUserId,
+    });
+  }
+
+  const token = chatRes.result.length > 0 ? chatRes.result[0].token : null;
+  return { result: token };
 }
 
 async function getUserExtraFields(

@@ -33,7 +33,7 @@ export default function Checkbox({
 
   const disabledClass = disabled ? 'text-gray-700' : 'hover:cursor-pointer';
   const fullClassname = `block relative select-none pl-7
-    outline-none w-fit ${disabledClass} ${className} `;
+    outline-hidden w-fit ${disabledClass} ${className} `;
 
   function onKeyPressed(keyEvent: KeyboardEvent<HTMLLabelElement>) {
     if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
@@ -73,7 +73,7 @@ export default function Checkbox({
         className="absolute opacity-0 cursor-pointer h-0 w-0 peer"
       />
 
-      <span className="absolute top-[0.5px] left-0 h-[22px] w-[22px] border-[1.5px] border-gray-800 dark:border-gray-600 peer-focus:bg-theme1-primaryTrans rounded-sm flex justify-center items-center peer-disabled:bg-trans peer-disabled:bg-gray-900 dark:peer-disabled:border-gray-500 dark:peer-disabled:bg-gray-300">
+      <span className="absolute top-[0.5px] left-0 h-[22px] w-[22px] border-[1.5px] border-gray-800 dark:border-gray-600 peer-focus:bg-theme1-primary-trans rounded-xs flex justify-center items-center peer-disabled:bg-trans peer-disabled:bg-gray-900 dark:peer-disabled:border-gray-500 dark:peer-disabled:bg-gray-300">
         {checked && (
           <FaCheck
             className="mt-0.5 text-theme1-dark dark:text-theme1-primary"
