@@ -1,9 +1,10 @@
-import type { Chat, ChatMessage, MinimalUser } from '~/types/types';
+import type { Chat, ChatMessage, MinimalUser, UserBlockStatus } from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
+import { getUserBlockStatus } from './get-user-block-status';
 
 type DbChatMessage = {
   id: number;
@@ -18,7 +19,11 @@ export async function getChat(
   isModOrAdmin: boolean,
   chatToken: string,
   markReadIfAppropriate: boolean
-): ResultOrErrorPromise<{ chat: Chat; messages: ChatMessage[] }> {
+): ResultOrErrorPromise<{
+  chat: Chat;
+  messages: ChatMessage[];
+  blockedStatus: UserBlockStatus;
+}> {
   const messagesQuery = ` 
     SELECT id, senderId, messageText, timestamp FROM chatmessage
     WHERE chatToken = ?
@@ -87,6 +92,22 @@ export async function getChat(
     messageText: message.messageText,
   }));
 
+  const otherChatUser = chatMembers.find(member => member.id !== userId);
+
+  let blockedStatus: UserBlockStatus = null;
+  if (!chat.isSystemChat && otherChatUser) {
+    const blockedStatusRes = await getUserBlockStatus(db, userId, otherChatUser.id);
+    if (blockedStatusRes.err) {
+      return {
+        err: {
+          logMessage: 'Error getting blocked status',
+          context: { chatToken, userId, otherUserId: chatMembers[0].id },
+        },
+      };
+    }
+    blockedStatus = blockedStatusRes.result;
+  }
+
   // If last message is by other user, and isRead is false, set it to true
   if (
     markReadIfAppropriate &&
@@ -103,5 +124,5 @@ export async function getChat(
     chat.isRead = true;
   }
 
-  return { result: { chat, messages } };
+  return { result: { chat, messages, blockedStatus } };
 }

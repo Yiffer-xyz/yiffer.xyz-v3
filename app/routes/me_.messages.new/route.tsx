@@ -1,5 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
-import { redirect, useLoaderData, useNavigate, useOutletContext } from '@remix-run/react';
+import {
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useOutletContext,
+  useSearchParams,
+} from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { createChat } from '~/route-funcs/create-chat';
@@ -13,7 +19,6 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { create400Json, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { MinimalUserWithAllowMessages } from '../api.search-users';
-import { getUserByField } from '~/route-funcs/get-user';
 import { IoSend } from 'react-icons/io5';
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -55,25 +60,59 @@ export async function action(args: ActionFunctionArgs) {
 
 export default function Message() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { pagesPath } = useLoaderData<typeof loader>();
   const { chats } = useOutletContext<{ chats: Chat[] }>();
 
-  const [selectedUser, setSelectedUser] = useState<MinimalUserWithAllowMessages | null>(
-    null
-  );
+  const toUserId = searchParams.get('toUserId');
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUserData, setSelectedUserData] =
+    useState<MinimalUserWithAllowMessages | null>(null);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const searchUserFetcher = useGoodFetcher<MinimalUserWithAllowMessages[]>({
     url: '/api/search-users',
     method: 'post',
+    onFinish: () => {
+      // For when landing on the page from link with ?toUserId=xxx
+      // Fetcher will fire, and should return one single result.
+      if (searchUserFetcher.data && toUserId) {
+        if (
+          searchUserFetcher.data.length === 1 &&
+          searchUserFetcher.data[0].id === parseInt(toUserId)
+        ) {
+          setSelectedUserData(searchUserFetcher.data[0]);
+        }
+      }
+    },
   });
 
   const submitFetcher = useGoodFetcher({
     method: 'post',
   });
+
+  useEffect(() => {
+    if (!toUserId || searchUserFetcher.isLoading) return;
+
+    let found = false;
+    // Normal flow: search has already fetched the list, just find the user in it.
+    if (searchUserFetcher.data) {
+      const user = searchUserFetcher.data.find(u => u.id === parseInt(toUserId));
+      if (user) {
+        found = true;
+        setSelectedUserData(user);
+      }
+    }
+
+    // When landing via link with ?toUserId=xxx, fetch the user.
+    if (!found) {
+      setSelectedUserData(null);
+      searchUserFetcher.submit({ searchIdQuery: toUserId });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toUserId]);
 
   useEffect(() => {
     if (searchQuery.length < 2) return;
@@ -93,13 +132,13 @@ export default function Message() {
   }
 
   function onSubmit() {
-    if (!selectedUser || message.length === 0 || message.length > MAX_MESSAGE_LENGTH) {
+    if (!toUserId || message.length === 0 || message.length > MAX_MESSAGE_LENGTH) {
       return;
     }
 
     submitFetcher.submit({
       message: message.trim(),
-      toUserId: selectedUser.id,
+      toUserId: toUserId,
     });
   }
 
@@ -111,7 +150,7 @@ export default function Message() {
   }
 
   function selectUser(user: MinimalUserWithAllowMessages) {
-    if (selectedUser?.id === user.id) {
+    if (toUserId === user.id.toString()) {
       setSearchQuery('');
       return;
     }
@@ -124,7 +163,7 @@ export default function Message() {
       return;
     }
 
-    setSelectedUser(user);
+    setSearchParams({ toUserId: user.id.toString() });
     setSearchQuery('');
   }
 
@@ -142,12 +181,12 @@ export default function Message() {
         />
         <p>
           New chat
-          {selectedUser ? (
+          {selectedUserData ? (
             <>
               {' with '}
               <Username
-                id={selectedUser.id}
-                username={selectedUser.username}
+                id={selectedUserData.id}
+                username={selectedUserData.username}
                 pagesPath={pagesPath}
                 showRightArrow={false}
                 positionVertical="bottom"
@@ -159,7 +198,7 @@ export default function Message() {
         <div className="w-8 h-1" />
       </div>
 
-      {!selectedUser && (
+      {!toUserId && (
         <div className="mx-4 mt-2 overflow-hidden">
           <TextInput
             value={searchQuery}
@@ -168,7 +207,7 @@ export default function Message() {
             className="mb-3"
           />
 
-          <div className="grow overflow-y-auto overflow-hidden h-full flex flex-col gap-2 pb-4 scrollbar scrollbar-thumb-gray-850 scrollbar-track-white dark:scrollbar-track-gray-300">
+          <div className="grow min-h-[300px] overflow-y-auto overflow-hidden h-full flex flex-col gap-2 pb-4 scrollbar scrollbar-thumb-gray-850 scrollbar-track-white dark:scrollbar-track-gray-300">
             {searchUserFetcher.data?.map((user, index) => (
               <div
                 key={user.id}
@@ -198,10 +237,12 @@ export default function Message() {
         </div>
       )}
 
-      {!!selectedUser && (
+      {!!toUserId && selectedUserData && (
         <>
           <div className="grow flex flex-col items-center justify-center p-4">
-            {!selectedUser.allowMessages && <p>This user has disabled new messages.</p>}
+            {!selectedUserData.allowMessages && (
+              <p>This user has disabled new messages.</p>
+            )}
           </div>
 
           <div className="p-3 flex flex-row gap-2 items-center">
@@ -212,7 +253,7 @@ export default function Message() {
               value={message}
               onChange={e => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={submitFetcher.isLoading || !selectedUser.allowMessages}
+              disabled={submitFetcher.isLoading || !selectedUserData.allowMessages}
             />
             <IconButton
               icon={IoSend}
@@ -222,7 +263,7 @@ export default function Message() {
               disabled={
                 submitFetcher.isLoading ||
                 message.length > MAX_MESSAGE_LENGTH ||
-                !selectedUser.allowMessages
+                !selectedUserData.allowMessages
               }
             />
           </div>
