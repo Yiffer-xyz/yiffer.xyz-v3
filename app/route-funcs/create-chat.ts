@@ -8,7 +8,7 @@ import {
 import { generateToken } from '~/utils/string-utils';
 import { getExistingChatTokenByParticipantIds } from './get-existing-chat';
 import { MAX_MESSAGE_LENGTH } from '~/types/constants';
-import { getUserByField } from './get-user';
+import { canSendMessage } from './can-send-message';
 
 export async function createChat({
   db,
@@ -52,22 +52,26 @@ export async function createChat({
     return { err: { logMessage: 'Chat already exists', context: logCtx } };
   }
 
-  // Make sure recipient hasn't turned off message receiving - should be blocked by front-end, but make sure
-  if (toUserId) {
-    const userRes = await getUserByField({
-      db,
-      field: 'id',
-      value: toUserId,
-    });
-    if (userRes.err) {
+  // Make sure recipient hasn't turned off message receiving and check for blocks
+  if (toUserId && fromUserId) {
+    const canSendResult = await canSendMessage(db, fromUserId, toUserId);
+    if (canSendResult.err) {
       return {
-        err: wrapApiError(userRes.err, 'Error getting user in new message', logCtx),
+        err: wrapApiError(
+          canSendResult.err,
+          'Error checking if user can send message',
+          logCtx
+        ),
       };
-    } else if (userRes.notFound) {
-      return { err: { logMessage: 'User not found', context: logCtx } };
     }
-    if (!userRes.result.allowMessages) {
-      return { err: { logMessage: 'User has disabled new messages', context: logCtx } };
+
+    if (!canSendResult.result) {
+      return {
+        err: {
+          logMessage: 'Cannot send message to this user (blocked or messages disabled)',
+          context: logCtx,
+        },
+      };
     }
   }
 

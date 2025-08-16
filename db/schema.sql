@@ -759,11 +759,25 @@ CREATE TABLE IF NOT EXISTS chatnotification (
   PRIMARY KEY (userId)
 );
 
--- wrangler d1 execute yiffer-dev-2 --local --command "INSERT INTO usermessage (id, toUserId, fromUserId, isSystemMessage, messageText, isRead, isReported) VALUES (1, 1, 1, 0, 'Test message', 0, 0)"
+------------------------------------------------------
+-- USER BLOCK
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS userblock (
+  id INTEGER NOT NULL,
+  blockerId INTEGER NOT NULL,
+  blockedUserId INTEGER NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (blockerId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
+  FOREIGN KEY (blockedUserId)
+  REFERENCES user (id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
+);
 
-CREATE INDEX IF NOT EXISTS idx_usermessage_toUserId ON usermessage(toUserId);
-CREATE INDEX IF NOT EXISTS idx_usermessage_fromUserId ON usermessage(fromUserId);
-
-wrangler d1 execute yiffer-dev-2 --local --command "CREATE INDEX IF NOT EXISTS idx_usermessage_toUserId ON usermessage(toUserId)"
-
--- wrangler d1 execute yiffer-dev-2 --local --command "CREATE TABLE IF NOT EXISTS usermessage ( id INTEGER NOT NULL, toUserId INTEGER NOT NULL, fromUserId INTEGER NULL, isSystemMessage TINYINTEGER NOT NULL DEFAULT 0, messageText TEXT NOT NULL CHECK (LENGTH(messageText) <= 1500), isRead TINYINTEGER NOT NULL DEFAULT 0, isReported TINYINTEGER NOT NULL DEFAULT 0, PRIMARY KEY (id), FOREIGN KEY (toUserId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (fromUserId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE )"
+CREATE UNIQUE INDEX IF NOT EXISTS idx_userblock_unique_blocker_blocked ON userblock (blockerId, blockedUserId);
+CREATE INDEX IF NOT EXISTS idx_userblock_blockerId ON userblock (blockerId);
+CREATE INDEX IF NOT EXISTS idx_userblock_blockedUserId ON userblock (blockedUserId);

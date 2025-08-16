@@ -9,6 +9,7 @@ import { FaChevronRight, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import { FaMessage } from 'react-icons/fa6';
 import { useState } from 'react';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import ListButtons from '~/ui-components/ListButtons/ListButtons';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -36,14 +37,6 @@ export default function AccountPage() {
     method: 'post',
   });
 
-  const borderClass =
-    'flex flex-row justify-between items-center border-b border-gray-850 dark:border-gray-500 px-3.5 h-14 gap-8';
-  const clickableClass = 'cursor-pointer hover:bg-blue-more-trans';
-  const rowTitleClass = 'text-sm text-gray-700 dark:text-gray-750 -mb-1';
-  const rowClass = 'flex flex-row gap-3 items-center';
-  const chevronClass = 'text-gray-700 dark:text-gray-750 text-xs';
-  const iconClass = 'text-gray-500 dark:text-gray-800';
-
   return (
     <div className="container mx-auto pb-12">
       <h1>Account settings</h1>
@@ -54,92 +47,38 @@ export default function AccountPage() {
       />
 
       {!isChangingSomething && (
-        <div className="w-full md:w-fit">
-          <div className="rounded-md border border-gray-850 dark:border-gray-500">
-            <div
-              className={`${borderClass} ${clickableClass}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => setIsChangingUsername(true)}
-            >
-              <div className={rowClass}>
-                <FaUser className={iconClass} />
-                <div>
-                  <p className={rowTitleClass}>Username</p>
-                  <p className="-mt-0.5">{user.username}</p>
-                </div>
-              </div>
-              <FaChevronRight className={chevronClass} />
-            </div>
-            <div
-              className={`${borderClass} ${clickableClass}`}
-              tabIndex={0}
-              onClick={() => setIsChangingEmail(true)}
-            >
-              <div className={rowClass}>
-                <FaEnvelope className={iconClass} />
-                <div>
-                  <p className={rowTitleClass}>Email</p>
-                  <p className="-mt-0.5">{user.email ?? 'Missing'}</p>
-                </div>
-              </div>
-              <FaChevronRight className={chevronClass} />
-            </div>
-            <div
-              className={`${borderClass} ${clickableClass}`}
-              tabIndex={0}
-              onClick={() => setIsChangingPassword(true)}
-            >
-              <div className={rowClass}>
-                <FaLock className={iconClass} />
-                <div>
-                  <p className="-mt-0.5">Change password</p>
-                </div>
-              </div>
-              <FaChevronRight className={chevronClass} />
-            </div>
-            <div
-              className={`${borderClass} ${clickableClass} border-b-0!`}
-              tabIndex={0}
-              onClick={() =>
+        <ListButtons
+          items={[
+            {
+              onClick: () => setIsChangingUsername(true),
+              Icon: FaUser,
+              title: 'Username',
+              text: user.username,
+            },
+            {
+              onClick: () => setIsChangingEmail(true),
+              Icon: FaEnvelope,
+              title: 'Email',
+              text: user.email ?? 'Missing',
+            },
+            {
+              onClick: () => setIsChangingPassword(true),
+              Icon: FaLock,
+              title: 'Password',
+              text: 'Change password',
+            },
+            {
+              onClick: () =>
                 !updateAllowMessagesFetcher.isLoading &&
-                updateAllowMessagesFetcher.submit({ allowMessages: !user.allowMessages })
-              }
-            >
-              <div className={rowClass}>
-                <FaMessage className={iconClass} />
-                <div>
-                  <p className={rowTitleClass}>Messages</p>
-                  <p className="-mt-0.5">
-                    {user.allowMessages
-                      ? 'Allow new messages'
-                      : "Don't allow new messages"}
-                  </p>
-                </div>
-              </div>
-              <FaChevronRight className={chevronClass} />
-            </div>
-          </div>
-
-          <div className="rounded-md border border-gray-850 dark:border-gray-500 mt-8">
-            <div className={`${borderClass}`}>
-              <div className={rowClass}>
-                <div>
-                  <p className={rowTitleClass}>Account created</p>
-                  <p className="-mt-0.5">{format(user.createdTime, 'PPP')}</p>
-                </div>
-              </div>
-            </div>
-            <div className={`${borderClass} border-b-0!`}>
-              <div className={rowClass}>
-                <div>
-                  <p className={rowTitleClass}>User type</p>
-                  <p className="-mt-0.5">{capitalizeString(user.userType)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+                updateAllowMessagesFetcher.submit({ allowMessages: !user.allowMessages }),
+              Icon: FaMessage,
+              title: 'Messages',
+              text: user.allowMessages
+                ? 'Allow new messages'
+                : "Don't allow new messages",
+            },
+          ]}
+        />
       )}
 
       {isChangingSomething && (

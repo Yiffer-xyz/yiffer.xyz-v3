@@ -233,6 +233,8 @@ export type User = {
   profilePictureToken?: string | null;
   comments?: ComicComment[];
   allowMessages?: boolean;
+  chatTokenWithCurrentUser?: string | null;
+  currentUserBlockStatus?: UserBlockStatus;
 };
 
 export type MinimalUser = {
@@ -644,3 +646,5 @@ export type ChatMessage = {
   timestamp: Date;
   messageText: string;
 };
+
+export type UserBlockStatus = null | 'blocked' | 'blocked-by' | 'both-blocked';

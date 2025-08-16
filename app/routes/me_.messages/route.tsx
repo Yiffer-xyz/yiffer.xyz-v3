@@ -6,6 +6,7 @@ import {
   useParams,
   Link as RemixLink,
   useLocation,
+  useRevalidator,
 } from '@remix-run/react';
 import { useEffect, useMemo, useState } from 'react';
 import { FaPlus } from 'react-icons/fa6';
@@ -51,6 +52,14 @@ export default function Messages() {
   const isCreatingNewChat = useLocation().pathname.includes('/new');
   const chatId = isCreatingNewChat ? null : chatIdParam ? chatIdParam : null;
   const { height } = useWindowSize();
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      revalidator.revalidate();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [revalidator]);
 
   const { chats, currentUser, pagesPath } = useLoaderData<typeof loader>();
 
@@ -113,17 +122,19 @@ export default function Messages() {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search"
+                placeholder="Search chats"
                 name="search"
                 className="w-full bg-gray-900 dark:bg-gray-400 px-3 py-2 rounded-sm mr-1"
                 autoComplete="off"
               />
-              <IconButton
-                icon={FaPlus}
-                variant="naked"
-                className="text-[16px] md:hidden"
-                onClick={() => navigate('/me/messages/new')}
-              />
+              {chats.length > 0 && (
+                <IconButton
+                  icon={FaPlus}
+                  variant="naked"
+                  className="text-[16px] md:hidden"
+                  onClick={() => navigate('/me/messages/new')}
+                />
+              )}
             </div>
             {filteredChats.map(chat => {
               const maybeOtherMember = chat.members.find(
@@ -180,6 +191,20 @@ export default function Messages() {
                 </RemixLink>
               );
             })}
+
+            {chats.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-full pb-20">
+                <p className="text-sm text-center text-gray-600 dark:text-gray-750">
+                  You don't have any chats yet.
+                </p>
+                <Button
+                  text="New chat"
+                  className="mt-2 md:hidden"
+                  startIcon={FaPlus}
+                  onClick={() => navigate('/me/messages/new')}
+                />
+              </div>
+            )}
           </div>
 
           <div
@@ -191,7 +216,9 @@ export default function Messages() {
               className={`${chatId || isCreatingNewChat ? 'hidden' : 'hidden md:flex'} 
                 w-full h-full gap-3 flex-col items-center justify-center`}
             >
-              <p className="text-sm">Select a chat to start messaging, or:</p>
+              {chats.length > 0 && (
+                <p className="text-sm">Select a chat to start messaging, or:</p>
+              )}
               <Button
                 text="New chat"
                 startIcon={FaPlus}

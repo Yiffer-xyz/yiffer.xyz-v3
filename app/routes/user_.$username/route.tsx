@@ -21,13 +21,15 @@ export async function loader(args: LoaderFunctionArgs) {
   const userParam = args.params.username as string;
   const source = getSourceFromRequest(args.request);
 
-  const user = await authLoader(args);
+  const currentUser = await authLoader(args);
 
   const userRes = await getUserByField({
     db: args.context.cloudflare.env.DB,
     field: 'username',
     value: userParam,
     includeExtraFields: true,
+    includeCurrentUserFields: !!currentUser,
+    currentUserId: currentUser?.userId,
   });
 
   if (userRes.err) {
@@ -41,11 +43,12 @@ export async function loader(args: LoaderFunctionArgs) {
     user: fullUserToPublicUser(userRes.result),
     userParam,
     notFound: false,
-    isOwner: user?.userId === userRes.result.id,
+    isOwner: currentUser?.userId === userRes.result.id,
     imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
     showMeCrumbs: source === 'me',
-    isAdmin: isModOrAdmin({ userType: user?.userType }),
+    isAdmin: isModOrAdmin({ userType: currentUser?.userType }),
+    isLoggedIn: !!currentUser,
   };
 }
 
@@ -59,6 +62,7 @@ export default function UserProfilePage() {
     showMeCrumbs,
     userParam,
     isAdmin,
+    isLoggedIn,
   } = useLoaderData<typeof loader>();
 
   const [mode, setMode] = useState<'edit' | 'change-photo' | 'view'>('view');
@@ -88,6 +92,7 @@ export default function UserProfilePage() {
               onEdit={() => setMode('edit')}
               onChangePhoto={() => setMode('change-photo')}
               showModLinkType={isAdmin ? 'admin-panel' : undefined}
+              isLoggedIn={isLoggedIn}
             />
           )}
           {mode === 'edit' && (

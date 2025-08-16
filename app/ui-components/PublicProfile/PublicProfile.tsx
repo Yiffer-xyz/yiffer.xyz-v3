@@ -1,12 +1,16 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { FaUser } from 'react-icons/fa';
 import { isModOrAdmin, type PublicUser } from '~/types/types';
-import { MdCameraAlt, MdEdit } from 'react-icons/md';
+import { MdBlock, MdCameraAlt, MdEdit, MdMessage } from 'react-icons/md';
 import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
-import Button from '../Buttons/Button';
 import Link from '../Link';
 import PublicProfileBadges from './PublicProfileBadges';
 import { RiShieldFill } from 'react-icons/ri';
+import { useNavigate } from '@remix-run/react';
+import { useGoodFetcher } from '~/utils/useGoodFetcher';
+import type { ListButtonItem } from '../ListButtons/ListButtons';
+import ListButtons from '../ListButtons/ListButtons';
+import { useCallback, useMemo } from 'react';
 
 export default function PublicProfile({
   user,
@@ -16,6 +20,7 @@ export default function PublicProfile({
   onChangePhoto,
   isAdminPanel,
   showModLinkType,
+  isLoggedIn,
   className,
 }: {
   user: PublicUser;
@@ -25,10 +30,114 @@ export default function PublicProfile({
   onChangePhoto: () => void;
   isAdminPanel?: boolean;
   showModLinkType?: 'admin-panel' | 'public-profile';
+  isLoggedIn: boolean;
   className?: string;
 }) {
+  const navigate = useNavigate();
+
+  const blockFetcher = useGoodFetcher({
+    url: '/api/block-user',
+    method: 'post',
+  });
+
   const hasAnyBadges =
     isModOrAdmin({ userType: user.userType }) || user.patreonDollars || user.nationality;
+
+  const isUserBlocked =
+    user.currentUserBlockStatus === 'blocked' ||
+    user.currentUserBlockStatus === 'both-blocked';
+
+  const onMessage = useCallback(() => {
+    if (!isLoggedIn) {
+      navigate('/login?redirect=/user/' + user.username);
+      return;
+    }
+    if (user.chatTokenWithCurrentUser) {
+      navigate(`/me/messages/${user.chatTokenWithCurrentUser}`);
+    } else {
+      navigate(`/me/messages/new?toUserId=${user.id}`);
+    }
+  }, [isLoggedIn, navigate, user]);
+
+  const onToggleBlock = useCallback(() => {
+    const action = isUserBlocked ? 'unblock' : 'block';
+    blockFetcher.submit({
+      targetUserId: user.id,
+      action,
+    });
+  }, [blockFetcher, isUserBlocked, user]);
+
+  const listButtonItems = useMemo(() => {
+    let buttons: ListButtonItem[] = [];
+
+    if (canEdit) {
+      buttons = [
+        {
+          title: 'Profile picture',
+          text: user.profilePictureToken ? 'Change photo' : 'Set photo',
+          onClick: onChangePhoto,
+          Icon: MdCameraAlt,
+        },
+        {
+          title: 'Profile info',
+          text: 'Edit profile',
+          onClick: onEdit,
+          Icon: MdEdit,
+        },
+      ];
+    } else {
+      buttons.push({
+        title: 'Chat',
+        text: `Message ${user.username}`,
+        onClick: onMessage,
+        Icon: MdMessage,
+        disabled: isUserBlocked,
+      });
+      if (isLoggedIn) {
+        buttons.push({
+          text: isUserBlocked ? `Unblock ${user.username}` : `Block ${user.username}`,
+          onClick: onToggleBlock,
+          Icon: MdBlock,
+          disabled: blockFetcher.isLoading,
+          color: isUserBlocked ? 'normal' : 'error',
+        });
+      }
+    }
+
+    if (showModLinkType) {
+      if (showModLinkType === 'admin-panel') {
+        buttons.push({
+          text: 'View in admin panel',
+          onClick: () => {
+            navigate(`/admin/users/${user.id}`);
+          },
+          Icon: RiShieldFill,
+        });
+      } else {
+        buttons.push({
+          text: 'View public profile',
+          onClick: () => {
+            navigate(`/user/${user.username}`);
+          },
+          Icon: FaUser,
+        });
+      }
+    }
+
+    return buttons;
+  }, [
+    blockFetcher.isLoading,
+    canEdit,
+    isUserBlocked,
+    onChangePhoto,
+    onEdit,
+    onMessage,
+    onToggleBlock,
+    user,
+    navigate,
+    showModLinkType,
+    isLoggedIn,
+  ]);
 
   return (
     <div className={className}>
@@ -69,40 +178,6 @@ export default function PublicProfile({
         </div>
       </div>
 
-      {showModLinkType && (
-        <div className="mt-2 -mb-2 flex-row items-center">
-          {showModLinkType === 'admin-panel' && (
-            <RiShieldFill className="text-blue-weak-200 dark:text-blue-strong-300 mr-1 mb-1" />
-          )}
-          <Link
-            href={
-              showModLinkType === 'admin-panel'
-                ? `/admin/users/${user.id}`
-                : `/user/${user.username}`
-            }
-            text={
-              showModLinkType === 'admin-panel'
-                ? 'View in admin panel'
-                : 'View public profile'
-            }
-            showRightArrow
-          />
-        </div>
-      )}
-
-      {canEdit && (
-        <div className="mt-4 mb-4 flex flex-row gap-2">
-          {(!isAdminPanel || !!user.profilePictureToken) && (
-            <Button
-              text={user.profilePictureToken ? 'Change photo' : 'Set photo'}
-              onClick={onChangePhoto}
-              startIcon={MdCameraAlt}
-            />
-          )}
-          <Button text="Edit profile" onClick={onEdit} startIcon={MdEdit} />
-        </div>
-      )}
-
       {user.bio && (
         <>
           <p className="font-semibold mt-4">Bio</p>
@@ -139,6 +214,8 @@ export default function PublicProfile({
           </div>
         </div>
       )}
+
+      <ListButtons className="mt-6 mb-4" items={listButtonItems} />
     </div>
   );
 }
