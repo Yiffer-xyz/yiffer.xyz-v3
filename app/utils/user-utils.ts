@@ -19,6 +19,8 @@ export function fullUserToPublicUser(user: User): PublicUser {
     socialLinks: user.socialLinks,
     contributionPoints: user.contributionPoints ?? 0,
     profilePictureToken: user.profilePictureToken,
+    chatTokenWithCurrentUser: user.chatTokenWithCurrentUser,
+    currentUserBlockStatus: user.currentUserBlockStatus,
   };
 }
 

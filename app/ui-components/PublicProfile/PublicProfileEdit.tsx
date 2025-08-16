@@ -11,6 +11,7 @@ import SearchableSelect from '../SearchableSelect/SearchableSelect';
 import LoadingButton from '../Buttons/LoadingButton';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import SocialsEditor from '../SocialsEditor/SocialsEditor';
+import TopGradientBox from '../TopGradientBox';
 
 export default function PublicProfileEdit({
   user,
@@ -54,17 +55,8 @@ export default function PublicProfileEdit({
   }
 
   return (
-    <div className="mt-2 mb-4 flex flex-col">
+    <TopGradientBox innerClassName="px-4 pt-3 pb-4">
       <h3 className="font-bold">Edit profile</h3>
-      <div className="flex flex-row gap-4 mt-2 mb-2">
-        <Button variant="outlined" text="Cancel" startIcon={FaXmark} onClick={onFinish} />
-        <LoadingButton
-          text="Save profile"
-          startIcon={FaSave}
-          onClick={() => onSaveEdit(editedUser)}
-          isLoading={editFetcher.isLoading}
-        />
-      </div>
 
       <p className="font-semibold mt-4">Bio</p>
       <Textarea
@@ -90,6 +82,7 @@ export default function PublicProfileEdit({
         }
         placeholder="Find country"
         onValueCleared={() => setEditedUser({ ...editedUser, nationality: null })}
+        mobileFullWidth
       />
 
       <p className="font-semibold mt-12">Social links</p>
@@ -98,8 +91,8 @@ export default function PublicProfileEdit({
         <p className="text-sm mb-2">No social links yet</p>
       ) : (
         <p className="text-sm mb-4">
-          Don't insert the full url - use the ID/username/etc only. For example, for a
-          FurAffinity profile of "furaffinity.net/user/my-username", only insert
+          Don't insert the full url - use the username/ID only. For example, for a
+          FurAffinity profile "furaffinity.net/user/my-username", only insert
           "my-username".
         </p>
       )}
@@ -108,6 +101,16 @@ export default function PublicProfileEdit({
         value={editedUser.socialLinks}
         onChange={newSocials => setEditedUser({ ...editedUser, socialLinks: newSocials })}
       />
-    </div>
+
+      <div className="flex flex-row gap-4 mt-6 justify-end">
+        <Button variant="outlined" text="Cancel" startIcon={FaXmark} onClick={onFinish} />
+        <LoadingButton
+          text="Save profile"
+          startIcon={FaSave}
+          onClick={() => onSaveEdit(editedUser)}
+          isLoading={editFetcher.isLoading}
+        />
+      </div>
+    </TopGradientBox>
   );
 }
