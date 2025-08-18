@@ -230,7 +230,7 @@ export const RESTRICT_NOTIFICATIONS_TO_PATRONS = true;
 
 export const COMMENT_HIDE_THRESHOLD = -3;
 
-export const MESSAGES_PAGINATION_SIZE = 100;
+export const MESSAGES_PAGINATION_SIZE = 50;
 
 export const THEME1 = '#9aebe7';
 export const THEME1_DARK = '#49ded7';

@@ -1,35 +1,51 @@
-import type { Chat, ChatMessage, MinimalUser, UserBlockStatus } from '~/types/types';
+import type {
+  Chat,
+  ChatMessage,
+  DbChatMessage,
+  MinimalUser,
+  UserBlockStatus,
+} from '~/types/types';
 import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 import { getUserBlockStatus } from './get-user-block-status';
+import { MESSAGES_PAGINATION_SIZE } from '~/types/constants';
 
-type DbChatMessage = {
-  id: number;
-  senderId: number;
-  messageText: string;
-  timestamp: string;
-};
-
-export async function getChat(
-  db: D1Database,
-  userId: number,
-  isModOrAdmin: boolean,
-  chatToken: string,
-  markReadIfAppropriate: boolean
-): ResultOrErrorPromise<{
+export async function getChat({
+  db,
+  userId,
+  isModOrAdmin,
+  chatToken,
+  markReadIfAppropriate,
+  page,
+  getBlockedStatus,
+}: {
+  db: D1Database;
+  userId: number;
+  isModOrAdmin: boolean;
+  chatToken: string;
+  markReadIfAppropriate: boolean;
+  page: number;
+  getBlockedStatus: boolean;
+}): ResultOrErrorPromise<{
   chat: Chat;
   messages: ChatMessage[];
   blockedStatus: UserBlockStatus;
+  hasNextPage: boolean;
 }> {
   const messagesQuery = ` 
     SELECT id, senderId, messageText, timestamp FROM chatmessage
     WHERE chatToken = ?
     ORDER BY timestamp DESC
+    LIMIT ? OFFSET ?
   `;
-  const messagesParams = [chatToken];
+  const messagesParams = [
+    chatToken,
+    MESSAGES_PAGINATION_SIZE + 1,
+    (page - 1) * MESSAGES_PAGINATION_SIZE,
+  ];
 
   const chatMembersQuery = `SELECT 
       userId AS id, user.username, user.profilePictureToken, chat.isRead AS isChatRead
@@ -92,20 +108,27 @@ export async function getChat(
     messageText: message.messageText,
   }));
 
+  // We fetch one extra just to know if hasNextPage should be true
+  if (messages.length === MESSAGES_PAGINATION_SIZE + 1) {
+    messages.pop();
+  }
+
   const otherChatUser = chatMembers.find(member => member.id !== userId);
 
   let blockedStatus: UserBlockStatus = null;
-  if (!chat.isSystemChat && otherChatUser) {
-    const blockedStatusRes = await getUserBlockStatus(db, userId, otherChatUser.id);
-    if (blockedStatusRes.err) {
-      return {
-        err: {
-          logMessage: 'Error getting blocked status',
-          context: { chatToken, userId, otherUserId: chatMembers[0].id },
-        },
-      };
+  if (getBlockedStatus) {
+    if (!chat.isSystemChat && otherChatUser) {
+      const blockedStatusRes = await getUserBlockStatus(db, userId, otherChatUser.id);
+      if (blockedStatusRes.err) {
+        return {
+          err: {
+            logMessage: 'Error getting blocked status',
+            context: { chatToken, userId, otherUserId: chatMembers[0].id },
+          },
+        };
+      }
+      blockedStatus = blockedStatusRes.result;
     }
-    blockedStatus = blockedStatusRes.result;
   }
 
   // If last message is by other user, and isRead is false, set it to true
@@ -124,5 +147,12 @@ export async function getChat(
     chat.isRead = true;
   }
 
-  return { result: { chat, messages, blockedStatus } };
+  return {
+    result: {
+      chat,
+      messages,
+      blockedStatus,
+      hasNextPage: messagesDb.length > MESSAGES_PAGINATION_SIZE,
+    },
+  };
 }

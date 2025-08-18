@@ -648,3 +648,10 @@ export type ChatMessage = {
 };
 
 export type UserBlockStatus = null | 'blocked' | 'blocked-by' | 'both-blocked';
+
+export type DbChatMessage = {
+  id: number;
+  senderId: number;
+  messageText: string;
+  timestamp: string;
+};
