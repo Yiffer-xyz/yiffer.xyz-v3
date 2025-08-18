@@ -113,7 +113,7 @@ export default function Messages() {
           style={{ height: messagesHeight }}
         >
           <div
-            className={`flex flex-col md:border-r md:border-gray-900 dark:border-gray-500 
+            className={`flex flex-col md:border-r md:border-gray-900 dark:border-gray-500 shrink-0
               w-full md:w-[300px] 2xl:w-[340px] ${chatId || isCreatingNewChat ? 'hidden md:flex' : 'flex'}
               overflow-y-auto overflow-hidden scrollbar scrollbar-thumb-gray-850 dark:scrollbar-thumb-gray-600 scrollbar-track-white dark:scrollbar-track-gray-300
             `}
