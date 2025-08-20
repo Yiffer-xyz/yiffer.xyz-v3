@@ -48,14 +48,14 @@ export default function Button({
       ? ' py-[6px] px-3 '
       : ' py-1 px-[10px] ';
 
-  if (variant === 'contained' && color === 'primary') {
+  if (variant === 'contained' && color === 'primary' && !disabled) {
     variantClassname += ` bg-blue-weak-200 hover:bg-blue-weak-100 focus:bg-blue-weak-100
       dark:bg-blue-strong-200 dark:hover:bg-blue-strong-100 dark:focus:bg-blue-strong-100
       ${disableElevation ? '' : 'shadow-sm hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 
-  if (variant === 'outlined' && color === 'primary') {
+  if (variant === 'outlined' && color === 'primary' && !disabled) {
     variantClassname += ` bg-transparent 
       hover:bg-blue-weak-200 focus:bg-blue-weak-200
       dark:hover:bg-blue-strong-200 dark:focus:bg-blue-strong-200
@@ -63,25 +63,25 @@ export default function Button({
       dark:text-white text-blue-weak-200 ${paddingString} `;
   }
 
-  if (variant === 'naked' && color === 'primary') {
+  if (variant === 'naked' && color === 'primary' && !disabled) {
     variantClassname += ` bg-transparent dark:text-blue-strong-300 text-blue-weak-200 ${paddingString} `;
   }
 
-  if (variant === 'contained' && color === 'error') {
+  if (variant === 'contained' && color === 'error' && !disabled) {
     variantClassname += ` bg-red-weak-200 hover:bg-red-weak-100 focus:bg-red-weak-100
       dark:bg-red-strong-200 dark:hover:bg-red-strong-100 dark:focus:bg-red-strong-100
       ${disableElevation ? '' : 'shadow-sm hover:shadow-md focus:shadow-md'}
       text-white ${paddingString} `;
   }
 
-  if (variant === 'outlined' && color === 'error') {
+  if (variant === 'outlined' && color === 'error' && !disabled) {
     variantClassname += ` bg-transparent hover:bg-red-weak-200 focus:bg-red-weak-200
       dark:hover:bg-red-strong-200 dark:focus:bg-red-strong-200
       hover:text-white focus:text-white dark:text-white text-red-weak-200
       border-2 border-red-weak-200 dark:border-red-strong-200 ${paddingString} `;
   }
 
-  if (variant === 'naked' && color === 'error') {
+  if (variant === 'naked' && color === 'error' && !disabled) {
     variantClassname += ` bg-transparent dark:text-white text-red-weak-200 ${paddingString} `;
   }
 
