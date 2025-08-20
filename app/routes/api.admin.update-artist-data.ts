@@ -99,6 +99,7 @@ function getUpdateLinksQuery(
     dbStatements.push({
       query: addLinksQuery,
       params: newLinks.flatMap(l => [artistId, l]),
+      queryName: 'Add artist links',
     });
   }
 
@@ -109,6 +110,7 @@ function getUpdateLinksQuery(
     dbStatements.push({
       query: deleteLinksQuery,
       params: [artistId, ...deletedLinks],
+      queryName: 'Delete artist links',
     });
   }
 
@@ -137,5 +139,6 @@ function getUpdateGeneralDetailsQuery(changes: ArtistDataChanges): QueryWithPara
   return {
     query: `UPDATE artist SET ${updateFieldStr} WHERE id = ?`,
     params: updateFieldValues,
+    queryName: 'Update artist data',
   };
 }

@@ -23,6 +23,7 @@ export default function PrivacyPage() {
       </p>
 
       <div className="flex flex-col gap-6 mt-4">
+        <ChangelogItem date="2025-09-03" texts={['Added messaging.']} />
         <ChangelogItem
           date="2025-07-27"
           texts={[

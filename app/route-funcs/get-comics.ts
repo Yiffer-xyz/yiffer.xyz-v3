@@ -123,6 +123,7 @@ export function getComicsByArtistFieldQuery(
   return {
     query,
     params: [fieldValue],
+    queryName: `Comics by artist, ${fieldName}`,
   };
 }
 

@@ -60,6 +60,7 @@ export async function unlistComic(
     {
       query: comicUpdateQuery,
       params: [comicId],
+      queryName: 'Set comic unlisted',
     },
   ];
 
@@ -67,11 +68,13 @@ export async function unlistComic(
     dbStatements.push({
       query: 'INSERT INTO comicmetadata (comicId, unlistComment) VALUES (?, ?)',
       params: [comicId, unlistComment],
+      queryName: 'Insert comic metadata',
     });
   } else {
     dbStatements.push({
       query: 'UPDATE comicmetadata SET unlistComment = ? WHERE comicId = ?',
       params: [unlistComment, comicId],
+      queryName: 'Update comic metadata',
     });
   }
 

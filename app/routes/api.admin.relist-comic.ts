@@ -42,10 +42,12 @@ export async function relistComic(
     {
       query: comicQuery,
       params: [comicId],
+      queryName: 'Relist comic',
     },
     {
       query: metadataQuery,
       params: [comicId],
+      queryName: 'Relist comic metadata',
     },
   ]);
 
