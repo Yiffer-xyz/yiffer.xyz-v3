@@ -21,7 +21,7 @@ export type ExecDBResponse = {
 export type QueryWithParams = {
   query: string;
   params?: any[];
-  queryName?: string;
+  queryName: string;
   extraInfo?: string;
 };
 
@@ -30,6 +30,13 @@ export async function queryDbMultiple<T>(
   db: D1Database,
   queriesWithParams: QueryWithParams[]
 ): Promise<DBResponse<T>> {
+  for (const query of queriesWithParams) {
+    if (!query.queryName) {
+      console.warn('⚠️ query without name');
+      console.log(query.query);
+    }
+  }
+
   try {
     const statements = queriesWithParams.map(query => {
       let statement: D1PreparedStatement;
@@ -91,6 +98,11 @@ export async function queryDb<T>(
   queryName?: string,
   extraInfo?: string
 ): Promise<DBResponse<T>> {
+  if (!queryName) {
+    console.warn('⚠️ query without name');
+    console.log(query);
+  }
+
   try {
     let statement: D1PreparedStatement;
     if (params && params.length) {
@@ -119,7 +131,9 @@ export async function queryDb<T>(
     return {
       isError: true,
       errorMessage: err.message,
-      queriesWithParams: [{ query, params: params || [] }],
+      queriesWithParams: [
+        { query, params: params || [], queryName: queryName ?? 'Unnamed query' },
+      ],
     };
   }
 }
@@ -152,7 +166,7 @@ export async function queryDbExec(
     return {
       isError: true,
       errorMessage: err.message,
-      queriesWithParams: [{ query, params }],
+      queriesWithParams: [{ query, params, queryName: queryName ?? 'Unnamed query' }],
     };
   }
 }

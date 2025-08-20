@@ -83,7 +83,7 @@ export function ComicSuggestion({
           </p>
         </div>
 
-        <div className="flex flex-col md:items-end justify-between gap-2 flex-shrink-0">
+        <div className="flex flex-col md:items-end justify-between gap-2 shrink-0">
           <div className="flex flex-row gap-x-1">
             {action.user.username && action.user.userId ? (
               <Username

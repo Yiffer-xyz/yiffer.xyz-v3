@@ -12,7 +12,7 @@ export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 const PAGE_SIZE = ADMIN_COMMENTLIST_PAGE_SIZE;
 
 export const meta: MetaFunction = () => {
-  return [{ title: `Mod: More | Yiffer.xyz` }];
+  return [{ title: `Mod: Comment list | Yiffer.xyz` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

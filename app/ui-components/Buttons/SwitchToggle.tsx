@@ -30,10 +30,10 @@ export default function SwitchToggle({
           disabled={disabled}
         />
         <div
-          className={`relative w-8 h-5 bg-gray-700 peer-focus:outline-none 
+          className={`relative w-8 h-5 bg-gray-700 peer-focus:outline-hidden 
             peer-focus:ring-2 peer-focus:ring-theme1-primary
             rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-3
-            rtl:peer-checked:after:-translate-x-3 peer-checked:after:border-white
+            peer-checked:rtl:after:-translate-x-3 peer-checked:after:border-white
             after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white
             after:border-gray-700 after:border after:rounded-full after:h-4 after:w-4
             after:transition-all dark:border-gray-600 peer-checked:bg-theme1-darker`}

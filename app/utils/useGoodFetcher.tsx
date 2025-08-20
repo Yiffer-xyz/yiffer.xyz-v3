@@ -6,18 +6,6 @@ import { toast } from 'react-toastify';
 import type { ApiResponse } from './request-helpers';
 import { useUIPreferences } from './theme-provider';
 
-// For some reason, Remix doesn't export SubmitTarget, so redeclare it...
-type RemixSubmitTarget =
-  | HTMLFormElement
-  | HTMLButtonElement
-  | HTMLInputElement
-  | FormData
-  | URLSearchParams
-  | {
-      [name: string]: string;
-    }
-  | null;
-
 type ToastFetcherArgs = {
   url?: string;
   method?: FormMethod;
@@ -174,7 +162,7 @@ export function useGoodFetcher<T = void>({
   // which is just terrible. With this, you can await a fetch.
   // Preferable alternative to this: use the onFinish callback.
   const awaitSubmit = useCallback(
-    async (body?: RemixSubmitTarget) => {
+    async (body?: SubmitTarget) => {
       submit(body);
       while (fetchingStateRef.current === 'is-fetching') {
         await new Promise(resolve => setTimeout(resolve, 25));

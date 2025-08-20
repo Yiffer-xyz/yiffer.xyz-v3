@@ -30,7 +30,7 @@ export async function getModActions(
     LEFT JOIN comic ON modaction.comicId = comic.id
     LEFT JOIN artist ON modaction.artistId = artist.id
     ORDER BY modaction.id DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`;
-  const result = await queryDb<DbModAction[]>(db, query);
+  const result = await queryDb<DbModAction[]>(db, query, undefined, 'Mod actions');
 
   if (result.isError) {
     return makeDbErrObj(result, 'Error getting mod actions', { pageNum });

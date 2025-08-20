@@ -469,3 +469,30 @@ export function createFeedbackForwardEmail({
     MessageStream: 'outbound',
   };
 }
+
+export function createSystemChatReplyForwardEmail({
+  chatToken,
+  message,
+  username,
+  frontEndUrlBase,
+}: {
+  chatToken: string;
+  message: string;
+  username: string;
+  frontEndUrlBase: string;
+}) {
+  const html = `
+    <p>New reply to a system chat.</p>
+    <p>Sender: <b>${username}</b></p>
+    <p>Message: ${message}</p>
+    <p><a href="${frontEndUrlBase}/admin/system-chats/${chatToken}">Go to chat</a></p>
+  `;
+
+  return {
+    To: 'contact@yiffer.xyz',
+    From: 'contact@yiffer.xyz',
+    Subject: 'System chat reply | Yiffer.xyz',
+    HtmlBody: html,
+    MessageStream: 'outbound',
+  };
+}

@@ -26,7 +26,7 @@ export default function TagElement({
 
   const hoverEffectsClassName = disableHoverEffects
     ? 'cursor-default'
-    : `dark:hover:text-theme1-dark hover:text-theme1-darker hover:shadow
+    : `dark:hover:text-theme1-dark hover:text-theme1-darker hover:shadow-sm
       hover:border-transparent dark:hover:border-theme1-dark cursor-pointer `;
 
   return (
@@ -34,7 +34,7 @@ export default function TagElement({
       key={tag.name}
       onClick={() => isTagFullTag(tag) && onClick && onClick(tag.id)}
       role="button"
-      className={`px-1.5 py-[1px] pb-[2px] rounded-full leading-0 
+      className={`px-1.5 py-px pb-[2px] rounded-full leading-0 
                 border border-gray-900  transition-all duration-75 dark:duration-0
                 w-fit text-gray-500 dark:border-gray-500 dark:text-gray-900 h-fit
                 ${hoverEffectsClassName}

@@ -90,6 +90,7 @@ export function getArtistByFieldQuery(
   return {
     query: artistQuery,
     params: [fieldValue],
+    queryName: `Artist by field, ${fieldName}`,
   };
 }
 

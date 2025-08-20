@@ -211,7 +211,7 @@ export default function PendingComics() {
 
           return (
             <div
-              className={`flex flex-row shadow rounded-sm justify-between gap-x-6 px-3 py-2 ${getBgColor(
+              className={`flex flex-row shadow rounded-xs justify-between gap-x-6 px-3 py-2 ${getBgColor(
                 comic
               )}`}
               key={comic.comicId}
@@ -273,10 +273,10 @@ export async function loader(args: LoaderFunctionArgs) {
 
 function getBgColor(pendingComic: PendingComic) {
   if (pendingComic.publishStatus === 'scheduled') {
-    return 'bg-theme1-primaryMoreTrans dark:bg-theme1-primaryTrans';
+    return 'bg-theme1-primary-more-trans dark:bg-theme1-primary-trans';
   }
   if (pendingComic.errorText || pendingComic.numberOfTags === 0) {
-    return 'bg-red-moreTrans dark:bg-red-trans';
+    return 'bg-red-more-trans dark:bg-red-trans';
   }
 
   return 'bg-white dark:bg-gray-300';

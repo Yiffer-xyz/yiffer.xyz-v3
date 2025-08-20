@@ -47,7 +47,7 @@ export default function Signup() {
     <div className="mx-auto w-full sm:w-[400px] px-8">
       <fetcher.Form className="w-full my-8">
         <TopGradientBox innerClassName="px-8 py-6">
-          <h1 className="text-3xl">Sign up</h1>
+          <h1 className="text-3xl!">Sign up</h1>
 
           <div className="mt-4 flex flex-col gap-6">
             <TextInput

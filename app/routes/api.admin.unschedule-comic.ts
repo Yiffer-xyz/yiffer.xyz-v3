@@ -41,10 +41,12 @@ export async function unScheduleComic(
     {
       query: comicQuery,
       params: [comicId],
+      queryName: 'Unschedule comic',
     },
     {
       query: metadataQuery,
       params: [comicId],
+      queryName: 'Unschedule comic metadata',
     },
   ]);
 

@@ -37,7 +37,7 @@ export async function getModCommentList(
     INNER JOIN user ON comiccomment.userId = user.id
     LEFT JOIN comic ON comiccomment.comicId = comic.id
     ORDER BY comiccomment.id DESC LIMIT ${ADMIN_COMMENTLIST_PAGE_SIZE} OFFSET ${offset}`;
-  const result = await queryDb<DbComment[]>(db, query);
+  const result = await queryDb<DbComment[]>(db, query, undefined, 'Mod comment list');
 
   if (result.isError) {
     return makeDbErrObj(result, 'Error getting mod comment list', { pageNum });
@@ -53,7 +53,12 @@ export async function getModCommentList(
     WHERE comiccommentvote.commentId IN (${result.result.map(_ => '?').join(',')})`;
 
   const votesParams = result.result.map(x => x.id);
-  const votesResult = await queryDb<DbCommentVote[]>(db, commentVotesQuery, votesParams);
+  const votesResult = await queryDb<DbCommentVote[]>(
+    db,
+    commentVotesQuery,
+    votesParams,
+    'Mod comment votes'
+  );
 
   if (votesResult.isError) {
     return makeDbErrObj(votesResult, 'Error getting comment votes', { pageNum });

@@ -55,7 +55,7 @@ export default function ComicPage() {
   return (
     <div className="p-4 md:p-5 pt-2 container mx-auto block md:flex md:flex-col md:items-center">
       <div className="md:w-[728px]">
-        <h1 className="text-3xl md:text-4xl break-all">
+        <h1 className="text-3xl! md:text-4xl! break-all">
           {comic?.name ?? queriedComicName}
         </h1>
         {!comicNotFound && (
@@ -72,7 +72,7 @@ export default function ComicPage() {
         <Breadcrumbs
           currentRoute={comic?.name ?? queriedComicName}
           prevRoutes={[{ text: 'Browse', href: '/browse' }]}
-          className="!mb-1"
+          className="mb-1!"
         />
 
         {isMod && !notFound && isPublished && (
@@ -152,7 +152,7 @@ export default function ComicPage() {
           )}
 
           {!isPublished && (
-            <div className="bg-theme1-primaryTrans p-4 pt-3 w-full md:w-[728px] mt-2 mb-4">
+            <div className="bg-theme1-primary-trans p-4 pt-3 w-full md:w-[728px] mt-2 mb-4">
               <h4>Comic preview</h4>
               <p className="text-sm">
                 This comic is not live, and is inaccessible to non-mod users.

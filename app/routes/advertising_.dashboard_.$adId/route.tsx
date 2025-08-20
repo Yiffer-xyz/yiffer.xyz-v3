@@ -242,7 +242,7 @@ function AdTopInfo({ ad, editAd }: { ad: Advertisement; editAd: () => void }) {
 
   if (isDeactivating) {
     return (
-      <div className="bg-red-moreTrans p-4 w-fit flex flex-col gap-2">
+      <div className="bg-red-more-trans p-4 w-fit flex flex-col gap-2">
         <h3>Deactivate ad?</h3>
         <p>
           Are you sure you want to deactivate this ad? It will immediately stop being
@@ -264,7 +264,7 @@ function AdTopInfo({ ad, editAd }: { ad: Advertisement; editAd: () => void }) {
 
   if (isDeleting) {
     return (
-      <div className="bg-red-moreTrans p-4 w-fit flex flex-col gap-2">
+      <div className="bg-red-more-trans p-4 w-fit flex flex-col gap-2">
         <h3>Delete ad?</h3>
         <p>Are you sure you want to delete this ad?</p>
         <div className="flex flex-row gap-4 mt-1">
@@ -281,7 +281,7 @@ function AdTopInfo({ ad, editAd }: { ad: Advertisement; editAd: () => void }) {
   }
 
   return (
-    <div className="bg-theme1-primaryTrans p-4 w-fit flex flex-col gap-2">
+    <div className="bg-theme1-primary-trans p-4 w-fit flex flex-col gap-2">
       <p>
         <b>Status</b>: <AdStatusText status={ad.status} />
       </p>

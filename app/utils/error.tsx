@@ -1,10 +1,10 @@
 import InfoBox from '~/ui-components/InfoBox';
 import type { ErrorResponse } from '@remix-run/react';
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react';
-import { colors } from 'tailwind.config';
 import Link from '~/ui-components/Link';
 import { useGoodFetcher } from './useGoodFetcher';
 import { useEffect } from 'react';
+import { THEME1, THEME2 } from '~/types/constants';
 
 export const HANDLED_ERR_MSG = 'HANDLED server error';
 
@@ -122,7 +122,7 @@ function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }
       </InfoBox>
 
       {(isAdmin || isLocalhost) && (
-        <div className="mt-6 max-w-90p md:max-w-xxl p-4 pt-3 bg-theme1-primaryTrans mx-auto flex flex-col gap-4">
+        <div className="mt-6 max-w-90p md:max-w-xxl p-4 pt-3 bg-theme1-primary-trans mx-auto flex flex-col gap-4">
           <p className="font-semibold">
             Some details - only because this is{' '}
             {isLocalhost ? 'localhost dev' : 'the admin panel'}:
@@ -147,7 +147,7 @@ function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }
 function UnthemedErrorBoundary({ error }: { error: ErrorResponse }) {
   const navStyle = {
     display: 'flex',
-    background: `linear-gradient(to right, ${colors.theme1.primary}, ${colors.theme2.primary})`,
+    background: `linear-gradient(to right, ${THEME1}, ${THEME2})`,
     padding: '0.375rem 1rem', // Equivalent to px-4 py-1.5
     justifyContent: 'space-between',
     marginBottom: '1rem',

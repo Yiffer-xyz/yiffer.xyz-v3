@@ -64,8 +64,8 @@ export default function ModActionLog({
               <TableCell>Details</TableCell>
             </TableHeadRow>
             <TableBody>
-              {modActions.map(a => (
-                <TableRow key={a.id}>
+              {modActions.map((a, index) => (
+                <TableRow key={index}>
                   <TableCell>
                     <Username
                       id={a.user.id}

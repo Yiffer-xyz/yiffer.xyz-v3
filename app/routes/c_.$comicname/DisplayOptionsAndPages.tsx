@@ -241,7 +241,7 @@ export default function DisplayOptionsAndPages({
             <div className="mt-1 flex flex-row items-center">
               <Button
                 text="Set as default"
-                className="!py-1 !px-2 "
+                className="py-1! px-2! "
                 onClick={setDefault}
                 variant="outlined"
               />

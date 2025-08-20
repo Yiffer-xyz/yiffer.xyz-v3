@@ -149,6 +149,7 @@ export async function processTagSuggestion(
     processedItems.map(item => ({
       query: updateItemsQuery,
       params: [item.isApproved ? 1 : 0, item.tagSuggestionItemId],
+      queryName: 'Process tag suggestion item',
     }))
   );
   if (updateItemsQueryRes.isError) {

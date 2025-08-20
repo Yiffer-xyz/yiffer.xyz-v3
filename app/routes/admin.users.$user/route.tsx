@@ -34,6 +34,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function ManageSingleUser() {
   const { user, contributions, feedback, pagesPath, imagesServerUrl, isAdmin } =
     useLoaderData<typeof loader>();
+
   const [userType, setUserType] = useState<UserType>(user.userType);
   const [modNotes, setModNotes] = useState(user.modNotes || '');
   const [banReason, setBanReason] = useState('');
@@ -115,6 +116,7 @@ export default function ManageSingleUser() {
           pagesPath={pagesPath}
           isAdminPanel
           className="mb-4"
+          isLoggedIn
           showModLinkType="public-profile"
         />
       )}
@@ -197,37 +199,43 @@ export default function ManageSingleUser() {
             </div>
           )}
 
-          <h3 className="mt-6">Ban user</h3>
-          {banFlowActive ? (
+          {!user.isBanned && (
             <>
-              <TextInput
-                value={banReason}
-                onChange={setBanReason}
-                label="Ban reason"
-                name="banReason"
-                className="max-w-lg"
-              />
-              <div className="flex flex-row mt-4">
-                <Button
-                  text="Cancel"
-                  onClick={() => setBanFlowActive(false)}
-                  variant="outlined"
-                  className="mr-2"
-                />
-                <Button
-                  text="Ban user"
-                  onClick={onBanUser}
-                  color="error"
-                  disabled={banReason.length === 0}
-                />
-              </div>
+              <h3 className="mt-6">Actions</h3>
+              {banFlowActive ? (
+                <>
+                  <TextInput
+                    value={banReason}
+                    onChange={setBanReason}
+                    label="Ban reason"
+                    name="banReason"
+                    className="max-w-lg"
+                  />
+                  <div className="flex flex-row mt-4">
+                    <Button
+                      text="Cancel"
+                      onClick={() => setBanFlowActive(false)}
+                      variant="outlined"
+                      className="mr-2"
+                    />
+                    <Button
+                      text="Ban user"
+                      onClick={onBanUser}
+                      color="error"
+                      disabled={banReason.length === 0}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-row gap-2 flex-wrap">
+                  <Button
+                    text="Ban user"
+                    onClick={() => setBanFlowActive(true)}
+                    color="error"
+                  />
+                </div>
+              )}
             </>
-          ) : (
-            <Button
-              text="Ban user"
-              onClick={() => setBanFlowActive(true)}
-              color="error"
-            />
           )}
 
           <div className="max-w-2xl mt-6">

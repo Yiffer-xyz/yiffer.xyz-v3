@@ -599,7 +599,7 @@ function Page({
             />
 
             <p
-              className="whitespace-pre-wrap break-all overflow-ellipsis overflow-hidden leading-none text-center mt-0.5"
+              className="whitespace-pre-wrap break-all text-ellipsis overflow-hidden leading-none text-center mt-0.5"
               style={{ height: PAGE_NAME_HEIGHT, width: pageImgWidth }}
             >
               <span className="mr-1">

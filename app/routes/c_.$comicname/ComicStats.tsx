@@ -14,7 +14,7 @@ type ComicStatsProps = {
 export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
   return (
     <div
-      className={`flex flex-col mt-2 flex-shrink-0 items-end gap-1.5 pl-3 
+      className={`flex flex-col mt-2 shrink-0 items-end gap-1.5 pl-3 
         md:pl-0 md:absolute md:right-0 text-sm md:text-base ${className}`}
       style={{ width: desktopStatsWidth }}
     >
@@ -46,7 +46,7 @@ export default function ComicStats({ comic, className = '' }: ComicStatsProps) {
 
       {comic.updated && comic.updated !== comic.published && (
         <div className="flex flex-row items-center gap-1.5" title="Updated">
-          <LuRefreshCcw className="mt-[3px] mr-[1px]" size={13} />
+          <LuRefreshCcw className="mt-[3px] mr-px" size={13} />
           <p>{format(comic.updated, 'PP')}</p>
         </div>
       )}

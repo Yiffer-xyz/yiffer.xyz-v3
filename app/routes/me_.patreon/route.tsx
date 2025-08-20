@@ -1,7 +1,7 @@
 import Button from '~/ui-components/Buttons/Button';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import { useLoaderData, useRevalidator } from '@remix-run/react';
+import { redirect, useLoaderData, useRevalidator } from '@remix-run/react';
 import Link from '~/ui-components/Link';
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { fullUserLoader } from '~/utils/loaders';
@@ -13,6 +13,11 @@ export const meta: MetaFunction = () => {
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await fullUserLoader(args);
+
+  if (!user) {
+    throw redirect('/');
+  }
+
   return {
     user,
     patreonClientId: args.context.cloudflare.env.PATREON_CLIENT_ID,
@@ -80,8 +85,7 @@ export default function AccountPatreon() {
           <h4 className="mt-6">Rewards</h4>
           <p>
             You're in the <Link href="/patreon" text="Patron list" isInsideParagraph />.
-            Once we implement public user profiles, your patronage will show there as
-            well!
+            {user.patreonDollars >= 5 && ` You're also viewing the site ad-free!`}
           </p>
 
           {user.patreonEmail && (

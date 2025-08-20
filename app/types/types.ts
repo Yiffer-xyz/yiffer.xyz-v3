@@ -232,6 +232,9 @@ export type User = {
   contributionPoints: number;
   profilePictureToken?: string | null;
   comments?: ComicComment[];
+  allowMessages?: boolean;
+  chatTokenWithCurrentUser?: string | null;
+  currentUserBlockStatus?: UserBlockStatus;
 };
 
 export type MinimalUser = {
@@ -622,4 +625,33 @@ export type ComicUpdateNotification = {
   comicName: string;
   timestamp: Date;
   isRead: boolean;
+};
+
+export type Chat = {
+  token: string;
+  isSystemChat: boolean;
+  members: MinimalUser[];
+  isRead: boolean;
+  latestMessage?: {
+    id: number;
+    senderId: number | null;
+    timestamp: Date;
+    content: string;
+  };
+};
+
+export type ChatMessage = {
+  id: number;
+  fromUserId: number | null;
+  timestamp: Date;
+  messageText: string;
+};
+
+export type UserBlockStatus = null | 'blocked' | 'blocked-by' | 'both-blocked';
+
+export type DbChatMessage = {
+  id: number;
+  senderId: number;
+  messageText: string;
+  timestamp: string;
 };

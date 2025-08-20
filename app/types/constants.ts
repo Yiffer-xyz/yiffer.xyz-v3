@@ -229,3 +229,14 @@ export const NOTIFICATIONS_PAGINATION_SIZE = 6;
 export const RESTRICT_NOTIFICATIONS_TO_PATRONS = true;
 
 export const COMMENT_HIDE_THRESHOLD = -3;
+
+export const MESSAGES_PAGINATION_SIZE = 50;
+
+export const THEME1 = '#9aebe7';
+export const THEME1_DARK = '#49ded7';
+export const THEME2 = '#adfee0';
+export const THEME2_DARK = '#5df1ba';
+
+export const MAX_MESSAGE_LENGTH = 1500;
+
+export const ADMIN_CHAT_LIST_PAGESIZE = 50;
