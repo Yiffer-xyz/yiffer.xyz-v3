@@ -53,7 +53,8 @@ export async function action(args: ActionFunctionArgs) {
   const usernameRes = await queryDb<any[]>(
     args.context.cloudflare.env.DB,
     usernameQuery,
-    [newUsername]
+    [newUsername],
+    'Change username check'
   );
 
   if (usernameRes.isError) {

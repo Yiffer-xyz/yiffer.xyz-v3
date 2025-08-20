@@ -181,10 +181,12 @@ async function getChatsWithCurrentUser(
     WHERE cm1.userId = ? AND cm2.userId = ? AND chat.isSystemChat = 0
     LIMIT 1`;
 
-  const chatRes = await queryDb<{ token: string }[]>(db, chatQuery, [
-    userId,
-    currentUserId,
-  ]);
+  const chatRes = await queryDb<{ token: string }[]>(
+    db,
+    chatQuery,
+    [userId, currentUserId],
+    'Chat with current user'
+  );
 
   if (chatRes.isError) {
     return makeDbErrObj(chatRes, 'Error getting chat with current user', {
@@ -218,11 +220,13 @@ async function getUserExtraFields(
 
   const comments: ComicComment[] = [];
   if (includeComments) {
+    const knownUserFields = `'${user.username}' AS username, ${user.profilePictureToken ? `'${user.profilePictureToken}' AS profilePictureToken` : 'NULL AS profilePictureToken'}`;
+
     const commentsQuery = `
       SELECT
         comiccomment.id AS id, comment, comiccomment.timestamp AS timestamp, comicId,
         comic.name AS comicName, comiccomment.isHidden, ${user.id} AS userId,
-        '${user.username}' AS username, '${user.profilePictureToken}' AS profilePictureToken
+        ${knownUserFields}
       FROM comiccomment 
       INNER JOIN comic ON comiccomment.comicId = comic.id
       WHERE userId = ?
@@ -246,9 +250,12 @@ async function getUserExtraFields(
       FROM comiccommentvote 
       WHERE userId = ?
     `;
-    const commentVotesRes = await queryDb<DbCommentVote[]>(db, commentVotesQuery, [
-      user.id,
-    ]);
+    const commentVotesRes = await queryDb<DbCommentVote[]>(
+      db,
+      commentVotesQuery,
+      [user.id],
+      'User comment votes'
+    );
 
     if (commentVotesRes.isError) {
       return makeDbErrObj(commentVotesRes, 'Error getting user comment votes', {
@@ -257,7 +264,7 @@ async function getUserExtraFields(
     }
 
     const commentVotes = commentVotesRes.result;
-    const mappedComments = mergeCommentsAndVotes(
+    const mappedComments: ComicComment[] = mergeCommentsAndVotes(
       commentsRes.result,
       commentVotes,
       currentUserId

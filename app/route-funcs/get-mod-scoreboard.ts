@@ -13,7 +13,7 @@ export async function getModScoreboard(db: D1Database): ResultOrErrorPromise<Mod
     GROUP BY userId
     ORDER BY points DESC`;
 
-  const result = await queryDb<ModScore[]>(db, query);
+  const result = await queryDb<ModScore[]>(db, query, undefined, 'Mod scoreboard');
 
   if (result.isError) {
     return makeDbErrObj(result, 'Error getting mod scoreboard');

@@ -95,10 +95,7 @@ export default function InfoBox({
           className="cursor-pointer p-2 -mr-2 flex items-center justify-center"
           onClick={() => (overrideOnCloseFunc ? overrideOnCloseFunc() : setHidden(true))}
         >
-          <MdCancel
-            size={18}
-            className="cursor-pointer shrink-0 w-5 md:w-auto mt-1"
-          />
+          <MdCancel size={18} className="cursor-pointer shrink-0 w-5 md:w-auto mt-1" />
         </div>
       )}
     </div>
