@@ -1,22 +1,21 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
 import { redirect, useLoaderData } from '@remix-run/react';
 import { createChat } from '~/route-funcs/create-chat';
-import { redirectIfNotLoggedIn } from '~/utils/loaders';
+import { redirectIfNotAdmin } from '~/utils/loaders';
 import { create400Json, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import NewChat from '~/page-components/Chat/NewChat';
 
 export async function loader(args: LoaderFunctionArgs) {
-  const user = await redirectIfNotLoggedIn(args);
+  await redirectIfNotAdmin(args);
 
   return {
-    currentUser: user,
     pagesPath: args.context.cloudflare.env.PAGES_PATH,
   };
 }
 
 export async function action(args: ActionFunctionArgs) {
-  const currentUser = await redirectIfNotLoggedIn(args);
+  await redirectIfNotAdmin(args);
   const formData = await args.request.formData();
   const message = formData.get('message');
   const toUserIdStr = formData.get('toUserId');
@@ -30,7 +29,7 @@ export async function action(args: ActionFunctionArgs) {
 
   const createChatResult = await createChat({
     db: args.context.cloudflare.env.DB,
-    fromUserId: currentUser.userId,
+    fromUserId: null,
     toUserId,
     message: message as string,
   });
@@ -40,11 +39,11 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const chatToken = createChatResult.result.chatToken;
-  return redirect(`/me/messages/${chatToken}`);
+  return redirect(`/admin/system-chats/${chatToken}`);
 }
 
-export default function NewMessage() {
-  const { currentUser, pagesPath } = useLoaderData<typeof loader>();
+export default function NewSystemChat() {
+  const { pagesPath } = useLoaderData<typeof loader>();
 
   const submitFetcher = useGoodFetcher({
     method: 'post',
@@ -52,7 +51,7 @@ export default function NewMessage() {
 
   return (
     <NewChat
-      currentUser={currentUser}
+      currentUser={null}
       isSending={submitFetcher.isLoading}
       onCreateChat={(message, toUserId) =>
         submitFetcher.submit({
@@ -61,7 +60,7 @@ export default function NewMessage() {
         })
       }
       pagesPath={pagesPath}
-      messagesBasePath="/me/messages"
+      messagesBasePath="/admin/system-chats"
     />
   );
 }
