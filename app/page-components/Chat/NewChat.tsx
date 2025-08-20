@@ -25,10 +25,11 @@ export default function NewChat({
   isSending: boolean;
 }) {
   const navigate = useNavigate();
+
   const [searchParams, setSearchParams] = useSearchParams();
+  const toUserId = searchParams.get('toUserId');
   const { chats } = useOutletContext<{ chats: Chat[] }>();
 
-  const toUserId = searchParams.get('toUserId');
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [blockStatus, setBlockStatus] = useState<UserBlockStatus>(null);

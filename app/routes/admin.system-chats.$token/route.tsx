@@ -14,7 +14,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const currentUser = await redirectIfNotAdmin(args);
   const chatToken = args.params.token;
   if (!chatToken) {
-    return redirect('/me/messages');
+    return redirect('/admin/system-chats');
   }
 
   const res = await getChat({

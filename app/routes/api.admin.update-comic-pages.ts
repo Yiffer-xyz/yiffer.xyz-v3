@@ -115,6 +115,7 @@ export async function updateComicPages(
     dbStatements.push({
       query: `DELETE FROM comicpage WHERE token = ?`,
       params: [deletedPageToken],
+      queryName: 'Delete comic page',
     });
   }
 
@@ -122,6 +123,7 @@ export async function updateComicPages(
     dbStatements.push({
       query: `UPDATE comicpage SET pageNumber = ? WHERE token = ?`,
       params: [changedPage.pageNumber, changedPage.token],
+      queryName: 'Update comic page number',
     });
   }
 
@@ -137,6 +139,7 @@ export async function updateComicPages(
     dbStatements.push({
       query: `INSERT INTO comicpage (token, comicId, pageNumber) VALUES (?, ?, ?)`,
       params: [newToken, changes.comicId, newPage.pageNumber],
+      queryName: 'Add comic page',
     });
   }
 
@@ -151,6 +154,7 @@ export async function updateComicPages(
   dbStatements.push({
     query: 'UPDATE comic SET numberOfPages = ? WHERE id = ?',
     params: [changes.newNumberOfPages, changes.comicId],
+    queryName: 'Update comic newNumberOfPages',
   });
 
   const dbRes = await queryDbMultiple(db, dbStatements);

@@ -102,7 +102,6 @@ export default function AdminChat() {
       return 'Users have mutually blocked each other';
     }
     if (blockedStatus === 'blocked-by') {
-      // return `${chat.members[0].username} blocked by ${chat.members[1].username}`;
       return `${chat.members[1].username} has blocked ${chat.members[0].username}`;
     }
     if (blockedStatus === 'blocked') {

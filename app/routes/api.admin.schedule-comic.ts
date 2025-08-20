@@ -50,10 +50,12 @@ export async function scheduleComicForDate(
     {
       query: comicQuery,
       params: [comicId],
+      queryName: 'Schedule comic',
     },
     {
       query: metadataQuery,
       params: [date, modId, comicId],
+      queryName: 'Schedule comic metadata',
     },
   ]);
 

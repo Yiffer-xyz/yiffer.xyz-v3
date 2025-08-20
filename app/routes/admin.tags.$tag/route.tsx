@@ -207,8 +207,8 @@ export async function action(args: ActionFunctionArgs) {
     const deleteTagQuery = 'DELETE FROM keyword WHERE id = ?';
     const params = [tagId];
     const dbRes = await queryDbMultiple(args.context.cloudflare.env.DB, [
-      { query: deleteTagLinkQuery, params },
-      { query: deleteTagQuery, params },
+      { query: deleteTagLinkQuery, params, queryName: 'Delete tag link' },
+      { query: deleteTagQuery, params, queryName: 'Delete tag' },
     ]);
     if (dbRes.isError) {
       return makeDbErr(dbRes, 'Error deleting tag', { tagId });

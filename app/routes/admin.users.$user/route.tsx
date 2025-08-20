@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
-import { useLoaderData, useNavigate } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import { getUserByField } from '~/route-funcs/get-user';
 import { redirectIfNotMod } from '~/utils/loaders';
 import type { ResultOrError, ResultOrNotFoundOrError } from '~/utils/request-helpers';
@@ -32,8 +32,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ManageSingleUser() {
-  const navigate = useNavigate();
-
   const { user, contributions, feedback, pagesPath, imagesServerUrl, isAdmin } =
     useLoaderData<typeof loader>();
 
@@ -188,9 +186,7 @@ export default function ManageSingleUser() {
                 user.comments.map(comment => (
                   <SingleComment
                     key={comment.id}
-                    comment={{
-                      ...comment,
-                    }}
+                    comment={comment}
                     pagesPath={pagesPath}
                     showLowScoreComments
                     isAdminPanel
