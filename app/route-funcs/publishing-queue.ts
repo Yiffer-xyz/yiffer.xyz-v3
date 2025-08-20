@@ -126,6 +126,7 @@ export async function recalculatePublishingQueue(
   const updateStatements: QueryWithParams[] = comicsToUpdate.map(comic => ({
     query: updateQuery,
     params: [comic.newQueuePos, comic.comicId],
+    queryName: 'Update pending comic queue pos',
   }));
 
   const dbRes = await queryDbMultiple(db, updateStatements);

@@ -43,10 +43,12 @@ export async function scheduleComicToQueue(
     {
       query: comicQuery,
       params: [comicId],
+      queryName: 'Schedule comic',
     },
     {
       query: metadataQuery,
       params: [modId, comicId],
+      queryName: 'Schedule comic metadata',
     },
   ]);
 

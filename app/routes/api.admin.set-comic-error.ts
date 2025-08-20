@@ -39,6 +39,7 @@ export async function setComicError(
     {
       query: updateActionQuery,
       params: updateActionQueryParams,
+      queryName: 'Set comic error',
     },
   ];
 
@@ -50,6 +51,7 @@ export async function setComicError(
     dbStatements.push({
       query: removeModQuery,
       params: removeModQueryParams,
+      queryName: 'Remove mod from comic problem metadata',
     });
   }
 

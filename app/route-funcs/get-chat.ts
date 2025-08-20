@@ -147,7 +147,6 @@ export async function getChat({
     }
   }
 
-  // const isReadingAsSystem = isSystemChat &&
   let isLastMessageByOtherUser = false;
   const latestMessage = messages[0];
   if (messages.length > 0) {

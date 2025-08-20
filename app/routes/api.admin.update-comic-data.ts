@@ -63,6 +63,7 @@ export async function updateComicData(
     dbStatements.push({
       query: `UPDATE comic SET name = ? WHERE id = ?`,
       params: [changes.name, changes.comicId],
+      queryName: 'Update comic name',
     });
   }
 
@@ -190,6 +191,7 @@ function getUpdateTagsQuery(
     dbStatements.push({
       query: newTagsQuery,
       params: newTagIds.flatMap(id => [comicId, id]),
+      queryName: 'Add comic keyword',
     });
   }
   if (deletedTagIds.length > 0) {
@@ -199,6 +201,7 @@ function getUpdateTagsQuery(
     dbStatements.push({
       query: deletedTagsQuery,
       params: [comicId, ...deletedTagIds],
+      queryName: 'Delete comic keyword',
     });
   }
 
@@ -272,6 +275,7 @@ function getUpdateGeneralDetailsQuery(changes: ComicDataChanges): QueryWithParam
   return {
     query: updateQuery,
     params: updateFieldValues,
+    queryName: 'Update comic general data',
   };
 }
 
@@ -288,6 +292,7 @@ function getUpdateComicLinkQuery(
     dbStatements.push({
       query: `DELETE FROM comiclink WHERE ${type === 'next' ? 'first' : 'last'}Comic = ?`,
       params: [comicId],
+      queryName: 'Delete comic link',
     });
   }
   if (newLinkedComicId) {
@@ -297,6 +302,7 @@ function getUpdateComicLinkQuery(
         type === 'next' ? comicId : newLinkedComicId,
         type === 'next' ? newLinkedComicId : comicId,
       ],
+      queryName: 'Add comic link',
     });
   }
 

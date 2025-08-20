@@ -27,16 +27,7 @@ export default function More() {
 
       <LinkCard
         href="/admin/more/chat-list"
-        title="Chat list"
-        className="w-fit"
-        includeRightArrow
-        disabled={!isAdmin}
-        description={!isAdmin ? 'Admin only' : undefined}
-      />
-
-      <LinkCard
-        href="/admin/more/chat-list"
-        title="System chat"
+        title="User chat list"
         className="w-fit"
         includeRightArrow
         disabled={!isAdmin}

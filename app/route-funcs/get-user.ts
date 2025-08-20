@@ -125,7 +125,7 @@ export async function getUserByField({
   }
 
   if (includeCurrentUserFields && currentUserId) {
-    const chatStatusRes = await getChatsWithCurrentUser(db, user.id, currentUserId);
+    const chatStatusRes = await getChatTokenWithCurrentUser(db, user.id, currentUserId);
     if (chatStatusRes.err) {
       return {
         err: wrapApiError(
@@ -169,7 +169,7 @@ function dbUserToUser(user: DbUser): User {
   return convertedUser;
 }
 
-async function getChatsWithCurrentUser(
+async function getChatTokenWithCurrentUser(
   db: D1Database,
   userId: number,
   currentUserId: number

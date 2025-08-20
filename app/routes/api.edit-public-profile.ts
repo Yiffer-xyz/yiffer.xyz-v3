@@ -79,13 +79,13 @@ export async function editPublicProfile(
   if (newSocials.length > 0) {
     const query = `INSERT INTO usersocialaccount (username, platform, userId) VALUES ${newSocials.map(() => '(?, ?, ?)').join(',')}`;
     const params = newSocials.flatMap(s => [s.username, s.platform, userId]);
-    const dbRes = await queryDbExec(db, query, params);
+    const dbRes = await queryDbExec(db, query, params, 'Add new user socials');
     if (dbRes.isError) return makeDbErr(dbRes, 'Error adding new user socials');
   }
   if (deletedSocials.length > 0) {
     const query = `DELETE FROM usersocialaccount WHERE id IN (${deletedSocials.map(() => '?').join(',')})`;
     const params = deletedSocials.map(s => s.id);
-    const dbRes = await queryDbExec(db, query, params);
+    const dbRes = await queryDbExec(db, query, params, 'Delete user socials');
     if (dbRes.isError) return makeDbErr(dbRes, 'Error deleting user socials');
   }
   if (updatedSocials.length > 0) {
@@ -93,7 +93,7 @@ export async function editPublicProfile(
     for (const s of updatedSocials) {
       const query = `UPDATE usersocialaccount SET username = ?, platform = ? WHERE id = ?`;
       const params = [s.username, s.platform, s.id];
-      queriesWithParams.push({ query, params });
+      queriesWithParams.push({ query, params, queryName: 'Update user socials' });
     }
     const dbRes = await queryDbMultiple(db, queriesWithParams);
     if (dbRes.isError) return makeDbErr(dbRes, 'Error updating user socials');
