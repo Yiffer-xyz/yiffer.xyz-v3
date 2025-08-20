@@ -21,14 +21,16 @@ export async function getChat({
   markReadIfAppropriate,
   page,
   getBlockedStatus,
+  getFullChatIgnorePagination,
 }: {
   db: D1Database;
-  userId: number;
+  userId?: number;
   isModOrAdmin: boolean;
   chatToken: string;
   markReadIfAppropriate: boolean;
   page: number;
   getBlockedStatus: boolean;
+  getFullChatIgnorePagination?: boolean;
 }): ResultOrErrorPromise<{
   chat: Chat;
   messages: ChatMessage[];
@@ -39,13 +41,13 @@ export async function getChat({
     SELECT id, senderId, messageText, timestamp FROM chatmessage
     WHERE chatToken = ?
     ORDER BY timestamp DESC
-    LIMIT ? OFFSET ?
+    ${getFullChatIgnorePagination ? '' : 'LIMIT ? OFFSET ?'}
   `;
-  const messagesParams = [
-    chatToken,
-    MESSAGES_PAGINATION_SIZE + 1,
-    (page - 1) * MESSAGES_PAGINATION_SIZE,
-  ];
+  const messagesParams: any[] = [chatToken];
+  if (!getFullChatIgnorePagination) {
+    messagesParams.push(MESSAGES_PAGINATION_SIZE + 1);
+    messagesParams.push((page - 1) * MESSAGES_PAGINATION_SIZE);
+  }
 
   const chatMembersQuery = `SELECT 
       userId AS id, user.username, user.profilePictureToken, chat.isRead AS isChatRead
@@ -90,6 +92,8 @@ export async function getChat({
     }
   }
 
+  const isSystemChat = chatMembers.length === 1;
+
   const chat: Chat = {
     token: chatToken,
     members: chatMembers.map(member => ({
@@ -98,7 +102,7 @@ export async function getChat({
       profilePictureToken: member.profilePictureToken,
     })),
     isRead: chatMembers[0].isChatRead === 1, // isChatRead is duplicated on both rows
-    isSystemChat: chatMembers.length === 1,
+    isSystemChat,
   };
 
   const messages: ChatMessage[] = messagesDb.map(message => ({
@@ -113,12 +117,24 @@ export async function getChat({
     messages.pop();
   }
 
-  const otherChatUser = chatMembers.find(member => member.id !== userId);
+  const mainChatUser = userId
+    ? chatMembers.find(member => member.id === userId)
+    : chatMembers[0];
+
+  const otherChatUser = userId
+    ? chatMembers.find(member => member.id !== userId)
+    : chatMembers.length >= 2
+      ? chatMembers[1]
+      : undefined;
 
   let blockedStatus: UserBlockStatus = null;
-  if (getBlockedStatus) {
+  if (getBlockedStatus && mainChatUser) {
     if (!chat.isSystemChat && otherChatUser) {
-      const blockedStatusRes = await getUserBlockStatus(db, userId, otherChatUser.id);
+      const blockedStatusRes = await getUserBlockStatus(
+        db,
+        mainChatUser.id,
+        otherChatUser.id
+      );
       if (blockedStatusRes.err) {
         return {
           err: {
@@ -131,16 +147,33 @@ export async function getChat({
     }
   }
 
+  // const isReadingAsSystem = isSystemChat &&
+  let isLastMessageByOtherUser = false;
+  const latestMessage = messages[0];
+  if (messages.length > 0) {
+    if (isSystemChat) {
+      if (!userId) {
+        // reading as system
+        isLastMessageByOtherUser = latestMessage.fromUserId !== null;
+      } else {
+        // reading as user
+        isLastMessageByOtherUser = latestMessage.fromUserId === null;
+      }
+    } else {
+      isLastMessageByOtherUser = latestMessage.fromUserId !== userId;
+    }
+  }
+
   // If last message is by other user, and isRead is false, set it to true
-  if (
-    markReadIfAppropriate &&
-    messages.length > 0 &&
-    messages[0].fromUserId !== userId &&
-    !chat.isRead
-  ) {
+  if (markReadIfAppropriate && isLastMessageByOtherUser && !chat.isRead) {
     const setReadQuery = `UPDATE chat SET isRead = 1 WHERE token = ?`;
     const setReadParams = [chatToken];
-    const setReadRes = await queryDbExec(db, setReadQuery, setReadParams);
+    const setReadRes = await queryDbExec(
+      db,
+      setReadQuery,
+      setReadParams,
+      'Set chat read'
+    );
     if (setReadRes.isError) {
       return makeDbErrObj(setReadRes, 'Error setting chat read', { chatToken, userId });
     }

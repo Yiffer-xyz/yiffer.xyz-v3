@@ -1,11 +1,9 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { redirect, useLoaderData } from '@remix-run/react';
-import { format } from 'date-fns';
 import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
-import { capitalizeString } from '~/utils/general';
 import { fullUserLoader } from '~/utils/loaders';
 import ChangeAccountData from './ChangeAccountData';
-import { FaChevronRight, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import { FaMessage } from 'react-icons/fa6';
 import { useState } from 'react';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';

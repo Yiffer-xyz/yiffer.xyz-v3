@@ -28,6 +28,7 @@ export type GlobalAdminContext = {
   tags: Tag[];
   user: User;
   numUnreadContent: number;
+  hasUnreadSystemChats: boolean;
 };
 
 export const meta: MetaFunction = () => {
@@ -46,18 +47,25 @@ export default function Admin() {
     setTimeout(() => setDelay(false), 10);
   }, []);
 
-  const hideInfoBox = matches.some(match => {
-    return match.pathname.includes('instructions');
-  });
+  const hideInfoBox = matches.some(match => match.pathname.includes('instructions'));
+
+  const pbClass = matches.some(
+    match =>
+      match.pathname.includes('admin/chats/') ||
+      match.pathname.includes('admin/system-chats')
+  )
+    ? 'pb-0'
+    : 'pb-20';
 
   return (
-    <div className="pt-16 pb-20">
+    <div className={`pt-16 ${pbClass}`}>
       {!delay && (
         <>
           <AdminSidebar
             alwaysShow={isLgUp}
             delay={!width}
             userType={globalContext.user.userType}
+            hasUnreadSystemChats={globalContext.hasUnreadSystemChats}
           />
 
           <div
@@ -103,6 +111,23 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const numUnreadMessagesQuery = `SELECT COUNT(*) AS count FROM modmessage WHERE id NOT IN (SELECT messageId FROM modmessagereadreceipt WHERE userId = ?)`;
   const numReadInstructionsQuery = `SELECT COUNT(*) AS count FROM modinstructionsreadreceipt WHERE userId = ?`;
+  // Get whether there is any chat that is isSystemChat, isRead=0, and where last message's sender id is not null
+  // will need to join
+  const unreadSystemChatsQuery = `
+    SELECT EXISTS (
+      SELECT 1 
+      FROM chat c
+      INNER JOIN chatmessage cm ON c.token = cm.chatToken
+      WHERE c.isSystemChat = 1 
+        AND c.isRead = 0
+        AND cm.senderId IS NOT NULL
+        AND cm.id = (
+          SELECT MAX(cm2.id) 
+          FROM chatmessage cm2 
+          WHERE cm2.chatToken = c.token
+        )
+    ) AS hasUnreadSystemChat
+  `;
 
   const dbStatements: QueryWithParams[] = [
     getAllArtistsQuery({
@@ -127,9 +152,22 @@ export async function loader(args: LoaderFunctionArgs) {
       queryName: 'Unread mod intrx count',
     },
   ];
+  if (user.userType === 'admin') {
+    dbStatements.push({
+      query: unreadSystemChatsQuery,
+      queryName: 'Unread system chat count',
+    });
+  }
 
   const dbRes = await queryDbMultiple<
-    [ArtistTiny[], DbComicTiny[], Tag[], { count: number }[], { count: number }[]]
+    [
+      ArtistTiny[],
+      DbComicTiny[],
+      Tag[],
+      { count: number }[],
+      { count: number }[],
+      { hasUnreadSystemChat: 0 | 1 }[] | undefined,
+    ]
   >(args.context.cloudflare.env.DB, dbStatements);
 
   if (dbRes.isError) {
@@ -147,12 +185,18 @@ export async function loader(args: LoaderFunctionArgs) {
   const numUnreadContent =
     unreadMessages[0].count + (ADMIN_INSTRUCTIONS.length - unreadInstructions[0].count);
 
+  let hasUnreadSystemChats = false;
+  if (user.userType === 'admin' && dbRes.result[5]) {
+    hasUnreadSystemChats = dbRes.result[5][0].hasUnreadSystemChat === 1;
+  }
+
   const globalContext: GlobalAdminContext = {
     comics,
     artists,
     tags,
     user,
     numUnreadContent,
+    hasUnreadSystemChats,
   };
 
   return globalContext;

@@ -1,23 +1,44 @@
-import { queryDb } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple } from '~/utils/database-facade';
 import type { ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErrObj } from '~/utils/request-helpers';
 
-export async function getExistingChatParticipantIdsByToken(
+export async function getExistingChatInfoAndParticipantIdsByToken(
   db: D1Database,
   token: string
-): ResultOrErrorPromise<number[]> {
-  const existingChat = await queryDb<any[]>(
+): ResultOrErrorPromise<{
+  isSystemChat: boolean;
+  participantIds: number[];
+}> {
+  const queries: QueryWithParams[] = [
+    {
+      query: `SELECT userId FROM chatmember WHERE chatToken = ?`,
+      params: [token],
+      queryName: 'Get chat member IDs',
+    },
+    {
+      query: `SELECT isSystemChat FROM chat WHERE token = ?`,
+      params: [token],
+      queryName: 'Get isSystemChat info',
+    },
+  ];
+
+  const dbRes = await queryDbMultiple<[{ userId: number }[], { isSystemChat: 1 | 0 }[]]>(
     db,
-    `SELECT userId FROM chatmember WHERE chatToken = ?`,
-    [token]
+    queries
   );
 
-  if (existingChat.isError) {
-    return makeDbErrObj(existingChat, 'Error getting chat');
+  if (dbRes.isError) {
+    return makeDbErrObj(dbRes, 'Error getting chat info and participant IDs');
   }
 
+  const [participantIds, isSystemChat] = dbRes.result;
+
   return {
-    result: existingChat.result.map(row => row.userId),
+    result: {
+      isSystemChat: isSystemChat[0].isSystemChat === 1,
+      participantIds: participantIds.map(p => p.userId),
+    },
   };
 }
 
@@ -30,7 +51,7 @@ export async function getExistingChatTokenByParticipantIds(
     ? `SELECT chatToken FROM chatmember WHERE userId IN (?, ?)
        GROUP BY chatToken HAVING COUNT(DISTINCT userId) = 2`
     : `SELECT * FROM chat INNER JOIN chatmember ON (chat.token = chatmember.chatToken)
-       WHERE chat.isSystemChat = 0 AND chatmember.userId = ?`;
+       WHERE chat.isSystemChat = 1 AND chatmember.userId = ?`;
   const existingParams = user2 ? [user1, user2] : [user1];
 
   const existingChat = await queryDb<any[]>(db, existingChatQuery, existingParams);

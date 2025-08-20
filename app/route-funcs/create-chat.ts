@@ -18,31 +18,21 @@ export async function createChat({
 }: {
   db: D1Database;
   fromUserId: number | null;
-  toUserId: number | null;
+  toUserId: number;
   message: string;
 }): ResultOrErrorPromise<{ chatToken: string }> {
-  if (!fromUserId && !toUserId) return { err: { logMessage: 'No user IDs provided' } };
+  if (!toUserId) return { err: { logMessage: 'No toUserId provided' } };
   const logCtx = { fromUserId, toUserId, message };
 
   if (message.length > MAX_MESSAGE_LENGTH) {
     return { err: { logMessage: 'Message is too long' } };
   }
 
-  let nonNullUserId = 0;
-  let maybeUserId: number | null = null;
-  if (fromUserId) {
-    nonNullUserId = fromUserId;
-    maybeUserId = toUserId;
-  } else if (toUserId) {
-    nonNullUserId = toUserId;
-    maybeUserId = fromUserId;
-  }
-
   // Check for existing chat - should not be any
   const existingChatRes = await getExistingChatTokenByParticipantIds(
     db,
-    nonNullUserId,
-    maybeUserId
+    toUserId,
+    fromUserId
   );
   if (existingChatRes.err) {
     return {
@@ -53,8 +43,9 @@ export async function createChat({
   }
 
   // Make sure recipient hasn't turned off message receiving and check for blocks
-  if (toUserId && fromUserId) {
+  if (fromUserId) {
     const canSendResult = await canSendMessage(db, fromUserId, toUserId);
+
     if (canSendResult.err) {
       return {
         err: wrapApiError(
@@ -81,7 +72,7 @@ export async function createChat({
   const newChat = await queryDbExec(
     db,
     newChatQuery,
-    [chatToken, !maybeUserId],
+    [chatToken, fromUserId ? 0 : 1],
     'Create chat'
   );
   if (newChat.isError) {
@@ -92,7 +83,7 @@ export async function createChat({
   const addChatMemberQueries: QueryWithParams[] = [
     {
       query: `INSERT INTO chatmember (chatToken, userId) VALUES (?, ?)`,
-      params: [chatToken, nonNullUserId],
+      params: [chatToken, toUserId],
       queryName: 'Add chat member',
     },
     {
@@ -101,10 +92,10 @@ export async function createChat({
       queryName: 'Add chat message',
     },
   ];
-  if (maybeUserId) {
+  if (fromUserId) {
     addChatMemberQueries.push({
       query: `INSERT INTO chatmember (chatToken, userId) VALUES (?, ?)`,
-      params: [chatToken, maybeUserId],
+      params: [chatToken, fromUserId],
       queryName: 'Add chat member',
     });
   }
@@ -116,17 +107,15 @@ export async function createChat({
   }
 
   // Create chat notification - only after successful chat creation
-  if (toUserId !== null) {
-    const createChatNotificationQuery = `INSERT OR IGNORE INTO chatnotification (userId) VALUES (?)`;
-    const createChatNotification = await queryDbExec(
-      db,
-      createChatNotificationQuery,
-      [toUserId],
-      'Create chat notification'
-    );
-    if (createChatNotification.isError) {
-      return makeDbErrObj(createChatNotification, 'Error creating chat notification');
-    }
+  const createChatNotificationQuery = `INSERT OR IGNORE INTO chatnotification (userId) VALUES (?)`;
+  const createChatNotification = await queryDbExec(
+    db,
+    createChatNotificationQuery,
+    [toUserId],
+    'Create chat notification'
+  );
+  if (createChatNotification.isError) {
+    return makeDbErrObj(createChatNotification, 'Error creating chat notification');
   }
 
   return { result: { chatToken } };

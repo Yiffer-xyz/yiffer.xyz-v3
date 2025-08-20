@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { ADMIN_CHAT_LIST_PAGESIZE } from '~/types/constants';
 import type { Chat, MinimalUser } from '~/types/types';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
@@ -15,12 +16,20 @@ type DbReturn = {
   users: string;
 };
 
-export async function getChatList(
-  db: D1Database,
-  userId: number,
-  clearChatNotification: boolean
-): ResultOrErrorPromise<Chat[]> {
-  if (clearChatNotification) {
+export async function getChatList({
+  db,
+  userId,
+  systemChatMode,
+  clearChatNotification,
+  page,
+}: {
+  db: D1Database;
+  userId?: number;
+  systemChatMode: 'only-system' | 'include' | 'exclude';
+  clearChatNotification?: boolean;
+  page?: number;
+}): ResultOrErrorPromise<Chat[]> {
+  if (clearChatNotification && userId) {
     const query = `DELETE FROM chatnotification WHERE userId = ?`;
     const dbRes = await queryDbExec(db, query, [userId], 'Clear chat notification');
     if (dbRes.isError) {
@@ -28,11 +37,15 @@ export async function getChatList(
     }
   }
 
-  const query = `
+  let systemChatWhereStr = '';
+  if (systemChatMode === 'exclude') systemChatWhereStr = 'WHERE c.isSystemChat = 0';
+  if (systemChatMode === 'only-system') systemChatWhereStr = 'WHERE c.isSystemChat = 1';
+
+  let query = `
     WITH user_chats AS (
       SELECT cm.chatToken
       FROM chatmember AS cm
-      WHERE cm.userId = ?
+      ${userId ? 'WHERE cm.userId = ?' : ''}
     ),
     latest_messages AS (
       SELECT
@@ -86,10 +99,20 @@ export async function getChatList(
     JOIN user_chats uc ON uc.chatToken = c.token
     JOIN latest_messages lm ON lm.chatToken = c.token AND lm.rn = 1
     JOIN aggregated_users au ON au.chatToken = c.token
+    ${systemChatWhereStr}
+    GROUP BY c.token
     ORDER BY lm.lastMessageTimestamp DESC, c.token ASC
   `;
+  if (page) {
+    query += ` LIMIT ${ADMIN_CHAT_LIST_PAGESIZE} OFFSET ${(page - 1) * ADMIN_CHAT_LIST_PAGESIZE}`;
+  }
 
-  const result = await queryDb<DbReturn[]>(db, query, [userId], 'Get chat list');
+  const result = await queryDb<DbReturn[]>(
+    db,
+    query,
+    userId ? [userId] : undefined,
+    `Get chat list, ${systemChatMode}`
+  );
 
   if (result.isError) {
     return makeDbErrObj(result, 'Error in getChatList');

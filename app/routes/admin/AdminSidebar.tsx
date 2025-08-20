@@ -11,10 +11,12 @@ export default function AdminSidebar({
   alwaysShow,
   delay,
   userType,
+  hasUnreadSystemChats,
 }: {
   alwaysShow: boolean;
   delay: boolean;
   userType: UserType;
+  hasUnreadSystemChats: boolean;
 }) {
   const matches = useMatches();
   const [isOpen, setIsOpen] = useState(alwaysShow);
@@ -120,6 +122,14 @@ export default function AdminSidebar({
             />
           )}
           {isAdmin && (
+            <SidebarLink
+              href="/admin/system-chats"
+              text="System chats"
+              isSelected={isRoute('system-chats')}
+              needsAttention={hasUnreadSystemChats}
+            />
+          )}
+          {isAdmin && (
             <SidebarLink href="/admin/stats" text="Stats" isSelected={isRoute('stats')} />
           )}
           {isAdmin && (
@@ -147,6 +157,7 @@ interface SidebarLinkProps {
   text: string;
   isSelected?: boolean;
   isIndented?: boolean;
+  needsAttention?: boolean;
   className?: string;
 }
 
@@ -156,6 +167,7 @@ function SidebarLink({
   text,
   isSelected = false,
   isIndented = false,
+  needsAttention = false,
   className = '',
 }: SidebarLinkProps) {
   return (
@@ -170,6 +182,9 @@ function SidebarLink({
           `}
         >
           {text}
+          {needsAttention && (
+            <span className="text-red-500 ml-1 text-lg leading-4">•</span>
+          )}
         </div>
       </Link>
     </div>
