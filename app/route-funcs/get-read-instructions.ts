@@ -15,8 +15,16 @@ export async function getNumberOfUnreadInstructions(
   const responses = await queryDbMultiple<[{ count: number }[], { count: number }[]]>(
     db,
     [
-      { query: numUnreadMessagesQuery, params: [userId] },
-      { query: numReadInstructionsQuery, params: [userId] },
+      {
+        query: numUnreadMessagesQuery,
+        params: [userId],
+        queryName: 'Unread mod messages',
+      },
+      {
+        query: numReadInstructionsQuery,
+        params: [userId],
+        queryName: 'Unread mod instructions',
+      },
     ]
   );
 
@@ -44,8 +52,12 @@ export async function getUnreadInstructions(
   const responses = await queryDbMultiple<
     [{ id: number }[], { instructionId: string }[]]
   >(db, [
-    { query: unreadMessagesQuery, params: [userId] },
-    { query: readInstructionsQuery, params: [userId] },
+    { query: unreadMessagesQuery, params: [userId], queryName: 'Unread mod messages' },
+    {
+      query: readInstructionsQuery,
+      params: [userId],
+      queryName: 'Unread mod instructions',
+    },
   ]);
 
   if (responses.isError) {

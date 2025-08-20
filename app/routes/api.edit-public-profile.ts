@@ -57,7 +57,12 @@ export async function editPublicProfile(
 
   const socialsQuery = 'SELECT * from usersocialaccount where userId = ?';
   const socialsParams = [userId];
-  const socialsRes = await queryDb<UserSocialAccount[]>(db, socialsQuery, socialsParams);
+  const socialsRes = await queryDb<UserSocialAccount[]>(
+    db,
+    socialsQuery,
+    socialsParams,
+    'User socials'
+  );
 
   if (socialsRes.isError) return makeDbErr(socialsRes, 'Error getting user socials');
 
