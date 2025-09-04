@@ -243,7 +243,7 @@ export default function PageManager({
 
       {fullSizeImageIndex !== undefined && (
         <div
-          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50 cursor-pointer"
+          className="fixed top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center z-50 cursor-pointer"
           onClick={() => {
             setFullSizeImageIndex(undefined);
           }}
@@ -283,7 +283,7 @@ export default function PageManager({
 
       {isManuallyChangingPageOfIndex !== undefined && (
         <div
-          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50 cursor-pointer"
+          className="fixed top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center z-50 cursor-pointer"
           onClick={() => {
             setIsManuallyChangingPageOfIndex(undefined);
           }}
