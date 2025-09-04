@@ -1,5 +1,5 @@
 import { useNavigate, useOutletContext, useSearchParams } from '@remix-run/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { MAX_MESSAGE_LENGTH } from '~/types/constants';
 import type { UserBlockStatus, Chat, UserSession } from '~/types/types';
@@ -71,6 +71,14 @@ export default function NewChat({
     },
   });
 
+  // Filter out current user
+  const searchUserData = useMemo(() => {
+    if (!searchUserFetcher.data) {
+      return undefined;
+    }
+    return searchUserFetcher.data?.filter(user => user.id !== currentUser?.userId);
+  }, [searchUserFetcher.data, currentUser]);
+
   useEffect(() => {
     if (!toUserId || searchUserFetcher.isLoading) return;
 
@@ -78,8 +86,8 @@ export default function NewChat({
 
     let found = false;
     // Normal flow: search has already fetched the list, just find the user in it.
-    if (searchUserFetcher.data) {
-      const user = searchUserFetcher.data.find(u => u.id === parseInt(toUserId));
+    if (searchUserData) {
+      const user = searchUserData.find(u => u.id === parseInt(toUserId));
       if (user) {
         found = true;
         setSelectedUserData(user);
@@ -183,7 +191,7 @@ export default function NewChat({
           />
 
           <div className="grow min-h-[300px] overflow-y-auto overflow-hidden h-full flex flex-col gap-2 pb-4 scrollbar scrollbar-thumb-gray-850 scrollbar-track-white dark:scrollbar-track-gray-300">
-            {searchUserFetcher.data?.map((user, index) => (
+            {searchUserData?.map((user, index) => (
               <div
                 key={user.id}
                 className={`flex flex-row gap-2 items-center hover:bg-blue-more-trans 
