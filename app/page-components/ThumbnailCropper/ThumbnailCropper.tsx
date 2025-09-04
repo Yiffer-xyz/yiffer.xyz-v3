@@ -108,9 +108,7 @@ export default function ThumbnailCropper({
 
   return (
     <>
-      {!isInline && (
-        <div className="fixed inset-0 z-10 bg-black bg-opacity-50 dark:bg-opacity-80" />
-      )}
+      {!isInline && <div className="fixed inset-0 z-10 bg-black/50 dark:bg-black/80" />}
       <div className={wrapperClassName}>
         <div className={innerWrapperClassName}>
           {title && <p className="text-xl mb-2 text-center">{title}</p>}

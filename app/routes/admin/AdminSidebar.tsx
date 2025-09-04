@@ -49,7 +49,7 @@ export default function AdminSidebar({
       {/* backdrop, close when clicking outside, will only show when small screens & sidebar open */}
       {!delay && !alwaysShow && (
         <div
-          className={`fixed inset-0 bg-black bg-opacity-30 z-10 transition-opacity duration-150 ${
+          className={`fixed inset-0 bg-black/30 z-10 transition-opacity duration-150 ${
             isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={() => setIsOpen(false)}
