@@ -781,3 +781,25 @@ CREATE TABLE IF NOT EXISTS userblock (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_userblock_unique_blocker_blocked ON userblock (blockerId, blockedUserId);
 CREATE INDEX IF NOT EXISTS idx_userblock_blockerId ON userblock (blockerId);
 CREATE INDEX IF NOT EXISTS idx_userblock_blockedUserId ON userblock (blockedUserId);
+
+------------------------------------------------------
+-- USER RESTRICTION
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS userrestriction (
+  id INTEGER NOT NULL,
+  userId INTEGER NOT NULL,
+  restrictionType TEXT NOT NULL,
+  startDate DATE NOT NULL,
+  endDate DATE NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+------------------------------------------------------
+-- IP BAN
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ipban (
+  id INTEGER NOT NULL,
+  ip TEXT NOT NULL,
+  PRIMARY KEY (id)
+);

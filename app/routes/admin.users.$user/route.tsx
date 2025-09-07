@@ -11,7 +11,13 @@ import Button from '~/ui-components/Buttons/Button';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { UpdateUserBody } from '~/routes/api.admin.update-user';
-import type { Contribution, User, UserType, Feedback } from '~/types/types';
+import type {
+  Contribution,
+  User,
+  UserType,
+  Feedback,
+  UserRestrictionType,
+} from '~/types/types';
 import { format } from 'date-fns';
 import { Contributions } from '~/page-components/Contributions/Contributions';
 import { getTimeAgo } from '~/utils/date-utils';
@@ -24,6 +30,8 @@ import PublicProfile from '~/ui-components/PublicProfile/PublicProfile';
 import PublicProfilePhotoEditor from '~/ui-components/PublicProfile/PublicProfilePhotoEditor';
 import PublicProfileEdit from '~/ui-components/PublicProfile/PublicProfileEdit';
 import SingleComment from '~/ui-components/Comments/SingleComment';
+import RadioButtonGroup from '~/ui-components/RadioButton/RadioButtonGroup';
+import InfoBox from '~/ui-components/InfoBox';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -39,6 +47,11 @@ export default function ManageSingleUser() {
   const [modNotes, setModNotes] = useState(user.modNotes || '');
   const [banReason, setBanReason] = useState('');
   const [banFlowActive, setBanFlowActive] = useState(false);
+  const [restrictFlowActive, setRestrictFlowActive] = useState(false);
+  const [restrictionType, setRestrictionType] = useState<UserRestrictionType | null>(
+    null
+  );
+  const [restrictionDuration, setRestrictionDuration] = useState<number | null>(null);
   const [mode, setMode] = useState<'edit' | 'change-photo' | 'view'>('view');
   const [isShowingComments, setIsShowingComments] = useState(false);
 
@@ -56,11 +69,24 @@ export default function ManageSingleUser() {
     url: '/api/admin/update-user',
     method: 'post',
     toastSuccessMessage: 'User banned',
+    onFinish: () => {
+      setBanFlowActive(false);
+    },
   });
   const unbanUserFetcher = useGoodFetcher({
     url: '/api/admin/update-user',
     method: 'post',
     toastSuccessMessage: 'User unbanned',
+  });
+  const restrictUserFetcher = useGoodFetcher({
+    url: '/api/admin/restrict-user',
+    method: 'post',
+    toastSuccessMessage: 'User restricted',
+    onFinish: () => {
+      setRestrictionType(null);
+      setRestrictionDuration(null);
+      setRestrictFlowActive(false);
+    },
   });
 
   function onUserTypeChanged(newType: UserType) {
@@ -83,6 +109,14 @@ export default function ManageSingleUser() {
     updateUserFetcher.submit({ body: JSON.stringify(body) });
   }
 
+  function onRestrictUser() {
+    restrictUserFetcher.submit({
+      restrictionType,
+      durationDays: restrictionDuration,
+      userId: user.id,
+    });
+  }
+
   function onBanUser() {
     const body: UpdateUserBody = {
       userId: user.id,
@@ -91,8 +125,6 @@ export default function ManageSingleUser() {
     };
 
     banUserFetcher.submit({ body: JSON.stringify(body) });
-
-    setBanFlowActive(false);
   }
 
   function unbanUser() {
@@ -140,6 +172,21 @@ export default function ManageSingleUser() {
               <p>User was banned: {user.banTime ? format(user.banTime, 'PPp') : 'N/A'}</p>
               <p>Reason: {user.banReason}</p>
               <Button className="mt-2" text="Unban" onClick={unbanUser} />
+            </div>
+          )}
+
+          {user.restrictions && user.restrictions.length > 0 && (
+            <div className="bg-red-trans p-4 pt-3 mt-1 mb-3 w-fit min-w-[280px]">
+              <h3>Restricted user</h3>
+              <ul>
+                {user.restrictions.map(restriction => (
+                  <li key={restriction.id}>
+                    <b>{capitalizeString(restriction.restrictionType)}</b>:{' '}
+                    {format(restriction.startDate, 'PP')} -{' '}
+                    {format(restriction.endDate, 'PP')}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -202,7 +249,7 @@ export default function ManageSingleUser() {
           {!user.isBanned && (
             <>
               <h3 className="mt-6">Actions</h3>
-              {banFlowActive ? (
+              {banFlowActive && (
                 <>
                   <TextInput
                     value={banReason}
@@ -218,7 +265,8 @@ export default function ManageSingleUser() {
                       variant="outlined"
                       className="mr-2"
                     />
-                    <Button
+                    <LoadingButton
+                      isLoading={banUserFetcher.isLoading}
                       text="Ban user"
                       onClick={onBanUser}
                       color="error"
@@ -226,12 +274,79 @@ export default function ManageSingleUser() {
                     />
                   </div>
                 </>
-              ) : (
+              )}
+
+              {restrictFlowActive && (
+                <>
+                  <h4>Restrict user</h4>
+                  <RadioButtonGroup
+                    name="restrictionType"
+                    direction="horizontal"
+                    className="mt-2"
+                    options={['chat', 'contribute', 'comment'].map(type => ({
+                      value: type as UserRestrictionType,
+                      text: capitalizeString(type),
+                    }))}
+                    onChange={setRestrictionType}
+                    value={restrictionType}
+                  />
+                  <RadioButtonGroup
+                    name="restrictionDuration"
+                    direction="horizontal"
+                    className="mt-4"
+                    title="Duration"
+                    options={[
+                      { text: '1 month', value: 30 },
+                      { text: '6 months', value: 180 },
+                      { text: '1 year', value: 365 },
+                    ]}
+                    onChange={setRestrictionDuration}
+                    value={restrictionDuration}
+                  />
+
+                  <InfoBox
+                    variant="info"
+                    boldText={false}
+                    fitWidth
+                    small
+                    disableElevation
+                    showIcon
+                    text="The user should be sent a system message informing them of the restriction."
+                    className="mt-4"
+                  />
+
+                  <div className="flex flex-row mt-4">
+                    <Button
+                      text="Cancel"
+                      onClick={() => {
+                        setRestrictionType(null);
+                        setRestrictionDuration(null);
+                        setRestrictFlowActive(false);
+                      }}
+                      variant="outlined"
+                      className="mr-2"
+                    />
+                    <LoadingButton
+                      isLoading={restrictUserFetcher.isLoading}
+                      text="Restrict user"
+                      onClick={onRestrictUser}
+                      color="error"
+                      disabled={restrictionType === null || restrictionDuration === null}
+                    />
+                  </div>
+                </>
+              )}
+
+              {!restrictFlowActive && !banFlowActive && (
                 <div className="flex flex-row gap-2 flex-wrap">
                   <Button
                     text="Ban user"
                     onClick={() => setBanFlowActive(true)}
                     color="error"
+                  />
+                  <Button
+                    text="Restrict user"
+                    onClick={() => setRestrictFlowActive(true)}
                   />
                 </div>
               )}
@@ -278,6 +393,7 @@ export async function loader(args: LoaderFunctionArgs) {
     value: userId,
     includeExtraFields: true,
     includeComments: true,
+    includeRestrictions: true,
     currentUserId: loggedInUserId,
   });
   const contributionsResPromise = getContributions(db, userId);

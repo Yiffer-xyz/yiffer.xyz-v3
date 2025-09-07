@@ -6,6 +6,7 @@ import type { QueryWithParams } from '~/utils/database-facade';
 import { queryDbMultiple } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { create400Json, processApiError } from '~/utils/request-helpers';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 import { createSystemChatReplyForwardEmail, sendEmail } from '~/utils/send-email';
 
 export async function action(args: ActionFunctionArgs) {
@@ -26,6 +27,9 @@ export async function action(args: ActionFunctionArgs) {
   if (isFromSystem && !isModOrAdmin(user)) {
     return create400Json('You are not authorized to send messages from the system');
   }
+
+  const returnRes = await returnIfRestricted(args, '/send-message', 'chat');
+  if (returnRes) return returnRes;
 
   const chatInfoAndParticipantRes = await getExistingChatInfoAndParticipantIdsByToken(
     args.context.cloudflare.env.DB,

@@ -235,6 +235,7 @@ export type User = {
   allowMessages?: boolean;
   chatTokenWithCurrentUser?: string | null;
   currentUserBlockStatus?: UserBlockStatus;
+  restrictions?: UserRestriction[];
 };
 
 export type MinimalUser = {
@@ -654,4 +655,14 @@ export type DbChatMessage = {
   senderId: number;
   messageText: string;
   timestamp: string;
+};
+
+export type UserRestrictionType = 'chat' | 'contribute' | 'comment';
+
+export type UserRestriction = {
+  id: number;
+  userId: number;
+  restrictionType: UserRestrictionType;
+  startDate: Date;
+  endDate: Date;
 };

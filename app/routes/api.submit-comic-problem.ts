@@ -8,6 +8,7 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 import { isMaliciousString } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
@@ -33,6 +34,9 @@ export async function action(args: ActionFunctionArgs) {
   if (isMaliciousString(body.problemTitle, body.problemDescription)) {
     return create400Json('Malicious input detected');
   }
+
+  const returnRes = await returnIfRestricted(args, '/submit-comic-problem', 'contribute');
+  if (returnRes) return returnRes;
 
   const err = await submitComicProblem(
     args.context.cloudflare.env.DB,

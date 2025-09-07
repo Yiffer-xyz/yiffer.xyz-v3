@@ -28,6 +28,7 @@ import Breadcrumbs from '~/ui-components/Breadcrumbs/Breadcrumbs';
 import Link from '~/ui-components/Link';
 import { MdArrowForward } from 'react-icons/md';
 import { isMaliciousString } from '~/utils/string-utils';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -400,6 +401,7 @@ export default function Upload() {
 }
 
 export async function action(args: ActionFunctionArgs) {
+  const user = await authLoader(args);
   const reqBody = await args.request.formData();
   const logCtx = Object.fromEntries(reqBody);
   const { comicName, artist, linksComments } = logCtx;
@@ -411,6 +413,9 @@ export async function action(args: ActionFunctionArgs) {
   if (isMaliciousString(comicName as string, artist as string, linksComments as string)) {
     return create400Json('Malicious input detected');
   }
+
+  const returnRes = await returnIfRestricted(args, '/suggest-comic', 'contribute');
+  if (returnRes) return returnRes;
 
   const errors = await checkForExistingComicOrSuggestion(
     args.context.cloudflare.env.DB,
@@ -424,7 +429,6 @@ export async function action(args: ActionFunctionArgs) {
     return create400Json('A suggestion for this comic already exists');
   }
 
-  const user = await authLoader(args);
   let userIp = null;
   let userId = null;
   if (user) {

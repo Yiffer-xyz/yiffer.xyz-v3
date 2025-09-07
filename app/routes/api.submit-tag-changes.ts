@@ -10,6 +10,7 @@ import {
 } from '~/utils/request-helpers';
 import { processTagSuggestion } from './api.admin.process-tag-suggestion';
 import { getTagSuggestionItemsByGroupId } from '~/route-funcs/get-tagsuggestion-items';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 
 export { noGetRoute as loader };
 
@@ -33,6 +34,9 @@ export async function action(args: ActionFunctionArgs) {
   if (body.newTagIDs.length === 0 && body.removedTagIDs.length === 0) {
     return create400Json('newTagIDs and removedTagIDs cannot both be empty');
   }
+
+  const returnRes = await returnIfRestricted(args, '/submit-tag-changes', 'contribute');
+  if (returnRes) return returnRes;
 
   const err = await submitTagChanges(
     args.context.cloudflare.env.DB,

@@ -3,6 +3,7 @@ import { isModOrAdmin } from '~/types/types';
 import { queryDb, queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 import {
   create400Json,
   createSuccessJson,
@@ -21,6 +22,9 @@ export async function action(args: ActionFunctionArgs) {
   if (!commentId || Number.isNaN(Number(commentId))) {
     return create400Json('Missing fields');
   }
+
+  const returnRes = await returnIfRestricted(args, '/report-comment', 'contribute');
+  if (returnRes) return returnRes;
 
   if (isModOrAdmin(user)) {
     const err = await deleteComment(args.context.cloudflare.env.DB, Number(commentId));
