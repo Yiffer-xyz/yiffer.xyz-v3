@@ -16,6 +16,7 @@ import type {
 } from '~/utils/request-helpers';
 import { makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import { getUserBlockStatus } from './get-user-block-status';
+import { getUserRestrictions } from './get-user-restrictions';
 
 type DbUser = Omit<
   User,
@@ -69,6 +70,7 @@ export async function getUserByField({
   includeExtraFields = false,
   includeComments = false,
   includeCurrentUserFields = false,
+  includeRestrictions = false,
   currentUserId,
 }: {
   db: D1Database;
@@ -77,6 +79,7 @@ export async function getUserByField({
   includeExtraFields?: boolean;
   includeComments?: boolean;
   includeCurrentUserFields?: boolean;
+  includeRestrictions?: boolean;
   currentUserId?: number;
 }): ResultOrNotFoundOrErrorPromise<User> {
   let whereStr = `WHERE user.${field} = ?`;
@@ -122,6 +125,18 @@ export async function getUserByField({
     user.contributionPoints = extraFieldsRes.result.contributionPoints;
     user.socialLinks = extraFieldsRes.result.socialLinks;
     user.comments = extraFieldsRes.result.comments;
+  }
+
+  if (includeRestrictions) {
+    const restrictionsRes = await getUserRestrictions(db, user.id, false);
+    if (restrictionsRes.err) {
+      return {
+        err: wrapApiError(restrictionsRes.err, 'Error getting user restrictions', {
+          userId: user.id,
+        }),
+      };
+    }
+    user.restrictions = restrictionsRes.result;
   }
 
   if (includeCurrentUserFields && currentUserId) {

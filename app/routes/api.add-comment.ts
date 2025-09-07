@@ -3,6 +3,7 @@ import { MAX_COMMENT_LENGTH } from '~/types/constants';
 import { queryDbExec } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import type { ApiError } from '~/utils/request-helpers';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 import {
   create400Json,
   createSuccessJson,
@@ -25,6 +26,9 @@ export async function action(args: ActionFunctionArgs) {
   if (comment.toString().length > MAX_COMMENT_LENGTH) {
     return create400Json('Comment is too long');
   }
+
+  const returnRes = await returnIfRestricted(args, '/add-comment', 'comment');
+  if (returnRes) return returnRes;
 
   const err = await addComment(
     args.context.cloudflare.env.DB,

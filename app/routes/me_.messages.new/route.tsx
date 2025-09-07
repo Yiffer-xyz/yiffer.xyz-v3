@@ -5,6 +5,7 @@ import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { create400Json, processApiError } from '~/utils/request-helpers';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import NewChat from '~/page-components/Chat/NewChat';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
@@ -27,6 +28,9 @@ export async function action(args: ActionFunctionArgs) {
   if (isNaN(toUserId)) {
     return create400Json('Invalid toUserId');
   }
+
+  const returnRes = await returnIfRestricted(args, '/me/messages/new', 'chat');
+  if (returnRes) return returnRes;
 
   const createChatResult = await createChat({
     db: args.context.cloudflare.env.DB,

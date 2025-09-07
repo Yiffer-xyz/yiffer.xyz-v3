@@ -44,6 +44,7 @@ import type {
 } from '@remix-run/cloudflare';
 import useResizeObserver from '~/utils/useResizeObserver';
 import { generateToken } from '~/utils/string-utils';
+import { returnIfRestricted } from '~/utils/restriction-utils.server';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 export const meta: MetaFunction = () => {
@@ -405,6 +406,9 @@ export async function action(args: ActionFunctionArgs) {
   const body = JSON.parse(formData.get('body') as string) as UploadBody;
   const { error } = validateUploadForm(body);
   if (error) return create400Json(error);
+
+  const returnRes = await returnIfRestricted(args, '/upload', 'contribute');
+  if (returnRes) return returnRes;
 
   try {
     const err = await processUpload(
