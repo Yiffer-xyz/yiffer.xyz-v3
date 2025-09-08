@@ -21,6 +21,7 @@ import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
 import type { GlobalAdminContext } from '../admin/route';
 import { ComicCommentReport } from './ComicCommentReport';
 import type { ProcessComicCommentReportBody } from '../api.admin.process-comic-comment-report';
+import AdvancedMultiProcessing from './AdvancedMultiProcessing';
 export { AdminErrorBoundary as ErrorBoundary } from '~/utils/error';
 
 const allActionTypes: DashboardActionType[] = [
@@ -59,6 +60,8 @@ export default function Dashboard() {
   const [typeFilter, setTypeFilter] = useState<DashboardActionType[]>([
     ...allActionTypes,
   ]);
+  const [advancedSearch, setAdvancedSearch] = useState('');
+  const [isAdvancedProcessing, setIsAdvancedProcessing] = useState(false);
 
   const dashboardDataFetcher = useGoodFetcher<DashboardAction[]>({
     url: '/api/admin/dashboard-data',
@@ -107,6 +110,15 @@ export default function Dashboard() {
       if (action.isProcessed && !showCompleted) return false;
       if (!typeFilter.includes(action.type)) return false;
 
+      if (isAdvancedProcessing) {
+        if (
+          action.user.ip !== advancedSearch &&
+          action.user.username !== advancedSearch
+        ) {
+          return false;
+        }
+      }
+
       return true;
     });
   }, [
@@ -115,6 +127,8 @@ export default function Dashboard() {
     showCompleted,
     typeFilter,
     globalContext.user.id,
+    advancedSearch,
+    isAdvancedProcessing,
   ]);
 
   async function processTagSuggestion(
@@ -211,6 +225,18 @@ export default function Dashboard() {
     comicSuggestionFetcher.submit({ body: JSON.stringify(body) });
   }
 
+  function toggleAdvancedProcessing() {
+    setShowCompleted(false);
+    if (!isAdvancedProcessing) {
+      setShowOthersTasks(true);
+      setShowCompleted(false);
+      setTypeFilter([...allActionTypes]);
+    } else {
+      setAdvancedSearch('');
+    }
+    setIsAdvancedProcessing(x => !x);
+  }
+
   return (
     <>
       <h1>Action dashboard</h1>
@@ -223,20 +249,22 @@ export default function Dashboard() {
       />
 
       <div className={showMobileFilters ? '' : 'hidden md:block'}>
-        <div className="flex flex-row flex-wrap mb-3 md:mt-2 gap-x-8 gap-y-1">
+        <div className="flex flex-row flex-wrap md:mt-2 gap-x-8 gap-y-1 mb-1">
           <Checkbox
             label="Show others' tasks"
             checked={showOthersTasks}
             onChange={() => setShowOthersTasks(!showOthersTasks)}
+            disabled={isAdvancedProcessing}
           />
 
           <Checkbox
             label="Show completed"
             checked={showCompleted}
             onChange={() => setShowCompleted(!showCompleted)}
+            disabled={isAdvancedProcessing}
           />
         </div>
-        <div className="flex flex-row flex-wrap mb-4 gap-x-8 gap-y-1">
+        <div className="flex flex-row flex-wrap gap-x-8 gap-y-1">
           {allActionTypes.map(type => (
             <Checkbox
               key={type}
@@ -249,9 +277,26 @@ export default function Dashboard() {
                   setTypeFilter([...typeFilter, type as DashboardActionType]);
                 }
               }}
+              disabled={isAdvancedProcessing}
             />
           ))}
         </div>
+
+        <Button
+          text={`${isAdvancedProcessing ? 'Close a' : 'A'}dvanced multi-processing/ban`}
+          onClick={toggleAdvancedProcessing}
+          variant="outlined"
+          className="mb-4 mt-2"
+        />
+
+        {isAdvancedProcessing && (
+          <AdvancedMultiProcessing
+            search={advancedSearch}
+            onSearchChange={setAdvancedSearch}
+            foundResults={filteredDashboardItems}
+            pagesPath={pagesPath}
+          />
+        )}
       </div>
 
       {!dashboardDataFetcher.data && !dashboardDataFetcher.hasFetchedOnce && (
@@ -416,6 +461,17 @@ export default function Dashboard() {
           </div>
         );
       })}
+
+      {filteredDashboardItems.length === 0 && (
+        <>
+          <p>No action items found for current filter.</p>
+          {isAdvancedProcessing && (
+            <p>
+              With advanced multi-processing, only exact IP/username matches will show up.
+            </p>
+          )}
+        </>
+      )}
     </>
   );
 }

@@ -803,3 +803,5 @@ CREATE TABLE IF NOT EXISTS ipban (
   ip TEXT NOT NULL,
   PRIMARY KEY (id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ipban ON ipban (ip);

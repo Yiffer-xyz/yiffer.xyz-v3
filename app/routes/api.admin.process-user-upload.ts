@@ -45,7 +45,6 @@ export async function action(args: ActionFunctionArgs) {
     comicName: formComicName.toString(),
     frontendVerdict: verdict,
     modComment,
-    imagesServerUrl: args.context.cloudflare.env.IMAGES_SERVER_URL,
     uploaderId,
   });
 
@@ -76,7 +75,6 @@ export async function processUserUpload({
   comicName,
   frontendVerdict,
   modComment,
-  imagesServerUrl,
   uploaderId,
 }: {
   modId: number;
@@ -85,7 +83,6 @@ export async function processUserUpload({
   comicName: string;
   frontendVerdict: ComicUploadVerdict;
   modComment: string | undefined;
-  imagesServerUrl: string;
   uploaderId?: number;
 }): Promise<ApiError | undefined> {
   let publishStatus: ComicPublishStatus = 'pending';
@@ -106,7 +103,6 @@ export async function processUserUpload({
     publishStatus,
     frontendVerdict,
     metadataVerdict,
-    imagesServerUrl,
     userUploadId: uploaderId,
   });
 
@@ -129,7 +125,6 @@ export async function processAnyUpload({
   publishStatus,
   frontendVerdict,
   metadataVerdict,
-  imagesServerUrl,
   userUploadId,
 }: {
   modId: number;
@@ -140,7 +135,6 @@ export async function processAnyUpload({
   publishStatus: ComicPublishStatus;
   frontendVerdict: ComicUploadVerdict;
   metadataVerdict: ComicUploadVerdict | undefined;
-  imagesServerUrl: string;
   userUploadId?: number;
 }): Promise<ApiError | undefined> {
   const comicQuery = `UPDATE comic SET publishStatus = ? WHERE id = ?`;
