@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { ADMIN_DASH_PAGINATION_CATEGORY_SIZE } from '~/types/constants';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
 import type {
   ComicPublishStatus,
@@ -11,7 +12,7 @@ import { queryDbMultiple } from '~/utils/database-facade';
 import { parseDbDateStr } from '~/utils/date-utils';
 import { createSuccessJson, makeDbErr, processApiError } from '~/utils/request-helpers';
 
-type UserOrIP = {
+export type UserOrIP = {
   username?: string;
   userId?: number;
   ip?: string;
@@ -69,6 +70,7 @@ const tagSuggestionsQuery = `SELECT Q1.*, user.username AS modName
     LEFT JOIN user ON (user.id = tagsuggestiongroup.userId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 ;`;
 
 const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
@@ -90,6 +92,7 @@ const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
     LEFT JOIN user ON (user.id = comicproblem.userId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicSuggestionsQuery = `SELECT Q1.*, user.username AS modName
@@ -111,6 +114,7 @@ const comicSuggestionsQuery = `SELECT Q1.*, user.username AS modName
     LEFT JOIN user ON (user.id = comicsuggestion.userId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicUploadsQuery = `SELECT Q1.*, user.username AS modName
@@ -135,6 +139,7 @@ const comicUploadsQuery = `SELECT Q1.*, user.username AS modName
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemModName
@@ -157,6 +162,7 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
     AND errorText IS NOT NULL
   ) AS Q1
   LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicCommentReportsQuery = `
@@ -177,6 +183,7 @@ const comicCommentReportsQuery = `
     INNER JOIN comic ON (comic.id = comiccomment.comicId)
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
+  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 export async function loader(args: LoaderFunctionArgs) {
