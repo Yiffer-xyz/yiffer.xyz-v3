@@ -71,6 +71,6 @@ export async function getModCommentList(
   );
 
   return {
-    result: mappedComments,
+    result: mappedComments.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()),
   };
 }
