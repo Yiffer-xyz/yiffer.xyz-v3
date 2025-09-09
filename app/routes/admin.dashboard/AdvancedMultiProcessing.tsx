@@ -76,7 +76,7 @@ export default function AdvancedMultiProcessing({
             className="max-w-sm mt-4"
           />
 
-          <p className="font-bold mt-4 text-lg">
+          <p className="font-bold mt-4">
             {pluralize('Item', numFoundResults, true)} found
           </p>
 

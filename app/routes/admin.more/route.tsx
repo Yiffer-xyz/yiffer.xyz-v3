@@ -33,6 +33,15 @@ export default function More() {
         disabled={!isAdmin}
         description={!isAdmin ? 'Admin only' : undefined}
       />
+
+      <LinkCard
+        href="/admin/more/ip-ban"
+        title="Ban IPs & see ban list"
+        className="w-fit"
+        includeRightArrow
+        disabled={!isAdmin}
+        description={!isAdmin ? 'Admin only' : undefined}
+      />
     </div>
   );
 }
