@@ -35,6 +35,13 @@ export default function More() {
       />
 
       <LinkCard
+        href="/admin/more/restricted-users"
+        title="Restricted users"
+        className="w-fit"
+        includeRightArrow
+      />
+
+      <LinkCard
         href="/admin/more/ip-ban"
         title="Ban IPs & see ban list"
         className="w-fit"
