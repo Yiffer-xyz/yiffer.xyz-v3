@@ -5,7 +5,7 @@ export async function isIpBanned(
   db: D1Database,
   ip: string
 ): ResultOrErrorPromise<{ isBanned: boolean }> {
-  const query = `SELECT COUNT(*) FROM ipban WHERE ip = ?`;
+  const query = `SELECT COUNT(*) AS count FROM ipban WHERE ip = ?`;
   const result = await queryDb<[{ count: number }]>(db, query, [ip], 'IP ban status');
   if (result.isError) {
     return makeDbErrObj(result, 'Error getting IP ban status', { ip });

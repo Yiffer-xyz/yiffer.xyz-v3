@@ -8,6 +8,7 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -21,8 +22,8 @@ export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotMod(args);
 
   const formData = await args.request.formData();
-  const messageId = formData.get('messageId');
-  if (!messageId || Number.isNaN(Number(messageId))) {
+  const messageId = validateFormDataNumber(formData, 'messageId');
+  if (!messageId) {
     return create400Json('Invalid message ID');
   }
 

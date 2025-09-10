@@ -11,6 +11,7 @@ import {
   noGetRoute,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -18,9 +19,10 @@ export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const reqBody = await args.request.formData();
-  const { comment, comicId } = Object.fromEntries(reqBody);
-  if (!comment || Number.isNaN(Number(comicId))) {
-    return create400Json('Missing fields');
+  const comment = reqBody.get('comment');
+  const comicId = validateFormDataNumber(reqBody, 'comicId');
+  if (!comment || !comicId) {
+    return create400Json('Missing/invalid comment or comicId');
   }
 
   if (comment.toString().length > MAX_COMMENT_LENGTH) {

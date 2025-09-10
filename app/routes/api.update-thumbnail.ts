@@ -8,6 +8,7 @@ import {
 import type { ActionFunctionArgs } from '@remix-run/cloudflare';
 import { renameR2File } from '~/utils/r2Utils';
 import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -15,9 +16,9 @@ export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const reqBody = await args.request.formData();
-  const { comicId, tempToken } = Object.fromEntries(reqBody);
-
-  if (!comicId || !tempToken || Number.isNaN(Number(comicId))) {
+  const comicId = validateFormDataNumber(reqBody, 'comicId');
+  const tempToken = reqBody.get('tempToken');
+  if (!comicId || !tempToken) {
     return create400Json('Missing comicId or tempToken');
   }
 

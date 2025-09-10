@@ -9,6 +9,7 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
@@ -23,10 +24,10 @@ export async function action(args: ActionFunctionArgs) {
   }
 
   const restrictionType = formRestrictionType as UserRestrictionType;
-  const durationDays = parseInt(formDurationDays.toString());
-  const userId = parseInt(formUserId.toString());
+  const durationDays = validateFormDataNumber(formData, 'durationDays');
+  const userId = validateFormDataNumber(formData, 'userId');
 
-  if (Number.isNaN(durationDays) || Number.isNaN(userId)) {
+  if (!durationDays || !userId) {
     return create400Json('Invalid duration days or user ID');
   }
 

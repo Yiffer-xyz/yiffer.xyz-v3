@@ -51,8 +51,8 @@ export async function action(args: ActionFunctionArgs) {
 
       case 'comicSuggestion':
         queriesWithParams.push({
-          query: "UPDATE comicsuggestion SET status = 'rejected' WHERE id = ?",
-          params: [item.id],
+          query: "UPDATE comicsuggestion SET status = 'rejected', modId = ? WHERE id = ?",
+          params: [currentUser.userId, item.id],
           queryName: 'Comic suggestion rejection',
         });
         break;
