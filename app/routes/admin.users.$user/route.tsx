@@ -409,27 +409,23 @@ export default function ManageSingleUser() {
             </div>
           )}
 
-          <div className="max-w-2xl mt-6">
-            <h3>Feedback/support</h3>
-            {feedback.length > 0 ? (
+          {feedback.length > 0 && (
+            <div className="max-w-2xl mt-6">
+              <h3>Feedback/support</h3>
               <div className="flex flex-col gap-4">
                 {feedback.map(fb => (
                   <FeedbackItem feedback={fb} key={fb.id} />
                 ))}
               </div>
-            ) : (
-              <p>User has not submitted any feedback/support.</p>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="max-w-4xl mt-6">
-            <h3>Contributions</h3>
-            {contributions.length > 0 ? (
+          {contributions.length > 0 && (
+            <div className="max-w-4xl mt-6">
+              <h3>Contributions</h3>
               <Contributions contributions={contributions} className="mt-2 md:mt-1" />
-            ) : (
-              <p>User has no contributions yet.</p>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
     </>
