@@ -68,9 +68,10 @@ const tagSuggestionsQuery = `SELECT Q1.*, user.username AS modName
     INNER JOIN keyword ON (keyword.id = tagsuggestionitem.keywordId)
     INNER JOIN comic ON (comic.id = tagsuggestiongroup.comicId)
     LEFT JOIN user ON (user.id = tagsuggestiongroup.userId)
+    ORDER BY tagsuggestiongroup.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 ;`;
 
 const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
@@ -90,9 +91,10 @@ const comicProblemsQuery = `SELECT Q1.*, user.username AS modName
     FROM comicproblem
     INNER JOIN comic ON (comic.id = comicproblem.comicId)
     LEFT JOIN user ON (user.id = comicproblem.userId)
+    ORDER BY comicproblem.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicSuggestionsQuery = `SELECT Q1.*, user.username AS modName
@@ -112,9 +114,10 @@ const comicSuggestionsQuery = `SELECT Q1.*, user.username AS modName
       modComment
     FROM comicsuggestion
     LEFT JOIN user ON (user.id = comicsuggestion.userId)
+    ORDER BY comicsuggestion.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicUploadsQuery = `SELECT Q1.*, user.username AS modName
@@ -137,9 +140,10 @@ const comicUploadsQuery = `SELECT Q1.*, user.username AS modName
     INNER JOIN comicmetadata ON (comicmetadata.comicId = comic.id)
     INNER JOIN artist ON (artist.id = comic.artist)
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
+    ORDER BY comic.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemModName
@@ -160,9 +164,10 @@ const pendingComicsSimpleQuery = `SELECT Q1.*, user.username AS pendingProblemMo
     LEFT JOIN user ON (user.id = comicmetadata.uploadUserId)
     WHERE publishStatus = 'pending'
     AND errorText IS NOT NULL
+    ORDER BY comic.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.pendingProblemModId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 const comicCommentReportsQuery = `
@@ -181,9 +186,10 @@ const comicCommentReportsQuery = `
     INNER JOIN user ON (user.id = comiccommentreport.userId)
     INNER JOIN comiccomment ON (comiccomment.id = comiccommentreport.commentId)
     INNER JOIN comic ON (comic.id = comiccomment.comicId)
+    ORDER BY comiccommentreport.id DESC
+    LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
   ) AS Q1
   LEFT JOIN user ON (Q1.modId = user.id)
-  LIMIT ${ADMIN_DASH_PAGINATION_CATEGORY_SIZE}
 `;
 
 export async function loader(args: LoaderFunctionArgs) {
