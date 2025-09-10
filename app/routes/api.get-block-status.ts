@@ -6,14 +6,15 @@ import {
   createSuccessJson,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const formData = await args.request.formData();
-  const otherUserId = Number(formData.get('otherUserId'));
+  const otherUserId = validateFormDataNumber(formData, 'otherUserId');
 
-  if (Number.isNaN(otherUserId)) {
+  if (!otherUserId) {
     return create400Json('Invalid otherUserId');
   }
 

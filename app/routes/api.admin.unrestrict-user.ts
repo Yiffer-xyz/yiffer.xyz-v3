@@ -7,14 +7,15 @@ import {
   makeDbErr,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export async function action(args: ActionFunctionArgs) {
   await redirectIfNotMod(args);
 
   const formData = await args.request.formData();
-  const id = formData.get('id');
-  if (!id) return create400Json('Missing id');
-  if (Number.isNaN(id)) return create400Json('Invalid id');
+
+  const id = validateFormDataNumber(formData, 'id');
+  if (!id) return create400Json('Missing or invalid id');
 
   const dbRes = await queryDbExec(
     args.context.cloudflare.env.DB,

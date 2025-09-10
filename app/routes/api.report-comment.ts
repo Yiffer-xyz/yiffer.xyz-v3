@@ -11,6 +11,7 @@ import {
   noGetRoute,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -18,9 +19,9 @@ export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const reqBody = await args.request.formData();
-  const { commentId } = Object.fromEntries(reqBody);
-  if (!commentId || Number.isNaN(Number(commentId))) {
-    return create400Json('Missing fields');
+  const commentId = validateFormDataNumber(reqBody, 'commentId');
+  if (!commentId) {
+    return create400Json('Missing comment id');
   }
 
   const returnRes = await returnIfRestricted(args, '/report-comment', 'contribute');

@@ -135,12 +135,14 @@ const maliciousStrings = [
   'proc_open',
   'proc_close',
 ];
+
 const maliciousPatterns = [
   /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TRUNCATE|EXEC|GRANT|REVOKE|MERGE|DECLARE|CAST|CONVERT)\b.*\b(FROM|INTO|WHERE|TABLE|DATABASE|SCHEMA|COLUMN)\b)/i, // SQL Injection
   /(<script.*?>.*?<\/script>)/i, // XSS attack (script injection)
   /((\bdocument\.cookie|onerror|onload|eval|javascript:|href=|src=)\b)/i, // XSS payloads
   /(\b(?:http|https):\/\/[^\s]+(?:login|bank|verify|confirm|secure|account|password)\b)/i, // Phishing attempts
 ];
+
 export function isMaliciousString(...inputs: string[]): boolean {
   for (const input of inputs) {
     const inputLower = input.toLowerCase();
@@ -152,4 +154,21 @@ export function isMaliciousString(...inputs: string[]): boolean {
     }
   }
   return false;
+}
+
+export function validateFormDataNumber(
+  formData: FormData,
+  fieldName: string
+): number | null {
+  const id = formData.get(fieldName);
+  if (!id || typeof id !== 'string') {
+    return null;
+  }
+
+  const idNum = parseInt(id, 10);
+  if (isNaN(idNum) || idNum <= 0 || idNum.toString() !== id) {
+    return null;
+  }
+
+  return idNum;
 }

@@ -795,6 +795,8 @@ CREATE TABLE IF NOT EXISTS userrestriction (
   FOREIGN KEY (userId) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_userrestriction_userId ON userrestriction (userId);
+
 ------------------------------------------------------
 -- IP BAN
 ------------------------------------------------------

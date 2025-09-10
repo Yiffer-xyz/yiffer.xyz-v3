@@ -11,30 +11,33 @@ import {
   processApiError,
   type ApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
 export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
   const formDataBody = await args.request.formData();
-  const formDataUserId = formDataBody.get('userId');
+  const userId = validateFormDataNumber(formDataBody, 'userId');
 
-  let userToEdit = user.userId;
+  let userIdToEdit = user.userId;
 
-  if (formDataUserId && !Number.isNaN(Number(formDataUserId))) {
-    if (user.userId !== Number(formDataUserId) && !isModOrAdmin(user)) {
+  if (userId) {
+    if (user.userId !== userId && !isModOrAdmin(user)) {
       return create400Json('You are not allowed to edit this profile');
     }
-    userToEdit = Number(formDataUserId);
+    userIdToEdit = userId;
   }
 
   const err = await removeProfilePhoto(
     args.context.cloudflare.env.DB,
     args.context.cloudflare.env.COMICS_BUCKET,
-    userToEdit
+    userIdToEdit
   );
   if (err) {
-    return processApiError('Error in /remove-profile-photo', err, { userId: userToEdit });
+    return processApiError('Error in /remove-profile-photo', err, {
+      userIdToEdit,
+    });
   }
 
   return createSuccessJson();

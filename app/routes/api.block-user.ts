@@ -9,6 +9,7 @@ import {
   noGetRoute,
   processApiError,
 } from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
 
@@ -16,18 +17,14 @@ export async function action(args: ActionFunctionArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const reqBody = await args.request.formData();
-  const { targetUserId, action: blockAction } = Object.fromEntries(reqBody);
+  const blockAction = reqBody.get('action');
+  const targetUserId = validateFormDataNumber(reqBody, 'targetUserId');
 
   if (!targetUserId || !blockAction) {
     return create400Json('Missing target user ID or action');
   }
 
-  const targetUserIdNum = Number(targetUserId);
-  if (Number.isNaN(targetUserIdNum)) {
-    return create400Json('Invalid target user ID');
-  }
-
-  if (targetUserIdNum === user.userId) {
+  if (targetUserId === user.userId) {
     return create400Json('Cannot block yourself');
   }
 
@@ -38,13 +35,13 @@ export async function action(args: ActionFunctionArgs) {
   const err = await toggleUserBlock(
     args.context.cloudflare.env.DB,
     user.userId,
-    targetUserIdNum,
+    targetUserId,
     blockAction
   );
 
   if (err) {
     return processApiError('Error in /block-user', err, {
-      targetUserId: targetUserIdNum,
+      targetUserId,
       action: blockAction,
       userId: user.userId,
     });
