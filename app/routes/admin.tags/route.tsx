@@ -74,7 +74,7 @@ export default function ManageTags() {
 
           {tagOptions.length > 0 && (
             <>
-              <Table className="mb-6" horizontalScroll>
+              <Table className="mb-6">
                 <TableHeadRow>
                   <TableCell>Count</TableCell>
                   <TableCell>Tag name</TableCell>

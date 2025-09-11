@@ -87,7 +87,7 @@ export default function More() {
       )}
 
       {chats.length > 0 && (
-        <Table className="" horizontalScroll>
+        <Table className="" horizontalScroll="mobile-only">
           <TableHeadRow isTableMaxHeight={false}>
             <TableCell>Users</TableCell>
             <TableCell>Latest</TableCell>

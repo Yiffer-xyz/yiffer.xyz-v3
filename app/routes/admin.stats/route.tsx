@@ -292,7 +292,7 @@ export default function Stats() {
       </p>
 
       <h2 className="mt-4">Contributions</h2>
-      <Table horizontalScroll>
+      <Table horizontalScroll="mobile-only">
         <TableHeadRow>
           <TableCell> </TableCell>
           <TableCell>Total</TableCell>

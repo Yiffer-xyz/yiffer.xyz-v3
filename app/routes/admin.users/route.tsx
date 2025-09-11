@@ -75,7 +75,7 @@ export default function UserManager() {
                 Visits for "Seen" are only recorded from the browse and comic pages, for
                 technical reasons.
               </p>
-              <Table className="mb-6" horizontalScroll>
+              <Table className="mb-6" horizontalScroll="mobile-only">
                 <TableHeadRow>
                   <TableCell>Username</TableCell>
                   <TableCell>Role</TableCell>
