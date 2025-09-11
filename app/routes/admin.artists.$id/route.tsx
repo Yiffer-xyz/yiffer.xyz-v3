@@ -33,6 +33,9 @@ export default function ManageArtist() {
     url: '/api/admin/toggle-artist-ban',
     method: 'post',
     toastSuccessMessage: 'Artist ban status updated',
+    onFinish: () => {
+      setIsBanning(false);
+    },
   });
   const saveChangesFetcher = useGoodFetcher({
     url: '/api/admin/update-artist-data',
@@ -125,7 +128,7 @@ export default function ManageArtist() {
       </div>
 
       {artist.isBanned && (
-        <div className="bg-theme1-primary-trans p-4 pt-3 w-fit mb-6">
+        <div className="bg-red-trans p-4 pt-3 w-fit mb-6">
           <h3>Banned artist</h3>
           <p>
             This artist cannot be chosen for new/existing comics, and cannot be suggested.
@@ -141,7 +144,7 @@ export default function ManageArtist() {
               </p>
               <LoadingButton
                 onClick={toggleArtistBan}
-                className="mt-2"
+                className="mt-4"
                 isLoading={banArtistFetcher.isLoading}
                 color="error"
                 text="Unban artist"
@@ -326,13 +329,13 @@ export type ArtistDataChanges = {
 export async function loader(args: LoaderFunctionArgs) {
   const user = await redirectIfNotMod(args);
   const db = args.context.cloudflare.env.DB;
-  const artistParam = args.params.artist as string;
+  const artistParam = args.params.id as string;
   const artistId = parseInt(artistParam);
 
   if (isNaN(artistId)) {
     throw new Response('Invalid artist ID', { status: 404 });
   }
-  const combinedRes = await getArtistAndComicsByField(db, 'id', artistId);
+  const combinedRes = await getArtistAndComicsByField(db, 'id', artistId, true);
   if (combinedRes.err) {
     return processApiError('Error getting data for admin>artist', combinedRes.err);
   }

@@ -110,6 +110,7 @@ export async function loader(args: LoaderFunctionArgs) {
     args.context.cloudflare.env.DB,
     'name',
     artistName,
+    false,
     user?.userId
   );
 

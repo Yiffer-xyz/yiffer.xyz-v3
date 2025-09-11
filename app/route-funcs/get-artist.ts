@@ -20,6 +20,7 @@ export async function getArtistAndComicsByField(
   db: D1Database,
   fieldName: 'id' | 'name',
   fieldValue: string | number,
+  returnIfNoComics?: boolean,
   userId?: number | undefined
 ): ResultOrNotFoundOrErrorPromise<{
   artist: Artist;
@@ -51,7 +52,7 @@ export async function getArtistAndComicsByField(
   if (comicsRes.err) {
     return processApiError('Error getting comics, get-artist', comicsRes.err);
   }
-  if (comicsRes.result.comicsAndAds.length === 0) {
+  if (comicsRes.result.comicsAndAds.length === 0 && !returnIfNoComics) {
     return { notFound: true };
   }
 
