@@ -4,19 +4,24 @@ import Button from './Button';
 
 type LoadingButtonProps = {
   isLoading: boolean;
+  smallSpinner?: boolean;
 } & ButtonProps;
 
 export default function LoadingButton({
   isLoading,
   variant = 'contained',
   color = 'primary',
+  smallSpinner = false,
   onClick,
   ...props
 }: LoadingButtonProps) {
   const className = (isLoading ? 'opacity-70 ' : '') + props.className;
 
   // Memoize to avoid resetting the spinner spinny on every render
-  const Spinner = useMemo(() => getSpinner(variant, color), [variant, color]);
+  const Spinner = useMemo(
+    () => getSpinner(variant, color, smallSpinner),
+    [variant, color, smallSpinner]
+  );
 
   return (
     <Button
@@ -32,7 +37,8 @@ export default function LoadingButton({
 
 const getSpinner = (
   variant: 'contained' | 'outlined' | 'naked',
-  color: 'primary' | 'error'
+  color: 'primary' | 'error',
+  smallSpinner: boolean
 ) => {
   let borderRightColor = '';
 
@@ -49,9 +55,11 @@ const getSpinner = (
     }
   }
 
+  const marginWidthHeightClass = smallSpinner ? 'mr-2 w-3 h-3' : 'mr-3 w-4 h-4';
+
   const Spinner = () => (
     <div
-      className={`mr-3 w-4 h-4 animate-spin border-solid border-transparent ${borderRightColor} border border-r-2 rounded-full`}
+      className={`${marginWidthHeightClass} animate-spin border-solid border-transparent ${borderRightColor} border border-r-2 rounded-full`}
     />
   );
 
