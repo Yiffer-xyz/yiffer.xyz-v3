@@ -34,6 +34,7 @@ type PageManagerProps = {
   pageManagerWidth: number;
   randomString?: string;
   source: 'admin' | 'comic-upload';
+  disableDragging?: boolean;
 };
 
 export default function PageManager({
@@ -42,6 +43,7 @@ export default function PageManager({
   randomString,
   pageManagerWidth,
   source,
+  disableDragging,
 }: PageManagerProps) {
   const { isMobile } = useWindowSize();
   const [fullSizeImageIndex, setFullSizeImageIndex] = useState<number | undefined>(
@@ -153,6 +155,7 @@ export default function PageManager({
               onSetFullSize={() => setFullSizeImageIndex(index)}
               isLastPage={index === files.length - 1}
               onEnterChangePageMode={() => setIsManuallyChangingPageOfIndex(index)}
+              disableDragging={disableDragging ?? false}
             />
           );
         } else {
@@ -178,6 +181,7 @@ export default function PageManager({
     setNewPagePosition,
     showPageNames,
     startOffset,
+    disableDragging,
   ]);
 
   const pageContainerRows = useMemo(() => getPageContainerRows(), [getPageContainerRows]);
@@ -356,6 +360,7 @@ type PageProps = {
   onSetFullSize: () => void;
   isLastPage: boolean;
   onEnterChangePageMode: () => void;
+  disableDragging: boolean;
 };
 
 function Page({
@@ -381,6 +386,7 @@ function Page({
   onSetFullSize,
   isLastPage,
   onEnterChangePageMode,
+  disableDragging,
 }: PageProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -441,7 +447,7 @@ function Page({
 
       <DraggableCore
         nodeRef={nodeRef}
-        disabled={isMobile}
+        disabled={isMobile || disableDragging}
         onStop={e => {
           if (didJustDelete) {
             setTimeout(() => {

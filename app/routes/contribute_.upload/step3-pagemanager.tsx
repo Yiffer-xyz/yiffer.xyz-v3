@@ -11,12 +11,14 @@ type Step3Props = {
   comicData: NewComicData;
   onUpdate: (newData: NewComicData) => void;
   contentWidth: number;
+  isSubmitting: boolean;
 };
 
 export default function Step3Pagemanager({
   comicData,
   onUpdate,
   contentWidth,
+  isSubmitting,
 }: Step3Props) {
   const { isMobile } = useWindowSize();
   const [isClearingPages, setIsClearingPages] = useState(false);
@@ -107,6 +109,7 @@ export default function Step3Pagemanager({
             onChange={newFiles => onUpdate({ ...comicData, files: newFiles })}
             pageManagerWidth={contentWidth}
             source="comic-upload"
+            disableDragging={isSubmitting}
           />
 
           <div className="flex flex-row gap-2">

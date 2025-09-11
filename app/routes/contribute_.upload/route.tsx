@@ -330,6 +330,7 @@ export default function Upload() {
             comicData={comicData}
             onUpdate={setComicData}
             contentWidth={width}
+            isSubmitting={isSubmitting}
           />
 
           <Step4Thumbnail comicData={comicData} onUpdate={setComicData} />

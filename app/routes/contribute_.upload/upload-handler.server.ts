@@ -1,13 +1,14 @@
 import { addContributionPoints } from '~/route-funcs/add-contribution-points';
 import { type UserSession } from '~/types/types';
-import { queryDb, queryDbExec } from '~/utils/database-facade';
+import type { QueryWithParams } from '~/utils/database-facade';
+import { queryDb, queryDbExec, queryDbMultiple } from '~/utils/database-facade';
 import type { ApiError, ResultOrErrorPromise } from '~/utils/request-helpers';
 import { makeDbErr, makeDbErrObj, wrapApiError } from '~/utils/request-helpers';
 import type { NewArtist, UploadBody } from './route';
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { generateToken } from '~/utils/string-utils';
 import { batchRenameR2Files } from '~/utils/r2Utils';
-import { R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
+import { MAX_D1_QUERY_PARAMS, R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 
 async function rollBackComicAndArtist(
   db: D1Database,
@@ -98,25 +99,43 @@ export async function processUpload(
     };
   }
 
+  // Chunk to not exceed D1 query param limit
+  let counter = 0;
+  const insertPagesQueries: QueryWithParams[] = [];
   let insertPagesQuery = `INSERT INTO comicpage (token, comicId, pageNumber) VALUES `;
-  const insertPagesParams: any[] = [];
+  let insertPagesParams: any[] = [];
 
   for (let i = 0; i < updatedPages.length; i++) {
     if (updatedPages[i].pageNumber === 0) continue;
-    const page = updatedPages[i];
-    insertPagesQuery += `(?, ?, ?)`;
-    insertPagesParams.push(page.finalToken, comicId, page.pageNumber);
-    if (i < updatedPages.length - 1) {
-      insertPagesQuery += ', ';
+
+    if (counter >= MAX_D1_QUERY_PARAMS) {
+      insertPagesQueries.push({
+        query: insertPagesQuery.slice(0, -2),
+        params: insertPagesParams,
+        queryName: 'Comic page creation',
+      });
+      insertPagesQuery = `INSERT INTO comicpage (token, comicId, pageNumber) VALUES `;
+      insertPagesParams = [];
+      counter = 0;
     }
+
+    const page = updatedPages[i];
+    insertPagesQuery += `(?, ?, ?), `;
+    insertPagesParams.push(page.finalToken, comicId, page.pageNumber);
+
+    counter += 3;
   }
 
-  const insertPagesDbRes = await queryDbExec(
-    db,
-    insertPagesQuery,
-    insertPagesParams,
-    'Comic page creation'
-  );
+  if (insertPagesQuery.length > 0) {
+    insertPagesQueries.push({
+      query: insertPagesQuery.slice(0, -2),
+      params: insertPagesParams,
+      queryName: 'Comic page creation',
+    });
+  }
+
+  const insertPagesDbRes = await queryDbMultiple(db, insertPagesQueries);
+
   if (insertPagesDbRes.isError) {
     await rollBackComicAndArtist(db, comicId, newArtistId);
     return makeDbErr(insertPagesDbRes, 'Error creating comic pages');

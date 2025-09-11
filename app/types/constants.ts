@@ -241,3 +241,5 @@ export const THEME2_DARK = '#5df1ba';
 export const MAX_MESSAGE_LENGTH = 1500;
 
 export const ADMIN_CHAT_LIST_PAGESIZE = 50;
+
+export const MAX_D1_QUERY_PARAMS = 80; // Real one is 100, but add some safety margin

@@ -302,6 +302,7 @@ export default function ManagePagesAdmin({
         onChange={setComicPages}
         pageManagerWidth={pageManagerWidth}
         source="admin"
+        disableDragging={blockActions || isSubmitting}
       />
 
       {filesChanged.length > 0 && (
