@@ -84,7 +84,7 @@ export default function IpBanList() {
     <>
       <h1 className="mb-1">Restricted users</h1>
 
-      <Table className="mt-2" horizontalScroll>
+      <Table className="mt-2" horizontalScroll="mobile-only">
         <TableHeadRow>
           <TableCell>User</TableCell>
           <TableCell>Restriction</TableCell>

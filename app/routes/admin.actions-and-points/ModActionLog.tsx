@@ -54,7 +54,7 @@ export default function ModActionLog({
 
       {modActions.length > 0 && (
         <>
-          <Table horizontalScroll>
+          <Table horizontalScroll="mobile-only">
             <TableHeadRow>
               <TableCell>User</TableCell>
               <TableCell>Type</TableCell>

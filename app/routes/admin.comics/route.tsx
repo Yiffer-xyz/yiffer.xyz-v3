@@ -72,7 +72,7 @@ export default function ManageComics() {
                   Showing {comicOptions.length} of {totalNum} comics
                 </p>
               )}
-              <Table className="mb-6" horizontalScroll>
+              <Table className="mb-6">
                 <TableHeadRow>
                   <TableCell>Comic name</TableCell>
                   <TableCell>Status</TableCell>

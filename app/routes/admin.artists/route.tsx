@@ -49,7 +49,7 @@ export default function ManageArtists() {
 
           {artistOptions.length > 0 && (
             <>
-              <Table className="mb-6" horizontalScroll>
+              <Table className="mb-6" horizontalScroll="always">
                 <TableBody>
                   {artistOptions.map((artist, index) => (
                     <TableRow key={artist.value.id} includeBorderTop={index === 0}>
