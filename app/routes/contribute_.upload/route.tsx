@@ -72,6 +72,7 @@ export default function Upload() {
       if (submitFetcher.isError) setError(submitFetcher.errorMessage);
     },
     onError: () => {
+      console.log('⚠️ Upload error:', submitFetcher.errorMessage);
       setIsSubmitting(false);
       setError('Error submitting upload');
     },
