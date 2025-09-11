@@ -1,15 +1,25 @@
 import { useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { COMMENT_HIDE_THRESHOLD } from '~/types/constants';
+import { COMMENT_HIDE_THRESHOLD, MAX_COMMENT_LENGTH } from '~/types/constants';
 import type { ComicComment } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import Username from '../Username';
 import Link from '../Link';
 import { format, formatDistanceToNow } from 'date-fns';
 import IconButton from '../Buttons/IconButton';
-import { MdArrowDownward, MdArrowUpward, MdCheck, MdClose } from 'react-icons/md';
+import {
+  MdArrowDownward,
+  MdArrowUpward,
+  MdCheck,
+  MdClose,
+  MdDelete,
+  MdEdit,
+} from 'react-icons/md';
 import Button from '../Buttons/Button';
 import ProfilePicture from '../ProfilePicture/ProfilePicture';
+import Textarea from '../Textarea/Textarea';
+import useWindowSize from '~/utils/useWindowSize';
+import LoadingButton from '../Buttons/LoadingButton';
 
 export default function SingleComment({
   comment,
@@ -17,17 +27,25 @@ export default function SingleComment({
   isAdminPanel,
   showLowScoreComments,
   isLoggedIn,
+  currentUserId,
+  shouldDisableOtherActions,
+  onShouldDisableOtherActions,
 }: {
   comment: ComicComment;
   pagesPath: string;
   isAdminPanel?: boolean;
   showLowScoreComments: boolean;
   isLoggedIn: boolean;
+  currentUserId?: number;
+  shouldDisableOtherActions?: boolean;
+  onShouldDisableOtherActions?: (shouldDisable: boolean) => void;
 }) {
   const navigate = useNavigate();
+  const { isMobile } = useWindowSize();
 
-  const [isReporting, setIsReporting] = useState(false);
+  const [actionState, setActionState] = useState<'reporting' | 'editing' | null>(null);
   const [isReported, setIsReported] = useState(false);
+  const [editedComment, setEditedComment] = useState(comment.comment);
 
   const reportCommentFetcher = useGoodFetcher({
     url: '/api/report-comment',
@@ -38,6 +56,17 @@ export default function SingleComment({
     url: '/api/add-comment-vote',
     method: 'post',
   });
+
+  const editCommentFetcher = useGoodFetcher({
+    url: '/api/edit-comment',
+    method: 'post',
+    onFinish: () => {
+      onShouldDisableOtherActions?.(false);
+      setActionState(null);
+    },
+  });
+
+  const isCommentOwner = currentUserId === comment.user.id;
 
   function onVote(isUpvote: boolean) {
     commentVoteFetcher.submit({
@@ -55,7 +84,11 @@ export default function SingleComment({
 
     reportCommentFetcher.submit({ commentId: comment.id });
     setIsReported(true);
-    setIsReporting(false);
+    setActionState(null);
+  }
+
+  function submitEdit() {
+    editCommentFetcher.submit({ commentId: comment.id, newComment: editedComment });
   }
 
   if (comment.score && comment.score < COMMENT_HIDE_THRESHOLD && !showLowScoreComments) {
@@ -93,50 +126,98 @@ export default function SingleComment({
           </div>
         )}
 
-        <p className="whitespace-pre-wrap mt-1 mb-1.5">{comment.comment}</p>
+        {actionState !== 'editing' && (
+          <p className="whitespace-pre-wrap mt-1 mb-1 text-sm">{comment.comment}</p>
+        )}
+
+        {actionState === 'editing' && (
+          <>
+            <Textarea
+              value={editedComment}
+              onChange={setEditedComment}
+              name="newComment"
+              label="Edit comment"
+              className="mt-2 text-sm"
+              rows={isMobile ? 8 : 3}
+              helperText={
+                editedComment.length
+                  ? `${editedComment.length} / ${MAX_COMMENT_LENGTH}`
+                  : ''
+              }
+              placeholder={` Harmful comments will be removed and might result in a ban.`}
+            />
+
+            <div className="flex flex-row gap-x-4 w-full justify-end">
+              <Button
+                text="Cancel"
+                variant="naked"
+                className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
+                noPadding
+                onClick={() => {
+                  onShouldDisableOtherActions?.(false);
+                  setActionState(null);
+                }}
+                disabled={editCommentFetcher.isLoading}
+              />
+              <LoadingButton
+                isLoading={editCommentFetcher.isLoading}
+                text="Save"
+                variant="naked"
+                className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
+                noPadding
+                onClick={() => {
+                  submitEdit();
+                }}
+                smallSpinner
+              />
+            </div>
+          </>
+        )}
 
         <div className="flex flex-row gap-x-4 gap-y-1 md:justify-start w-full flex-wrap">
-          {!isReporting && !isReported && (
+          {!actionState && !isReported && (
             <>
               <p className={`text-xs ${bottomTextClass}`}>
                 {format(comment.timestamp, 'MMM do')} (
                 {formatDistanceToNow(comment.timestamp)})
               </p>
 
-              <div className="flex flex-row -mx-2">
-                <IconButton
-                  variant="naked"
-                  className={`
-                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
-                    ${comment.yourVote === true ? 'text-theme1-dark' : ''}
-                  `}
-                  noPadding
-                  icon={MdArrowUpward}
-                  onClick={() => onVote(true)}
-                  disabled={commentVoteFetcher.isLoading}
-                />
-                {comment.score !== 0 && (
-                  <p className={`text-xs font-normal mt-px ${bottomTextClass}`}>
-                    {comment.score}
-                  </p>
-                )}
-                <IconButton
-                  variant="naked"
-                  className={`
-                    text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
-                    ${comment.yourVote === false ? 'text-theme1-dark' : ''}
-                  `}
-                  noPadding
-                  icon={MdArrowDownward}
-                  onClick={() => onVote(false)}
-                  disabled={commentVoteFetcher.isLoading}
-                />
-              </div>
+              {!isCommentOwner && (
+                <div className="flex flex-row -mx-2">
+                  <IconButton
+                    variant="naked"
+                    className={`
+                      text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
+                      ${comment.yourVote === true ? 'text-theme1-dark dark:text-theme1-dark' : ''}
+                    `}
+                    noPadding
+                    icon={MdArrowUpward}
+                    onClick={() => onVote(true)}
+                    disabled={commentVoteFetcher.isLoading}
+                  />
+                  {comment.score !== 0 && (
+                    <p className={`text-xs font-normal mt-px ${bottomTextClass}`}>
+                      {comment.score}
+                    </p>
+                  )}
+                  <IconButton
+                    variant="naked"
+                    className={`
+                      text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}
+                      ${comment.yourVote === false ? 'text-theme1-dark dark:text-theme1-dark' : ''}
+                    `}
+                    noPadding
+                    icon={MdArrowDownward}
+                    onClick={() => onVote(false)}
+                    disabled={commentVoteFetcher.isLoading}
+                  />
+                </div>
+              )}
             </>
           )}
 
-          {isReporting && !isReported && (
-            <div className="flex flex-row gap-x-4 ">
+          {actionState === 'reporting' && !isReported && (
+            <div className="flex flex-row gap-x-4">
               <Button
                 text="Cancel"
                 variant="naked"
@@ -144,11 +225,11 @@ export default function SingleComment({
                 noPadding
                 startIcon={MdClose}
                 onClick={() => {
-                  setIsReporting(false);
+                  setActionState(null);
                 }}
               />
               <Button
-                text={isAdminPanel ? 'Delete' : 'Report'}
+                text={isAdminPanel || isCommentOwner ? 'Delete' : 'Report'}
                 variant="naked"
                 className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
                 noPadding
@@ -158,21 +239,54 @@ export default function SingleComment({
             </div>
           )}
 
-          {!isReporting && !isReported && !comment.isHidden && (
-            <Button
-              text={isAdminPanel ? 'Delete' : 'Report'}
-              variant="naked"
-              className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
-              noPadding
-              onClick={() => {
-                setIsReporting(true);
-              }}
-            />
+          {!actionState &&
+            !isReported &&
+            !comment.isHidden &&
+            (isAdminPanel || !isCommentOwner) && (
+              <Button
+                text={isAdminPanel ? 'Delete' : 'Report'}
+                variant="naked"
+                className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}
+                disabled={shouldDisableOtherActions}
+                noPadding
+                onClick={() => {
+                  setActionState('reporting');
+                }}
+              />
+            )}
+
+          {!actionState && isCommentOwner && !isReported && (
+            <div className="flex flex-row -mx-2">
+              <IconButton
+                icon={MdEdit}
+                className={`text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}`}
+                noPadding
+                variant="naked"
+                disabled={shouldDisableOtherActions}
+                onClick={() => {
+                  onShouldDisableOtherActions?.(true);
+                  setActionState('editing');
+                }}
+              />
+
+              <IconButton
+                icon={MdDelete}
+                className={`text-xs font-normal w-6! h-6! -mt-1 -mb-1 ${bottomTextClass}`}
+                noPadding
+                variant="naked"
+                disabled={shouldDisableOtherActions}
+                onClick={() => {
+                  setActionState('reporting');
+                }}
+              />
+            </div>
           )}
 
           {isReported && !comment.isHidden && (
             <p className={`text-xs font-normal p-0 -mb-[1.25px] ${bottomTextClass}`}>
-              Reported - mods will review this comment.
+              {isAdminPanel || isCommentOwner
+                ? 'Deleting...'
+                : 'Reported - mods will review this comment.'}
             </p>
           )}
         </div>

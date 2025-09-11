@@ -12,6 +12,7 @@ import {
   processApiError,
 } from '~/utils/request-helpers';
 import { validateFormDataNumber } from '~/utils/string-utils';
+import { getSimpleComment } from '~/route-funcs/get-comment';
 
 export { noGetRoute as loader };
 
@@ -27,8 +28,21 @@ export async function action(args: ActionFunctionArgs) {
   const returnRes = await returnIfRestricted(args, '/report-comment', 'contribute');
   if (returnRes) return returnRes;
 
-  if (isModOrAdmin(user)) {
-    const err = await deleteComment(args.context.cloudflare.env.DB, Number(commentId));
+  const commentRes = await getSimpleComment(args.context.cloudflare.env.DB, commentId);
+  if (commentRes.err) {
+    return processApiError('Error in /report-comment', commentRes.err, {
+      commentId: commentId,
+      userId: user.userId,
+    });
+  }
+  if (commentRes.notFound) {
+    return create400Json('Comment not found');
+  }
+
+  const isCommentOwner = commentRes.result.userId === user.userId;
+
+  if (isModOrAdmin(user) || isCommentOwner) {
+    const err = await deleteComment(args.context.cloudflare.env.DB, commentId);
     if (err)
       return processApiError('Error in /report-comment, mod hiding', err, {
         commentId: Number(commentId),
@@ -38,14 +52,10 @@ export async function action(args: ActionFunctionArgs) {
     return createSuccessJson();
   }
 
-  const err = await reportComment(
-    args.context.cloudflare.env.DB,
-    user.userId,
-    Number(commentId)
-  );
+  const err = await reportComment(args.context.cloudflare.env.DB, user.userId, commentId);
   if (err)
     return processApiError('Error in /report-comment', err, {
-      commentId: Number(commentId),
+      commentId,
       userId: user.userId,
     });
 

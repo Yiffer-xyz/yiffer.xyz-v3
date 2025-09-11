@@ -129,8 +129,8 @@ export default function LiveComic({
             />
 
             {comic.comments.length > 0 && (
-              <>
-                <h4 className="mt-10">{comic.comments.length} comments</h4>
+              <div className="mt-6 flex flex-col gap-2">
+                <h4 className="mt-10 -mb-2">{comic.comments.length} comments</h4>
                 {isShowingComments ? (
                   comic.comments.map(comment => (
                     <SingleComment
@@ -149,7 +149,7 @@ export default function LiveComic({
                     className="mt-1"
                   />
                 )}
-              </>
+              </div>
             )}
           </>
         )}

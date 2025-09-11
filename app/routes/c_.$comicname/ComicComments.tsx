@@ -14,15 +14,18 @@ export default function ComicComments({
   isLoggedIn,
   className,
   isAdminPanel,
+  userId,
 }: {
   comic: Comic;
   pagesPath: string;
   isLoggedIn: boolean;
   className?: string;
   isAdminPanel?: boolean;
+  userId: number | undefined;
 }) {
   const [newComment, setNewComment] = useState('');
   const [showLowScoreComments, setShowLowScoreComments] = useState(false);
+  const [shouldDisableOtherActions, setShouldDisableOtherActions] = useState(false);
 
   const hiddenComments = comic.comments.filter(
     comment => comment.score && comment.score < COMMENT_HIDE_THRESHOLD
@@ -54,6 +57,9 @@ export default function ComicComments({
               isAdminPanel={isAdminPanel}
               showLowScoreComments={showLowScoreComments}
               isLoggedIn={isLoggedIn}
+              currentUserId={userId}
+              shouldDisableOtherActions={shouldDisableOtherActions}
+              onShouldDisableOtherActions={setShouldDisableOtherActions}
             />
           ))}
         </div>
@@ -83,6 +89,7 @@ export default function ComicComments({
             label="Add a comment"
             className="mt-2 text-sm"
             rows={3}
+            disabled={shouldDisableOtherActions}
             helperText={
               newComment.length ? `${newComment.length} / ${MAX_COMMENT_LENGTH}` : ''
             }
@@ -105,7 +112,11 @@ export default function ComicComments({
 
           <LoadingButton
             text="Submit comment"
-            disabled={newComment.length === 0 || newComment.length > MAX_COMMENT_LENGTH}
+            disabled={
+              newComment.length === 0 ||
+              newComment.length > MAX_COMMENT_LENGTH ||
+              shouldDisableOtherActions
+            }
             disableElevation={
               newComment.length === 0 || newComment.length > MAX_COMMENT_LENGTH
             }

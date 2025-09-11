@@ -390,8 +390,8 @@ export default function ManageSingleUser() {
           )}
 
           {user.comments && user.comments.length > 0 && (
-            <div className="mt-6">
-              <h3>{user.comments.length} comic comments</h3>
+            <div className="mt-6 flex flex-col gap-2">
+              <h3 className="-mb-2">{user.comments.length} comic comments</h3>
               {isShowingComments ? (
                 user.comments.map(comment => (
                   <SingleComment

@@ -42,6 +42,7 @@ export default function ComicPage() {
     adsPath,
     isMod,
     notFoundSimilarComicNames,
+    userId,
   } = useLoaderData<LoaderData>();
 
   const toTopButtonRef = useRef<HTMLButtonElement>(null);
@@ -194,6 +195,7 @@ export default function ComicPage() {
             pagesPath={pagesPath}
             isLoggedIn={isLoggedIn}
             className="mt-4 md:mt-2 mb-8"
+            userId={userId}
           />
         </>
       )}
@@ -211,6 +213,7 @@ type LoaderData = {
   queriedComicName: string;
   isMod: boolean;
   notFoundSimilarComicNames: string[];
+  userId: number | undefined;
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -231,6 +234,7 @@ export async function loader(args: LoaderFunctionArgs) {
     queriedComicName: comicName,
     isMod: user?.userType === 'admin' || user?.userType === 'moderator',
     notFoundSimilarComicNames: [],
+    userId: user?.userId,
   };
 
   const adPromise = shouldShowAdsForUser(user)
