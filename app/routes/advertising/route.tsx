@@ -56,7 +56,7 @@ export default function Advertising() {
 
       <div className="mt-6 flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-6">
         <div className="p-4 rounded-lg bg-white dark:bg-gray-300 flex flex-col gap-1 h-fit shadow-lg md:shadow-xl">
-          <h2 className="text-lg font-bold text-theme2-darker2 dark:text-theme2-dark">
+          <h2 className="text-lg! font-bold text-theme2-darker2 dark:text-theme2-dark">
             Advertsing for furry+adjacent creators
           </h2>
           <p>
@@ -67,7 +67,7 @@ export default function Advertising() {
           </p>
         </div>
         <div className="p-4 rounded-lg bg-white dark:bg-gray-300 flex flex-col gap-1 h-fit shadow-lg md:shadow-xl">
-          <h2 className="text-lg font-bold text-theme2-darker2 dark:text-theme2-dark">
+          <h2 className="text-lg! font-bold text-theme2-darker2 dark:text-theme2-dark">
             40,000+ daily visitors
           </h2>
           <p>
@@ -78,7 +78,7 @@ export default function Advertising() {
           </p>
         </div>
         <div className="p-4 rounded-lg bg-white dark:bg-gray-300 flex flex-col gap-1 h-fit shadow-lg md:shadow-xl">
-          <h2 className="text-lg font-bold text-theme2-darker2 dark:text-theme2-dark">
+          <h2 className="text-lg! font-bold text-theme2-darker2 dark:text-theme2-dark">
             Not blocked by adblockers
           </h2>
           <p>
@@ -87,7 +87,7 @@ export default function Advertising() {
           </p>
         </div>
         <div className="p-4 rounded-lg bg-white dark:bg-gray-300 flex flex-col gap-1 h-fit shadow-lg md:shadow-xl">
-          <h2 className="text-lg font-bold text-theme2-darker2 dark:text-theme2-dark">
+          <h2 className="text-lg! font-bold text-theme2-darker2 dark:text-theme2-dark">
             FREE trial for creators!
           </h2>
           <p>
