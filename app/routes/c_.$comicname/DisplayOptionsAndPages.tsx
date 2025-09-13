@@ -138,30 +138,31 @@ export default function DisplayOptionsAndPages({
 
   function onPageClick(pageNumber: number) {
     if (!currentClickToToggleDisplay) return;
+    const pageIndex = pageNumber - 1;
 
     let newIndex = (pageDisplays.indexOf(currentDisplay) + 1) % pageDisplays.length;
-    if (individualPageStyles[pageNumber] !== undefined) {
-      newIndex = (individualPageStyles[pageNumber]! + 1) % pageDisplays.length;
+    if (individualPageStyles[pageIndex] !== undefined) {
+      newIndex = (individualPageStyles[pageIndex]! + 1) % pageDisplays.length;
     }
 
     posthog.capture('Page clicked, cycle display');
 
-    individualPageStyles[pageNumber] = newIndex;
+    individualPageStyles[pageIndex] = newIndex;
     setIndividualPageStyles([...individualPageStyles]);
 
-    individualPageStylesShowLabels[pageNumber] = newIndex;
+    individualPageStylesShowLabels[pageIndex] = newIndex;
     if (labelUpdateTimeoutRef.current !== null) {
       clearTimeout(labelUpdateTimeoutRef.current.timer);
-      if (labelUpdateTimeoutRef.current.pageNum !== pageNumber) {
+      if (labelUpdateTimeoutRef.current.pageNum !== pageIndex) {
         individualPageStylesShowLabels[labelUpdateTimeoutRef.current.pageNum] = undefined;
       }
     }
     labelUpdateTimeoutRef.current = {
       timer: setTimeout(() => {
-        individualPageStylesShowLabels[pageNumber] = undefined;
+        individualPageStylesShowLabels[pageIndex] = undefined;
         setIndividualPageStylesShowLabels([...individualPageStylesShowLabels]);
       }, 500),
-      pageNum: pageNumber,
+      pageNum: pageIndex,
     };
 
     setIndividualPageStylesShowLabels([...individualPageStylesShowLabels]);
