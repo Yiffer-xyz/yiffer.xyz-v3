@@ -15,7 +15,7 @@ export const ADS_PER_PAGE = 6; // Will be either this (rare) or this-1 (usually)
 
 export const defaultTitle = { title: 'Yiffer.xyz' };
 
-export const DB_ANALYTICS_SAMPLE_RATE = 0.005;
+export const DB_ANALYTICS_SAMPLE_RATE = 0.1;
 
 export const MAX_USER_BIO_LENGTH = 300;
 export const PROFILE_PIC_SIZE = 400;
