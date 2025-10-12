@@ -7,10 +7,10 @@ import Textarea from '../Textarea/Textarea';
 import { MAX_USER_BIO_LENGTH } from '~/types/constants';
 import useWindowSize from '~/utils/useWindowSize';
 import countryList from 'react-select-country-list';
-import SearchableSelect from '../SearchableSelect/SearchableSelect';
+import SearchableSelect from '../SearchableSelect';
 import LoadingButton from '../Buttons/LoadingButton';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import SocialsEditor from '../SocialsEditor/SocialsEditor';
+import SocialsEditor from '../SocialsEditor';
 import TopGradientBox from '../TopGradientBox';
 
 export default function PublicProfileEdit({
@@ -37,7 +37,7 @@ export default function PublicProfileEdit({
 
   const editFetcher = useGoodFetcher({
     url: `/api/edit-public-profile`,
-    method: 'post',
+    method: 'POST',
     toastError: true,
     onFinish: () => {
       onFinish();

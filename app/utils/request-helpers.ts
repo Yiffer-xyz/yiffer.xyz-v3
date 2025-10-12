@@ -1,4 +1,3 @@
-import type { TypedResponse } from '@remix-run/cloudflare';
 import {
   queryDbExec,
   type DBResponse,
@@ -166,7 +165,7 @@ export function wrapApiError(
 // routes where we don't want the user to lose all their "work" if something fails.
 // Eg. comic upload, mod applications form, and other places where they've spent
 // time filling out a form and don't want to just lose all their work.
-export function create500Json(message?: string): TypedResponse<ApiResponse> {
+export function create500Json(message?: string): Response {
   return Response.json(
     {
       error:
@@ -180,7 +179,7 @@ export function create500Json(message?: string): TypedResponse<ApiResponse> {
 
 // Use when the user has made an error, meaning it's not a server error. Message
 // should typically always be shown in an infobox.
-export function create400Json(message: string): TypedResponse<ApiResponse> {
+export function create400Json(message: string): Response {
   return Response.json(
     {
       error: message,
@@ -191,10 +190,7 @@ export function create400Json(message: string): TypedResponse<ApiResponse> {
 }
 
 // Same as create400Json, but with any status code. For example, 401 for failed auth.
-export function createAnyErrorCodeJson(
-  code: number,
-  message: string
-): TypedResponse<ApiResponse> {
+export function createAnyErrorCodeJson(code: number, message: string): Response {
   return Response.json(
     {
       error: message,
@@ -222,37 +218,37 @@ export async function noGetRoute() {
   return new Response('Cannot GET this route', { status: 405 });
 }
 
-const isDev = process.env.NODE_ENV === 'development';
+// TODO: how to process.env
+// const isDev = process.env.NODE_ENV === 'development';
 
 export async function logErrorExternally(logError: ExternalLogError, db?: D1Database) {
-  if (isDev) return;
-  if (
-    errMessagePatternsToIgnore.some(pattern =>
-      logError.error.logMessage.includes(pattern)
-    )
-  ) {
-    return;
-  }
-
-  if (db) {
-    await queryDbExec(db, 'INSERT INTO basiclog (message) VALUES (?)', [
-      JSON.stringify(logError),
-    ]);
-  }
-
-  try {
-    console.log('Logging error...');
-    await fetch('https://images-srv.yiffer.xyz/error-log', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logError),
-    });
-    console.log('Error logged');
-  } catch (e) {
-    console.log('Error logging error', e);
-  }
+  // TODO:
+  // if (isDev) return;
+  // if (
+  //   errMessagePatternsToIgnore.some(pattern =>
+  //     logError.error.logMessage.includes(pattern)
+  //   )
+  // ) {
+  //   return;
+  // }
+  // if (db) {
+  //   await queryDbExec(db, 'INSERT INTO basiclog (message) VALUES (?)', [
+  //     JSON.stringify(logError),
+  //   ]);
+  // }
+  // try {
+  //   console.log('Logging error...');
+  //   await fetch('https://images-srv.yiffer.xyz/error-log', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //     body: JSON.stringify(logError),
+  //   });
+  //   console.log('Error logged');
+  // } catch (e) {
+  //   console.log('Error logging error', e);
+  // }
 }
 
 const errMessagePatternsToIgnore = [

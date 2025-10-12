@@ -26,5 +26,5 @@ export default function useResizeObserver<T extends HTMLElement>(): [
     };
   }, []);
 
-  return [elementRef, size];
+  return [elementRef as React.RefObject<T>, size];
 }

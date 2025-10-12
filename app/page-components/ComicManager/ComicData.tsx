@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import CheckboxUncontrolled from '~/ui-components/Checkbox/CheckboxUncontrolled';
-import SearchableSelect from '~/ui-components/SearchableSelect/SearchableSelect';
+import SearchableSelect from '~/ui-components/SearchableSelect';
 import Select from '~/ui-components/Select/Select';
 import type { ArtistTiny, Comic, ComicTiny } from '~/types/types';
-import type { NewComicData } from '~/routes/contribute_.upload/route';
+import type { NewComicData } from '~/types/types';
 import ComicNameEditor from './ComicNameEditor';
 import Step2NewArtist from './ArtistEditor';
 import Link from '~/ui-components/Link';

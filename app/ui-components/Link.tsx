@@ -1,4 +1,4 @@
-import { Link as RemixLink } from '@remix-run/react';
+import { Link as RemixLink } from 'react-router';
 import { RiArrowRightLine } from 'react-icons/ri';
 
 type LinkProps = {

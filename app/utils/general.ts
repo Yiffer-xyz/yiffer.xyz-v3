@@ -1,7 +1,7 @@
-import { useLocation } from '@remix-run/react';
+import { useLocation } from 'react-router';
 import { useMemo } from 'react';
-import type { EditAdFormData } from '~/routes/api.edit-ad';
-import type { SubmitAdFormData } from '~/routes/api.submit-ad';
+import type { EditAdFormData } from '~/routes/api/edit-ad';
+import type { SubmitAdFormData } from '~/routes/api/submit-ad';
 import {
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
   CARD_AD_SECONDARY_TEXT_MAX_LENGTH,
@@ -175,6 +175,7 @@ export function debounce<F extends (...args: any[]) => any>(
   func: F,
   wait: number
 ): (...args: Parameters<F>) => void {
+  // @ts-ignore
   let timeoutId: NodeJS.Timeout | null = null;
 
   return (...args: Parameters<F>) => {

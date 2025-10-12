@@ -1,6 +1,6 @@
 import InfoBox from '~/ui-components/InfoBox';
-import type { ErrorResponse } from '@remix-run/react';
-import { isRouteErrorResponse, useRouteError } from '@remix-run/react';
+import type { ErrorResponse } from 'react-router';
+import { isRouteErrorResponse, useRouteError } from 'react-router';
 import Link from '~/ui-components/Link';
 import { useGoodFetcher } from './useGoodFetcher';
 import { useEffect } from 'react';
@@ -40,7 +40,7 @@ function CatchBoundary({ error }: { error: ErrorResponse }) {
 function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }) {
   const clientErrLogFetcher = useGoodFetcher({
     url: '/api/log-client-error',
-    method: 'post',
+    method: 'POST',
     toastError: false,
   });
   const errors: string[] = [];

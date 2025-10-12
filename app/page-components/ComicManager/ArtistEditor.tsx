@@ -3,13 +3,12 @@ import { MdOpenInNew } from 'react-icons/md';
 import Checkbox from '~/ui-components/Checkbox/Checkbox';
 import InfoBox from '~/ui-components/InfoBox';
 import TextInput from '~/ui-components/TextInput/TextInput';
-import type { SimilarArtistResponse } from '~/routes/api.search-similar-artist';
-import type { Artist } from '~/types/types';
+import type { SimilarArtistResponse } from '~/routes/api/search-similar-artist';
+import type { Artist, NewArtist } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { NewArtist } from '~/routes/contribute_.upload/route';
 import e621Pic from '~/assets/misc/e621-instruction.png';
 import Link from '~/ui-components/Link';
-import LinksEditor from '~/ui-components/LinksEditor/LinksEditor';
+import LinksEditor from '~/ui-components/LinksEditor';
 
 type ArtistEditorProps = {
   newArtistData: NewArtist;
@@ -28,7 +27,7 @@ export default function ArtistEditor({
 }: ArtistEditorProps) {
   const similarArtistsFetcher = useGoodFetcher<SimilarArtistResponse>({
     url: '/api/search-similar-artist',
-    method: 'post',
+    method: 'POST',
     onFinish: () => {
       setSimilarArtists(similarArtistsFetcher.data);
     },
@@ -37,6 +36,7 @@ export default function ArtistEditor({
   const [similarArtists, setSimilarArtists] = useState<SimilarArtistResponse>();
   const [hasConfirmedNewArtist, setHasConfirmedNewArtist] = useState(false);
   const [noLinks, setNoLinks] = useState(false);
+  // @ts-ignore
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   function updateArtist(newArtist: NewArtist) {

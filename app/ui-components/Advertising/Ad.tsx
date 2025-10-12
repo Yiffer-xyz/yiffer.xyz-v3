@@ -1,4 +1,4 @@
-import { type HTMLAttributes } from 'react';
+import { useRef, useState, type HTMLAttributes } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
 import type { AdForViewing } from '~/types/types';
 import { randomString } from '~/utils/general';
@@ -22,10 +22,11 @@ export default function Ad({
   className,
 }: Props) {
   const fullAd = ADVERTISEMENTS.find(fullAd => fullAd.name === ad.adType);
+  const queryStr = useRef(bypassCache ? `?q=${randomString(3)}` : '');
 
   const logClickFetcher = useGoodFetcher({
     url: '/api/log-click',
-    method: 'post',
+    method: 'POST',
   });
 
   if (!fullAd) return null;
@@ -36,7 +37,6 @@ export default function Ad({
   }
 
   let { width, height } = fullAd.minDimensions;
-  const queryStr = bypassCache ? `?q=${randomString(3)}` : '';
 
   if (overrideWidth) {
     const aspectRatio = width / height;

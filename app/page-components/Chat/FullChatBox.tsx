@@ -5,7 +5,7 @@ import {
   Link as RemixLink,
   useParams,
   useRevalidator,
-} from '@remix-run/react';
+} from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { GoDotFill } from 'react-icons/go';
@@ -13,7 +13,7 @@ import { RiCheckDoubleLine } from 'react-icons/ri';
 import type { Chat, UserSession } from '~/types/types';
 import Button from '~/ui-components/Buttons/Button';
 import IconButton from '~/ui-components/Buttons/IconButton';
-import ProfilePicture from '~/ui-components/ProfilePicture/ProfilePicture';
+import ProfilePicture from '../ProfilePicture';
 import TopGradientBox from '~/ui-components/TopGradientBox';
 import { getTimeAgoShort } from '~/utils/date-utils';
 import useWindowSize from '~/utils/useWindowSize';

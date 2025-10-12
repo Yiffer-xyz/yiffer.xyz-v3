@@ -4,7 +4,7 @@ import InfoBox from '~/ui-components/InfoBox';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import type { Comic } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { SimilarComicResponse } from '~/routes/api.search-similarly-named-comic';
+import type { SimilarComicResponse } from '~/route-funcs/get-similarly-named-comic';
 
 type ComicNameEditor = {
   comicName: string;
@@ -21,13 +21,14 @@ export default function ComicNameEditor({
 }: ComicNameEditor) {
   const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
     url: '/api/search-similarly-named-comic',
-    method: 'post',
+    method: 'POST',
     onFinish: () => {
       setSimilarComics(similarComicsFetcher.data);
     },
   });
   const [similarComics, setSimilarComics] = useState<SimilarComicResponse>();
   const [hasConfirmedNewComic, setHasConfirmedNewComic] = useState(false);
+  // @ts-ignore
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

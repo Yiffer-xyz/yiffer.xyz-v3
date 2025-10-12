@@ -1,4 +1,4 @@
-import { Link as RemixLink, useNavigation } from '@remix-run/react';
+import { Link as RouterLink, useNavigation } from 'react-router';
 import { useEffect, useState, useRef } from 'react';
 import { FaBell, FaRegBell } from 'react-icons/fa';
 import { GoDotFill } from 'react-icons/go';
@@ -31,18 +31,18 @@ export default function UserNotifications({
     hasNextPage: boolean;
   }>({
     url: `/api/get-notifications?page=${page}`,
-    method: 'get',
+    method: 'GET',
     fetchGetOnLoad: isLoggedIn,
   });
 
   const markAllReadFetcher = useGoodFetcher({
     url: '/api/mark-all-notifications-read',
-    method: 'post',
+    method: 'POST',
   });
 
   const markSingleNotifReadFetcher = useGoodFetcher({
     url: '/api/mark-single-notification-read',
-    method: 'post',
+    method: 'POST',
   });
 
   function onMarkNotifRead(notifId: number) {
@@ -211,7 +211,7 @@ function NotificationItem({
   }
 
   return (
-    <RemixLink
+    <RouterLink
       to={url}
       key={notif.id}
       className={`
@@ -252,6 +252,6 @@ function NotificationItem({
       >
         <MdCheck className="dark:text-blue-strong-300 text-blue-weak-200 text-sm" />
       </button>
-    </RemixLink>
+    </RouterLink>
   );
 }

@@ -1,4 +1,4 @@
-import { useFetcher } from '@remix-run/react';
+import { useFetcher } from 'react-router';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   createContext,
@@ -61,7 +61,7 @@ export function UIPrefProvider({ specifiedUIPref, children }: UIPrefProviderProp
 
     persistUIPrefRef.current.submit(
       { uiPref: JSON.stringify(uiPref) },
-      { action: 'api/set-theme', method: 'post' }
+      { action: 'api/set-theme', method: 'POST' }
     );
   }, [uiPref]);
 
