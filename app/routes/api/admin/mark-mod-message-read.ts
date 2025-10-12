@@ -1,0 +1,49 @@
+import type { Route } from './+types/mark-mod-message-read';
+import { queryDbExec } from '~/utils/database-facade';
+import { redirectIfNotMod } from '~/utils/loaders';
+import { noGetRoute } from '~/utils/request-helpers';
+import {
+  create400Json,
+  createSuccessJson,
+  makeDbErr,
+  processApiError,
+} from '~/utils/request-helpers';
+import { validateFormDataNumber } from '~/utils/string-utils';
+
+export { noGetRoute as loader };
+
+export type TagChanges = {
+  comicId: number;
+  newTagIDs: number[];
+  removedTagIDs: number[];
+};
+
+export async function action(args: Route.ActionArgs) {
+  const user = await redirectIfNotMod(args);
+
+  const formData = await args.request.formData();
+  const messageId = validateFormDataNumber(formData, 'messageId');
+  if (!messageId) {
+    return create400Json('Invalid message ID');
+  }
+
+  const query =
+    'INSERT OR IGNORE INTO modmessagereadreceipt (userId, messageId) VALUES (?, ?)';
+  const params = [user.userId, Number(messageId)];
+
+  const res = await queryDbExec(
+    args.context.cloudflare.env.DB,
+    query,
+    params,
+    'Mark mod message read'
+  );
+
+  if (res.isError) {
+    return processApiError(
+      'Error in /mark-mod-message-read',
+      makeDbErr(res, 'Error marking mod message read')
+    );
+  }
+
+  return createSuccessJson();
+}

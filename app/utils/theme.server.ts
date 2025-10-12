@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from '@remix-run/cloudflare';
+import { createCookieSessionStorage } from 'react-router';
 import type { UIPreferences } from '~/types/types';
 import { parseUIPreferences } from './theme-provider';
 

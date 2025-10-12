@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { CONTRIBUTION_POINTS } from '~/types/contributions';
-import ShowHideBox from './ShowHideBox/ShowHideBox';
+import ShowHideBox from './ShowHideBox';
 
 export default function ContributionPointInfo() {
   return (

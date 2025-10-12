@@ -1,5 +1,5 @@
 import Link from './Link';
-import ShowHideBox from './ShowHideBox/ShowHideBox';
+import ShowHideBox from './ShowHideBox';
 
 export default function BetaBox() {
   return (

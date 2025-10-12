@@ -1,5 +1,6 @@
 declare global {
   interface Window {
+    shouldCaptureUser: boolean;
     gtag: (
       option: string,
       gaTrackingId: string,

@@ -4,7 +4,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import type { Chat, ChatMessage } from '~/types/types';
 import IconButton from '~/ui-components/Buttons/IconButton';
 import LoadingButton from '~/ui-components/Buttons/LoadingButton';
-import ProfilePicture from '~/ui-components/ProfilePicture/ProfilePicture';
+import ProfilePicture from '~/ui-components/ProfilePicture';
 import Username from '~/ui-components/Username';
 import { getTimeAgoShort } from '~/utils/date-utils';
 
@@ -34,9 +34,9 @@ export default function ScrollingChat({
   const mainUser = chat.members.find(member => member.id === rightUserId);
   const otherUser = chat.members.find(member => member.id !== rightUserId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const prevTokenRef = useRef<string>();
-  const prevLastMessageIdRef = useRef<number>();
-  const prevTopMessageIdRef = useRef<number>();
+  const prevTokenRef = useRef<string>(undefined);
+  const prevLastMessageIdRef = useRef<number>(undefined);
+  const prevTopMessageIdRef = useRef<number>(undefined);
   const shouldScrollOnMoreMessagesRef = useRef<boolean>(false);
 
   function onLoadMoreMessages() {

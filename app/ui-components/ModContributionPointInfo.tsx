@@ -1,4 +1,4 @@
-import ShowHideBox from './ShowHideBox/ShowHideBox';
+import ShowHideBox from './ShowHideBox';
 
 export default function ModContributionPointInfo() {
   return (

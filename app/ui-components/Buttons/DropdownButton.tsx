@@ -23,6 +23,7 @@ export default function DropdownButton({
   const [areChildrenWider, setAreChildrenWider] = useState(false);
   const itemsContainerRef = useRef<HTMLDivElement>(null);
   const mainButtonRef = useRef<HTMLButtonElement>(null);
+  // @ts-ignore
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {

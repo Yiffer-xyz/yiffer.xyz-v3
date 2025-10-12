@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import FileInput from '../FileInput';
 import type { ImageFileOrUrl } from '~/utils/general';
 import { getFileExtension, getFileWithBase64 } from '~/utils/general';
-import ThumbnailCropper from '~/page-components/ThumbnailCropper/ThumbnailCropper';
+import ThumbnailCropper from '~/ui-components/ThumbnailCropper';
 import { PROFILE_PIC_SIZE } from '~/types/constants';
 import { showErrorToast, useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useUIPreferences } from '~/utils/theme-provider';
@@ -30,7 +30,7 @@ export default function PublicProfilePhotoEditor({
 
   const updateProfilePicFetcher = useGoodFetcher({
     url: '/api/update-profile-photo',
-    method: 'post',
+    method: 'POST',
     toastError: true,
     onFinish: () => {
       setIsSubmitting(false);
@@ -40,7 +40,7 @@ export default function PublicProfilePhotoEditor({
 
   const removeProfilePicFetcher = useGoodFetcher({
     url: '/api/remove-profile-photo',
-    method: 'post',
+    method: 'POST',
     toastError: true,
     onFinish: () => {
       setIsSubmitting(false);

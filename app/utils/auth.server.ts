@@ -1,4 +1,4 @@
-import { redirect } from '@remix-run/cloudflare';
+import { redirect } from 'react-router';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 import type { JwtConfig, UserSession } from '~/types/types';
 import type { QueryWithParams } from './database-facade';

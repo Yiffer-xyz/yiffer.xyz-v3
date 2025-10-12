@@ -1,3 +1,83 @@
+# Welcome to React Router!
+
+A modern, production-ready template for building full-stack React applications using React Router.
+
+## Features
+
+- 🚀 Server-side rendering
+- ⚡️ Hot Module Replacement (HMR)
+- 📦 Asset bundling and optimization
+- 🔄 Data loading and mutations
+- 🔒 TypeScript by default
+- 🎉 TailwindCSS for styling
+- 📖 [React Router docs](https://reactrouter.com/)
+
+## Getting Started
+
+### Installation
+
+Install the dependencies:
+
+```bash
+npm install
+```
+
+### Development
+
+Start the development server with HMR:
+
+```bash
+npm run dev
+```
+
+Your application will be available at `http://localhost:5173`.
+
+## Previewing the Production Build
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Building for Production
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+## Deployment
+
+Deployment is done using the Wrangler CLI.
+
+To build and deploy directly to production:
+
+```sh
+npm run deploy
+```
+
+To deploy a preview URL:
+
+```sh
+npx wrangler versions upload
+```
+
+You can then promote a version to production after verification or roll it out progressively.
+
+```sh
+npx wrangler versions deploy
+```
+
+## Styling
+
+This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+
+---
+
+Built with ❤️ using React Router.
+
 ## Architecture
 
 This is a Remix app, running on Cloudflare Pages. It's serverless and server-side rendered. Additional components:
@@ -10,6 +90,7 @@ This is a Remix app, running on Cloudflare Pages. It's serverless and server-sid
 - A cloudflare worker for running crons (in the `workers` folder)
 
 There's also a small "normal" node+express server running on a VM in Vultr, which you'll need to run alongside this project when developing locally. The repo for this is [yiffer.xyz-v3-imageserver](https://github.com/Yiffer-xyz/yiffer.xyz-v3-imageserver). This is used for:
+
 - Processing images - Sharp is not available on the Cloudflare VMs. Comic pages, thumbnails, profile pics, and ads.
 - In local development, used to store and serve images, from `data` folder. Uploads through the locally run UI will end up here. Local dev renames/deletes/etc will also target files in this folder, instead of in R2, which is the prod case.
 
@@ -32,6 +113,7 @@ All pushes will generate a preview build on Cloudflare. You can access these in 
 ## Coding
 
 ### Random tips/info
+
 - Of course, prettier and eslint are used. I recommend a lint-on-save rule.
 - Since everything is SSR'd, make sure to avoid hydration mismatches (will show up in the browser console). Prefer using tailwind classes to show/hide things rather than show/hiding them via js.
 - Console.logs from loaders and actions (aka server-side code) show up in the cli you're running the dev command from - not in the browser console.
@@ -59,6 +141,7 @@ To make logging and tracing errors as easy as possible, and to force us to catch
 When wrapping errors and adding messages, they'll appear in the final log in the format `outer message >> inner message >> (db message if the original error was a db one)` - with zero to any number of inner messages/levels. This makes tracing errors very pleasant.
 
 ### Error boundaries, catching, logging
+
 There are no easy solutions for catching server logs in Cloudflare Pages. Therefore, we try to secure all routes by enforcing the return of error objects in all paths. These errors are processed in `utils/request-helpers.ts`. Here, they're shipped off to an error logging service - currently the multi-purpose images server (the non-edge VM). The sending of the error over there is awaited, because otherwise the edge instance shuts down before properly sending it. Additionally, we throw a limited version of the error to be caught by the error boundary in `app/utils/error.tsx`.
 
 We have one root error boundary in `root.tsx`. This is a last resort, as it will not have theming/session data. Ideally, put the same error boundary in all top level routes. The line `export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';` does exactly this.

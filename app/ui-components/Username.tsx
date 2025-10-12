@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Link from './Link';
-import { Link as RemixLink } from '@remix-run/react';
+import { Link as RouterLink } from 'react-router';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { isModOrAdmin, type PublicUser } from '~/types/types';
 import { R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
@@ -37,7 +37,7 @@ export default function Username({
 
   const fetcher = useGoodFetcher<PublicUser>({
     url: `/api/users/${id}`,
-    method: 'get',
+    method: 'GET',
   });
 
   function onHover() {
@@ -77,7 +77,7 @@ export default function Username({
         className={'hidden md:inline ' + textClassName}
       />
       {isHovering && (
-        <RemixLink
+        <RouterLink
           to={`/user/${username}`}
           className={`flex absolute bg-white hover:bg-blue-strong-900 dark:bg-gray-100 dark:hover:bg-[#1a1b20]
                       rounded-md py-2 px-2.5 ${positionVertical === 'top' ? 'bottom-full' : 'top-full'} 
@@ -126,7 +126,7 @@ export default function Username({
               size={20}
             />
           )}
-        </RemixLink>
+        </RouterLink>
       )}
     </span>
   );

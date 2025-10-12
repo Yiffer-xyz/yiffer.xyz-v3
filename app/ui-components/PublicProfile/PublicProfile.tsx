@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
 import { FaUser } from 'react-icons/fa';
 import { isModOrAdmin, type PublicUser } from '~/types/types';
 import { MdBlock, MdCameraAlt, MdEdit, MdMessage } from 'react-icons/md';
@@ -6,11 +6,11 @@ import { getSocialUrl, R2_PROFILE_PICTURES_FOLDER } from '~/types/constants';
 import Link from '../Link';
 import PublicProfileBadges from './PublicProfileBadges';
 import { RiShieldFill } from 'react-icons/ri';
-import { useNavigate } from '@remix-run/react';
+import { useNavigate } from 'react-router';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { ListButtonItem } from '../ListButtons/ListButtons';
-import ListButtons from '../ListButtons/ListButtons';
-import { useCallback, useMemo } from 'react';
+import type { ListButtonItem } from '../ListButtons';
+import ListButtons from '../ListButtons';
+import { useCallback, useMemo, useEffect, useState } from 'react';
 
 export default function PublicProfile({
   user,
@@ -37,8 +37,18 @@ export default function PublicProfile({
 
   const blockFetcher = useGoodFetcher({
     url: '/api/block-user',
-    method: 'post',
+    method: 'POST',
   });
+
+  // Client-side date formatting to avoid hydration mismatch
+  const [joinedDate, setJoinedDate] = useState<string>('');
+  const [joinedTimeAgo, setJoinedTimeAgo] = useState<string>('');
+
+  useEffect(() => {
+    // Format dates on client side to avoid hydration mismatch
+    setJoinedDate(format(user.createdTime, 'PP'));
+    setJoinedTimeAgo(formatDistanceToNowStrict(user.createdTime));
+  }, [user.createdTime]);
 
   const hasAnyBadges =
     isModOrAdmin({ userType: user.userType }) || user.patreonDollars || user.nationality;
@@ -170,10 +180,7 @@ export default function PublicProfile({
               <p>{user.contributionPoints} contribution points</p>
             ) : null}
 
-            <p>
-              Joined {format(user.createdTime, 'PP')} (
-              {formatDistanceToNow(user.createdTime)})
-            </p>
+            <p>Joined {joinedDate ? `${joinedDate} (${joinedTimeAgo})` : ''}</p>
           </div>
         </div>
       </div>

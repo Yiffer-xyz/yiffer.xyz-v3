@@ -63,3 +63,11 @@ ul.spaced > li {
 .has-tooltip:hover .tooltip {
   @apply visible z-50;
 }
+
+::selection {
+  background-color: var(--color-blue-trans);
+}
+
+.dark ::selection {
+  background-color: var(--color-theme1-primary-less-trans);
+}

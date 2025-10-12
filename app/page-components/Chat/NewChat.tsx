@@ -1,14 +1,18 @@
-import { useNavigate, useOutletContext, useSearchParams } from '@remix-run/react';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { MAX_MESSAGE_LENGTH } from '~/types/constants';
-import type { UserBlockStatus, Chat, UserSession } from '~/types/types';
+import type {
+  UserBlockStatus,
+  Chat,
+  UserSession,
+  MinimalUserWithAllowMessages,
+} from '~/types/types';
 import IconButton from '~/ui-components/Buttons/IconButton';
-import ProfilePicture from '~/ui-components/ProfilePicture/ProfilePicture';
+import ProfilePicture from '../ProfilePicture';
 import TextInput from '~/ui-components/TextInput/TextInput';
 import Username from '~/ui-components/Username';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
-import type { MinimalUserWithAllowMessages } from '~/routes/api.search-users';
 import { IoSend } from 'react-icons/io5';
 
 export default function NewChat({
@@ -36,6 +40,7 @@ export default function NewChat({
   const [selectedUserData, setSelectedUserData] =
     useState<MinimalUserWithAllowMessages | null>(null);
 
+  // @ts-ignore
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const system = currentUser === null;
@@ -43,7 +48,7 @@ export default function NewChat({
 
   const searchUserFetcher = useGoodFetcher<MinimalUserWithAllowMessages[]>({
     url: '/api/search-users',
-    method: 'post',
+    method: 'POST',
     onFinish: () => {
       // For when landing on the page from link with ?toUserId=xxx
       // Fetcher will fire, and should return one single result.
@@ -60,7 +65,7 @@ export default function NewChat({
 
   const checkBlockStatusFetcher = useGoodFetcher<UserBlockStatus>({
     url: '/api/get-block-status',
-    method: 'post',
+    method: 'POST',
     onFinish: () => {
       if (
         !checkBlockStatusFetcher.isError &&

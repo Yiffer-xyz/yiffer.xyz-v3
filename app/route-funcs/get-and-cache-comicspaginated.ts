@@ -15,12 +15,35 @@ type Args = {
 export async function recalculateComicsPaginated(
   db: D1Database
 ): Promise<ApiError | undefined> {
-  const res = await getAndCacheComicsPaginated({
-    db,
-    pageNum: 1,
-    includeAds: false,
-  });
-  if (res.err) return wrapApiError(res.err, 'Error in recalculateComicsPaginated');
+  const promises = [
+    getAndCacheComicsPaginated({
+      db,
+      pageNum: 1,
+      includeAds: false,
+    }),
+    getAndCacheComicsPaginated({
+      db,
+      pageNum: 2,
+      includeAds: false,
+    }),
+    getAndCacheComicsPaginated({
+      db,
+      pageNum: 3,
+      includeAds: false,
+    }),
+  ];
+
+  const [res1, res2, res3] = await Promise.all(promises);
+
+  if (res1.err) {
+    return wrapApiError(res1.err, 'Error in recalculateComicsPaginated p1');
+  }
+  if (res2.err) {
+    return wrapApiError(res2.err, 'Error in recalculateComicsPaginated p2');
+  }
+  if (res3.err) {
+    return wrapApiError(res3.err, 'Error in recalculateComicsPaginated p3');
+  }
 }
 
 export async function getAndCacheComicsPaginated({

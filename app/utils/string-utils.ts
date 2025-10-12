@@ -172,3 +172,20 @@ export function validateFormDataNumber(
 
   return idNum;
 }
+
+export function formatBigNumber(bigNum: number): string {
+  if (bigNum < 1000) return bigNum.toString();
+
+  const numStr = bigNum.toString();
+  const spaceIndexMod3 = numStr.length % 3;
+  let finalStr = numStr[0];
+
+  for (let i = 1; i < numStr.length; i++) {
+    if (i % 3 === spaceIndexMod3) {
+      finalStr += ' ';
+    }
+    finalStr += numStr[i];
+  }
+
+  return finalStr;
+}

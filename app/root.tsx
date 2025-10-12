@@ -1,48 +1,43 @@
-import { captureRemixErrorBoundaryError, withSentry } from '@sentry/remix';
-import type {
-  LoaderFunctionArgs,
-  LinksFunction,
-  MetaFunction,
-} from '@remix-run/cloudflare';
 import {
-  Link as RemixLink,
+  isRouteErrorResponse,
+  Link as RouterLink,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
   useMatches,
   useNavigation,
-  useRouteError,
-  useLocation,
-} from '@remix-run/react';
-import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
-import clsx from 'clsx';
+  type LinksFunction,
+  type MetaFunction,
+} from 'react-router';
 import toastCss from 'react-toastify/dist/ReactToastify.css?url';
+import type { Route } from './+types/root';
+import './app.css';
+import './main.css';
+import { ToastContainer } from 'react-toastify';
 import { getUIPrefSession } from './utils/theme.server';
+import { getUserSession } from './utils/auth.server';
+import posthog from 'posthog-js';
+import { getUserByField } from './route-funcs/get-user';
+import { processApiError } from './utils/request-helpers';
+import { UIPrefProvider, useUIPreferences } from './utils/theme-provider';
+import type { UserSession } from './types/types';
+import { useEffect, useMemo } from 'react';
+import * as gtag from './utils/gtag.client';
+import { useAuthRedirect } from './utils/general';
+import Link from './ui-components/Link';
 import {
   RiAccountCircleLine,
   RiAddLine,
   RiLoginBoxLine,
   RiSettings3Line,
 } from 'react-icons/ri';
-import { MdLightbulbOutline } from 'react-icons/md';
-import Link from './ui-components/Link';
-import { ToastContainer } from 'react-toastify';
-import type { UserSession } from './types/types';
-import './tailwind.css';
-import './main.css';
-import { getUserSession } from './utils/auth.server';
-import { YifferErrorBoundary } from './utils/error';
-import { useEffect, useMemo } from 'react';
-import posthog from 'posthog-js';
-import * as gtag from './utils/gtag.client';
-import { useAuthRedirect } from './utils/general';
-import { getUserByField } from './route-funcs/get-user';
-import { processApiError } from './utils/request-helpers';
-import UserNotifications from './page-components/UserNotifications';
 import UserMessagesIndicator from './page-components/UserMessagesIndicator';
+import UserNotifications from './page-components/UserNotifications';
+import { MdLightbulbOutline } from 'react-icons/md';
 
 export const links: LinksFunction = () => [
   {
@@ -61,15 +56,13 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: toastCss },
 ];
 
-const isDev = process.env.NODE_ENV === 'development';
-
 export const meta: MetaFunction = () => [
-  { title: `${isDev ? '🚧' : ''}Yiffer.xyz` },
-  { property: 'og:title', content: `${isDev ? '🚧' : ''}Yiffer.xyz` },
+  { title: `Yiffer.xyz` },
+  { property: 'og:title', content: `Yiffer.xyz` },
   { name: 'description', content: 'This Yiffer yoffer yiffer' },
 ];
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const uiPrefSession = await getUIPrefSession(request);
 
   const userSession = await getUserSession(
@@ -78,7 +71,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   );
 
   let isMissingEmail = !!(userSession && !userSession.email);
-
   // Double check by fetching from db, not just the cookie.
   if (isMissingEmail && userSession?.userId) {
     const userRes = await getUserByField({
@@ -107,7 +99,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   return data;
 }
 
-function AppWithProviders() {
+export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>();
 
   return (
@@ -117,9 +109,7 @@ function AppWithProviders() {
   );
 }
 
-export default withSentry(AppWithProviders);
-
-function App() {
+export function App() {
   const { theme } = useUIPreferences();
   const navigation = useNavigation();
   const isLoading = navigation.state !== 'idle';
@@ -133,7 +123,7 @@ function App() {
         userSession={data.user}
       />
 
-      <html lang="en" className={clsx(theme)}>
+      <html lang="en" className={theme}>
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -235,7 +225,7 @@ function Layout({
       >
         <div className="flex items-center justify-between mx-auto grow max-w-full lg:max-w-80p">
           <div className="flex gap-3 sm:gap-5 items-center">
-            <RemixLink
+            <RouterLink
               to="/"
               className={`text-gray-200 hidden lg:block bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
@@ -245,8 +235,8 @@ function Layout({
               }}
             >
               Yiffer.xyz
-            </RemixLink>
-            <RemixLink
+            </RouterLink>
+            <RouterLink
               to="/"
               className={`text-gray-200 block lg:hidden bg-none mr-1 ${darkNavLinkColorStyle}`}
               style={{
@@ -256,7 +246,7 @@ function Layout({
               }}
             >
               Y
-            </RemixLink>
+            </RouterLink>
             <>
               {isLoggedIn && (
                 <Link
@@ -285,13 +275,13 @@ function Layout({
               />
             </>
             {!isLoggedIn && !excludeLogin && (
-              <RemixLink
+              <RouterLink
                 to={`/login${redirectSetOnLoginNavStr}`}
                 className={navLinkStyle}
               >
                 <RiLoginBoxLine className="inline-block" />
                 Log in
-              </RemixLink>
+              </RouterLink>
             )}
           </div>
 
@@ -317,6 +307,61 @@ function Layout({
       {children}
     </>
   );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let message = 'Oops!';
+  let details = 'An unexpected error occurred.';
+  let stack: string | undefined;
+
+  if (isRouteErrorResponse(error)) {
+    message = error.status === 404 ? '404' : 'Error';
+    details =
+      error.status === 404
+        ? 'The requested page could not be found.'
+        : error.statusText || details;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
+  }
+
+  return (
+    <main className="pt-16 p-4 container mx-auto">
+      <h1>{message}</h1>
+      <p>{details}</p>
+      {stack && (
+        <pre className="w-full p-4 overflow-x-auto">
+          <code>{stack}</code>
+        </pre>
+      )}
+    </main>
+  );
+}
+
+function PosthogInit({
+  apiKey,
+  host,
+  userSession,
+}: {
+  apiKey: string;
+  host: string;
+  userSession: UserSession | null;
+}) {
+  useEffect(() => {
+    if (!apiKey || !host) return;
+    posthog.init(apiKey, {
+      api_host: host,
+      person_profiles: 'always',
+      autocapture: false,
+    });
+    if (userSession) {
+      posthog.identify(userSession.userId.toString(), {
+        username: userSession.username,
+      });
+    }
+  }, [apiKey, host, userSession]);
+
+  return null;
 }
 
 export function ForceSetEmail() {
@@ -349,50 +394,4 @@ export function ForceSetEmail() {
       </div>
     </div>
   );
-}
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-  captureRemixErrorBoundaryError(error);
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body className="bg-bg dark:bg-bg-dark text-text-light dark:text-text-dark">
-        <Layout user={null} excludeLogin pagesPath={''}>
-          <YifferErrorBoundary />
-        </Layout>
-      </body>
-    </html>
-  );
-}
-
-function PosthogInit({
-  apiKey,
-  host,
-  userSession,
-}: {
-  apiKey: string;
-  host: string;
-  userSession: UserSession | null;
-}) {
-  useEffect(() => {
-    if (!apiKey || !host) return;
-    posthog.init(apiKey, {
-      api_host: host,
-      person_profiles: 'always',
-      autocapture: false,
-    });
-    if (userSession) {
-      posthog.identify(userSession.userId.toString(), {
-        username: userSession.username,
-      });
-    }
-  }, [apiKey, host, userSession]);
-
-  return null;
 }

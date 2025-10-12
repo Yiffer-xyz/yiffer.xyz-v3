@@ -9,7 +9,6 @@ export type DbComicTiny = {
   name: string;
   id: number;
   publishStatus: ComicPublishStatus;
-  hasHighresThumbnail?: 0 | 1;
   published?: string;
 };
 
@@ -18,19 +17,12 @@ export function getAllComicNamesAndIDsQuery(options?: {
   modifyNameIncludeType?: boolean;
   includeRejectedList?: boolean;
   includeUnlisted?: boolean;
-  includeThumbnailStatus?: boolean;
   tagIDFilter?: number;
 }): QueryWithParams {
   let params: any[] | undefined = undefined;
 
-  const thumbnailQuery = options?.includeThumbnailStatus
-    ? ', hasHighresThumbnail, published'
-    : '';
-
   let query =
-    'SELECT name, id, publishStatus' +
-    thumbnailQuery +
-    ` FROM comic WHERE publishStatus != 'rejected'`;
+    "SELECT name, id, publishStatus FROM comic WHERE publishStatus != 'rejected'";
 
   if (!options?.includeRejectedList) {
     query += ` AND publishStatus != 'rejected-list' `;
@@ -58,8 +50,6 @@ export function mapDBComicTiny(
     name: comic.name,
     id: comic.id,
     publishStatus: comic.publishStatus,
-    temp_published: comic.published ? parseDbDateStr(comic.published) : undefined,
-    temp_hasHighresThumbnail: comic.hasHighresThumbnail === 1,
   }));
 
   if (!modifyNameIncludeType) return mapped;
@@ -72,14 +62,12 @@ export async function getComicNamesAndIDs(
     modifyNameIncludeType?: boolean;
     includeRejectedList?: boolean;
     includeUnlisted?: boolean;
-    includeThumbnailStatus?: boolean;
     tagIDFilter?: number;
   }
 ): ResultOrErrorPromise<ComicTiny[]> {
   const { query, params } = getAllComicNamesAndIDsQuery({
     tagIDFilter: options?.tagIDFilter,
     includeRejectedList: options?.includeRejectedList,
-    includeThumbnailStatus: options?.includeThumbnailStatus,
     includeUnlisted: options?.includeUnlisted,
     modifyNameIncludeType: options?.modifyNameIncludeType,
   });

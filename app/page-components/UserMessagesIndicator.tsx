@@ -1,4 +1,4 @@
-import { Link as RemixLink, useLocation } from '@remix-run/react';
+import { Link as RouterLink, useLocation } from 'react-router';
 import { FaEnvelope, FaRegEnvelope } from 'react-icons/fa';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import { useEffect } from 'react';
@@ -7,7 +7,7 @@ export default function UserMessagesIndicator() {
   const location = useLocation();
   const messagesFetcher = useGoodFetcher<{ hasUnreads: boolean }>({
     url: `/api/get-message-notifications`,
-    method: 'get',
+    method: 'GET',
     fetchGetOnLoad: true,
   });
 
@@ -34,7 +34,7 @@ export default function UserMessagesIndicator() {
     : 'text-gray-200 dark:text-blue-strong-300';
 
   return (
-    <RemixLink to="/me/messages" className="px-2 ">
+    <RouterLink to="/me/messages" className="px-2 ">
       <div
         className={`relative dark:bg-bg-dark text-text-light dark:text-text-dark 
           -mx-2.5 w-[22px] mt-1 pt-0.5 h-[22px] flex items-center justify-center rounded-full ${containerClassName}`}
@@ -45,6 +45,6 @@ export default function UserMessagesIndicator() {
           <FaRegEnvelope size={14} className={iconClassName} />
         )}
       </div>
-    </RemixLink>
+    </RouterLink>
   );
 }

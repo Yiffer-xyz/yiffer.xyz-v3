@@ -120,8 +120,6 @@ export type ComicTiny = {
   id: number;
   name: string;
   publishStatus: ComicPublishStatus;
-  temp_hasHighresThumbnail?: boolean; // TODO: Remove when thumbnails have been fixed
-  temp_published?: Date; // TODO: Remove when thumbnails have been fixed
 };
 
 export type PendingComic = {
@@ -665,4 +663,83 @@ export type UserRestriction = {
   restrictionType: UserRestrictionType;
   startDate: Date;
   endDate: Date;
+};
+
+export type AllowedAnonComicVerdict = 'approved' | 'rejected' | 'rejected-list';
+
+export type ArtistDataChanges = {
+  artistId: number;
+  name?: string;
+  e621Name?: string;
+  patreonName?: string;
+  links?: string[];
+};
+
+export type ComicDataChanges = {
+  comicId: number;
+  name?: string;
+  artistId?: number;
+  tagIds?: number[];
+  category?: string;
+  state?: string;
+  numberOfPages?: number;
+  previousComicId?: number | null;
+  nextComicId?: number | null;
+  updateUpdatedTime?: boolean;
+};
+
+export type ComicProblemSubmission = {
+  comicId: number;
+  problemTitle: string;
+  problemDescription: string;
+};
+
+export type NewArtist = {
+  id?: number;
+  artistName: string;
+  e621Name: string;
+  patreonName: string;
+  links: string[];
+  isValidName?: boolean;
+  hasConfirmedNoE621Name?: boolean;
+  hasConfirmedNoPatreonName?: boolean;
+  areLinksValid?: boolean;
+};
+
+// The submitted payload
+export type UploadBody = {
+  uploadId: string;
+  comicName: string;
+  artistId?: number;
+  newArtist?: NewArtist;
+  category: string;
+  state: string;
+  previousComic?: ComicTiny;
+  nextComic?: ComicTiny;
+  tagIds: number[];
+  numberOfPages: number;
+  source: string;
+  pages?: { pageNumber: number; tempToken: string }[];
+};
+
+// For handling upload data internally in the front-end
+export type NewComicData = {
+  id?: number;
+  name: string;
+  artistId?: number;
+  newArtist: NewArtist;
+  category: string;
+  state: string;
+  previousComic?: ComicTiny;
+  nextComic?: ComicTiny;
+  tags: Tag[];
+  validation: {
+    isLegalComicName: boolean;
+  };
+  files: ImageFileOrUrl[];
+  thumbnail?: ImageFileOrUrl;
+};
+
+export type MinimalUserWithAllowMessages = MinimalUser & {
+  allowMessages: boolean;
 };

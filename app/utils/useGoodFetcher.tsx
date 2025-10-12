@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import type { FormEncType, FormMethod, SubmitOptions } from '@remix-run/react';
-import { useFetcher } from '@remix-run/react';
+import type { FormEncType, FormMethod, SubmitOptions } from 'react-router';
+import { useFetcher } from 'react-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { ApiResponse } from './request-helpers';
@@ -46,7 +46,7 @@ type SubmitTarget =
 // The submit function can be awaited, OR an onFinish callback can be passed in.
 export function useGoodFetcher<T = void>({
   url,
-  method = 'get',
+  method = 'GET',
   onFinish,
   onError,
   toastSuccessMessage,
@@ -129,7 +129,7 @@ export function useGoodFetcher<T = void>({
   // }, [toastSuccessMessage, theme]);
 
   useEffect(() => {
-    if (fetchGetOnLoad && method === 'get') {
+    if (fetchGetOnLoad && method === 'GET') {
       submit();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

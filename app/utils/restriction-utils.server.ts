@@ -3,7 +3,7 @@ import type { UserRestrictionType } from '~/types/types';
 import { create400Json, processApiError } from './request-helpers';
 import { format } from 'date-fns';
 import { isIpBanned } from '~/route-funcs/is-ip-banned';
-import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
 import { authLoader } from './loaders';
 
 // Returns a 400 if user is restricted or IP is banned.
