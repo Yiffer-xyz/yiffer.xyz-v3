@@ -16,7 +16,7 @@ export async function action(args: Route.ActionArgs) {
 
   const formData = await args.request.formData();
   const chatToken = formData.get('chatToken');
-  const page = Number(formData.get('page')) ?? 1;
+  const page = Number(formData.get('page')) || 1;
 
   if (!chatToken || !Number.isInteger(page)) {
     return create400Json('Missing chatToken or page');

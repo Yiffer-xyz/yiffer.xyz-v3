@@ -13,6 +13,7 @@ export default function useDebounce(callback: () => void) {
       ref.current?.();
     };
 
+    // eslint-disable-next-line react-hooks/refs
     return debounce(func, 1000);
   }, []);
 

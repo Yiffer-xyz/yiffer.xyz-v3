@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import type { MetaFunction } from 'react-router';
 import {
   ADVERTISEMENTS,
   CARD_AD_MAIN_TEXT_MAX_LENGTH,
@@ -22,10 +22,6 @@ export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 export const meta: MetaFunction = () => {
   return [{ title: `Advertising | Yiffer.xyz` }];
 };
-
-export async function loader(args: LoaderFunctionArgs) {
-  return {};
-}
 
 export default function Advertising() {
   const [selectedAd, setSelectedAd] = useState<AdvertisementInfo | null>(null);

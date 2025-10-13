@@ -15,7 +15,7 @@ export async function loader(args: Route.LoaderArgs) {
   const user = await redirectIfNotLoggedIn(args);
 
   const url = new URL(args.request.url);
-  const page = Number(url.searchParams.get('page')) ?? 1;
+  const page = Number(url.searchParams.get('page')) || 1;
 
   const query = `SELECT
       comicupdatenotification.id AS id,

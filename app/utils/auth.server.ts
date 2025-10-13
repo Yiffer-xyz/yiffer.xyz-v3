@@ -390,9 +390,9 @@ function cookiesStringToYifferSessionCookie(
 }
 
 export async function logIPAndVerifyNoSignupSpam(
-  db: D1Database,
-  email: string,
-  ip?: string | null
+  _db: D1Database,
+  _email: string,
+  _ip?: string | null
 ): ResultOrErrorPromise<{ isSpam: boolean }> {
   return { result: { isSpam: false } };
 

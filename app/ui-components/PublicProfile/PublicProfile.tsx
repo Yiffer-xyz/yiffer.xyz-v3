@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
+import { format, formatDistanceToNowStrict } from 'date-fns';
 import { FaUser } from 'react-icons/fa';
 import { isModOrAdmin, type PublicUser } from '~/types/types';
 import { MdBlock, MdCameraAlt, MdEdit, MdMessage } from 'react-icons/md';

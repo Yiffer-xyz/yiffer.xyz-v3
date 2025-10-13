@@ -8,7 +8,7 @@ import { authLoader } from '~/utils/loaders';
 import ComicCard from '~/page-components/ComicCard';
 import Breadcrumbs from '~/ui-components/Breadcrumbs';
 import Link from '~/ui-components/Link';
-import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
 import { RiShieldFill } from 'react-icons/ri';
 export { YifferErrorBoundary as ErrorBoundary } from '~/utils/error';
 

@@ -63,7 +63,6 @@ export default function SearchableSelect<T>({
 
   useEffect(() => {
     setCurrentlyHighlightedIndex(-1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
   async function tryComputeWidth() {

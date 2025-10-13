@@ -1,5 +1,4 @@
 import {
-  queryDbExec,
   type DBResponse,
   type ExecDBResponse,
   type QueryWithParams,
@@ -67,13 +66,14 @@ export async function logApiError(
   prependMessage: string | undefined,
   err: ApiError,
   context?: { [key: string]: any },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   db?: D1Database
 ) {
   console.log('🆎 ERROR from logApiError');
   console.error(prependMessage, err, context);
   console.log(JSON.stringify(err, null, 2));
-  const logError = errToExternalLogError(prependMessage, err, context);
-  await logErrorExternally(logError, db);
+  // const logError = errToExternalLogError(prependMessage, err, context);
+  // await logErrorExternally(logError, db);
 }
 
 function errToExternalLogError(
@@ -221,44 +221,14 @@ export async function noGetRoute() {
 // TODO: how to process.env
 // const isDev = process.env.NODE_ENV === 'development';
 
-export async function logErrorExternally(logError: ExternalLogError, db?: D1Database) {
-  // TODO:
-  // if (isDev) return;
-  // if (
-  //   errMessagePatternsToIgnore.some(pattern =>
-  //     logError.error.logMessage.includes(pattern)
-  //   )
-  // ) {
-  //   return;
-  // }
-  // if (db) {
-  //   await queryDbExec(db, 'INSERT INTO basiclog (message) VALUES (?)', [
-  //     JSON.stringify(logError),
-  //   ]);
-  // }
-  // try {
-  //   console.log('Logging error...');
-  //   await fetch('https://images-srv.yiffer.xyz/error-log', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: JSON.stringify(logError),
-  //   });
-  //   console.log('Error logged');
-  // } catch (e) {
-  //   console.log('Error logging error', e);
-  // }
-}
-
-const errMessagePatternsToIgnore = [
-  'NetworkError when attempting to fetch resource',
-  'Failed to fetch',
-  "Cannot read properties of null (reading 'useContext')",
-  '(intermediate value)() is null',
-  "(evaluating 'Be.current.useContext')",
-  'Load failed',
-];
+// const errMessagePatternsToIgnore = [
+//   'NetworkError when attempting to fetch resource',
+//   'Failed to fetch',
+//   "Cannot read properties of null (reading 'useContext')",
+//   '(intermediate value)() is null',
+//   "(evaluating 'Be.current.useContext')",
+//   'Load failed',
+// ];
 
 export function getSourceFromRequest(request: Request): string | null {
   const url = new URL(request.url);

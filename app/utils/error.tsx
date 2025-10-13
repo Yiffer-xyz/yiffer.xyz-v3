@@ -2,7 +2,6 @@ import InfoBox from '~/ui-components/InfoBox';
 import type { ErrorResponse } from 'react-router';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
 import Link from '~/ui-components/Link';
-import { useGoodFetcher } from './useGoodFetcher';
 import { useEffect } from 'react';
 import { THEME1, THEME2 } from '~/types/constants';
 
@@ -38,11 +37,11 @@ function CatchBoundary({ error }: { error: ErrorResponse }) {
 }
 
 function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }) {
-  const clientErrLogFetcher = useGoodFetcher({
-    url: '/api/log-client-error',
-    method: 'POST',
-    toastError: false,
-  });
+  // const clientErrLogFetcher = useGoodFetcher({
+  //   url: '/api/log-client-error',
+  //   method: 'POST',
+  //   toastError: false,
+  // });
   const errors: string[] = [];
 
   for (const errField of ['clientMessage', 'message', 'errorCode', 'sqlErrorShort']) {
@@ -77,10 +76,12 @@ function ErrorBoundaryInner({ error, isAdmin }: { error: any; isAdmin: boolean }
             const formData = new FormData();
             formData.append('url', window.location.toString());
             formData.append('logMessage', errStr);
-            clientErrLogFetcher.submit(formData);
+            // clientErrLogFetcher.submit(formData);
           }
         }
-      } catch (e) {}
+      } catch {
+        //
+      }
     }
   }
 

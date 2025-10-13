@@ -6,7 +6,7 @@ import type { Comic } from '~/types/types';
 import { useGoodFetcher } from '~/utils/useGoodFetcher';
 import type { SimilarComicResponse } from '~/route-funcs/get-similarly-named-comic';
 
-type ComicNameEditor = {
+type ComicNameEditorProps = {
   comicName: string;
   setIsLegalComicnameState: (isLegal: boolean) => void;
   onUpdate: (newData: string) => void;
@@ -18,7 +18,7 @@ export default function ComicNameEditor({
   setIsLegalComicnameState, // For parent component, validation
   onUpdate,
   existingComic,
-}: ComicNameEditor) {
+}: ComicNameEditorProps) {
   const similarComicsFetcher = useGoodFetcher<SimilarComicResponse>({
     url: '/api/search-similarly-named-comic',
     method: 'POST',

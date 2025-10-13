@@ -18,7 +18,6 @@ import SwitchToggle from '~/ui-components/Buttons/SwitchToggle';
 
 type SearchFilterContentProps = {
   browseParams: BrowseUtilities;
-  openWidth: number;
   onClose: () => void;
   allTags: Tag[];
   setAllTags: (tags: Tag[]) => void;
@@ -29,7 +28,6 @@ type SearchFilterContentProps = {
 
 export default function SearchFilterContent({
   browseParams,
-  openWidth,
   onClose,
   allTags,
   setAllTags,

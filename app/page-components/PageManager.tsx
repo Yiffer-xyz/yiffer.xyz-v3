@@ -448,7 +448,7 @@ function Page({
       <DraggableCore
         nodeRef={nodeRef}
         disabled={isMobile || disableDragging}
-        onStop={e => {
+        onStop={() => {
           if (didJustDelete) {
             setTimeout(() => {
               setDidJustDelete(false);
