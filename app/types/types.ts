@@ -345,12 +345,16 @@ export type Contribution =
   | ComicProblem;
 
 export type AdType = 'card' | 'banner' | 'topSmall';
-export type AdStatus =
-  | 'PENDING'
-  | 'ACTIVE'
-  | 'ENDED'
-  | 'NEEDS CORRECTION'
-  | 'AWAITING PAYMENT';
+
+export const allAdStatuses = [
+  'PENDING',
+  'ACTIVE',
+  'ENDED',
+  'NEEDS CORRECTION',
+  'AWAITING PAYMENT',
+] as const;
+
+export type AdStatus = (typeof allAdStatuses)[number];
 
 export type AdFreeTrialState = 'requested' | 'granted' | 'denied';
 export enum AdFreeTrialStateEnum {

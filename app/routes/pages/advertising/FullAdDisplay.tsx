@@ -57,7 +57,7 @@ export default function FullAdDisplay({
     );
   }, [updatedAd, ad]);
 
-  const queryStr = `?q=${randomString(3)}`;
+  const [queryStr] = useState(`?q=${randomString(3)}`);
 
   const adTypeInfo = ADVERTISEMENTS.find(a => a.name === ad.adType);
 

@@ -2,7 +2,7 @@ import type { Route } from './+types/patreon-callback';
 import { redirect } from 'react-router';
 import { syncPatreonTiers } from '~/route-funcs/sync-patreon-tiers';
 import { updateUser } from '~/route-funcs/update-user';
-import { create400Json, logErrorExternally } from '~/utils/request-helpers';
+import { create400Json } from '~/utils/request-helpers';
 
 export async function loader(args: Route.LoaderArgs) {
   const clientId = args.context.cloudflare.env.PATREON_CLIENT_ID;
@@ -36,14 +36,14 @@ export async function loader(args: Route.LoaderArgs) {
   const accessToken = data.access_token;
 
   if (!accessToken) {
-    await logErrorExternally({
-      error: {
-        isClientError: false,
-        isServerError: true,
-        logMessage: 'Patreon callback failed to get access token',
-        context: { data },
-      },
-    });
+    // await logErrorExternally({
+    //   error: {
+    //     isClientError: false,
+    //     isServerError: true,
+    //     logMessage: 'Patreon callback failed to get access token',
+    //     context: { data },
+    //   },
+    // });
     return create400Json('No access token');
   }
 
@@ -54,15 +54,15 @@ export async function loader(args: Route.LoaderArgs) {
   });
 
   if (userRes.status !== 200) {
-    const resJson = await userRes.json();
-    await logErrorExternally({
-      error: {
-        isClientError: false,
-        isServerError: true,
-        logMessage: 'Patreon callback failed to get user data with accessToken',
-        context: { resJson },
-      },
-    });
+    // const resJson = await userRes.json();
+    // await logErrorExternally({
+    //   error: {
+    //     isClientError: false,
+    //     isServerError: true,
+    //     logMessage: 'Patreon callback failed to get user data with accessToken',
+    //     context: { resJson },
+    //   },
+    // });
     return create400Json('Failed to get user data');
   }
 
@@ -70,14 +70,14 @@ export async function loader(args: Route.LoaderArgs) {
 
   const patreonEmail = userData.data?.attributes?.email;
   if (!patreonEmail) {
-    await logErrorExternally({
-      error: {
-        isClientError: false,
-        isServerError: true,
-        logMessage: 'Patreon callback failed to get user email',
-        context: { userData },
-      },
-    });
+    // await logErrorExternally({
+    //   error: {
+    //     isClientError: false,
+    //     isServerError: true,
+    //     logMessage: 'Patreon callback failed to get user email',
+    //     context: { userData },
+    //   },
+    // });
     return create400Json('Failed to get user email');
   }
 
@@ -86,14 +86,14 @@ export async function loader(args: Route.LoaderArgs) {
   });
 
   if (updateUserRes?.error) {
-    await logErrorExternally({
-      error: {
-        isClientError: false,
-        isServerError: true,
-        logMessage: 'Patreon callback failed to update user',
-        context: { updateUserRes, userId, patreonEmail },
-      },
-    });
+    // await logErrorExternally({
+    //   error: {
+    //     isClientError: false,
+    //     isServerError: true,
+    //     logMessage: 'Patreon callback failed to update user',
+    //     context: { updateUserRes, userId, patreonEmail },
+    //   },
+    // });
     return create400Json('Failed to update user');
   }
 

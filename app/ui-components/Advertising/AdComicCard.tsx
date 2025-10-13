@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import type { AdForViewing } from '~/types/types';
 import Link from '~/ui-components/Link';
@@ -25,7 +25,7 @@ export default function AdComicCard({
   const { comicCardTags } = useUIPreferences();
   const devicePixelRatio = useDevicePixelRatio({ defaultDpr: 2 });
   const multiplier = useMemo(() => (devicePixelRatio > 2 ? 3 : 2), [devicePixelRatio]);
-  const queryStr = useRef(bypassCache ? `?q=${randomString(3)}` : '');
+  const [queryStr] = useState(bypassCache ? `?q=${randomString(3)}` : '');
 
   const logClickFetcher = useGoodFetcher({
     url: '/api/log-click',

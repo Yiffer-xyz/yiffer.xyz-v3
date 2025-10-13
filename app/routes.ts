@@ -151,7 +151,6 @@ const apiRoutes = [
   route('/api/latest-blog', './routes/api/latest-blog.ts'),
   route('/api/set-theme', './routes/api/set-theme.ts'),
   route('/api/log-click', './routes/api/log-click.ts'),
-  route('/api/log-client-error', './routes/api/log-client-error.ts'),
   route('/api/reset-fetcher', './routes/api/reset-fetcher.ts'),
 
   // Advertising
