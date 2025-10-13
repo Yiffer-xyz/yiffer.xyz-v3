@@ -162,7 +162,7 @@ export default function PendingComics() {
                   <MdCheck /> Publishing queue, {comic.publishingQueuePos ?? '?'}/
                   {totalPublishingQueueLength}
                 </p>
-                {isAdmin(user) && false && (
+                {isAdmin(user) && (
                   <>
                     <LoadingIconButton
                       icon={MdArrowDownward}

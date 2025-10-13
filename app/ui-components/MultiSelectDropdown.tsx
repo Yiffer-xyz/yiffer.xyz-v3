@@ -256,7 +256,7 @@ export default function MultiSelectDropdown<T>({
             key={text}
             onMouseEnter={() => setHighlightedIndex(index)}
             onMouseLeave={() => setHighlightedIndex(-1)}
-            onClick={e => onSelected(optionValue)}
+            onClick={() => onSelected(optionValue)}
             className={`z-40 hover:cursor-pointer px-3 whitespace-nowrap  ${
               currentlyHighlightedIndex === index
                 ? `bg-linear-to-r from-theme1-primary-less-trans to-theme2-primary-less-trans  

@@ -100,9 +100,11 @@ export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilt
     >
       <div
         className="flex flex-row justify-between items-center cursor-pointer"
-        onClick={(e: any) => {
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
           onOpenchange(false);
-          isOpen && e.stopPropagation();
+          if (isOpen) {
+            e.stopPropagation();
+          }
         }}
       >
         <p className="font-semibold">Filters and display</p>
@@ -123,7 +125,6 @@ export default function SearchFilter({ browseUtilities, isLoggedIn }: SearchFilt
 
       <SearchFilterContent
         browseParams={browseUtilities}
-        openWidth={openWidth}
         allTags={allTags}
         setAllTags={setAllTags}
         onClose={() => {

@@ -140,7 +140,6 @@ export async function getComicsPaginated({
       })
     : makeInefficientInnerQuery({
         userId,
-        order: order ?? 'updated',
         limit,
         offset,
         yourStarsQuery,
@@ -269,7 +268,6 @@ export async function getComicsPaginated({
 
 type MakeInefficientQueryArgs = {
   userId: number | undefined;
-  order: 'updated' | 'random' | 'userRating' | 'yourRating';
   limit: number | undefined;
   offset: number | undefined;
   yourStarsQuery: string;
@@ -286,7 +284,6 @@ type MakeInefficientQueryArgs = {
 
 function makeInefficientInnerQuery({
   userId,
-  order,
   limit,
   offset,
   yourStarsQuery,

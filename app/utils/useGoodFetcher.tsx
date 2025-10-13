@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { FormEncType, FormMethod, SubmitOptions } from 'react-router';
 import { useFetcher } from 'react-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -125,7 +124,7 @@ export function useGoodFetcher<T = void>({
   //       showSuccessToast(toastSuccessMessage, preventToastClose, theme);
   //     }
   //   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   // }, [toastSuccessMessage, theme]);
 
   useEffect(() => {

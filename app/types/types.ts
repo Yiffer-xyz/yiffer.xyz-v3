@@ -351,13 +351,6 @@ export type AdStatus =
   | 'ENDED'
   | 'NEEDS CORRECTION'
   | 'AWAITING PAYMENT';
-export const allAdStatuses: AdStatus[] = [
-  'PENDING',
-  'ACTIVE',
-  'ENDED',
-  'NEEDS CORRECTION',
-  'AWAITING PAYMENT',
-];
 
 export type AdFreeTrialState = 'requested' | 'granted' | 'denied';
 export enum AdFreeTrialStateEnum {

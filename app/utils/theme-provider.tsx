@@ -154,7 +154,7 @@ export function parseUIPreferences(rawUIPref: string | null | undefined): UIPref
     }
 
     return newUIPref;
-  } catch (e) {
+  } catch {
     return defaultUiPref;
   }
 }

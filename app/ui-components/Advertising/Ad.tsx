@@ -1,4 +1,4 @@
-import { useRef, useState, type HTMLAttributes } from 'react';
+import { useRef, type HTMLAttributes } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
 import type { AdForViewing } from '~/types/types';
 import { randomString } from '~/utils/general';

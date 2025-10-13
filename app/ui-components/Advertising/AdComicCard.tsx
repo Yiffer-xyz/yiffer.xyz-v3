@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { useDevicePixelRatio } from 'use-device-pixel-ratio';
 import type { AdForViewing } from '~/types/types';
 import Link from '~/ui-components/Link';

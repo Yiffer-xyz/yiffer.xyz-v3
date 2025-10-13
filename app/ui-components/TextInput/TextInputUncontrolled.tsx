@@ -56,6 +56,7 @@ export default function TextInputUncontrolled({
       error={shouldShowError}
       className={className}
       onBlur={() => setHasBeenBlurred(true)}
+      autocomplete={autocomplete}
       {...props}
     />
   );

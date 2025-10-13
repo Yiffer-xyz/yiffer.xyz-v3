@@ -148,14 +148,26 @@ export default function DisplayOptionsAndPages({
 
     posthog.capture('Page clicked, cycle display');
 
-    individualPageStyles[pageIndex] = newIndex;
-    setIndividualPageStyles([...individualPageStyles]);
+    setIndividualPageStyles(prev => {
+      const updated = [...prev];
+      updated[pageIndex] = newIndex;
+      return updated;
+    });
 
-    individualPageStylesShowLabels[pageIndex] = newIndex;
+    setIndividualPageStylesShowLabels(prev => {
+      const updated = [...prev];
+      updated[pageIndex] = newIndex;
+      return updated;
+    });
+
     if (labelUpdateTimeoutRef.current !== null) {
       clearTimeout(labelUpdateTimeoutRef.current.timer);
       if (labelUpdateTimeoutRef.current.pageNum !== pageIndex) {
-        individualPageStylesShowLabels[labelUpdateTimeoutRef.current.pageNum] = undefined;
+        setIndividualPageStylesShowLabels(prev => {
+          const updated = [...prev];
+          updated[labelUpdateTimeoutRef.current!.pageNum] = undefined;
+          return updated;
+        });
       }
     }
     labelUpdateTimeoutRef.current = {
