@@ -1,4 +1,4 @@
-import { useRef, type HTMLAttributes } from 'react';
+import { useState, type HTMLAttributes } from 'react';
 import { ADVERTISEMENTS } from '~/types/constants';
 import type { AdForViewing } from '~/types/types';
 import { randomString } from '~/utils/general';
@@ -22,7 +22,7 @@ export default function Ad({
   className,
 }: Props) {
   const fullAd = ADVERTISEMENTS.find(fullAd => fullAd.name === ad.adType);
-  const queryStr = useRef(bypassCache ? `?q=${randomString(3)}` : '');
+  const [queryStr] = useState(bypassCache ? `?q=${randomString(3)}` : '');
 
   const logClickFetcher = useGoodFetcher({
     url: '/api/log-click',
