@@ -5,7 +5,8 @@
   "scripts": {
     "build": "react-router build",
     "cf-typegen": "wrangler types",
-    "deploy": "CLOUDFLARE_ENV=production yarn run build && wrangler deploy",
+    "deploy-prod": "CLOUDFLARE_ENV=production yarn run build && wrangler deploy",
+    "deploy-dev": "CLOUDFLARE_ENV=dev yarn run build && wrangler deploy",
     "dev": "react-router dev",
     "postinstall": "npm run cf-typegen",
     "preview": "yarn run build && vite preview",

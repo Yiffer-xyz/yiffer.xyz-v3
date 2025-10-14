@@ -73,6 +73,33 @@
         },
       ],
     },
+    "dev": {
+      "vars": {
+        "IS_LOCAL_DEV": "false",
+        "ADS_PATH": "https://pics.testyiffer.xyz/pi",
+        "DAILY_SCHEDULE_PUBLISH_COUNT": "3",
+        "FRONT_END_URL_BASE": "https://testyiffer.xyz",
+        "GA_TRACKING_ID": "G-QSHNSL908Y",
+        "IMAGES_SERVER_URL": "https://images-srv.testyiffer.xyz",
+        "PAGES_PATH": "https://pics.testyiffer.xyz",
+        "PATREON_CAMPAIGN_ID": "7415033",
+        "PATREON_REDIRECT_URL": "https://testyiffer.xyz/api/patreon-callback",
+        "POSTHOG_HOST": "https://us.i.posthog.com",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "yiffer-dev",
+          "database_id": "6c6d170a-0c3a-4c97-b402-658f30e7501a",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "COMICS_BUCKET",
+          "bucket_name": "yiffer-test-3",
+        },
+      ],
+    },
   },
   /**
    * Smart Placement
