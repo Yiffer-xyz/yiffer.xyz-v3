@@ -14,11 +14,7 @@ import { recalculateComicsPaginated } from '~/route-funcs/get-and-cache-comicspa
 import { addModLogAndPoints } from '~/route-funcs/add-mod-log-and-points';
 import { capitalizeString } from '~/utils/general';
 import { batchRenameR2Files, deleteR2File } from '~/utils/r2Utils';
-import {
-  R2_COMICS_FOLDER,
-  R2_TEMP_FOLDER,
-  RESTRICT_NOTIFICATIONS_TO_PATRONS,
-} from '~/types/constants';
+import { MAX_D1_QUERY_PARAMS, R2_COMICS_FOLDER, R2_TEMP_FOLDER } from '~/types/constants';
 import { generateToken } from '~/utils/string-utils';
 
 export { noGetRoute as loader };
@@ -199,27 +195,8 @@ async function handleUpdatedComicBookmarkNotifications(
     return makeDbErr(bookmarkedRes, 'Error getting bookmarked users for comic');
   }
 
-  let subscribedUserIds = bookmarkedRes.result.map(r => r.userId);
+  const subscribedUserIds = bookmarkedRes.result.map(r => r.userId);
 
-  if (RESTRICT_NOTIFICATIONS_TO_PATRONS) {
-    const eligibleUserIds = await queryDb<{ id: number }[]>(
-      db,
-      `SELECT id FROM user 
-       WHERE (patreonDollars > 10 OR userType = 'moderator' OR userType = 'admin')
-       AND id IN (${subscribedUserIds.map(() => '?').join(',')})`,
-      subscribedUserIds
-    );
-
-    if (eligibleUserIds.isError) {
-      return makeDbErr(eligibleUserIds, 'Error getting patron users');
-    }
-
-    subscribedUserIds = subscribedUserIds.filter(userId =>
-      eligibleUserIds.result.some(p => p.id === userId)
-    );
-  }
-
-  console.log('subscribedUserIds', subscribedUserIds);
   if (subscribedUserIds.length === 0) {
     return;
   }
@@ -235,22 +212,37 @@ async function handleUpdatedComicBookmarkNotifications(
     return makeDbErr(bookmarkedRes, 'Error deleting existing comic notifications');
   }
 
-  let insertNotificationQuery = `INSERT INTO comicupdatenotification (userId, comicId) VALUES `;
-  const insertNotificationParams: number[] = [];
+  const queriesWithParams: QueryWithParams[] = [];
+  let variableCounter = 0;
+  let query = `INSERT INTO comicupdatenotification (userId, comicId) VALUES `;
+  let params: any[] = [];
 
-  subscribedUserIds.forEach((userId, index) => {
-    insertNotificationQuery += '(?, ?)';
-    insertNotificationParams.push(userId, comicId);
-    if (index < subscribedUserIds.length - 1) {
-      insertNotificationQuery += ', ';
+  for (const userId of subscribedUserIds) {
+    query += `(?, ?), `;
+    params.push(userId, comicId);
+    variableCounter += 2;
+
+    if (variableCounter >= MAX_D1_QUERY_PARAMS) {
+      queriesWithParams.push({
+        query: query.slice(0, -2),
+        params,
+        queryName: 'Insert comic update notification',
+      });
+      query = `INSERT INTO comicupdatenotification (userId, comicId) VALUES `;
+      params = [];
+      variableCounter = 0;
     }
-  });
+  }
 
-  const insertRes = await queryDbExec(
-    db,
-    insertNotificationQuery,
-    insertNotificationParams
-  );
+  if (variableCounter > 0) {
+    queriesWithParams.push({
+      query: query.slice(0, -2),
+      params,
+      queryName: 'Insert comic update notification',
+    });
+  }
+
+  const insertRes = await queryDbMultiple(db, queriesWithParams);
   if (insertRes.isError) {
     return makeDbErr(insertRes, 'Error inserting new comic notifications');
   }
