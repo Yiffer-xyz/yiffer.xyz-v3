@@ -93,7 +93,6 @@ const adminRoutes = [
     ),
     route('/admin/more/chat-list', 'routes/pages/admin/more/ChatListPage.tsx'),
     route('/admin/chats/:token', 'routes/pages/admin/more/SingleChatPage.tsx'),
-    // route('/admin/comics', 'routes/pages/admin/comic/ComicListPage.tsx'),
     route('/admin/comics', 'routes/pages/admin/comic/ComicListPage.tsx', [
       route('/admin/comics/:comic', 'routes/pages/admin/comic/SingleComicPage.tsx'),
     ]),
@@ -169,7 +168,6 @@ const apiRoutes = [
   route('/api/toggle-bookmark', './routes/api/toggle-bookmark.ts'),
   route('/api/update-your-stars', './routes/api/update-your-stars.ts'),
   route('/api/tags', './routes/api/tags.ts'),
-  route('/api/convert-old-ratings', './routes/api/convert-old-ratings.ts'),
 
   // Comments stuff
   route('/api/add-comment-vote', './routes/api/add-comment-vote.ts'),

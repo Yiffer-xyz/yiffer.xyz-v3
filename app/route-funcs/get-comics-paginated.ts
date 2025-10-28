@@ -79,14 +79,8 @@ export async function getComicsPaginated({
   if (artistId) queryExtraInfos.push(`artistId`);
   if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
   if (offset) queryExtraInfos.push(`offset`);
-  if (order) queryExtraInfos.push(`order`);
+  if (order !== 'updated') queryExtraInfos.push(`order`);
   const queryExtraInfo = queryExtraInfos.join(', ');
-
-  const canUseEfficientQuery =
-    (!tagIDs || tagIDs.length === 0) &&
-    (!search || search.trim() === '') &&
-    !artistId &&
-    (order === 'updated' || order === 'random');
 
   const [
     filterQueryString,
@@ -95,16 +89,6 @@ export async function getComicsPaginated({
     innerJoinKeywordString,
   ] = getFilterQuery({ categories, keywordIds: tagIDs, search, artistId });
 
-  const orderBy = orderByParamToDbField(order ?? 'updated');
-  const orderQueryString = `ORDER BY ${orderBy} DESC`;
-
-  let paginationQueryString = '';
-  if (limit) {
-    paginationQueryString += ' LIMIT ? ';
-  }
-  if (offset) {
-    paginationQueryString += ' OFFSET ? ';
-  }
   const isBookmarkedQuery = `
     ${bookmarkedOnly ? 'INNER JOIN' : 'LEFT JOIN'} (
       SELECT comicId, 1 as isBookmarked
@@ -113,46 +97,18 @@ export async function getComicsPaginated({
     ) AS isBookmarkedQuery ON (comic.id = isBookmarkedQuery.comicId)
   `;
 
-  const yourStarsQuery =
-    'LEFT JOIN comicrating AS userCR ON comic.id = userCR.comicId AND userCR.userId = ?';
-
-  const includeTagsJoinString = includeTags
-    ? `LEFT JOIN comickeyword AS ck1 ON (ck1.comicId = comic.id)
-       LEFT JOIN keyword ON (keyword.id = ck1.keywordId)`
-    : '';
-  const includeTagsConcatString = includeTags
-    ? `, GROUP_CONCAT(DISTINCT keyword.keywordName || '~' || keyword.id) AS tags`
-    : '';
-
-  const { query: innerQuery, params: queryParams } = canUseEfficientQuery
-    ? makeEfficientInnerQuery({
-        order,
-        limit,
-        offset,
-        userId,
-        categories,
-        isBookmarkedQuery,
-        includeTagsJoinString,
-        includeTagsConcatString,
-        innerJoinKeywordString: innerJoinKeywordString as string,
-        yourStarsQuery,
-        filterQueryString: filterQueryString as string,
-      })
-    : makeInefficientInnerQuery({
-        userId,
-        limit,
-        offset,
-        yourStarsQuery,
-        includeTagsJoinString,
-        includeTagsConcatString,
-        innerJoinKeywordString: innerJoinKeywordString as string,
-        filterQueryString: filterQueryString as string,
-        filterQueryParams: filterQueryParams as any[],
-        keywordCountString: keywordCountString as string,
-        orderQueryString,
-        paginationQueryString,
-        isBookmarkedQuery,
-      });
+  const { query, params: queryParams } = makeInnerQuery({
+    order: order ?? 'updated',
+    limit,
+    offset,
+    userId,
+    categories,
+    tagIDs,
+    search,
+    artistId,
+    bookmarkedOnly,
+    includeTags,
+  });
 
   const isUnfilteredQuery =
     (!categories || categories.length === 0) &&
@@ -180,24 +136,11 @@ export async function getComicsPaginated({
   if (bookmarkedOnly) totalCountQueryParams.push(userId);
   totalCountQueryParams.push(...filterQueryParams);
 
-  const query = `
-    SELECT cc.id, cc.name, cc.category, cc.artistName,
-    cc.updated, cc.state, cc.published, cc.numberOfPages, 
-    cc.sumStars, cc.numTimesStarred
-    ${userId ? ', cc.yourStars, cc.isBookmarked ' : ''}
-    ${includeTags ? ', cc.tags' : ''}
-    FROM (
-      ${innerQuery}
-    ) AS cc 
-    GROUP BY id 
-    ${orderQueryString}
-  `;
-
   const queries = [
     {
       query,
       params: queryParams,
-      queryName: `Comics paginated ${canUseEfficientQuery ? 'efficient' : 'inefficient'}`,
+      queryName: `Comics paginated`,
       extraInfo: queryExtraInfo,
     },
     {
@@ -264,164 +207,6 @@ export async function getComicsPaginated({
       page: Math.ceil((offset ?? 0) / COMICS_PER_PAGE) + 1,
     },
   };
-}
-
-type MakeInefficientQueryArgs = {
-  userId: number | undefined;
-  limit: number | undefined;
-  offset: number | undefined;
-  yourStarsQuery: string;
-  includeTagsJoinString: string;
-  includeTagsConcatString: string;
-  innerJoinKeywordString: string;
-  filterQueryString: string;
-  filterQueryParams: any[];
-  keywordCountString: string;
-  orderQueryString: string;
-  paginationQueryString: string;
-  isBookmarkedQuery: string;
-};
-
-function makeInefficientInnerQuery({
-  userId,
-  limit,
-  offset,
-  yourStarsQuery,
-  includeTagsJoinString,
-  includeTagsConcatString,
-  innerJoinKeywordString,
-  filterQueryString,
-  filterQueryParams,
-  keywordCountString,
-  orderQueryString,
-  paginationQueryString,
-  isBookmarkedQuery,
-}: MakeInefficientQueryArgs): { query: string; params: any[] } {
-  const query = `
-    SELECT
-      comic.id AS id, comic.name, comic.category, comic.publishStatus,
-      artist.name AS artistName, comic.updated, comic.state, comic.published, comic.numberOfPages,
-      COALESCE(comicRatings.sumStars, 0) AS sumStars,
-      COALESCE(comicRatings.numTimesStarred, 0) AS numTimesStarred
-      ${userId ? ', userCR.rating AS yourStars' : ''}
-      ${userId ? ', isBookmarkedQuery.isBookmarked AS isBookmarked' : ''}
-      ${includeTagsConcatString}
-    FROM comic
-    INNER JOIN artist ON (artist.id = comic.artist)
-    LEFT JOIN (
-      SELECT comicId, SUM(rating) AS sumStars, COUNT(rating) AS numTimesStarred
-      FROM comicrating
-      GROUP BY comicId
-    ) AS comicRatings ON comic.id = comicRatings.comicId
-    ${includeTagsJoinString}
-    ${innerJoinKeywordString}
-    ${userId ? yourStarsQuery : ''}
-    ${userId ? isBookmarkedQuery : ''}
-    ${filterQueryString}
-    GROUP BY comic.id
-    ${keywordCountString}
-    ${orderQueryString}
-    ${paginationQueryString}
-  `;
-
-  const params: any[] = [];
-
-  if (userId) params.push(userId, userId); // For bookmarked and yourStars
-  params.push(...filterQueryParams);
-  if (limit) params.push(limit);
-  if (offset) params.push(offset);
-
-  return { query: query, params: params };
-}
-
-type MakeEfficientInnerQueryArgs = {
-  order: 'updated' | 'random';
-  limit: number | undefined;
-  offset: number | undefined;
-  userId: number | undefined;
-  categories?: string[];
-  isBookmarkedQuery: string;
-  includeTagsConcatString: string;
-  includeTagsJoinString: string;
-  innerJoinKeywordString: string;
-  yourStarsQuery: string;
-  filterQueryString: string;
-};
-
-function makeEfficientInnerQuery({
-  order,
-  limit,
-  offset,
-  userId,
-  categories,
-  isBookmarkedQuery,
-  includeTagsConcatString,
-  includeTagsJoinString,
-  innerJoinKeywordString,
-  yourStarsQuery,
-}: MakeEfficientInnerQueryArgs) {
-  let whereString = `WHERE publishStatus = 'published'`;
-  const params: any[] = [];
-  const categoriesParams: any[] = [];
-
-  if (categories && categories.length > 0) {
-    const categoryStrings: string[] = [];
-    categories.forEach(category => {
-      categoryStrings.push(`category = ?`);
-      categoriesParams.push(category);
-    });
-    whereString += ` AND (${categoryStrings.join(' OR ')})`;
-  }
-
-  const limitString = limit ? `LIMIT ?` : '';
-  const offsetString = offset ? `OFFSET ?` : '';
-  const orderByString =
-    order === 'random' ? 'ORDER BY RANDOM()' : `ORDER BY updated DESC`;
-
-  const query = `
-    WITH filtered_comics AS (
-      SELECT id, updated, ${userId ? 'isBookmarkedQuery.isBookmarked AS isBookmarked' : '0 AS isBookmarked'},
-      SUM(comicrating.rating) AS sumStars, COUNT(comicrating.rating) AS numTimesStarred
-      FROM comic
-      LEFT JOIN comicrating ON (comic.id = comicrating.comicId)
-      ${userId ? isBookmarkedQuery : ''}
-      ${whereString}
-      GROUP BY id
-      ${orderByString}
-      ${limitString} ${offsetString}
-    )
-    SELECT
-      comic.id AS id,
-      comic.name,
-      comic.category,
-      comic.publishStatus,
-      artist.name AS artistName,
-      comic.updated,
-      comic.state,
-      comic.published,
-      comic.numberOfPages,
-      isBookmarked,
-      sumStars,
-      numTimesStarred
-      ${userId ? ', userCR.rating AS yourStars' : ''}
-      ${userId ? ', isBookmarked AS isBookmarked' : ''}
-      ${includeTagsConcatString}
-    FROM filtered_comics
-    INNER JOIN comic ON comic.id = filtered_comics.id
-    INNER JOIN artist ON artist.id = comic.artist
-    ${includeTagsJoinString}
-    ${innerJoinKeywordString}
-    ${userId ? yourStarsQuery : ''}
-    GROUP BY comic.id
-  `;
-
-  if (userId) params.push(userId); // For bookmarked
-  params.push(...categoriesParams);
-  if (limit) params.push(limit);
-  if (offset) params.push(offset);
-  if (userId) params.push(userId); // For yourStars
-
-  return { query: query, params: params };
 }
 
 // Return the average as a % of 100, where 1 star = 0%, 2 stars = 50%, 3 stars = 100%
@@ -519,17 +304,217 @@ function getFilterQuery({
   ];
 }
 
-function orderByParamToDbField(orderBy: string) {
-  switch (orderBy) {
-    case 'updated':
-      return 'updated';
-    case 'userRating':
-      return 'sumStars';
-    case 'yourRating':
-      return 'yourStars';
-    case 'random':
-      return 'RANDOM()';
-    default:
-      return 'updated';
+type MakeInnerQueryArgs = {
+  order: 'updated' | 'userRating' | 'yourRating' | 'random';
+  limit?: number;
+  offset?: number;
+  userId?: number;
+  categories?: string[];
+  tagIDs?: number[];
+  search?: string;
+  artistId?: number;
+  bookmarkedOnly?: boolean;
+  includeTags?: boolean;
+};
+
+function makeInnerQuery({
+  order,
+  limit,
+  offset,
+  userId,
+  categories,
+  tagIDs,
+  search,
+  artistId,
+  bookmarkedOnly,
+  includeTags,
+}: MakeInnerQueryArgs): { query: string; params: any[] } {
+  const whereParts: string[] = [`c.publishStatus = 'published'`];
+  const params: any[] = [];
+
+  if (categories && categories.length) {
+    whereParts.push(`c.category IN (${categories.map(() => '?').join(',')})`);
+    params.push(...categories);
   }
+
+  if (artistId) {
+    whereParts.push(`c.artist = ?`);
+    params.push(artistId);
+  }
+
+  if (search && search.trim()) {
+    whereParts.push(`(c.name LIKE ? OR a.name LIKE ?)`);
+    const like = `%${search.trim()}%`;
+    params.push(like, like);
+  }
+
+  if (bookmarkedOnly && userId) {
+    // bound to user, makes it cheap
+    whereParts.push(
+      `EXISTS (SELECT 1 FROM comicbookmark cb WHERE cb.userId = ? AND cb.comicId = c.id)`
+    );
+    params.push(userId);
+  }
+
+  // For tag filtering, we'll use a HAVING on top_ids (it's OK since we've already narrowed c)
+  const needTagJoin = !!(tagIDs && tagIDs.length);
+
+  if (needTagJoin && tagIDs!.length > 0) {
+    whereParts.push(`ckf.keywordId IN (${tagIDs!.map(() => '?').join(',')})`);
+    params.push(...tagIDs!);
+  }
+
+  // ---------- ORDER clause selection ----------
+  // updated / random are cheap. yourRating also cheap (bounded to user).
+  // userRating (global aggregate) is expensive without precomputed stats.
+  // Note: When we have filters that require GROUP BY (tags, search, categories),
+  // we can't order by ur.rating in the top_ids CTE because it becomes ambiguous after GROUP BY.
+  // So we'll order by yourRating in the final SELECT instead.
+  const canOrderInTopCte = !needTagJoin && !search;
+  let orderSql = `c.updated DESC, c.id DESC`;
+  if (order === 'random') orderSql = `RANDOM()`;
+  if (order === 'yourRating' && userId && canOrderInTopCte)
+    orderSql = `ur.rating DESC, c.updated DESC, c.id DESC`;
+
+  if (order === 'userRating' && canOrderInTopCte) {
+    orderSql = 'rs.sumStars DESC, c.updated DESC, c.id DESC';
+  }
+
+  const limitSql = limit ? `LIMIT ?` : ``;
+  const offsetSql = offset ? `OFFSET ?` : ``;
+
+  // ---------- CTE: top_ids (tiny set) ----------
+  // We join artist only when search requires it (so the main WHERE can filter on a.name).
+  const joinArtistForSearch =
+    search && search.trim() ? `JOIN artist a ON a.id = c.artist` : '';
+
+  // Optional user rating in the top_ids ORDER BY
+  const joinUrInTop =
+    order === 'yourRating' && userId && canOrderInTopCte
+      ? `LEFT JOIN comicrating ur ON (ur.comicId = c.id AND ur.userId = ?)`
+      : ``;
+
+  if (order === 'yourRating' && userId && canOrderInTopCte) params.push(userId);
+
+  const joinRsInTop =
+    order === 'userRating'
+      ? `LEFT JOIN comicratingaggregation rs ON rs.comicId = c.id`
+      : ``;
+
+  const tagJoinForFilter = needTagJoin
+    ? `INNER JOIN comickeyword ckf ON ckf.comicId = c.id`
+    : ``;
+
+  const topIdsCte = `
+    WITH top_ids AS (
+      SELECT c.id
+      FROM comic c
+      ${tagJoinForFilter}
+      ${joinArtistForSearch}
+      ${joinUrInTop}
+      ${joinRsInTop}
+      WHERE ${whereParts.join(' AND ')}
+      ${needTagJoin ? `GROUP BY c.id` : ``}
+      ${needTagJoin ? `HAVING COUNT(DISTINCT ckf.keywordId) >= ${tagIDs?.length ?? 0}` : ``}
+      ORDER BY ${orderSql}
+      ${limitSql} ${offsetSql}
+    )
+  `;
+
+  if (limit) params.push(limit);
+  if (offset) params.push(offset);
+
+  // ---------- CTEs: aggregates only for the selected IDs ----------
+  const ratingsCte = `
+    , ratings AS (
+      SELECT cr.comicId,
+             SUM(cr.rating) AS sumStars,
+             COUNT(*)       AS numTimesStarred
+      FROM comicrating cr
+      WHERE cr.comicId IN (SELECT id FROM top_ids)
+      GROUP BY cr.comicId
+    )
+  `;
+
+  const yourRatingCte = userId
+    ? `
+    , your_rating AS (
+      SELECT cr.comicId, cr.rating
+      FROM comicrating cr
+      WHERE cr.userId = ? AND cr.comicId IN (SELECT id FROM top_ids)
+    )
+  `
+    : ``;
+
+  if (userId) params.push(userId);
+
+  const bookmarksCte = userId
+    ? `
+    , bookmarks AS (
+      SELECT cb.comicId, 1 AS isBookmarked
+      FROM comicbookmark cb
+      WHERE cb.userId = ? AND cb.comicId IN (SELECT id FROM top_ids)
+    )
+  `
+    : ``;
+
+  if (userId) params.push(userId);
+
+  const tagsCte = includeTags
+    ? `
+    , tags AS (
+      SELECT ck.comicId,
+             GROUP_CONCAT(DISTINCT (kw.keywordName || '~' || kw.id)) AS tags
+      FROM comickeyword ck
+      JOIN keyword kw ON kw.id = ck.keywordId
+      WHERE ck.comicId IN (SELECT id FROM top_ids)
+      GROUP BY ck.comicId
+    )
+  `
+    : ``;
+
+  // ---------- Final SELECT ----------
+  const finalOrder =
+    order === 'random'
+      ? `ORDER BY RANDOM()`
+      : order === 'yourRating' && userId
+        ? `ORDER BY yourStars DESC, c.updated DESC, c.id DESC`
+        : order === 'userRating'
+          ? `ORDER BY COALESCE(r.sumStars, 0) DESC, c.updated DESC, c.id DESC`
+          : `ORDER BY c.updated DESC, c.id DESC`;
+
+  const finalSelect = `
+    SELECT
+      c.id,
+      c.name,
+      c.category,
+      COALESCE(a.name, '') AS artistName,
+      c.updated,
+      c.state,
+      c.published,
+      c.numberOfPages,
+      COALESCE(r.sumStars, 0)       AS sumStars,
+      COALESCE(r.numTimesStarred, 0) AS numTimesStarred
+      ${userId ? `, yr.rating AS yourStars, COALESCE(b.isBookmarked,0) AS isBookmarked` : ``}
+      ${includeTags ? `, t.tags` : ``}
+    FROM top_ids ti
+    JOIN comic  c ON c.id = ti.id
+    LEFT JOIN artist a ON a.id = c.artist
+    LEFT JOIN ratings      r  ON r.comicId = c.id
+    ${userId ? `LEFT JOIN your_rating  yr ON yr.comicId = c.id` : ``}
+    ${userId ? `LEFT JOIN bookmarks    b  ON b.comicId  = c.id` : ``}
+    ${includeTags ? `LEFT JOIN tags    t  ON t.comicId  = c.id` : ``}
+    ${finalOrder}
+  `;
+
+  const query = `
+    ${topIdsCte}
+    ${ratingsCte}
+    ${yourRatingCte}
+    ${bookmarksCte}
+    ${tagsCte}
+    ${finalSelect}
+  `;
+
+  return { query, params };
 }

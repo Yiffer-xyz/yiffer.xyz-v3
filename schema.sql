@@ -150,6 +150,8 @@ ON UPDATE CASCADE);
 CREATE INDEX IF NOT EXISTS idx_comicName ON comic (name);
 CREATE INDEX IF NOT EXISTS idx_comic_artist ON comic(artist);
 CREATE INDEX IF NOT EXISTS idx_comic_updated ON comic(updated);
+CREATE INDEX IF NOT EXISTS idx_comic_category ON comic(category);
+CREATE INDEX IF NOT EXISTS idx_comic_artist_name_nocase ON artist(name COLLATE NOCASE);
 
 ------------------------------------------------------
 -- KEYWORD 👀
@@ -176,6 +178,9 @@ FOREIGN KEY (`keywordId`)
 REFERENCES `keyword` (`id`)
 ON DELETE CASCADE
 ON UPDATE CASCADE);
+
+CREATE INDEX IF NOT EXISTS idx_comickeyword_comic ON comickeyword(comicId);
+CREATE INDEX IF NOT EXISTS idx_comicKeyword_keywordId_and_comicId ON comickeyword(keywordId, comicId);
 
 ------------------------------------------------------
 -- COMIC LINK 👀
@@ -403,8 +408,11 @@ ON DELETE CASCADE
 ON UPDATE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS `idx_comicrating_unique_user_comic` ON `comicrating` (`userId`, `comicId`);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comicrating_unique_user_comic ON comicrating (userId, comicId);
 CREATE INDEX IF NOT EXISTS idx_comicrating_comicId ON comicrating(comicId);
+CREATE INDEX IF NOT EXISTS idx_comicrating_userId_and_comicId ON comicrating(userId, comicId);
+-- SQLite can do a covering index scan for SUM(rating), COUNT(*) grouped by comicId when we restrict to IN (SELECT id FROM top_ids)
+CREATE INDEX IF NOT EXISTS idx_comicrating_comicId_and_rating ON comicrating(comicId, rating);
 
 ------------------------------------------------------
 -- COMIC BOOKMARK
@@ -427,7 +435,6 @@ CREATE TABLE IF NOT EXISTS `comicbookmark` (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_comicbookmark_unique_user_comic ON comicbookmark (userId, comicId);
 CREATE INDEX IF NOT EXISTS idx_comicbookmark_userId ON comicbookmark(userId);
 CREATE INDEX IF NOT EXISTS idx_comicbookmark_comicId ON comicbookmark(comicId);
-
 
 ------------------------------------------------------
 -- TAG SUGGESTION GROUP
@@ -805,3 +812,16 @@ CREATE TABLE IF NOT EXISTS ipban (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_ipban ON ipban (ip);
+
+------------------------------------------------------
+-- COMIC RATING AGGREGATE
+------------------------------------------------------
+CREATE TABLE IF NOT EXISTS comicratingaggregation (
+  comicId INTEGER NOT NULL,
+  sumStars INTEGER NOT NULL,
+  numTimesStarred INTEGER NOT NULL,
+  PRIMARY KEY (comicId)
+  FOREIGN KEY (comicId) REFERENCES comic (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_comicratingaggregation_ordered ON comicratingaggregation(sumStars DESC);

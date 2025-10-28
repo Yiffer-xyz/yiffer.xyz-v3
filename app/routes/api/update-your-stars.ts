@@ -1,6 +1,6 @@
 import type { Route } from './+types/update-your-stars';
 import { getAndCacheComicsPaginated } from '~/route-funcs/get-and-cache-comicspaginated';
-import { queryDbExec } from '~/utils/database-facade';
+import { queryDb, queryDbMultiple, type QueryWithParams } from '~/utils/database-facade';
 import { redirectIfNotLoggedIn } from '~/utils/loaders';
 import { type ApiError, noGetRoute } from '~/utils/request-helpers';
 import {
@@ -48,23 +48,69 @@ export async function updateStarRating(
 ): Promise<ApiError | undefined> {
   const logCtx = { userId, comicId, stars };
 
+  const existingRatingQuery =
+    'SELECT rating FROM comicrating WHERE userId = ? AND comicId = ?';
+  const existingRatingRes = await queryDb<{ rating: number }[]>(
+    db,
+    existingRatingQuery,
+    [userId, comicId],
+    'Existing rating'
+  );
+  if (existingRatingRes.isError) {
+    return makeDbErr(existingRatingRes, 'Error getting existing rating', logCtx);
+  }
+
+  const existingRating = existingRatingRes.result.length
+    ? existingRatingRes.result[0].rating
+    : null;
+
+  const queriesWithParams: QueryWithParams[] = [];
+
   if (stars === 0) {
     const deleteQuery = 'DELETE from comicrating WHERE userId = ? AND comicId = ?';
-    const dbRes = await queryDbExec(db, deleteQuery, [userId, comicId], 'Rating delete');
-    if (dbRes.isError) {
-      return makeDbErr(dbRes, 'Error deleting rating', logCtx);
+    queriesWithParams.push({
+      query: deleteQuery,
+      params: [userId, comicId],
+      queryName: 'Rating delete',
+    });
+
+    if (existingRating) {
+      const updateAggregateQuery =
+        'UPDATE comicratingaggregation SET numTimesStarred = numTimesStarred - 1, sumStars = sumStars - ? WHERE comicId = ?';
+      queriesWithParams.push({
+        query: updateAggregateQuery,
+        params: [existingRating, comicId],
+        queryName: 'Update rating aggregate',
+      });
     }
   } else {
     const upsertQuery = `
-    INSERT INTO comicrating (userId, comicId, rating) VALUES (?, ?, ?)
-    ON CONFLICT (userId, comicId) DO UPDATE SET rating = ?
-  `;
-    const queryParams = [userId, comicId, stars, stars];
+      INSERT INTO comicrating (userId, comicId, rating) VALUES (?, ?, ?)
+      ON CONFLICT (userId, comicId) DO UPDATE SET rating = ?
+    `;
+    queriesWithParams.push({
+      query: upsertQuery,
+      params: [userId, comicId, stars, stars],
+      queryName: 'Rating upsert',
+    });
 
-    const dbRes = await queryDbExec(db, upsertQuery, queryParams, 'Rating upsert');
-    if (dbRes.isError) {
-      return makeDbErr(dbRes, 'Error upserting comic rating', logCtx);
-    }
+    const starDiff = stars - (existingRating ?? 0);
+    const updateAggregateQuery = `
+      INSERT INTO comicratingaggregation (comicId, sumStars, numTimesStarred)
+      VALUES (?, ?, 1)
+      ON CONFLICT (comicId) DO UPDATE SET
+        numTimesStarred = numTimesStarred + ?,
+        sumStars = sumStars + ?`;
+    queriesWithParams.push({
+      query: updateAggregateQuery,
+      params: [comicId, stars, existingRating ? 0 : 1, starDiff],
+      queryName: 'Update rating aggregate',
+    });
+  }
+
+  const dbRes = await queryDbMultiple(db, queriesWithParams);
+  if (dbRes.isError) {
+    return makeDbErr(dbRes, 'Error updating comic rating', logCtx);
   }
 
   const res = await getAndCacheComicsPaginated({

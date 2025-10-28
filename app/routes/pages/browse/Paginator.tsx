@@ -78,7 +78,7 @@ export default function Paginator({
         );
       })}
       <button
-        className="grow bg-theme2-primary dark:bg-theme2-dark flex items-center justify-center h-full w-2"
+        className="grow bg-theme2-primary dark:bg-theme2-dark flex items-center justify-center h-full w-2 cursor-pointer"
         onClick={() => {
           if (currentPage < numPages) {
             onPageChange(currentPage + 1);
