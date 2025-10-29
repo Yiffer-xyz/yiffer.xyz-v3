@@ -154,13 +154,6 @@ export default function UserNotifications({
                   When you subscribe to comics (<FaRegBell />
                   ), notifications of new pages will show up here.
                 </p>
-                <p className="text-gray-500 dark:text-gray-700 text-sm px-2 mt-2">
-                  Initially, only $15+{' '}
-                  <Link href="/patreon" text="patrons" isInsideParagraph /> with linked
-                  accounts get this feature. It'll start working for everyone a few weeks
-                  later. Until then, the <FaRegBell /> works just like the old comic
-                  bookmark used to.
-                </p>
               </>
             ) : (
               <div className="-mt-2 -mb-2">
