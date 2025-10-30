@@ -78,8 +78,8 @@ export async function getComicsPaginated({
   if (search) queryExtraInfos.push(`search`);
   if (artistId) queryExtraInfos.push(`artistId`);
   if (bookmarkedOnly) queryExtraInfos.push(`bookmarkedOnly`);
-  if (offset) queryExtraInfos.push(`offset`);
-  if (order !== 'updated') queryExtraInfos.push(`order`);
+  if (offset) queryExtraInfos.push(`offset-${offset}`);
+  if (order !== 'updated') queryExtraInfos.push(`order-${order}`);
   const queryExtraInfo = queryExtraInfos.join(', ');
 
   const [
