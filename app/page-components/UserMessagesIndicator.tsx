@@ -18,13 +18,13 @@ export default function UserMessagesIndicator() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]);
 
-  // Refetch every minute too
-  useEffect(() => {
-    const interval = setInterval(() => {
-      messagesFetcher.submit();
-    }, 60_000);
-    return () => clearInterval(interval);
-  }, [messagesFetcher]);
+  // Refetch every minute too - disabling to see if errors go away
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     messagesFetcher.submit();
+  //   }, 60_000);
+  //   return () => clearInterval(interval);
+  // }, [messagesFetcher]);
 
   const hasUnreads = messagesFetcher.data?.hasUnreads ?? false;
 
